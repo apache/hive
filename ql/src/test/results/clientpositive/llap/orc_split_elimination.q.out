@@ -1,8 +1,8 @@
-PREHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_split_elim
-POSTHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+POSTHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_split_elim
@@ -158,11 +158,11 @@ POSTHOOK: Input: default@orc_split_elim
 29	cat	8.0	3	1969-12-31 16:00:10
 5	eat	0.8	6	1969-12-31 16:00:20
 70	dog	1.8	4	1969-12-31 16:00:15
-PREHOOK: query: create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (country string, year int) stored as orc
+PREHOOK: query: create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) partitioned by (country string, year int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_split_elim_part
-POSTHOOK: query: create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (country string, year int) stored as orc
+POSTHOOK: query: create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) partitioned by (country string, year int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_split_elim_part

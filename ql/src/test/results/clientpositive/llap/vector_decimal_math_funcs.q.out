@@ -1,17 +1,29 @@
-PREHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+PREHOOK: query: CREATE TABLE decimal_test_n0 STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@decimal_test
-POSTHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+PREHOOK: Output: default@decimal_test_n0
+POSTHOOK: query: CREATE TABLE decimal_test_n0 STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@decimal_test
-POSTHOOK: Lineage: decimal_test.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: decimal_test.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: decimal_test.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: decimal_test.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Output: default@decimal_test_n0
+POSTHOOK: Lineage: decimal_test_n0.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: decimal_test_n0.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test_n0.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+PREHOOK: query: insert into decimal_test_n0 values (NULL, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_test_n0
+POSTHOOK: query: insert into decimal_test_n0 values (NULL, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_test_n0
+POSTHOOK: Lineage: decimal_test_n0.cbigint EXPRESSION []
+POSTHOOK: Lineage: decimal_test_n0.cdecimal1 EXPRESSION []
+POSTHOOK: Lineage: decimal_test_n0.cdecimal2 EXPRESSION []
+POSTHOOK: Lineage: decimal_test_n0.cdouble EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select
    cdecimal1
@@ -43,7 +55,7 @@ select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 
 where cbigint % 500 = 0
 
@@ -80,7 +92,7 @@ select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 
 where cbigint % 500 = 0
 
@@ -102,20 +114,21 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_test
-                  Statistics: Num rows: 12288 Data size: 1401000 Basic stats: COMPLETE Column stats: NONE
+                  alias: decimal_test_n0
+                  filterExpr: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
+                  Statistics: Num rows: 12289 Data size: 1401120 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:cbigint:bigint, 1:cdouble:double, 2:cdecimal1:decimal(20,10), 3:cdecimal2:decimal(23,14), 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cbigint:bigint, 1:cdouble:double, 2:cdecimal1:decimal(20,10), 3:cdecimal2:decimal(23,14), 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 5:bigint, val 0)(children: LongColModuloLongScalar(col 0:bigint, val 500) -> 5:bigint), FilterDoubleColGreaterEqualDoubleScalar(col 7:double, val -1.0)(children: FuncSinDoubleToDouble(col 6:double)(children: CastDecimalToDouble(col 2:decimal(20,10)) -> 6:double) -> 7:double))
-                    predicate: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0)) (type: boolean)
+                    predicate: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
                     Statistics: Num rows: 2048 Data size: 233500 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cdecimal1 (type: decimal(20,10)), round(cdecimal1, 2) (type: decimal(13,2)), round(cdecimal1) (type: decimal(11,0)), floor(cdecimal1) (type: decimal(11,0)), ceil(cdecimal1) (type: decimal(11,0)), round(exp(cdecimal1), 58) (type: double), ln(cdecimal1) (type: double), log10(cdecimal1) (type: double), log2(cdecimal1) (type: double), log2((cdecimal1 - 15601)) (type: double), log(2, cdecimal1) (type: double), power(log2(cdecimal1), 2) (type: double), power(log2(cdecimal1), 2) (type: double), sqrt(cdecimal1) (type: double), abs(cdecimal1) (type: decimal(20,10)), sin(cdecimal1) (type: double), asin(cdecimal1) (type: double), cos(cdecimal1) (type: double), acos(cdecimal1) (type: double), atan(cdecimal1) (type: double), degrees(cdecimal1) (type: double), radians(cdecimal1) (type: double), cdecimal1 (type: decimal(20,10)), (- cdecimal1) (type: decimal(20,10)), sign(cdecimal1) (type: int), cos(((- sin(log(cdecimal1))) + 3.14159)) (type: double)
+                      expressions: cdecimal1 (type: decimal(20,10)), round(cdecimal1, 2) (type: decimal(13,2)), round(cdecimal1) (type: decimal(11,0)), floor(cdecimal1) (type: decimal(11,0)), ceil(cdecimal1) (type: decimal(11,0)), round(exp(cdecimal1), 58) (type: double), ln(cdecimal1) (type: double), log10(cdecimal1) (type: double), log2(cdecimal1) (type: double), log2((cdecimal1 - 15601)) (type: double), log(2, cdecimal1) (type: double), power(log2(cdecimal1), 2) (type: double), power(log2(cdecimal1), 2) (type: double), sqrt(cdecimal1) (type: double), abs(cdecimal1) (type: decimal(20,10)), sin(cdecimal1) (type: double), asin(cdecimal1) (type: double), cos(cdecimal1) (type: double), acos(cdecimal1) (type: double), atan(cdecimal1) (type: double), degrees(cdecimal1) (type: double), radians(cdecimal1) (type: double), cdecimal1 (type: decimal(20,10)), (- cdecimal1) (type: decimal(20,10)), sign(cdecimal1) (type: int), cos(((- sin(log(cdecimal1))) + 3.14159D)) (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
                       Select Vectorization:
                           className: VectorSelectOperator
@@ -138,8 +151,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -187,13 +200,13 @@ PREHOOK: query: select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 
 where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_test
+PREHOOK: Input: default@decimal_test_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
    cdecimal1
@@ -225,13 +238,13 @@ POSTHOOK: query: select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 
 where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_test
+POSTHOOK: Input: default@decimal_test_n0
 #### A masked pattern was here ####
 -119.4594594595	-119.46	-119	-120	-119	1.316485E-52	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	119.4594594595	-0.07885666683797002	NULL	0.9968859644388647	NULL	-1.5624254815943668	-6844.522849943508	-2.0849608902209606	-119.4594594595	119.4594594595	-1	NULL
 9318.4351351351	9318.44	9318	9318	9319	Infinity	9.13974998962673	3.969342986470191	13.185871984999437	NULL	13.185871984999437	173.867220004793	173.867220004793	96.53204201266593	9318.4351351351	0.4540668481851705	NULL	0.8909676185918236	NULL	1.5706890126394983	533907.0049096602	162.63737424163023	9318.4351351351	-9318.4351351351	1	-0.9607267417229353
@@ -349,25 +362,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_test_small
+                  filterExpr: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1401000 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:cbigint:bigint, 1:cdouble:double, 2:cdecimal1:decimal(12,4), 3:cdecimal2:decimal(14,8), 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cbigint:bigint, 1:cdouble:double, 2:cdecimal1:decimal(12,4)/DECIMAL_64, 3:cdecimal2:decimal(14,8)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 5:bigint, val 0)(children: LongColModuloLongScalar(col 0:bigint, val 500) -> 5:bigint), FilterDoubleColGreaterEqualDoubleScalar(col 7:double, val -1.0)(children: FuncSinDoubleToDouble(col 6:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 6:double) -> 7:double))
-                    predicate: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 5:bigint, val 0)(children: LongColModuloLongScalar(col 0:bigint, val 500) -> 5:bigint), FilterDoubleColGreaterEqualDoubleScalar(col 8:double, val -1.0)(children: FuncSinDoubleToDouble(col 7:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 7:double) -> 8:double))
+                    predicate: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
                     Statistics: Num rows: 2048 Data size: 233500 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cdecimal1 (type: decimal(12,4)), round(cdecimal1, 2) (type: decimal(11,2)), round(cdecimal1) (type: decimal(9,0)), floor(cdecimal1) (type: decimal(9,0)), ceil(cdecimal1) (type: decimal(9,0)), round(exp(cdecimal1), 58) (type: double), ln(cdecimal1) (type: double), log10(cdecimal1) (type: double), log2(cdecimal1) (type: double), log2((cdecimal1 - 15601)) (type: double), log(2, cdecimal1) (type: double), power(log2(cdecimal1), 2) (type: double), power(log2(cdecimal1), 2) (type: double), sqrt(cdecimal1) (type: double), abs(cdecimal1) (type: decimal(12,4)), sin(cdecimal1) (type: double), asin(cdecimal1) (type: double), cos(cdecimal1) (type: double), acos(cdecimal1) (type: double), atan(cdecimal1) (type: double), degrees(cdecimal1) (type: double), radians(cdecimal1) (type: double), cdecimal1 (type: decimal(12,4)), (- cdecimal1) (type: decimal(12,4)), sign(cdecimal1) (type: int), cos(((- sin(log(cdecimal1))) + 3.14159)) (type: double)
+                      expressions: cdecimal1 (type: decimal(12,4)), round(cdecimal1, 2) (type: decimal(11,2)), round(cdecimal1) (type: decimal(9,0)), floor(cdecimal1) (type: decimal(9,0)), ceil(cdecimal1) (type: decimal(9,0)), round(exp(cdecimal1), 58) (type: double), ln(cdecimal1) (type: double), log10(cdecimal1) (type: double), log2(cdecimal1) (type: double), log2((cdecimal1 - 15601)) (type: double), log(2, cdecimal1) (type: double), power(log2(cdecimal1), 2) (type: double), power(log2(cdecimal1), 2) (type: double), sqrt(cdecimal1) (type: double), abs(cdecimal1) (type: decimal(12,4)), sin(cdecimal1) (type: double), asin(cdecimal1) (type: double), cos(cdecimal1) (type: double), acos(cdecimal1) (type: double), atan(cdecimal1) (type: double), degrees(cdecimal1) (type: double), radians(cdecimal1) (type: double), cdecimal1 (type: decimal(12,4)), (- cdecimal1) (type: decimal(12,4)), sign(cdecimal1) (type: int), cos(((- sin(log(cdecimal1))) + 3.14159D)) (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 8, 9, 10, 11, 6, 12, 13, 14, 16, 17, 7, 18, 20, 21, 22, 23, 24, 25, 26, 27, 28, 2, 29, 5, 30]
-                          selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 2:decimal(12,4), decimalPlaces 2) -> 8:decimal(11,2), FuncRoundDecimalToDecimal(col 2:decimal(12,4)) -> 9:decimal(9,0), FuncFloorDecimalToDecimal(col 2:decimal(12,4)) -> 10:decimal(9,0), FuncCeilDecimalToDecimal(col 2:decimal(12,4)) -> 11:decimal(9,0), RoundWithNumDigitsDoubleToDouble(col 7, decimalPlaces 58)(children: FuncExpDoubleToDouble(col 6:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 6:double) -> 7:double) -> 6:double, FuncLnDoubleToDouble(col 7:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 7:double) -> 12:double, FuncLog10DoubleToDouble(col 7:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 7:double) -> 13:double, FuncLog2DoubleToDouble(col 7:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 7:double) -> 14:double, FuncLog2DoubleToDouble(col 7:double)(children: CastDecimalToDouble(col 15:decimal(13,4))(children: DecimalColSubtractDecimalScalar(col 2:decimal(12,4), val 15601) -> 15:decimal(13,4)) -> 7:double) -> 16:double, FuncLogWithBaseDoubleToDouble(col 7:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 7:double) -> 17:double, FuncPowerDoubleToDouble(col 18:double)(children: FuncLog2DoubleToDouble(col 7:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 7:double) -> 18:double) -> 7:double, FuncPowerDoubleToDouble(col 19:double)(children: FuncLog2DoubleToDouble(col 18:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 18:double) -> 19:double) -> 18:double, FuncSqrtDoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 19:double) -> 20:double, FuncAbsDecimalToDecimal(col 2:decimal(12,4)) -> 21:decimal(12,4), FuncSinDoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 19:double) -> 22:double, FuncASinDoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 19:double) -> 23:double, FuncCosDoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 19:double) -> 24:double, FuncACosDoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 19:double) -> 25:double, FuncATanDoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 19:double) -> 26:double, FuncDegreesDoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 19:double) -> 27:double, FuncRadiansDoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 19:double) -> 28:double, FuncNegateDecimalToDecimal(col 2:decimal(12,4)) -> 29:decimal(12,4), FuncSignDecimalToLong(col 2:decimal(12,4)) -> 5:int, FuncCosDoubleToDouble(col 19:double)(children: DoubleColAddDoubleScalar(col 30:double, val 3.14159)(children: DoubleColUnaryMinus(col 19:double)(children: FuncSinDoubleToDouble(col 30:double)(children: FuncLnDoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 2:decimal(12,4)) -> 19:double) -> 30:double) -> 19:double) -> 30:double) -> 19:double) -> 30:double
+                          projectedOutputColumnNums: [2, 9, 10, 11, 12, 7, 13, 14, 15, 17, 18, 8, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 2, 30, 5, 31]
+                          selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 6:decimal(12,4), decimalPlaces 2)(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 9:decimal(11,2), FuncRoundDecimalToDecimal(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 10:decimal(9,0), FuncFloorDecimalToDecimal(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 11:decimal(9,0), FuncCeilDecimalToDecimal(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 12:decimal(9,0), RoundWithNumDigitsDoubleToDouble(col 8, decimalPlaces 58)(children: FuncExpDoubleToDouble(col 7:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 7:double) -> 8:double) -> 7:double, FuncLnDoubleToDouble(col 8:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 8:double) -> 13:double, FuncLog10DoubleToDouble(col 8:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 8:double) -> 14:double, FuncLog2DoubleToDouble(col 8:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 8:double) -> 15:double, FuncLog2DoubleToDouble(col 8:double)(children: CastDecimalToDouble(col 32:decimal(13,4))(children: ConvertDecimal64ToDecimal(col 16:decimal(13,4)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Scalar(col 2:decimal(12,4)/DECIMAL_64, decimal64Val 156010000, decimalVal 15601) -> 16:decimal(13,4)/DECIMAL_64) -> 32:decimal(13,4)) -> 8:double) -> 17:double, FuncLogWithBaseDoubleToDouble(col 8:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 8:double) -> 18:double, FuncPowerDoubleToDouble(col 19:double)(children: FuncLog2DoubleToDouble(col 8:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 8:double) -> 19:double) -> 8:double, FuncPowerDoubleToDouble(col 20:double)(children: FuncLog2DoubleToDouble(col 19:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 19:double) -> 20:double) -> 19:double, FuncSqrtDoubleToDouble(col 20:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 20:double) -> 21:double, FuncAbsDecimalToDecimal(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 22:decimal(12,4), FuncSinDoubleToDouble(col 20:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 20:double) -> 23:double, FuncASinDoubleToDouble(col 20:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 20:double) -> 24:double, FuncCosDoubleToDouble(col 20:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 20:double) -> 25:double, FuncACosDoubleToDouble(col 20:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 20:double) -> 26:double, FuncATanDoubleToDouble(col 20:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 20:double) -> 27:double, FuncDegreesDoubleToDouble(col 20:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 20:double) -> 28:double, FuncRadiansDoubleToDouble(col 20:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 20:double) -> 29:double, FuncNegateDecimalToDecimal(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 30:decimal(12,4), FuncSignDecimalToLong(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 5:int, FuncCosDoubleToDouble(col 20:double)(children: DoubleColAddDoubleScalar(col 31:double, val 3.14159)(children: DoubleColUnaryMinus(col 20:double)(children: FuncSinDoubleToDouble(col 31:double)(children: FuncLnDoubleToDouble(col 20:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 20:double) -> 31:double) -> 20:double) -> 31:double) -> 20:double) -> 31:double
                       Statistics: Num rows: 2048 Data size: 233500 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -384,8 +398,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -393,9 +407,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 4
                     includeColumns: [0, 2]
-                    dataColumns: cbigint:bigint, cdouble:double, cdecimal1:decimal(12,4), cdecimal2:decimal(14,8)
+                    dataColumns: cbigint:bigint, cdouble:double, cdecimal1:decimal(12,4)/DECIMAL_64, cdecimal2:decimal(14,8)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, double, double, decimal(11,2), decimal(9,0), decimal(9,0), decimal(9,0), double, double, double, decimal(13,4), double, double, double, double, double, decimal(12,4), double, double, double, double, double, double, double, decimal(12,4), double]
+                    scratchColumnTypeNames: [bigint, decimal(12,4), double, double, decimal(11,2), decimal(9,0), decimal(9,0), decimal(9,0), double, double, double, decimal(13,4)/DECIMAL_64, double, double, double, double, double, decimal(12,4), double, double, double, double, double, double, double, decimal(12,4), double, decimal(13,4)]
 
   Stage: Stage-0
     Fetch Operator

@@ -32,6 +32,20 @@ public interface FileMetadataCache {
    */
   MemoryBufferOrBuffers getFileMetadata(Object fileKey);
 
+  @Deprecated
+  MemoryBufferOrBuffers putFileMetadata(
+      Object fileKey, int length, InputStream is) throws IOException;
+
+  @Deprecated
+  MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer);
+
+  /**
+   * Releases the buffer returned from getFileMetadata or putFileMetadata method.
+   * @param buffer The buffer to release.
+   */
+  void decRefBuffer(MemoryBufferOrBuffers buffer);
+
+
   /**
    * Puts the metadata for a given file (e.g. a footer buffer into cache).
    * @param fileKey The file key.
@@ -41,13 +55,7 @@ public interface FileMetadataCache {
    *         The caller must decref this buffer when done.
    */
   MemoryBufferOrBuffers putFileMetadata(
-      Object fileKey, int length, InputStream is) throws IOException;
+      Object fileKey, int length, InputStream is, String tag) throws IOException;
 
-  MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer);
-
-  /**
-   * Releases the buffer returned from getFileMetadata or putFileMetadata method.
-   * @param buffer The buffer to release.
-   */
-  void decRefBuffer(MemoryBufferOrBuffers buffer);
+  MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer, String tag);
 } 

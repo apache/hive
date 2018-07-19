@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -73,9 +74,15 @@ public class ReaderImpl extends org.apache.orc.impl.ReaderImpl
 
   @Override
   public RecordReader rowsOptions(Options options) throws IOException {
-    LOG.info("Reading ORC rows from " + path + " with " + options);
-    return new RecordReaderImpl(this, options);
+    return rowsOptions(options, null);
   }
+
+  @Override
+  public RecordReader rowsOptions(Options options, Configuration conf) throws IOException {
+    LOG.info("Reading ORC rows from " + path + " with " + options);
+    return new RecordReaderImpl(this, options, conf);
+  }
+
 
 
   @Override

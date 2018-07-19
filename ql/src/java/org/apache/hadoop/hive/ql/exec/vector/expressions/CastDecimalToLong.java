@@ -64,6 +64,7 @@ public class CastDecimalToLong extends FuncDecimalToLong {
       outV.noNulls = false;
       return;
     }
+    outV.isNull[i] = false;
     switch (integerPrimitiveCategory) {
     case BYTE:
       outV.vector[i] = decWritable.byteValue();

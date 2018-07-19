@@ -1,24 +1,24 @@
-PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n141(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n141
+POSTHOOK: query: CREATE TABLE T1_n141(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n141
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_n141
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n141
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_n141
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n141
 PREHOOK: query: EXPLAIN
-SELECT a, b, count(*) from T1 group by a, b with cube LIMIT 10
+SELECT a, b, count(*) from T1_n141 group by a, b with cube LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a, b, count(*) from T1 group by a, b with cube LIMIT 10
+SELECT a, b, count(*) from T1_n141 group by a, b with cube LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -29,7 +29,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n141
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string)
@@ -37,21 +37,22 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: a (type: string), b (type: string), 0 (type: int)
+                keys: a (type: string), b (type: string), 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col3 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
@@ -77,13 +78,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube LIMIT 10
+PREHOOK: query: SELECT a, b, count(*) from T1_n141 group by a, b with cube LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube LIMIT 10
+POSTHOOK: query: SELECT a, b, count(*) from T1_n141 group by a, b with cube LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 1	1	1
 1	NULL	1
@@ -96,10 +97,10 @@ NULL	2	3
 NULL	3	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN
-SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
+SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
+SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -110,7 +111,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n141
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string)
@@ -118,21 +119,22 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: a (type: string), b (type: string), 0 (type: int)
+                keys: a (type: string), b (type: string), 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col3 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
@@ -158,13 +160,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
+PREHOOK: query: SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
+POSTHOOK: query: SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 1	1	1
 1	NULL	1
@@ -177,10 +179,10 @@ NULL	2	3
 NULL	3	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN
-SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
+SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
+SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -191,7 +193,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n141
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string)
@@ -199,21 +201,22 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: a (type: string), b (type: string), 0 (type: int)
+                keys: a (type: string), b (type: string), 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col3 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
@@ -239,13 +242,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
+PREHOOK: query: SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
+POSTHOOK: query: SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 1	1	1
 1	NULL	1
@@ -258,10 +261,10 @@ POSTHOOK: Input: default@t1
 5	NULL	1
 8	NULL	1
 PREHOOK: query: EXPLAIN
-SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
+SELECT a FROM T1_n141 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
+SELECT a FROM T1_n141 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -272,26 +275,27 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n141
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string), c (type: string)
               outputColumnNames: a, b, c
               Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: a (type: string), b (type: string), c (type: string), 0 (type: int)
+                keys: a (type: string), b (type: string), c (type: string), 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 3 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: int)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: bigint)
                   sort order: ++++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: int)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: bigint)
                   Statistics: Num rows: 3 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
@@ -317,13 +321,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
+PREHOOK: query: SELECT a FROM T1_n141 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
+POSTHOOK: query: SELECT a FROM T1_n141 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 1
 NULL
@@ -336,10 +340,10 @@ NULL
 NULL
 NULL
 PREHOOK: query: EXPLAIN
-SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
+SELECT a FROM T1_n141 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
+SELECT a FROM T1_n141 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -350,7 +354,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n141
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string)
@@ -367,6 +371,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
@@ -390,13 +395,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
+PREHOOK: query: SELECT a FROM T1_n141 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
+POSTHOOK: query: SELECT a FROM T1_n141 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 1
 2
@@ -404,10 +409,10 @@ POSTHOOK: Input: default@t1
 5
 8
 PREHOOK: query: EXPLAIN
-SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
+SELECT a + b, count(*) FROM T1_n141 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
+SELECT a + b, count(*) FROM T1_n141 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -418,7 +423,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n141
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (UDFToDouble(a) + UDFToDouble(b)) (type: double)
@@ -437,6 +442,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -461,13 +467,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
+PREHOOK: query: SELECT a + b, count(*) FROM T1_n141 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
+POSTHOOK: query: SELECT a + b, count(*) FROM T1_n141 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 2.0	1
 4.0	1

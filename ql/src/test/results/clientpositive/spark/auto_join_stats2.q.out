@@ -33,6 +33,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: smalltable
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -45,12 +46,14 @@ STAGE PLANS:
                         keys:
                           0 
                           1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: src1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -63,6 +66,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -74,6 +78,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -116,6 +121,7 @@ STAGE PLANS:
                                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -180,6 +186,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -192,12 +199,14 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: smalltable2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -211,12 +220,14 @@ STAGE PLANS:
                           0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
                           1 UDFToDouble(_col0) (type: double)
                           2 UDFToDouble(_col0) (type: double)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: smalltable
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -230,6 +241,7 @@ STAGE PLANS:
                           0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
                           1 UDFToDouble(_col0) (type: double)
                           2 UDFToDouble(_col0) (type: double)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -241,6 +253,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -283,6 +296,7 @@ STAGE PLANS:
                                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 

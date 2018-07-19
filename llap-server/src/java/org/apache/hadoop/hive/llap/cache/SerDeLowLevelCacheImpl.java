@@ -43,7 +43,7 @@ import org.apache.orc.OrcProto.ColumnEncoding;
 
 import com.google.common.base.Function;
 
-public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugDump {
+public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final Allocator allocator;
   private final AtomicInteger newEvictions = new AtomicInteger(0);
@@ -55,9 +55,17 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
 
   public static final class LlapSerDeDataBuffer extends LlapAllocatorBuffer {
     public boolean isCached = false;
+    private String tag;
     @Override
     public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
       evictionDispatcher.notifyEvicted(this);
+    }
+    public void setTag(String tag) {
+      this.tag = tag;
+    }
+    @Override
+    public String getTag() {
+      return tag;
     }
   }
 
@@ -491,7 +499,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
   }
 
   public void putFileData(final FileData data, Priority priority,
-      LowLevelCacheCounters qfCounters) {
+      LowLevelCacheCounters qfCounters, String tag) {
     // TODO: buffers are accounted for at allocation time, but ideally we should report the memory
     //       overhead from the java objects to memory manager and remove it when discarding file.
     if (data.stripes == null || data.stripes.isEmpty()) {
@@ -521,7 +529,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
       }
       try {
         for (StripeData si : data.stripes) {
-          lockAllBuffersForPut(si, priority);
+          lockAllBuffersForPut(si, priority, tag);
         }
         if (data == cached) {
           if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
@@ -566,7 +574,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
     }
   }
 
-  private void lockAllBuffersForPut(StripeData si, Priority priority) {
+  private void lockAllBuffersForPut(StripeData si, Priority priority, String tag) {
     for (int i = 0; i < si.data.length; ++i) {
       LlapSerDeDataBuffer[][] colData = si.data[i];
       if (colData == null) continue;
@@ -576,6 +584,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
         for (int k = 0; k < streamData.length; ++k) {
           boolean canLock = lockBuffer(streamData[k], false); // false - not in cache yet
           assert canLock;
+          streamData[k].setTag(tag);
           cachePolicy.cache(streamData[k], priority);
           streamData[k].isCached = true;
         }
@@ -711,24 +720,6 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
   public Allocator getAllocator() {
     return allocator;
   }
-
-  @Override
-  public String debugDumpForOom() {
-    StringBuilder sb = new StringBuilder("File cache state ");
-    for (Map.Entry<Object, FileCache<FileData>> e : cache.entrySet()) {
-      if (!e.getValue().incRef()) continue;
-      try {
-        sb.append("\n  file " + e.getKey());
-        sb.append("\n    [");
-        e.getValue().getCache().toString(sb);
-        sb.append("]");
-      } finally {
-        e.getValue().decRef();
-      }
-    }
-    return sb.toString();
-  }
-
 
   @Override
   public void debugDumpShort(StringBuilder sb) {

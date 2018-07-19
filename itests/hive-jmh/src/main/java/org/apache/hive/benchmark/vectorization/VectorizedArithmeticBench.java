@@ -19,6 +19,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColAddDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumnChecked;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.runner.Runner;
@@ -101,6 +103,26 @@ public class VectorizedArithmeticBench {
       rowBatch = buildRowBatch(new DoubleColumnVector(), 2, getLongColumnVector(),
           getRepeatingLongColumnVector());
       expression = new LongColDivideLongColumn(0, 1, 2);
+    }
+  }
+
+  public static class LongColAddLongColumnCheckedBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(),
+          getLongColumnVector());
+      expression = new LongColAddLongColumnChecked(0, 1, 2);
+      expression.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    }
+  }
+
+  public static class LongColAddLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(),
+          getLongColumnVector());
+      expression = new LongColAddLongColumn(0, 1, 2);
+      expression.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("int"));
     }
   }
 

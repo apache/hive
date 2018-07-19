@@ -82,6 +82,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
     // Instantiate BloomFilterCheck based on input column type
     switch (colVectorType) {
     case LONG:
+    case DECIMAL_64:
       bfCheck = new LongBloomFilterCheck();
       break;
     case DOUBLE:
@@ -122,7 +123,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }

@@ -70,32 +70,32 @@ POSTHOOK: query: load data local inpath '../../data/files/TJOIN4' into table TJO
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@tjoin4_txt
-PREHOOK: query: create table TJOIN1 stored as orc AS SELECT * FROM TJOIN1_txt
+PREHOOK: query: create table TJOIN1_n0 stored as orc AS SELECT * FROM TJOIN1_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tjoin1_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN1
-POSTHOOK: query: create table TJOIN1 stored as orc AS SELECT * FROM TJOIN1_txt
+PREHOOK: Output: default@TJOIN1_n0
+POSTHOOK: query: create table TJOIN1_n0 stored as orc AS SELECT * FROM TJOIN1_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tjoin1_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN1
-POSTHOOK: Lineage: tjoin1.c1 SIMPLE [(tjoin1_txt)tjoin1_txt.FieldSchema(name:c1, type:int, comment:null), ]
-POSTHOOK: Lineage: tjoin1.c2 SIMPLE [(tjoin1_txt)tjoin1_txt.FieldSchema(name:c2, type:int, comment:null), ]
-POSTHOOK: Lineage: tjoin1.rnum SIMPLE [(tjoin1_txt)tjoin1_txt.FieldSchema(name:rnum, type:int, comment:null), ]
-PREHOOK: query: create table TJOIN2 stored as orc AS SELECT * FROM TJOIN2_txt
+POSTHOOK: Output: default@TJOIN1_n0
+POSTHOOK: Lineage: tjoin1_n0.c1 SIMPLE [(tjoin1_txt)tjoin1_txt.FieldSchema(name:c1, type:int, comment:null), ]
+POSTHOOK: Lineage: tjoin1_n0.c2 SIMPLE [(tjoin1_txt)tjoin1_txt.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: tjoin1_n0.rnum SIMPLE [(tjoin1_txt)tjoin1_txt.FieldSchema(name:rnum, type:int, comment:null), ]
+PREHOOK: query: create table TJOIN2_n0 stored as orc AS SELECT * FROM TJOIN2_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tjoin2_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TJOIN2
-POSTHOOK: query: create table TJOIN2 stored as orc AS SELECT * FROM TJOIN2_txt
+PREHOOK: Output: default@TJOIN2_n0
+POSTHOOK: query: create table TJOIN2_n0 stored as orc AS SELECT * FROM TJOIN2_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tjoin2_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TJOIN2
-POSTHOOK: Lineage: tjoin2.c1 SIMPLE [(tjoin2_txt)tjoin2_txt.FieldSchema(name:c1, type:int, comment:null), ]
-POSTHOOK: Lineage: tjoin2.c2 SIMPLE [(tjoin2_txt)tjoin2_txt.FieldSchema(name:c2, type:char(2), comment:null), ]
-POSTHOOK: Lineage: tjoin2.rnum SIMPLE [(tjoin2_txt)tjoin2_txt.FieldSchema(name:rnum, type:int, comment:null), ]
+POSTHOOK: Output: default@TJOIN2_n0
+POSTHOOK: Lineage: tjoin2_n0.c1 SIMPLE [(tjoin2_txt)tjoin2_txt.FieldSchema(name:c1, type:int, comment:null), ]
+POSTHOOK: Lineage: tjoin2_n0.c2 SIMPLE [(tjoin2_txt)tjoin2_txt.FieldSchema(name:c2, type:char(2), comment:null), ]
+POSTHOOK: Lineage: tjoin2_n0.rnum SIMPLE [(tjoin2_txt)tjoin2_txt.FieldSchema(name:rnum, type:int, comment:null), ]
 PREHOOK: query: create table TJOIN3 stored as orc AS SELECT * FROM TJOIN3_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tjoin3_txt
@@ -124,25 +124,25 @@ POSTHOOK: Lineage: tjoin4.c2 SIMPLE [(tjoin4_txt)tjoin4_txt.FieldSchema(name:c2,
 POSTHOOK: Lineage: tjoin4.rnum SIMPLE [(tjoin4_txt)tjoin4_txt.FieldSchema(name:rnum, type:int, comment:null), ]
 PREHOOK: query: explain vectorization detail formatted
 select tj1rnum, tj2rnum, tjoin3.rnum as rnumt3 from
-   (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
+   (select tjoin1_n0.rnum tj1rnum, tjoin2_n0.rnum tj2rnum, tjoin2_n0.c1 tj2c1 from tjoin1_n0 left outer join tjoin2_n0 on tjoin1_n0.c1 = tjoin2_n0.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail formatted
 select tj1rnum, tj2rnum, tjoin3.rnum as rnumt3 from
-   (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
+   (select tjoin1_n0.rnum tj1rnum, tjoin2_n0.rnum tj2rnum, tjoin2_n0.c1 tj2c1 from tjoin1_n0 left outer join tjoin2_n0 on tjoin1_n0.c1 = tjoin2_n0.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
 PREHOOK: query: select tj1rnum, tj2rnum, tjoin3.rnum as rnumt3 from
-   (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
+   (select tjoin1_n0.rnum tj1rnum, tjoin2_n0.rnum tj2rnum, tjoin2_n0.c1 tj2c1 from tjoin1_n0 left outer join tjoin2_n0 on tjoin1_n0.c1 = tjoin2_n0.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tjoin1
-PREHOOK: Input: default@tjoin2
+PREHOOK: Input: default@tjoin1_n0
+PREHOOK: Input: default@tjoin2_n0
 PREHOOK: Input: default@tjoin3
 #### A masked pattern was here ####
 POSTHOOK: query: select tj1rnum, tj2rnum, tjoin3.rnum as rnumt3 from
-   (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
+   (select tjoin1_n0.rnum tj1rnum, tjoin2_n0.rnum tj2rnum, tjoin2_n0.c1 tj2c1 from tjoin1_n0 left outer join tjoin2_n0 on tjoin1_n0.c1 = tjoin2_n0.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tjoin1
-POSTHOOK: Input: default@tjoin2
+POSTHOOK: Input: default@tjoin1_n0
+POSTHOOK: Input: default@tjoin2_n0
 POSTHOOK: Input: default@tjoin3
 #### A masked pattern was here ####
 0	0	0
@@ -151,25 +151,25 @@ POSTHOOK: Input: default@tjoin3
 2	NULL	NULL
 PREHOOK: query: explain vectorization detail formatted
 select tj1rnum, tj2rnum as rnumt3 from
-   (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
+   (select tjoin1_n0.rnum tj1rnum, tjoin2_n0.rnum tj2rnum, tjoin2_n0.c1 tj2c1 from tjoin1_n0 left outer join tjoin2_n0 on tjoin1_n0.c1 = tjoin2_n0.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail formatted
 select tj1rnum, tj2rnum as rnumt3 from
-   (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
+   (select tjoin1_n0.rnum tj1rnum, tjoin2_n0.rnum tj2rnum, tjoin2_n0.c1 tj2c1 from tjoin1_n0 left outer join tjoin2_n0 on tjoin1_n0.c1 = tjoin2_n0.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
 PREHOOK: query: select tj1rnum, tj2rnum as rnumt3 from
-   (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
+   (select tjoin1_n0.rnum tj1rnum, tjoin2_n0.rnum tj2rnum, tjoin2_n0.c1 tj2c1 from tjoin1_n0 left outer join tjoin2_n0 on tjoin1_n0.c1 = tjoin2_n0.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tjoin1
-PREHOOK: Input: default@tjoin2
+PREHOOK: Input: default@tjoin1_n0
+PREHOOK: Input: default@tjoin2_n0
 PREHOOK: Input: default@tjoin3
 #### A masked pattern was here ####
 POSTHOOK: query: select tj1rnum, tj2rnum as rnumt3 from
-   (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
+   (select tjoin1_n0.rnum tj1rnum, tjoin2_n0.rnum tj2rnum, tjoin2_n0.c1 tj2c1 from tjoin1_n0 left outer join tjoin2_n0 on tjoin1_n0.c1 = tjoin2_n0.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tjoin1
-POSTHOOK: Input: default@tjoin2
+POSTHOOK: Input: default@tjoin1_n0
+POSTHOOK: Input: default@tjoin2_n0
 POSTHOOK: Input: default@tjoin3
 #### A masked pattern was here ####
 0	0

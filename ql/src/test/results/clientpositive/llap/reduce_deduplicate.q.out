@@ -47,7 +47,7 @@ STAGE PLANS:
                       tag: -1
                       value expressions: _col1 (type: string)
                       auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [src]
@@ -60,6 +60,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -82,6 +83,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -124,6 +126,7 @@ STAGE PLANS:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         bucket_count 2
                         bucket_field_name key
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
@@ -195,6 +198,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -320,6 +324,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: complex_tbl_2
+                  filterExpr: (ds = '2010-03-29') (type: boolean)
                   Statistics: Num rows: 1 Data size: 462 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -385,6 +390,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns aid,bid,t,ctime,etime,l,et
                           columns.comments 
@@ -474,6 +480,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns aid,bid,t,ctime,etime,l,et
                 columns.comments 

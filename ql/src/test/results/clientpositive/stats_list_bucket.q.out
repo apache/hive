@@ -131,6 +131,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	4812                

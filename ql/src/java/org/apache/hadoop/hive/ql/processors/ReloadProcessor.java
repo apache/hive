@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -32,7 +31,7 @@ public class ReloadProcessor implements CommandProcessor{
   private static final Logger LOG = LoggerFactory.getLogger(ReloadProcessor.class);
 
   @Override
-  public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     try {
       ss.loadReloadableAuxJars();
@@ -41,5 +40,9 @@ public class ReloadProcessor implements CommandProcessor{
       return CommandProcessorResponse.create(e);
     }
     return new CommandProcessorResponse(0);
+  }
+
+  @Override
+  public void close() throws Exception {
   }
 }

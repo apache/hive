@@ -37,15 +37,19 @@ public interface SparkJobStatus {
 
   int[] getStageIds() throws HiveException;
 
-  Map<String, SparkStageProgress> getSparkStageProgress() throws HiveException;
+  Map<SparkStage, SparkStageProgress> getSparkStageProgress() throws HiveException;
 
   SparkCounters getCounter();
 
   SparkStatistics getSparkStatistics();
 
+  String getWebUIURL();
+
   void cleanup();
 
-  Throwable getError();
+  Throwable getMonitorError();
 
-  void setError(Throwable e);
+  void setMonitorError(Throwable e);
+
+  Throwable getSparkJobException();
 }

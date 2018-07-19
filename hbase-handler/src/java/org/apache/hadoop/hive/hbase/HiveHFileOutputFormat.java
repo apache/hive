@@ -42,6 +42,7 @@ import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat2;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -64,7 +65,8 @@ public class HiveHFileOutputFormat extends
     HiveOutputFormat<ImmutableBytesWritable, Cell> {
 
   public static final String HFILE_FAMILY_PATH = "hfile.family.path";
-
+  public static final String OUTPUT_TABLE_NAME_CONF_KEY =
+                      "hbase.mapreduce.hfileoutputformat.table.name";
   static final Logger LOG = LoggerFactory.getLogger(HiveHFileOutputFormat.class.getName());
 
   private
@@ -94,6 +96,16 @@ public class HiveHFileOutputFormat extends
     boolean isCompressed,
     Properties tableProperties,
     final Progressable progressable) throws IOException {
+
+    String hbaseTableName = jc.get(HBaseSerDe.HBASE_TABLE_NAME);
+    if (hbaseTableName == null) {
+      hbaseTableName = tableProperties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
+      hbaseTableName = hbaseTableName.toLowerCase();
+      if (hbaseTableName.startsWith(HBaseStorageHandler.DEFAULT_PREFIX)) {
+        hbaseTableName = hbaseTableName.substring(HBaseStorageHandler.DEFAULT_PREFIX.length());
+      }
+    }
+    jc.set(OUTPUT_TABLE_NAME_CONF_KEY, hbaseTableName);
 
     // Read configuration for the target path, first from jobconf, then from table properties
     String hfilePath = getFamilyPath(jc, tableProperties);
@@ -176,10 +188,6 @@ public class HiveHFileOutputFormat extends
                 columnFamilyPath,
                 regionFile.getPath().getName()));
           }
-          // Hive actually wants a file as task output (not a directory), so
-          // replace the empty directory with an empty file to keep it happy.
-          fs.delete(taskAttemptOutputdir, true);
-          fs.createNewFile(taskAttemptOutputdir);
         } catch (InterruptedException ex) {
           throw new IOException(ex);
         }

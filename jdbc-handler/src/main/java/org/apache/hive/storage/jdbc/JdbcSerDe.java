@@ -63,21 +63,23 @@ public class JdbcSerDe extends AbstractSerDe {
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
     try {
-      LOGGER.debug("Initializing the SerDe");
+      LOGGER.trace("Initializing the SerDe");
 
       if (tbl.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
+
         Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(tbl);
 
         DatabaseAccessor dbAccessor = DatabaseAccessorFactory.getAccessor(tableConfig);
         columnNames = dbAccessor.getColumnNames(tableConfig);
         numColumns = columnNames.size();
+        List<String> hiveColumnNames;
 
         String[] hiveColumnNameArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMNS), ",");
         if (numColumns != hiveColumnNameArray.length) {
           throw new SerDeException("Expected " + numColumns + " columns. Table definition has "
               + hiveColumnNameArray.length + " columns");
         }
-        List<String> hiveColumnNames = Arrays.asList(hiveColumnNameArray);
+        hiveColumnNames = Arrays.asList(hiveColumnNameArray);
 
         hiveColumnTypeArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES), ":");
         if (hiveColumnTypeArray.length == 0) {
@@ -115,7 +117,7 @@ public class JdbcSerDe extends AbstractSerDe {
 
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
-    LOGGER.debug("Deserializing from SerDe");
+    LOGGER.trace("Deserializing from SerDe");
     if (!(blob instanceof MapWritable)) {
       throw new SerDeException("Expected MapWritable. Got " + blob.getClass().getName());
     }

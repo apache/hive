@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP TABLE users;
 DROP TABLE states;
 DROP TABLE countries;
@@ -5,23 +6,26 @@ DROP TABLE users_level;
 
 -- From HIVE-1257
 
-CREATE TABLE users(key string, state string, country string, country_id int)
+CREATE EXTERNAL TABLE users(key string, state string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES (
 "accumulo.columns.mapping" = ":rowID,info:state,info:country,info:country_id"
-);
+)
+TBLPROPERTIES ("external.table.purge" = "true");
 
-CREATE TABLE states(key string, name string)
+CREATE EXTERNAL TABLE states(key string, name string)
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES (
 "accumulo.columns.mapping" = ":rowID,state:name"
-);
+)
+TBLPROPERTIES ("external.table.purge" = "true");
 
-CREATE TABLE countries(key string, name string, country string, country_id int)
+CREATE EXTERNAL TABLE countries(key string, name string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES (
 "accumulo.columns.mapping" = ":rowID,info:name,info:country,info:country_id"
-);
+)
+TBLPROPERTIES ("external.table.purge" = "true");
 
 INSERT OVERWRITE TABLE users SELECT 'user1', 'IA', 'USA', 0
 FROM src WHERE key=100;
@@ -64,13 +68,15 @@ DROP TABLE users;
 DROP TABLE states;
 DROP TABLE countries;
 
-CREATE TABLE users(key int, userid int, username string, created int) 
+CREATE EXTERNAL TABLE users(key int, userid int, username string, created int) 
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
-WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowID,f:userid,f:nickname,f:created");
+WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowID,f:userid,f:nickname,f:created")
+TBLPROPERTIES ("external.table.purge" = "true");
 
-CREATE TABLE users_level(key int, userid int, level int)
+CREATE EXTERNAL TABLE users_level(key int, userid int, level int)
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
-WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowID,f:userid,f:level");
+WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowID,f:userid,f:level")
+TBLPROPERTIES ("external.table.purge" = "true");
 
 -- HIVE-1903:  the problem fixed here showed up even without any data,
 -- so no need to load any to test it

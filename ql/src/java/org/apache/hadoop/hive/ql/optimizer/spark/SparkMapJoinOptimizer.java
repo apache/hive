@@ -121,7 +121,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     }
 
     // we can set the traits for this join operator
-    OpTraits opTraits = new OpTraits(bucketColNames, numBuckets, null, joinOp.getOpTraits().getNumReduceSinks());
+    OpTraits opTraits = new OpTraits(bucketColNames, numBuckets, null,
+            joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion());
     mapJoinOp.setOpTraits(opTraits);
     mapJoinOp.setStatistics(joinOp.getStatistics());
     setNumberOfBucketsOnChildren(mapJoinOp);
@@ -215,7 +216,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
             LOG.debug("Found a big table branch with parent operator {} and position {}", parentOp, pos);
             bigTablePosition = pos;
             bigTableFound = true;
-            bigInputStat = new Statistics(0, Long.MAX_VALUE);
+            bigInputStat = new Statistics(0, Long.MAX_VALUE, 0);
           } else {
             // Either we've found multiple big table branches, or the current branch cannot
             // be a big table branch. Disable mapjoin for these cases.
@@ -478,7 +479,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
             OperatorUtils.removeBranch(partitionPruningSinkOp);
             // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
             LOG.info("Disabling dynamic pruning for: "
-                    + (partitionPruningSinkOp.getConf()).getTableScan().getName()
+                    + (partitionPruningSinkOp.getConf()).getTableScanNames()
                     + ". Need to be removed together with reduce sink");
         }
       }

@@ -1,89 +1,80 @@
-PREHOOK: query: DROP TABLE IF EXISTS repairtable
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n5
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS repairtable
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n5
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+PREHOOK: query: CREATE TABLE repairtable_n5(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@repairtable
-POSTHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+PREHOOK: Output: default@repairtable_n5
+POSTHOOK: query: CREATE TABLE repairtable_n5(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@repairtable
-PREHOOK: query: MSCK TABLE repairtable
+POSTHOOK: Output: default@repairtable_n5
+PREHOOK: query: MSCK TABLE repairtable_n5
 PREHOOK: type: MSCK
-PREHOOK: Output: default@repairtable
-POSTHOOK: query: MSCK TABLE repairtable
+PREHOOK: Output: default@repairtable_n5
+POSTHOOK: query: MSCK TABLE repairtable_n5
 POSTHOOK: type: MSCK
-POSTHOOK: Output: default@repairtable
-PREHOOK: query: show partitions repairtable
+POSTHOOK: Output: default@repairtable_n5
+PREHOOK: query: show partitions repairtable_n5
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@repairtable
-POSTHOOK: query: show partitions repairtable
+PREHOOK: Input: default@repairtable_n5
+POSTHOOK: query: show partitions repairtable_n5
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@repairtable
-PREHOOK: query: MSCK TABLE default.repairtable
+POSTHOOK: Input: default@repairtable_n5
+PREHOOK: query: MSCK TABLE default.repairtable_n5
 PREHOOK: type: MSCK
-PREHOOK: Output: default@repairtable
-POSTHOOK: query: MSCK TABLE default.repairtable
+PREHOOK: Output: default@repairtable_n5
+POSTHOOK: query: MSCK TABLE default.repairtable_n5
 POSTHOOK: type: MSCK
-POSTHOOK: Output: default@repairtable
-Partitions not in metastore:	repairtable:p1=c/p2=a
-PREHOOK: query: show partitions default.repairtable
+POSTHOOK: Output: default@repairtable_n5
+PREHOOK: query: show partitions default.repairtable_n5
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@repairtable
-POSTHOOK: query: show partitions default.repairtable
+PREHOOK: Input: default@repairtable_n5
+POSTHOOK: query: show partitions default.repairtable_n5
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@repairtable
-PREHOOK: query: MSCK REPAIR TABLE default.repairtable
+POSTHOOK: Input: default@repairtable_n5
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n5
 PREHOOK: type: MSCK
-PREHOOK: Output: default@repairtable
-POSTHOOK: query: MSCK REPAIR TABLE default.repairtable
+PREHOOK: Output: default@repairtable_n5
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n5
 POSTHOOK: type: MSCK
-POSTHOOK: Output: default@repairtable
-Partitions not in metastore:	repairtable:p1=c/p2=a
-#### A masked pattern was here ####
-PREHOOK: query: show partitions default.repairtable
+POSTHOOK: Output: default@repairtable_n5
+PREHOOK: query: show partitions default.repairtable_n5
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@repairtable
-POSTHOOK: query: show partitions default.repairtable
+PREHOOK: Input: default@repairtable_n5
+POSTHOOK: query: show partitions default.repairtable_n5
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@repairtable
-p1=c/p2=a
-PREHOOK: query: MSCK TABLE repairtable
+POSTHOOK: Input: default@repairtable_n5
+PREHOOK: query: MSCK TABLE repairtable_n5
 PREHOOK: type: MSCK
-PREHOOK: Output: default@repairtable
-POSTHOOK: query: MSCK TABLE repairtable
+PREHOOK: Output: default@repairtable_n5
+POSTHOOK: query: MSCK TABLE repairtable_n5
 POSTHOOK: type: MSCK
-POSTHOOK: Output: default@repairtable
-PREHOOK: query: show partitions repairtable
+POSTHOOK: Output: default@repairtable_n5
+PREHOOK: query: show partitions repairtable_n5
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@repairtable
-POSTHOOK: query: show partitions repairtable
+PREHOOK: Input: default@repairtable_n5
+POSTHOOK: query: show partitions repairtable_n5
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@repairtable
-p1=c/p2=a
-PREHOOK: query: MSCK REPAIR TABLE default.repairtable
+POSTHOOK: Input: default@repairtable_n5
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n5
 PREHOOK: type: MSCK
-PREHOOK: Output: default@repairtable
-POSTHOOK: query: MSCK REPAIR TABLE default.repairtable
+PREHOOK: Output: default@repairtable_n5
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n5
 POSTHOOK: type: MSCK
-POSTHOOK: Output: default@repairtable
-Partitions not in metastore:	repairtable:p1=e/p2=f
-#### A masked pattern was here ####
-PREHOOK: query: show partitions default.repairtable
+POSTHOOK: Output: default@repairtable_n5
+PREHOOK: query: show partitions default.repairtable_n5
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@repairtable
-POSTHOOK: query: show partitions default.repairtable
+PREHOOK: Input: default@repairtable_n5
+POSTHOOK: query: show partitions default.repairtable_n5
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@repairtable
-p1=c/p2=a
-p1=e/p2=f
-PREHOOK: query: DROP TABLE default.repairtable
+POSTHOOK: Input: default@repairtable_n5
+PREHOOK: query: DROP TABLE default.repairtable_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@repairtable
-PREHOOK: Output: default@repairtable
-POSTHOOK: query: DROP TABLE default.repairtable
+PREHOOK: Input: default@repairtable_n5
+PREHOOK: Output: default@repairtable_n5
+POSTHOOK: query: DROP TABLE default.repairtable_n5
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@repairtable
-POSTHOOK: Output: default@repairtable
+POSTHOOK: Input: default@repairtable_n5
+POSTHOOK: Output: default@repairtable_n5

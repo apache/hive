@@ -39,9 +39,10 @@ STAGE PLANS:
         $hdt$_0:$hdt$_0:src 
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 200.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 200.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 200.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -54,9 +55,10 @@ STAGE PLANS:
         $hdt$_0:$hdt$_1:src 
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -72,9 +74,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -109,6 +112,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:

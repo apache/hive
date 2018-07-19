@@ -110,8 +110,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
           ctx.getMRTmpPath(), currTask.getId()));
         // create a task for this local work; right now, this local work is shared
         // by the original MapredTask and this new generated MapredLocalTask.
-        MapredLocalTask localTask = (MapredLocalTask) TaskFactory.get(localwork, physicalContext
-            .getParseContext().getConf());
+        MapredLocalTask localTask = (MapredLocalTask) TaskFactory.get(localwork);
 
         // set the backup task from curr task
         localTask.setBackupTask(currTask.getBackupTask());

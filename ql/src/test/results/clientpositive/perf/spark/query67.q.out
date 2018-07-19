@@ -98,6 +98,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: s_store_sk is not null (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_store_sk is not null (type: boolean)
@@ -110,6 +111,7 @@ STAGE PLANS:
                         keys:
                           0 _col2 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -127,6 +129,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_sold_date_sk is not null and ss_store_sk is not null and ss_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -141,10 +144,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2))
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223) (type: boolean)
@@ -159,10 +164,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: int)
+            Execution mode: vectorized
         Map 9 
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -177,6 +184,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Local Work:
               Map Reduce Local Work
@@ -221,21 +229,22 @@ STAGE PLANS:
                   Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: sum(_col8)
-                    keys: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string), 0 (type: int)
+                    keys: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string), 0L (type: bigint)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                     Statistics: Num rows: 6899852151 Data size: 608706960084 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string), _col8 (type: int)
+                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string), _col8 (type: bigint)
                       sort order: +++++++++
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string), _col8 (type: int)
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string), _col8 (type: bigint)
                       Statistics: Num rows: 6899852151 Data size: 608706960084 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col9 (type: decimal(28,2))
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
-                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: string), KEY._col4 (type: int), KEY._col5 (type: int), KEY._col6 (type: int), KEY._col7 (type: string), KEY._col8 (type: int)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: string), KEY._col4 (type: int), KEY._col5 (type: int), KEY._col6 (type: int), KEY._col7 (type: string), KEY._col8 (type: bigint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col9
                 Statistics: Num rows: 3449926075 Data size: 304353479997 Basic stats: COMPLETE Column stats: NONE
@@ -252,6 +261,7 @@ STAGE PLANS:
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: string)
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: string), KEY.reducesinkkey1 (type: decimal(28,2))
@@ -291,6 +301,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1149975358 Data size: 101451159969 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
         Reducer 6 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string), KEY.reducesinkkey4 (type: int), KEY.reducesinkkey5 (type: int), KEY.reducesinkkey6 (type: int), KEY.reducesinkkey7 (type: string), KEY.reducesinkkey8 (type: decimal(28,2)), KEY.reducesinkkey9 (type: int)

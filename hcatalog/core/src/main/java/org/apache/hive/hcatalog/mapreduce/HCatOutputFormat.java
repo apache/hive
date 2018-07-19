@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.io.WritableComparable;
@@ -92,14 +91,6 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
       Table table = HCatUtil.getTable(client, outputJobInfo.getDatabaseName(),
         outputJobInfo.getTableName());
 
-      List<String> indexList = client.listIndexNames(outputJobInfo.getDatabaseName(), outputJobInfo.getTableName(), Short.MAX_VALUE);
-
-      for (String indexName : indexList) {
-        Index index = client.getIndex(outputJobInfo.getDatabaseName(), outputJobInfo.getTableName(), indexName);
-        if (!index.isDeferredRebuild()) {
-          throw new HCatException(ErrorType.ERROR_NOT_SUPPORTED, "Store into a table with an automatic index from Pig/Mapreduce is not supported");
-        }
-      }
       StorageDescriptor sd = table.getTTable().getSd();
 
       if (sd.isCompressed()) {

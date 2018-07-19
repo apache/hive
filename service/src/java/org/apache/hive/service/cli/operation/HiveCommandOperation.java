@@ -34,8 +34,6 @@ import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.session.OperationLog;
-import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -148,7 +146,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     setState(OperationState.CLOSED);
     tearDownSessionIO();
     cleanTmpFile();
-    cleanupOperationLog();
+    cleanupOperationLog(0);
   }
 
   /* (non-Javadoc)
@@ -171,8 +169,16 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     List<String> rows = readResults((int) maxRows);
     RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion(), false);
 
-    for (String row : rows) {
-      rowSet.addRow(new String[] { row });
+    // cannot do delimited split for some commands like "dfs -cat" that prints the contents of file which may have
+    // different delimiter. so we will split only when the resultSchema has more than 1 column
+    if (resultSchema != null && resultSchema.getSize() > 1) {
+      for (String row : rows) {
+        rowSet.addRow(row.split("\\t"));
+      }
+    } else {
+      for (String row : rows) {
+        rowSet.addRow(new String[]{row});
+      }
     }
     return rowSet;
   }

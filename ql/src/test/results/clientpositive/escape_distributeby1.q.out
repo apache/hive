@@ -24,6 +24,7 @@ STAGE PLANS:
                 Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: string), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -69,6 +70,7 @@ STAGE PLANS:
                 Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: string), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)

@@ -168,8 +168,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     // deep copy a new mapred work
     MapredWork newWork = SerializationUtilities.clonePlan(origWork);
     // create a mapred task for this work
-    MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork, physicalContext
-        .getParseContext().getConf());
+    MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork);
     // generate the map join operator; already checked the map join
     MapJoinOperator newMapJoinOp =
         getMapJoinOperator(newTask, newWork, smbJoinOp, bigTablePosition);
@@ -237,9 +236,6 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     }
 
     currTask.setTaskTag(Task.CONVERTED_SORTMERGEJOIN);
-
-    // get parseCtx for this Join Operator
-    ParseContext parseCtx = physicalContext.getParseContext();
 
     // Convert the work containing to sort-merge join into a work, as if it had a regular join.
     // Note that the operator tree is not changed - is still contains the SMB join, but the
@@ -334,7 +330,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
 
     // create conditional task and insert conditional task into task tree
     ConditionalWork cndWork = new ConditionalWork(listWorks);
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork);
     cndTsk.setListTasks(listTasks);
 
     // set resolver and resolver context

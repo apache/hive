@@ -54,12 +54,6 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
     this.dbProperties = null;
   }
 
-  public CreateDatabaseDesc(String databaseName, boolean ifNotExists) {
-    this(databaseName, null, null, ifNotExists);
-  }
-
-
-
   @Explain(displayName="if not exists", displayOnlyOnTrue = true)
   public boolean getIfNotExists() {
     return ifNotExists;

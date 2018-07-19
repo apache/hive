@@ -25,23 +25,23 @@ Syntax not supported that's worth noticing:
 
 Function class:org.apache.hadoop.hive.ql.udf.UDFJson
 Function type:BUILTIN
-PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n66(c1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n66
+POSTHOOK: query: CREATE TABLE dest1_n66(c1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE src.key = 86
+POSTHOOK: Output: default@dest1_n66
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n66 SELECT '  abc  ' WHERE src.key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE src.key = 86
+PREHOOK: Output: default@dest1_n66
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n66 SELECT '  abc  ' WHERE src.key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Output: default@dest1_n66
+POSTHOOK: Lineage: dest1_n66.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
@@ -152,40 +152,40 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
 1234
-PREHOOK: query: CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
+PREHOOK: query: CREATE TABLE dest2_n14(c1 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
+PREHOOK: Output: default@dest2_n14
+POSTHOOK: query: CREATE TABLE dest2_n14(c1 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
-PREHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
+POSTHOOK: Output: default@dest2_n14
+PREHOOK: query: INSERT OVERWRITE TABLE dest2_n14 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest2
-POSTHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
+PREHOOK: Output: default@dest2_n14
+POSTHOOK: query: INSERT OVERWRITE TABLE dest2_n14 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest2.c1 SIMPLE []
-PREHOOK: query: SELECT * FROM dest2
+POSTHOOK: Output: default@dest2_n14
+POSTHOOK: Lineage: dest2_n14.c1 SIMPLE []
+PREHOOK: query: SELECT * FROM dest2_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n14
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest2
+POSTHOOK: query: SELECT * FROM dest2_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n14
 #### A masked pattern was here ####
 {"a":"b
 c"}
-PREHOOK: query: SELECT get_json_object(c1, '$.a') FROM dest2
+PREHOOK: query: SELECT get_json_object(c1, '$.a') FROM dest2_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n14
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT get_json_object(c1, '$.a') FROM dest2
+POSTHOOK: query: SELECT get_json_object(c1, '$.a') FROM dest2_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n14
 #### A masked pattern was here ####
 b
 c

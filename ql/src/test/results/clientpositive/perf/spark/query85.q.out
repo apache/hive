@@ -179,6 +179,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: reason
+                  filterExpr: r_reason_sk is not null (type: boolean)
                   Statistics: Num rows: 72 Data size: 14400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: r_reason_sk is not null (type: boolean)
@@ -191,6 +192,7 @@ STAGE PLANS:
                         keys:
                           0 _col4 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -202,6 +204,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_page
+                  filterExpr: wp_web_page_sk is not null (type: boolean)
                   Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: wp_web_page_sk is not null (type: boolean)
@@ -214,6 +217,7 @@ STAGE PLANS:
                         keys:
                           0 _col10 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -233,6 +237,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_returns
+                  filterExpr: (wr_item_sk is not null and wr_order_number is not null and wr_refunded_cdemo_sk is not null and wr_returning_cdemo_sk is not null and wr_refunded_addr_sk is not null and wr_reason_sk is not null) (type: boolean)
                   Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (wr_item_sk is not null and wr_order_number is not null and wr_reason_sk is not null and wr_refunded_addr_sk is not null and wr_refunded_cdemo_sk is not null and wr_returning_cdemo_sk is not null) (type: boolean)
@@ -247,10 +252,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col5 (type: int)
                         Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col6 (type: decimal(7,2)), _col7 (type: decimal(7,2))
+            Execution mode: vectorized
         Map 10 
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: ((ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and (ca_country = 'United States') and ca_address_sk is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ca_country = 'United States') and (ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and ca_address_sk is not null) (type: boolean)
@@ -265,10 +272,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10000000 Data size: 10148798821 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 12 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
@@ -282,10 +291,12 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 14 
             Map Operator Tree:
                 TableScan
                   alias: cd1
+                  filterExpr: (((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_marital_status is not null and cd_education_status is not null) (type: boolean)
                   Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_education_status is not null and cd_marital_status is not null) (type: boolean)
@@ -300,10 +311,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized
         Map 15 
             Map Operator Tree:
                 TableScan
                   alias: cd2
+                  filterExpr: (((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_marital_status is not null and cd_education_status is not null) (type: boolean)
                   Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_education_status is not null and cd_marital_status is not null) (type: boolean)
@@ -317,10 +330,12 @@ STAGE PLANS:
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                         Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 9 
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: ((ws_sales_price BETWEEN 100 AND 150 or ws_sales_price BETWEEN 50 AND 100 or ws_sales_price BETWEEN 150 AND 200) and (ws_net_profit BETWEEN 100 AND 200 or ws_net_profit BETWEEN 150 AND 300 or ws_net_profit BETWEEN 50 AND 250) and ws_item_sk is not null and ws_order_number is not null and ws_web_page_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ws_net_profit BETWEEN 100 AND 200 or ws_net_profit BETWEEN 150 AND 300 or ws_net_profit BETWEEN 50 AND 250) and (ws_sales_price BETWEEN 100 AND 150 or ws_sales_price BETWEEN 50 AND 100 or ws_sales_price BETWEEN 150 AND 200) and ws_item_sk is not null and ws_order_number is not null and ws_sold_date_sk is not null and ws_web_page_sk is not null) (type: boolean)
@@ -335,6 +350,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int), _col3 (type: int)
                         Statistics: Num rows: 16000296 Data size: 2175577518 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col2 (type: int), _col4 (type: int), _col5 (type: decimal(7,2)), _col6 (type: decimal(7,2))
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -440,38 +456,40 @@ STAGE PLANS:
                 outputColumnNames: _col6, _col7, _col12, _col22
                 Statistics: Num rows: 2047980 Data size: 788904791 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: avg(_col12), avg(_col7), avg(_col6)
+                  aggregations: sum(_col12), count(_col12), sum(_col7), count(_col7), sum(_col6), count(_col6)
                   keys: _col22 (type: string)
                   mode: hash
-                  outputColumnNames: _col0, _col1, _col2, _col3
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                   Statistics: Num rows: 2047980 Data size: 788904791 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 2047980 Data size: 788904791 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col3 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>)
+                    value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(17,2)), _col4 (type: bigint), _col5 (type: decimal(17,2)), _col6 (type: bigint)
         Reducer 7 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0), avg(VALUE._col1), avg(VALUE._col2)
+                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), count(VALUE._col3), sum(VALUE._col4), count(VALUE._col5)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                 Statistics: Num rows: 1023990 Data size: 394452395 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: double), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), substr(_col0, 1, 20) (type: string)
-                  outputColumnNames: _col5, _col6, _col7, _col8
+                  expressions: (_col1 / _col2) (type: double), (_col3 / _col4) (type: decimal(37,22)), (_col5 / _col6) (type: decimal(37,22)), substr(_col0, 1, 20) (type: string)
+                  outputColumnNames: _col4, _col5, _col6, _col7
                   Statistics: Num rows: 1023990 Data size: 394452395 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col8 (type: string), _col5 (type: double), _col6 (type: decimal(11,6)), _col7 (type: decimal(11,6))
+                    key expressions: _col7 (type: string), _col4 (type: double), _col5 (type: decimal(37,22)), _col6 (type: decimal(37,22))
                     sort order: ++++
                     Statistics: Num rows: 1023990 Data size: 394452395 Basic stats: COMPLETE Column stats: NONE
                     TopN Hash Memory Usage: 0.1
         Reducer 8 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: decimal(11,6)), KEY.reducesinkkey3 (type: decimal(11,6))
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: decimal(37,22)), KEY.reducesinkkey3 (type: decimal(37,22))
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1023990 Data size: 394452395 Basic stats: COMPLETE Column stats: NONE
                 Limit

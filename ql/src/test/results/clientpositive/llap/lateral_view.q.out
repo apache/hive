@@ -79,7 +79,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: int)
@@ -95,7 +95,7 @@ STAGE PLANS:
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col1 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: int)
@@ -644,7 +644,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -716,16 +716,16 @@ LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
 #### A masked pattern was here ####
-["val_0"]	val_0
+["val_100"]	val_100
 ["val_10"]	val_10
-["val_104"]	val_104
-["val_105"]	val_105
 ["val_111"]	val_111
 ["val_113"]	val_113
+["val_103"]	val_103
+["val_104"]	val_104
+["val_105"]	val_105
+["val_11"]	val_11
 ["val_114"]	val_114
+["val_118"]	val_118
+["val_0"]	val_0
 ["val_116"]	val_116
 ["val_119"]	val_119
-["val_103"]	val_103
-["val_100"]	val_100
-["val_11"]	val_11
-["val_118"]	val_118

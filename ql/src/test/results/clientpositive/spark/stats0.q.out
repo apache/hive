@@ -47,6 +47,7 @@ STAGE PLANS:
                           properties:
                             COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                             bucket_count -1
+                            bucketing_version 2
                             column.name.delimiter ,
                             columns key,value
                             columns.comments 
@@ -66,6 +67,7 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -77,6 +79,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -98,6 +101,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -129,6 +133,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -724,6 +729,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.stats_partitioned
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator
@@ -1365,6 +1371,7 @@ STAGE PLANS:
                           properties:
                             COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                             bucket_count -1
+                            bucketing_version 2
                             column.name.delimiter ,
                             columns key,value
                             columns.comments 
@@ -1384,6 +1391,7 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1395,6 +1403,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -1416,6 +1425,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1447,6 +1457,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2042,6 +2053,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.stats_partitioned
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator

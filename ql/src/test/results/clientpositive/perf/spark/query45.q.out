@@ -53,6 +53,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: (i_item_sk) IN (2, 3, 5, 7, 11, 13, 17, 19, 23, 29) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (i_item_sk) IN (2, 3, 5, 7, 11, 13, 17, 19, 23, 29) (type: boolean)
@@ -70,7 +71,9 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint), _col1 (type: bigint)
+            Execution mode: vectorized
         Reducer 16 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -101,6 +104,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer
+                  filterExpr: (c_customer_sk is not null and c_current_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (c_current_addr_sk is not null and c_customer_sk is not null) (type: boolean)
@@ -115,10 +119,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
+            Execution mode: vectorized
         Map 10 
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: (i_item_sk) IN (2, 3, 5, 7, 11, 13, 17, 19, 23, 29) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (i_item_sk) IN (2, 3, 5, 7, 11, 13, 17, 19, 23, 29) (type: boolean)
@@ -137,10 +143,12 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 12 
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null and ws_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_bill_customer_sk is not null and ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
@@ -155,10 +163,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: decimal(7,2))
+            Execution mode: vectorized
         Map 14 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
@@ -172,10 +182,12 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: ca_address_sk is not null (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ca_address_sk is not null (type: boolean)
@@ -190,10 +202,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -208,7 +222,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
+            Execution mode: vectorized
         Reducer 11 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -284,7 +300,7 @@ STAGE PLANS:
                     outputColumnNames: _col3, _col7, _col8, _col13, _col14, _col15, _col17
                     Statistics: Num rows: 191667562 Data size: 29319594068 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
-                      predicate: ((substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792') or CASE WHEN ((_col14 = 0)) THEN (false) WHEN (_col17 is not null) THEN (true) WHEN (_col13 is null) THEN (null) WHEN ((_col15 < _col14)) THEN (null) ELSE (false) END) (type: boolean)
+                      predicate: ((substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792') or CASE WHEN ((_col14 = 0L)) THEN (false) WHEN (_col17 is not null) THEN (true) WHEN (_col13 is null) THEN (null) WHEN ((_col15 < _col14)) THEN (null) ELSE (false) END) (type: boolean)
                       Statistics: Num rows: 191667562 Data size: 29319594068 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col3 (type: decimal(7,2)), _col7 (type: string), _col8 (type: string)
@@ -304,6 +320,7 @@ STAGE PLANS:
                             TopN Hash Memory Usage: 0.1
                             value expressions: _col2 (type: decimal(17,2))
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -318,6 +335,7 @@ STAGE PLANS:
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col2 (type: decimal(17,2))
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: decimal(17,2))

@@ -1,142 +1,142 @@
-PREHOOK: query: create table t1(i int, j int, k int)
+PREHOOK: query: create table t1_n54(i int, j int, k int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(i int, j int, k int)
+PREHOOK: Output: default@t1_n54
+POSTHOOK: query: create table t1_n54(i int, j int, k int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: grant select on t1 to user user2 with grant option
+POSTHOOK: Output: default@t1_n54
+PREHOOK: query: grant select on t1_n54 to user user2 with grant option
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@t1
-POSTHOOK: query: grant select on t1 to user user2 with grant option
+PREHOOK: Output: default@t1_n54
+POSTHOOK: query: grant select on t1_n54 to user user2 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@t1
-PREHOOK: query: show grant user user1 on table t1
+POSTHOOK: Output: default@t1_n54
+PREHOOK: query: show grant user user1 on table t1_n54
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user user1 on table t1
+POSTHOOK: query: show grant user user1 on table t1_n54
 POSTHOOK: type: SHOW_GRANT
-default	t1			user1	USER	DELETE	true	-1	user1
-default	t1			user1	USER	INSERT	true	-1	user1
-default	t1			user1	USER	SELECT	true	-1	user1
-default	t1			user1	USER	UPDATE	true	-1	user1
-PREHOOK: query: create view vt1 as select i,k from t1
+default	t1_n54			user1	USER	DELETE	true	-1	user1
+default	t1_n54			user1	USER	INSERT	true	-1	user1
+default	t1_n54			user1	USER	SELECT	true	-1	user1
+default	t1_n54			user1	USER	UPDATE	true	-1	user1
+PREHOOK: query: create view vt1_n54 as select i,k from t1_n54
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n54
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vt1
-POSTHOOK: query: create view vt1 as select i,k from t1
+PREHOOK: Output: default@vt1_n54
+POSTHOOK: query: create view vt1_n54 as select i,k from t1_n54
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n54
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vt1
-POSTHOOK: Lineage: vt1.i SIMPLE [(t1)t1.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: vt1.k SIMPLE [(t1)t1.FieldSchema(name:k, type:int, comment:null), ]
-PREHOOK: query: create view vt2 as select * from t1 where i > 1
+POSTHOOK: Output: default@vt1_n54
+POSTHOOK: Lineage: vt1_n54.i SIMPLE [(t1_n54)t1_n54.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vt1_n54.k SIMPLE [(t1_n54)t1_n54.FieldSchema(name:k, type:int, comment:null), ]
+PREHOOK: query: create view vt2 as select * from t1_n54 where i > 1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n54
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vt2
-POSTHOOK: query: create view vt2 as select * from t1 where i > 1
+POSTHOOK: query: create view vt2 as select * from t1_n54 where i > 1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n54
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vt2
-POSTHOOK: Lineage: vt2.i SIMPLE [(t1)t1.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: vt2.j SIMPLE [(t1)t1.FieldSchema(name:j, type:int, comment:null), ]
-POSTHOOK: Lineage: vt2.k SIMPLE [(t1)t1.FieldSchema(name:k, type:int, comment:null), ]
+POSTHOOK: Lineage: vt2.i SIMPLE [(t1_n54)t1_n54.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vt2.j SIMPLE [(t1_n54)t1_n54.FieldSchema(name:j, type:int, comment:null), ]
+POSTHOOK: Lineage: vt2.k SIMPLE [(t1_n54)t1_n54.FieldSchema(name:k, type:int, comment:null), ]
 PREHOOK: query: show grant user user1 on all
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user1 on all
 POSTHOOK: type: SHOW_GRANT
-default	t1			user1	USER	DELETE	true	-1	user1
-default	t1			user1	USER	INSERT	true	-1	user1
-default	t1			user1	USER	SELECT	true	-1	user1
-default	t1			user1	USER	UPDATE	true	-1	user1
-default	vt1			user1	USER	DELETE	true	-1	user1
-default	vt1			user1	USER	INSERT	true	-1	user1
-default	vt1			user1	USER	SELECT	true	-1	user1
-default	vt1			user1	USER	UPDATE	true	-1	user1
+default	t1_n54			user1	USER	DELETE	true	-1	user1
+default	t1_n54			user1	USER	INSERT	true	-1	user1
+default	t1_n54			user1	USER	SELECT	true	-1	user1
+default	t1_n54			user1	USER	UPDATE	true	-1	user1
+default	vt1_n54			user1	USER	DELETE	true	-1	user1
+default	vt1_n54			user1	USER	INSERT	true	-1	user1
+default	vt1_n54			user1	USER	SELECT	true	-1	user1
+default	vt1_n54			user1	USER	UPDATE	true	-1	user1
 default	vt2			user1	USER	DELETE	true	-1	user1
 default	vt2			user1	USER	INSERT	true	-1	user1
 default	vt2			user1	USER	SELECT	true	-1	user1
 default	vt2			user1	USER	UPDATE	true	-1	user1
-PREHOOK: query: grant select on vt1 to user user2
+PREHOOK: query: grant select on vt1_n54 to user user2
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@vt1
-POSTHOOK: query: grant select on vt1 to user user2
+PREHOOK: Output: default@vt1_n54
+POSTHOOK: query: grant select on vt1_n54 to user user2
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@vt1
-PREHOOK: query: grant insert on table vt1 to user user3
+POSTHOOK: Output: default@vt1_n54
+PREHOOK: query: grant insert on table vt1_n54 to user user3
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@vt1
-POSTHOOK: query: grant insert on table vt1 to user user3
+PREHOOK: Output: default@vt1_n54
+POSTHOOK: query: grant insert on table vt1_n54 to user user3
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@vt1
-PREHOOK: query: show grant user user2 on table vt1
+POSTHOOK: Output: default@vt1_n54
+PREHOOK: query: show grant user user2 on table vt1_n54
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user user2 on table vt1
+POSTHOOK: query: show grant user user2 on table vt1_n54
 POSTHOOK: type: SHOW_GRANT
-default	vt1			user2	USER	SELECT	false	-1	user1
-PREHOOK: query: create view vt3 as select i,k from t1
+default	vt1_n54			user2	USER	SELECT	false	-1	user1
+PREHOOK: query: create view vt3 as select i,k from t1_n54
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n54
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vt3
-POSTHOOK: query: create view vt3 as select i,k from t1
+POSTHOOK: query: create view vt3 as select i,k from t1_n54
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n54
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vt3
-POSTHOOK: Lineage: vt3.i SIMPLE [(t1)t1.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: vt3.k SIMPLE [(t1)t1.FieldSchema(name:k, type:int, comment:null), ]
-PREHOOK: query: show grant user user3 on table vt1
+POSTHOOK: Lineage: vt3.i SIMPLE [(t1_n54)t1_n54.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vt3.k SIMPLE [(t1_n54)t1_n54.FieldSchema(name:k, type:int, comment:null), ]
+PREHOOK: query: show grant user user3 on table vt1_n54
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user user3 on table vt1
+POSTHOOK: query: show grant user user3 on table vt1_n54
 POSTHOOK: type: SHOW_GRANT
-default	vt1			user3	USER	INSERT	false	-1	user1
-PREHOOK: query: explain authorization select * from vt1
+default	vt1_n54			user3	USER	INSERT	false	-1	user1
+PREHOOK: query: explain authorization select * from vt1_n54
 PREHOOK: type: QUERY
-POSTHOOK: query: explain authorization select * from vt1
+POSTHOOK: query: explain authorization select * from vt1_n54
 POSTHOOK: type: QUERY
 INPUTS: 
-  default@vt1
-  default@t1
+  default@vt1_n54
+  default@t1_n54
 OUTPUTS: 
 #### A masked pattern was here ####
 CURRENT_USER: 
   user2
 OPERATION: 
   QUERY
-PREHOOK: query: select * from vt1
+PREHOOK: query: select * from vt1_n54
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@vt1
+PREHOOK: Input: default@t1_n54
+PREHOOK: Input: default@vt1_n54
 #### A masked pattern was here ####
-POSTHOOK: query: select * from vt1
+POSTHOOK: query: select * from vt1_n54
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@vt1
+POSTHOOK: Input: default@t1_n54
+POSTHOOK: Input: default@vt1_n54
 #### A masked pattern was here ####
-PREHOOK: query: select * from (select * from vt1) a
+PREHOOK: query: select * from (select * from vt1_n54) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@vt1
+PREHOOK: Input: default@t1_n54
+PREHOOK: Input: default@vt1_n54
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select * from vt1) a
+POSTHOOK: query: select * from (select * from vt1_n54) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@vt1
+POSTHOOK: Input: default@t1_n54
+POSTHOOK: Input: default@vt1_n54
 #### A masked pattern was here ####
-PREHOOK: query: select * from vt1 union all select * from vt1
+PREHOOK: query: select * from vt1_n54 union all select * from vt1_n54
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@vt1
+PREHOOK: Input: default@t1_n54
+PREHOOK: Input: default@vt1_n54
 #### A masked pattern was here ####
-POSTHOOK: query: select * from vt1 union all select * from vt1
+POSTHOOK: query: select * from vt1_n54 union all select * from vt1_n54
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@vt1
+POSTHOOK: Input: default@t1_n54
+POSTHOOK: Input: default@vt1_n54
 #### A masked pattern was here ####
 PREHOOK: query: grant all on table vt2 to user user2
 PREHOOK: type: GRANT_PRIVILEGE
@@ -156,8 +156,8 @@ PREHOOK: query: show grant user user2 on all
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user2 on all
 POSTHOOK: type: SHOW_GRANT
-default	t1			user2	USER	SELECT	true	-1	user1
-default	vt1			user2	USER	SELECT	false	-1	user1
+default	t1_n54			user2	USER	SELECT	true	-1	user1
+default	vt1_n54			user2	USER	SELECT	false	-1	user1
 default	vt2			user2	USER	DELETE	false	-1	user1
 default	vt2			user2	USER	INSERT	false	-1	user1
 default	vt2			user2	USER	SELECT	false	-1	user1
@@ -188,30 +188,30 @@ default	vt2			user1	USER	DELETE	true	-1	user1
 default	vt2			user1	USER	INSERT	true	-1	user1
 default	vt2			user1	USER	SELECT	true	-1	user1
 default	vt2			user1	USER	UPDATE	true	-1	user1
-PREHOOK: query: revoke select on table vt1 from user user2
+PREHOOK: query: revoke select on table vt1_n54 from user user2
 PREHOOK: type: REVOKE_PRIVILEGE
-PREHOOK: Output: default@vt1
-POSTHOOK: query: revoke select on table vt1 from user user2
+PREHOOK: Output: default@vt1_n54
+POSTHOOK: query: revoke select on table vt1_n54 from user user2
 POSTHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: Output: default@vt1
-PREHOOK: query: show grant user user2 on table vt1
+POSTHOOK: Output: default@vt1_n54
+PREHOOK: query: show grant user user2 on table vt1_n54
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user user2 on table vt1
+POSTHOOK: query: show grant user user2 on table vt1_n54
 POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: show grant user user2 on all
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user2 on all
 POSTHOOK: type: SHOW_GRANT
-default	t1			user2	USER	SELECT	true	-1	user1
+default	t1_n54			user2	USER	SELECT	true	-1	user1
 default	vt3			user2	USER	DELETE	true	-1	user1
 default	vt3			user2	USER	INSERT	true	-1	user1
 default	vt3			user2	USER	SELECT	true	-1	user1
 default	vt3			user2	USER	UPDATE	true	-1	user1
-PREHOOK: query: show grant user user3 on table vt1
+PREHOOK: query: show grant user user3 on table vt1_n54
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user user3 on table vt1
+POSTHOOK: query: show grant user user3 on table vt1_n54
 POSTHOOK: type: SHOW_GRANT
-default	vt1			user3	USER	INSERT	false	-1	user1
+default	vt1_n54			user3	USER	INSERT	false	-1	user1
 PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles

@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 DROP TABLE flights_tiny;
 
 create table flights_tiny ( 

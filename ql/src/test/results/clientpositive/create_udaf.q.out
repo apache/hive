@@ -16,30 +16,30 @@ PREHOOK: Output: test_max
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_max
-PREHOOK: query: CREATE TABLE dest1(col INT)
+PREHOOK: query: CREATE TABLE dest1_n34(col INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(col INT)
+PREHOOK: Output: default@dest1_n34
+POSTHOOK: query: CREATE TABLE dest1_n34(col INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT test_max(length(src.value))
+POSTHOOK: Output: default@dest1_n34
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n34 SELECT test_max(length(src.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT test_max(length(src.value))
+PREHOOK: Output: default@dest1_n34
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n34 SELECT test_max(length(src.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.col EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n34
+POSTHOOK: Lineage: dest1_n34.col EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n34.* FROM dest1_n34
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n34
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n34.* FROM dest1_n34
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n34
 #### A masked pattern was here ####
 7
 PREHOOK: query: SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src

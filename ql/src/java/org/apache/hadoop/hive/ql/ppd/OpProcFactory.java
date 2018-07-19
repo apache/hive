@@ -139,8 +139,10 @@ public final class OpProcFactory {
   }
 
   private static void removeOperator(Operator<? extends OperatorDesc> operator) {
-    List<Operator<? extends OperatorDesc>> children = operator.getChildOperators();
-    List<Operator<? extends OperatorDesc>> parents = operator.getParentOperators();
+    // since removeParent/removeChild updates the childOperators and parentOperators list in place
+    // we need to make a copy of list to iterator over them
+    List<Operator<? extends OperatorDesc>> children = new ArrayList<>(operator.getChildOperators());
+    List<Operator<? extends OperatorDesc>> parents = new ArrayList<>(operator.getParentOperators());
     for (Operator<? extends OperatorDesc> parent : parents) {
       parent.getChildOperators().addAll(children);
       parent.removeChild(operator);
@@ -651,6 +653,7 @@ public final class OpProcFactory {
   }
 
   public static class ReduceSinkPPD extends DefaultPPD implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, procCtx, nodeOutputs);
@@ -788,7 +791,9 @@ public final class OpProcFactory {
      * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
-      if (!LOG.isDebugEnabled()) return;
+      if (!LOG.isDebugEnabled()) {
+        return;
+      }
       for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates().entrySet()) {
         StringBuilder sb = new StringBuilder("Pushdown predicates of ").append(nd.getName())
             .append(" for alias ").append(e.getKey()).append(": ");

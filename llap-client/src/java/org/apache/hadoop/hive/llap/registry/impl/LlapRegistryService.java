@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
+import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.service.AbstractService;
@@ -35,7 +36,7 @@ public class LlapRegistryService extends AbstractService {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRegistryService.class);
 
-  private ServiceRegistry registry = null;
+  private ServiceRegistry<LlapServiceInstance> registry = null;
   private final boolean isDaemon;
   private boolean isDynamic = false;
   private String identity = "(pending)";
@@ -136,7 +137,7 @@ public class LlapRegistryService extends AbstractService {
   }
 
   public LlapServiceInstanceSet getInstances(long clusterReadyTimeoutMs) throws IOException {
-    return this.registry.getInstances("LLAP", clusterReadyTimeoutMs);
+    return (LlapServiceInstanceSet) this.registry.getInstances("LLAP", clusterReadyTimeoutMs);
   }
 
   public void registerStateChangeListener(

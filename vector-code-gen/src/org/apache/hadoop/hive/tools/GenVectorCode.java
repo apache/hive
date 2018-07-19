@@ -165,55 +165,92 @@ public class GenVectorCode extends Task {
       {"IntervalYearMonthArithmeticTimestamp", "Add","+", "interval_year_month", "Col", "timestamp", "Scalar"},
 
       // Long/double arithmetic
+      {"ColumnArithmeticScalar", "Add", "long", "long", "+", "CHECKED"},
       {"ColumnArithmeticScalar", "Add", "long", "long", "+"},
+      {"ColumnArithmeticScalar", "Subtract", "long", "long", "-", "CHECKED"},
       {"ColumnArithmeticScalar", "Subtract", "long", "long", "-"},
       {"ColumnArithmeticScalar", "Multiply", "long", "long", "*"},
+      {"ColumnArithmeticScalar", "Multiply", "long", "long", "*", "CHECKED"},
 
       {"ColumnArithmeticScalar", "Add", "long", "double", "+"},
+      {"ColumnArithmeticScalar", "Add", "long", "double", "+", "CHECKED"},
       {"ColumnArithmeticScalar", "Subtract", "long", "double", "-"},
+      {"ColumnArithmeticScalar", "Subtract", "long", "double", "-", "CHECKED"},
       {"ColumnArithmeticScalar", "Multiply", "long", "double", "*"},
+      {"ColumnArithmeticScalar", "Multiply", "long", "double", "*", "CHECKED"},
 
       {"ColumnArithmeticScalar", "Add", "double", "long", "+"},
+      {"ColumnArithmeticScalar", "Add", "double", "long", "+", "CHECKED"},
       {"ColumnArithmeticScalar", "Subtract", "double", "long", "-"},
+      {"ColumnArithmeticScalar", "Subtract", "double", "long", "-", "CHECKED"},
       {"ColumnArithmeticScalar", "Multiply", "double", "long", "*"},
+      {"ColumnArithmeticScalar", "Multiply", "double", "long", "*", "CHECKED"},
 
-      {"ColumnArithmeticScalar", "Add", "double", "double", "+"},
+      {"ColumnArithmeticScalar", "Add", "double", "double", "+",},
+      {"ColumnArithmeticScalar", "Add", "double", "double", "+", "CHECKED"},
       {"ColumnArithmeticScalar", "Subtract", "double", "double", "-"},
+      {"ColumnArithmeticScalar", "Subtract", "double", "double", "-", "CHECKED"},
       {"ColumnArithmeticScalar", "Multiply", "double", "double", "*"},
+      {"ColumnArithmeticScalar", "Multiply", "double", "double", "*", "CHECKED"},
 
       {"ScalarArithmeticColumn", "Add", "long", "long", "+"},
+      {"ScalarArithmeticColumn", "Add", "long", "long", "+", "CHECKED"},
       {"ScalarArithmeticColumn", "Subtract", "long", "long", "-"},
+      {"ScalarArithmeticColumn", "Subtract", "long", "long", "-", "CHECKED"},
       {"ScalarArithmeticColumn", "Multiply", "long", "long", "*"},
+      {"ScalarArithmeticColumn", "Multiply", "long", "long", "*", "CHECKED"},
 
       {"ScalarArithmeticColumn", "Add", "long", "double", "+"},
+      {"ScalarArithmeticColumn", "Add", "long", "double", "+", "CHECKED"},
       {"ScalarArithmeticColumn", "Subtract", "long", "double", "-"},
+      {"ScalarArithmeticColumn", "Subtract", "long", "double", "-", "CHECKED"},
       {"ScalarArithmeticColumn", "Multiply", "long", "double", "*"},
+      {"ScalarArithmeticColumn", "Multiply", "long", "double", "*", "CHECKED"},
 
       {"ScalarArithmeticColumn", "Add", "double", "long", "+"},
+      {"ScalarArithmeticColumn", "Add", "double", "long", "+", "CHECKED"},
       {"ScalarArithmeticColumn", "Subtract", "double", "long", "-"},
+      {"ScalarArithmeticColumn", "Subtract", "double", "long", "-", "CHECKED"},
       {"ScalarArithmeticColumn", "Multiply", "double", "long", "*"},
+      {"ScalarArithmeticColumn", "Multiply", "double", "long", "*", "CHECKED"},
 
       {"ScalarArithmeticColumn", "Add", "double", "double", "+"},
+      {"ScalarArithmeticColumn", "Add", "double", "double", "+", "CHECKED"},
       {"ScalarArithmeticColumn", "Subtract", "double", "double", "-"},
+      {"ScalarArithmeticColumn", "Subtract", "double", "double", "-", "CHECKED"},
       {"ScalarArithmeticColumn", "Multiply", "double", "double", "*"},
+      {"ScalarArithmeticColumn", "Multiply", "double", "double", "*", "CHECKED"},
 
       {"ColumnArithmeticColumn", "Add", "long", "long", "+"},
+      {"ColumnArithmeticColumn", "Add", "long", "long", "+", "CHECKED"},
       {"ColumnArithmeticColumn", "Subtract", "long", "long", "-"},
+      {"ColumnArithmeticColumn", "Subtract", "long", "long", "-", "CHECKED"},
       {"ColumnArithmeticColumn", "Multiply", "long", "long", "*"},
+      {"ColumnArithmeticColumn", "Multiply", "long", "long", "*", "CHECKED"},
 
       {"ColumnArithmeticColumn", "Add", "long", "double", "+"},
+      {"ColumnArithmeticColumn", "Add", "long", "double", "+", "CHECKED"},
       {"ColumnArithmeticColumn", "Subtract", "long", "double", "-"},
+      {"ColumnArithmeticColumn", "Subtract", "long", "double", "-", "CHECKED"},
       {"ColumnArithmeticColumn", "Multiply", "long", "double", "*"},
+      {"ColumnArithmeticColumn", "Multiply", "long", "double", "*", "CHECKED"},
 
       {"ColumnArithmeticColumn", "Add", "double", "long", "+"},
+      {"ColumnArithmeticColumn", "Add", "double", "long", "+", "CHECKED"},
       {"ColumnArithmeticColumn", "Subtract", "double", "long", "-"},
+      {"ColumnArithmeticColumn", "Subtract", "double", "long", "-", "CHECKED"},
       {"ColumnArithmeticColumn", "Multiply", "double", "long", "*"},
+      {"ColumnArithmeticColumn", "Multiply", "double", "long", "*", "CHECKED"},
 
       {"ColumnArithmeticColumn", "Add", "double", "double", "+"},
+      {"ColumnArithmeticColumn", "Add", "double", "double", "+", "CHECKED"},
       {"ColumnArithmeticColumn", "Subtract", "double", "double", "-"},
+      {"ColumnArithmeticColumn", "Subtract", "double", "double", "-", "CHECKED"},
       {"ColumnArithmeticColumn", "Multiply", "double", "double", "*"},
+      {"ColumnArithmeticColumn", "Multiply", "double", "double", "*", "CHECKED"},
 
 
+        //Divide operations are not CHECKED because the output is always of the type double
       {"ColumnDivideScalar", "Divide", "long", "double", "/"},
       {"ColumnDivideScalar", "Divide", "double", "long", "/"},
       {"ColumnDivideScalar", "Divide", "double", "double", "/"},
@@ -225,16 +262,29 @@ public class GenVectorCode extends Task {
       {"ColumnDivideColumn", "Divide", "double", "double", "/"},
 
       {"ColumnDivideScalar", "Modulo", "long", "long", "%"},
+      {"ColumnDivideScalar", "Modulo", "long", "long", "%", "CHECKED"},
       {"ColumnDivideScalar", "Modulo", "long", "double", "%"},
+      {"ColumnDivideScalar", "Modulo", "long", "double", "%", "CHECKED"},
       {"ColumnDivideScalar", "Modulo", "double", "long", "%"},
+      {"ColumnDivideScalar", "Modulo", "double", "long", "%", "CHECKED"},
       {"ColumnDivideScalar", "Modulo", "double", "double", "%"},
-      {"ScalarDivideColumn", "Modulo", "long", "long", "%"},
+      {"ColumnDivideScalar", "Modulo", "double", "double", "%", "CHECKED"},
+      {"ScalarDivideColumn", "Modulo", "long", "long", "%", "MANUAL_DIVIDE_BY_ZERO_CHECK"},
+      {"ScalarDivideColumn", "Modulo", "long", "long", "%", "MANUAL_DIVIDE_BY_ZERO_CHECK,CHECKED"},
       {"ScalarDivideColumn", "Modulo", "long", "double", "%"},
+      {"ScalarDivideColumn", "Modulo", "long", "double", "%", "CHECKED"},
       {"ScalarDivideColumn", "Modulo", "double", "long", "%"},
+      {"ScalarDivideColumn", "Modulo", "double", "long", "%", "CHECKED"},
       {"ScalarDivideColumn", "Modulo", "double", "double", "%"},
+      {"ScalarDivideColumn", "Modulo", "double", "double", "%", "CHECKED"},
+      {"ColumnDivideColumn", "Modulo", "long", "long", "%", "MANUAL_DIVIDE_BY_ZERO_CHECK"},
+      {"ColumnDivideColumn", "Modulo", "long", "long", "%", "MANUAL_DIVIDE_BY_ZERO_CHECK,CHECKED"},
       {"ColumnDivideColumn", "Modulo", "long", "double", "%"},
+      {"ColumnDivideColumn", "Modulo", "long", "double", "%", "CHECKED"},
       {"ColumnDivideColumn", "Modulo", "double", "long", "%"},
+      {"ColumnDivideColumn", "Modulo", "double", "long", "%", "CHECKED"},
       {"ColumnDivideColumn", "Modulo", "double", "double", "%"},
+      {"ColumnDivideColumn", "Modulo", "double", "double", "%", "CHECKED"},
 
       {"ColumnArithmeticScalarDecimal", "Add"},
       {"ColumnArithmeticScalarDecimal", "Subtract"},
@@ -987,8 +1037,6 @@ public class GenVectorCode extends Task {
         "", "", ""},
       {"ColumnUnaryFunc", "CastLongToBooleanVia", "long", "long", "MathExpr.toBool", "",
         "", "", ""},
-      {"ColumnUnaryFunc", "CastDateToBooleanVia", "long", "long", "MathExpr.toBool", "",
-            "", "", "date"},
 
       // Boolean to long is done with an IdentityExpression
       // Boolean to double is done with standard Long to Double cast
@@ -996,7 +1044,9 @@ public class GenVectorCode extends Task {
       // classes
 
       {"ColumnUnaryMinus", "long"},
+      {"ColumnUnaryMinus", "long", "CHECKED"},
       {"ColumnUnaryMinus", "double"},
+      {"ColumnUnaryMinus", "double", "CHECKED"},
 
       // IF conditional expression
       // fileHeader, resultType, arg2Type, arg3Type
@@ -1012,6 +1062,15 @@ public class GenVectorCode extends Task {
       {"IfExprScalarScalar", "double", "long"},
       {"IfExprScalarScalar", "long", "double"},
       {"IfExprScalarScalar", "double", "double"},
+
+      {"IfExprObjectColumnColumn", "timestamp"},
+      {"IfExprObjectColumnColumn", "interval_day_time"},
+      {"IfExprObjectColumnScalar", "timestamp"},
+      {"IfExprObjectColumnScalar", "interval_day_time"},
+      {"IfExprObjectScalarColumn", "timestamp"},
+      {"IfExprObjectScalarColumn", "interval_day_time"},
+      {"IfExprObjectScalarScalar", "timestamp"},
+      {"IfExprObjectScalarScalar", "interval_day_time"},
 
       // template, <ClassName>, <ValueType>, <OperatorSymbol>, <DescriptionName>, <DescriptionValue>
       {"VectorUDAFMinMax", "VectorUDAFMinLong", "long", "<", "min",
@@ -1335,6 +1394,12 @@ public class GenVectorCode extends Task {
         generateIfExprScalarColumn(tdesc);
       } else if (tdesc[0].equals("IfExprScalarScalar")) {
         generateIfExprScalarScalar(tdesc);
+      } else if (
+          tdesc[0].equals("IfExprObjectColumnColumn") ||
+          tdesc[0].equals("IfExprObjectColumnScalar") ||
+          tdesc[0].equals("IfExprObjectScalarColumn") ||
+          tdesc[0].equals("IfExprObjectScalarScalar")) {
+        generateIfExprObject(tdesc);
       } else if (tdesc[0].equals("FilterDecimalColumnCompareDecimalScalar")) {
         generateFilterDecimalColumnCompareDecimalScalar(tdesc);
       } else if (tdesc[0].equals("FilterDecimalScalarCompareDecimalColumn")) {
@@ -1407,17 +1472,6 @@ public class GenVectorCode extends Task {
 
   private void generateFilterTruncStringColumnBetween(String[] tdesc) throws IOException {
     String truncStringTypeName = tdesc[1];
-    String truncStringHiveType;
-    String truncStringHiveGetBytes;
-    if ("Char".equals(truncStringTypeName)) {
-      truncStringHiveType = "HiveChar";
-      truncStringHiveGetBytes = "getStrippedValue().getBytes()";
-    } else if ("VarChar".equals(truncStringTypeName)) {
-      truncStringHiveType = "HiveVarchar";
-      truncStringHiveGetBytes = "getValue().getBytes()";
-    } else {
-      throw new Error("Unsupported string type: " + truncStringTypeName);
-    }
     String optionalNot = tdesc[2];
     String className = "Filter" + truncStringTypeName + "Column" + (optionalNot.equals("!") ? "Not" : "")
         + "Between";
@@ -1425,8 +1479,6 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<TruncStringTypeName>", truncStringTypeName);
-    templateString = templateString.replaceAll("<TruncStringHiveType>", truncStringHiveType);
-    templateString = templateString.replaceAll("<TruncStringHiveGetBytes>", truncStringHiveGetBytes);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
 
@@ -1521,13 +1573,13 @@ public class GenVectorCode extends Task {
       getValueMethod = ".getBytes()";
       conversionMethod = "";
     } else if (operandType.equals("char")) {
-      defaultValue = "new HiveChar(\"\", 1)";
+      defaultValue = "new byte[0]";
       vectorType = "byte[]";
       getPrimitiveMethod = "getHiveChar";
       getValueMethod = ".getStrippedValue().getBytes()";  // Does vectorization use stripped char values?
       conversionMethod = "";
     } else if (operandType.equals("varchar")) {
-      defaultValue = "new HiveVarchar(\"\", 1)";
+      defaultValue = "new byte[0]";
       vectorType = "byte[]";
       getPrimitiveMethod = "getHiveVarchar";
       getValueMethod = ".getValue().getBytes()";
@@ -1537,14 +1589,14 @@ public class GenVectorCode extends Task {
       vectorType = "long";
       getPrimitiveMethod = "getDate";
       getValueMethod = "";
-      conversionMethod = "DateWritable.dateToDays";
+      conversionMethod = "DateWritableV2.dateToDays";
       // Special case - Date requires its own specific BetweenDynamicValue class, but derives from FilterLongColumnBetween
       typeName = "Long";
     } else if (operandType.equals("timestamp")) {
       defaultValue = "new Timestamp(0)";
       vectorType = "Timestamp";
       getPrimitiveMethod = "getTimestamp";
-      getValueMethod = "";
+      getValueMethod = ".toSqlTimestamp()";
       conversionMethod = "";
     } else {
       throw new IllegalArgumentException("Type " + operandType + " not supported");
@@ -2047,17 +2099,6 @@ public class GenVectorCode extends Task {
   private void generateStringCompareTruncStringScalar(String[] tdesc, String className, String baseClassName)
       throws IOException {
     String truncStringTypeName = tdesc[1];
-    String truncStringHiveType;
-    String truncStringHiveGetBytes;
-    if ("Char".equals(truncStringTypeName)) {
-      truncStringHiveType = "HiveChar";
-      truncStringHiveGetBytes = "getStrippedValue().getBytes()";
-    } else if ("VarChar".equals(truncStringTypeName)) {
-      truncStringHiveType = "HiveVarchar";
-      truncStringHiveGetBytes = "getValue().getBytes()";
-    } else {
-      throw new Error("Unsupported string type: " + truncStringTypeName);
-    }
     String operatorSymbol = tdesc[3];
     // Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
@@ -2067,8 +2108,6 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     templateString = templateString.replaceAll("<TruncStringTypeName>", truncStringTypeName);
-    templateString = templateString.replaceAll("<TruncStringHiveType>", truncStringHiveType);
-    templateString = templateString.replaceAll("<TruncStringHiveGetBytes>", truncStringHiveGetBytes);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -2087,8 +2126,10 @@ public class GenVectorCode extends Task {
     String inputColumnVectorType = this.getColumnVectorType(operandType);
     String outputColumnVectorType = inputColumnVectorType;
     String returnType = operandType;
-    String className = getCamelCaseType(operandType) + "ColUnaryMinus";
-        File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    boolean checked = (tdesc.length == 3 && tdesc[2].contains("CHECKED"));
+    String className = getCamelCaseType(operandType) + "ColUnaryMinus"
+        + (checked ? "Checked" : "");
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     String vectorExprArgType = operandType;
     if (operandType.equals("long")) {
@@ -2101,7 +2142,10 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
     templateString = templateString.replaceAll("<VectorExprArgType>", vectorExprArgType);
+    String ifDefined = checked ? tdesc[2] : "";
+    templateString = evaluateIfDefined(templateString, ifDefined);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -2204,6 +2248,46 @@ public class GenVectorCode extends Task {
         className, templateString);
   }
 
+  private void generateIfExprObject(String [] tdesc) throws Exception {
+    String typeName = tdesc[1];
+    String objectName;
+    String scalarType;
+    String scalarImport;
+    if (typeName.equals("timestamp")) {
+      objectName = "Timestamp";
+      scalarType = "Timestamp";
+      scalarImport = "java.sql.Timestamp";
+    } else if (typeName.equals("interval_day_time")) {
+      objectName = "IntervalDayTime";
+      scalarType = "HiveIntervalDayTime";
+      scalarImport = "org.apache.hadoop.hive.common.type.HiveIntervalDayTime";
+    } else {
+      objectName = "unknown";
+      scalarType = "unknown";
+      scalarImport = "unknown";
+    }
+    String classNameSuffix = tdesc[0].substring("IfExprObject".length());
+
+    String writableType = getOutputWritableType(typeName);
+    String columnVectorType = getColumnVectorType(typeName);
+
+    String className = "IfExpr" + objectName + classNameSuffix;
+
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<ScalarType>", scalarType);
+    templateString = templateString.replaceAll("<ScalarImport>", scalarImport);
+    templateString = templateString.replaceAll("<TypeName>", typeName);
+    templateString = templateString.replaceAll("<ObjectName>", objectName);
+    templateString = templateString.replaceAll("<WritableType>", writableType);
+    templateString = templateString.replaceAll("<ColumnVectorType>", columnVectorType);
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
   // template, <ClassNamePrefix>, <ReturnType>, <FuncName>
   private void generateDecimalColumnUnaryFunc(String [] tdesc) throws Exception {
     String classNamePrefix = tdesc[1];
@@ -2260,8 +2344,10 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
+    boolean checked = tdesc.length == 6 && tdesc[5].contains("CHECKED");
     String className = getCamelCaseType(operandType1)
-        + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Column"
+        + (checked ? "Checked" : "");
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateColumnArithmeticOperatorColumn(tdesc, returnType, className);
   }
@@ -2636,6 +2722,7 @@ public class GenVectorCode extends Task {
     String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
     String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
     String operatorSymbol = tdesc[4];
+    String ifDefined = tdesc.length == 6 ? tdesc[5] : "";
 
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
@@ -2650,14 +2737,26 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
     templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
-    testCodeGen.addColumnColumnOperationTestCases(
+    if (!ifDefined.isEmpty()) {
+      testCodeGen.addColumnColumnOperationTestCases(
           className,
           inputColumnVectorType1,
           inputColumnVectorType2,
           outputColumnVectorType);
+    } else {
+      testCodeGen.addColumnColumnOperationCheckedTestCases(
+          className,
+          inputColumnVectorType1,
+          inputColumnVectorType2,
+          outputColumnVectorType,
+          "long".equalsIgnoreCase(returnType));
+    }
   }
 
   private void generateColumnCompareOperatorScalar(String[] tdesc, boolean filter,
@@ -2713,6 +2812,8 @@ public class GenVectorCode extends Task {
     String inputColumnVectorType = this.getColumnVectorType(operandType1);
     String operatorSymbol = tdesc[4];
 
+    String ifDefined = (tdesc.length == 6 ? tdesc[5] : "");
+
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
@@ -2724,6 +2825,9 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
@@ -2732,12 +2836,24 @@ public class GenVectorCode extends Task {
       testScalarType = "long";
     }
 
-    testCodeGen.addColumnScalarOperationTestCases(
+    if (ifDefined.isEmpty()) {
+      testCodeGen.addColumnScalarOperationTestCases(
           true,
           className,
           inputColumnVectorType,
           outputColumnVectorType,
           testScalarType);
+    } else {
+      //this is a checked expression use a different template for checked expressions
+      testCodeGen.addColumnScalarOperationCheckedTestCases(
+          true,
+          className,
+          inputColumnVectorType,
+          outputColumnVectorType,
+          testScalarType,
+          "long".equalsIgnoreCase(returnType)
+      );
+    }
   }
 
   private void generateScalarCompareOperatorColumn(String[] tdesc, boolean filter,
@@ -2793,6 +2909,7 @@ public class GenVectorCode extends Task {
              returnType == null ? "long" : returnType);
      String inputColumnVectorType = this.getColumnVectorType(operandType2);
      String operatorSymbol = tdesc[4];
+     String ifDefined = (tdesc.length == 6 ? tdesc[5] : "");
 
      //Read the template into a string;
      File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
@@ -2806,6 +2923,7 @@ public class GenVectorCode extends Task {
      templateString = templateString.replaceAll("<OperandType2>", operandType2);
      templateString = templateString.replaceAll("<ReturnType>", returnType);
      templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+     templateString = evaluateIfDefined(templateString, ifDefined);
      writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
@@ -2814,12 +2932,13 @@ public class GenVectorCode extends Task {
        testScalarType = "long";
      }
 
-     testCodeGen.addColumnScalarOperationTestCases(
-           false,
-           className,
-           inputColumnVectorType,
-           outputColumnVectorType,
-           testScalarType);
+     if (!ifDefined.isEmpty()) {
+       testCodeGen.addColumnScalarOperationTestCases(false, className, inputColumnVectorType,
+           outputColumnVectorType, testScalarType);
+     } else {
+       testCodeGen.addColumnScalarOperationCheckedTestCases(false, className, inputColumnVectorType,
+           outputColumnVectorType, testScalarType, "long".equalsIgnoreCase(returnType));
+     }
   }
 
   //Binary arithmetic operator
@@ -2827,8 +2946,10 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
+    boolean checked = tdesc.length == 6 && tdesc[5].contains("CHECKED");
     String className = getCamelCaseType(operandType1)
-        + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar"
+        + (checked ? "Checked" : "");
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateColumnArithmeticOperatorScalar(tdesc, returnType, className);
   }
@@ -2921,8 +3042,10 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
+    boolean checked = (tdesc.length == 6 && tdesc[5].contains("CHECKED"));
     String className = getCamelCaseType(operandType1)
-        + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
+        + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column"
+        + (checked ? "Checked" : "");
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateScalarArithmeticOperatorColumn(tdesc, returnType, className);
   }
@@ -3008,6 +3131,11 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     templateString = templateString.replaceAll("<VectorExprArgType>", operandType);
+
+    String vectorExpressionParametersBody = getDTIScalarColumnDisplayBody(operandType);
+    templateString = templateString.replaceAll(
+        "<VectorExpressionParametersBody>", vectorExpressionParametersBody);
+
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -3028,6 +3156,28 @@ public class GenVectorCode extends Task {
         className, templateString);
   }
 
+  private String getDTIScalarColumnDisplayBody(String type) {
+    if (type.equals("date")) {
+      return
+          "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
+          "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, colNum);";
+    } else {
+      return
+          "    return super.vectorExpressionParameters();";
+    }
+  }
+
+  private String getDTIColumnScalarDisplayBody(String type) {
+    if (type.equals("date")) {
+      return
+          "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
+          "    return getColumnParamString(0, colNum) + \", date \" + dt.toString();";
+    } else {
+      return
+          "    return super.vectorExpressionParameters();";
+    }
+  }
+
   private void generateDTIColumnCompareScalar(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String operandType = tdesc[2];
@@ -3040,6 +3190,11 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     templateString = templateString.replaceAll("<VectorExprArgType>", operandType);
+
+    String vectorExpressionParametersBody = getDTIColumnScalarDisplayBody(operandType);
+    templateString = templateString.replaceAll(
+        "<VectorExpressionParametersBody>", vectorExpressionParametersBody);
+
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -3377,17 +3532,75 @@ public class GenVectorCode extends Task {
     return result;
   }
 
-  private int doIfDefinedStatement(String[] lines, int index, Set<String> definedSet,
+  private boolean matchesDefinedStrings(Set<String> defineSet, Set<String> newIfDefinedSet,
+      IfDefinedMode ifDefinedMode) {
+    switch (ifDefinedMode) {
+    case SINGLE:
+    case AND_ALL:
+      for (String candidateString : newIfDefinedSet) {
+        if (!defineSet.contains(candidateString)) {
+          return false;
+        }
+      }
+      return true;
+    case OR_ANY:
+      for (String candidateString : newIfDefinedSet) {
+        if (defineSet.contains(candidateString)) {
+          return true;
+        }
+      }
+      return false;
+    default:
+      throw new RuntimeException("Unexpected if defined mode " + ifDefinedMode);
+    }
+  }
+
+  public enum IfDefinedMode {
+    SINGLE,
+    AND_ALL,
+    OR_ANY;
+  }
+
+  private IfDefinedMode parseIfDefinedMode(String newIfDefinedString, Set<String> newIfDefinedSet) {
+    final String[] newIfDefinedStrings;
+    final IfDefinedMode ifDefinedMode;
+    int index = newIfDefinedString.indexOf("&&");
+    if (index != -1) {
+      newIfDefinedStrings = newIfDefinedString.split("&&");
+      ifDefinedMode = IfDefinedMode.AND_ALL;
+    } else {
+      index = newIfDefinedString.indexOf("||");
+      if (index == -1) {
+
+        // One element.
+        newIfDefinedSet.add(newIfDefinedString);
+        return IfDefinedMode.SINGLE;
+      } else {
+        newIfDefinedStrings = newIfDefinedString.split("\\|\\|");
+        ifDefinedMode = IfDefinedMode.OR_ANY;
+      }
+    }
+    for (String newDefinedString : newIfDefinedStrings) {
+      newIfDefinedSet.add(newDefinedString);
+    }
+    return ifDefinedMode;
+  }
+
+  private int doIfDefinedStatement(String[] lines, int index, Set<String> desiredIfDefinedSet,
       boolean outerInclude, StringBuilder sb) {
     String ifLine = lines[index];
     final int ifLineNumber = index + 1;
-    String commaDefinedString = ifLine.substring("#IF ".length());
-    boolean includeBody = containsDefinedStrings(definedSet, commaDefinedString);
+
+    String ifDefinedString = ifLine.substring("#IF ".length());
+    Set<String> ifDefinedSet = new HashSet<String>();
+    IfDefinedMode ifDefinedMode = parseIfDefinedMode(ifDefinedString, ifDefinedSet);
+    boolean includeBody = matchesDefinedStrings(desiredIfDefinedSet, ifDefinedSet, ifDefinedMode);
+
     index++;
     final int end = lines.length;
     while (true) {
       if (index >= end) {
-        throw new RuntimeException("Unmatched #IF at line " + index + " for " + commaDefinedString);
+        throw new RuntimeException("Unmatched #IF at line " + index + " for " + ifDefinedString);
       }
       String line = lines[index];
       if (line.length() == 0 || line.charAt(0) != '#') {
@@ -3402,7 +3615,9 @@ public class GenVectorCode extends Task {
       // A pound # statement (IF/ELSE/ENDIF).
       if (line.startsWith("#IF ")) {
         // Recurse.
-        index = doIfDefinedStatement(lines, index, definedSet, outerInclude && includeBody, sb);
+        index =
+            doIfDefinedStatement(
+                lines, index, desiredIfDefinedSet, outerInclude && includeBody, sb);
       } else if (line.equals("#ELSE")) {
         // Flip inclusion.
         includeBody = !includeBody;
@@ -3411,10 +3626,10 @@ public class GenVectorCode extends Task {
         throw new RuntimeException("Missing defined strings with #ENDIF on line " + (index + 1));
       } else if (line.startsWith("#ENDIF ")) {
         String endCommaDefinedString = line.substring("#ENDIF ".length());
-        if (!commaDefinedString.equals(endCommaDefinedString)) {
+        if (!ifDefinedString.equals(endCommaDefinedString)) {
           throw new RuntimeException(
               "#ENDIF defined names \"" + endCommaDefinedString + "\" (line " + ifLineNumber +
-              " do not match \"" + commaDefinedString + "\" (line " + (index + 1) + ")");
+              " do not match \"" + ifDefinedString + "\" (line " + (index + 1) + ")");
         }
         return ++index;
       } else {
@@ -3625,9 +3840,9 @@ public class GenVectorCode extends Task {
     } else if (primitiveType.equals("interval_day_time")) {
       return "HiveIntervalDayTimeWritable";
     } else if (primitiveType.equals("date")) {
-      return "HiveDateWritable";
+      return "DateWritableV2";
     } else if (primitiveType.equals("timestamp")) {
-      return "HiveTimestampWritable";
+      return "TimestampWritable";
     }
     throw new Exception("Unimplemented primitive output writable: " + primitiveType);
   }

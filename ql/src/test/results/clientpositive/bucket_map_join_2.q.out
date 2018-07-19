@@ -64,6 +64,7 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            filterExpr: (key is not null and value is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -81,6 +82,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (key is not null and value is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -107,6 +109,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col0 (type: bigint)
                     auto parallelism: false
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -120,7 +123,8 @@ STAGE PLANS:
             properties:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 1
-              bucket_field_name key
+              bucket_field_name key,value
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -142,7 +146,8 @@ STAGE PLANS:
               properties:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 1
-                bucket_field_name key
+                bucket_field_name key,value
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 

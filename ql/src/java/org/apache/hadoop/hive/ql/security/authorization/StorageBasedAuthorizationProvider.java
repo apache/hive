@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.security.authorization;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -46,6 +45,8 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
 
 /**
  * StorageBasedAuthorizationProvider is an implementation of
@@ -172,7 +173,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // the database directory
     if (privExtractor.hasDropPrivilege || requireCreatePrivilege(readRequiredPriv)
         || requireCreatePrivilege(writeRequiredPriv)) {
-      authorize(hive_db.getDatabase(table.getDbName()), new Privilege[] {},
+      authorize(hive_db.getDatabase(table.getCatName(), table.getDbName()), new Privilege[] {},
           new Privilege[] { Privilege.ALTER_DATA });
     }
 
@@ -293,9 +294,6 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       return FsAction.WRITE;
     case DROP:
       return FsAction.WRITE;
-    case INDEX:
-      throw new AuthorizationException(
-          "StorageBasedAuthorizationProvider cannot handle INDEX privilege");
     case LOCK:
       throw new AuthorizationException(
           "StorageBasedAuthorizationProvider cannot handle LOCK privilege");
@@ -493,6 +491,11 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       return writeReqPriv;
     }
 
+  }
+
+  @Override
+  public HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException {
+    return new HDFSPermissionPolicyProvider(getConf());
   }
 
 }

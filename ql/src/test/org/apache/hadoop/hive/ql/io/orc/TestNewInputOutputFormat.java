@@ -63,7 +63,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 public class TestNewInputOutputFormat {
-  
+
   Path workDir = new Path(System.getProperty("test.tmp.dir",
     "target" + File.separator + "test" + File.separator + "tmp"));
   
@@ -75,6 +75,14 @@ public class TestNewInputOutputFormat {
     conf = new Configuration();
     conf.set("mapred.job.tracker", "local");
     conf.set("fs.default.name", "local");
+    conf.set("mapred.local.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "local");
+    conf.set("mapred.system.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "system");
+    conf.set("mapreduce.jobtracker.staging.root.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "staging");
+    conf.set("mapred.temp.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "temp");
     localFs = FileSystem.get(conf);
   }
   

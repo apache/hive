@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -42,10 +41,11 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -73,6 +73,8 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -188,6 +190,9 @@ public class Table implements Serializable {
       // set create time
       t.setCreateTime((int) (System.currentTimeMillis() / 1000));
     }
+    // Explictly set the bucketing version
+    t.getParameters().put(hive_metastoreConstants.TABLE_BUCKETING_VERSION,
+        "2");
     return t;
   }
 
@@ -366,14 +371,17 @@ public class Table implements Serializable {
   final public void validatePartColumnNames(
       Map<String, String> spec, boolean shouldBeFull) throws SemanticException {
     List<FieldSchema> partCols = tTable.getPartitionKeys();
+    final String tableName = Warehouse.getQualifiedName(tTable);
     if (partCols == null || (partCols.size() == 0)) {
       if (spec != null) {
-        throw new ValidationFailureSemanticException("table is not partitioned but partition spec exists: " + spec);
+        throw new ValidationFailureSemanticException(tableName +
+            " table is not partitioned but partition spec exists: " + spec);
       }
       return;
     } else if (spec == null) {
       if (shouldBeFull) {
-        throw new ValidationFailureSemanticException("table is partitioned but partition spec is not specified");
+        throw new ValidationFailureSemanticException(tableName +
+            " table is partitioned but partition spec is not specified");
       }
       return;
     }
@@ -382,13 +390,16 @@ public class Table implements Serializable {
       if (spec.containsKey(fs.getName())) {
         ++columnsFound;
       }
-      if (columnsFound == spec.size()) break;
+      if (columnsFound == spec.size()) {
+        break;
+      }
     }
     if (columnsFound < spec.size()) {
-      throw new ValidationFailureSemanticException("Partition spec " + spec + " contains non-partition columns");
+      throw new ValidationFailureSemanticException(tableName + ": Partition spec " + spec +
+          " contains non-partition columns");
     }
     if (shouldBeFull && (spec.size() != partCols.size())) {
-      throw new ValidationFailureSemanticException("partition spec " + spec
+      throw new ValidationFailureSemanticException(tableName + ": partition spec " + spec
           + " doesn't contain all (" + partCols.size() + ") partition columns");
     }
   }
@@ -397,6 +408,9 @@ public class Table implements Serializable {
     tTable.getParameters().put(name, value);
   }
 
+  // Please note : Be very careful in using this function. If not used carefully,
+  // you may end up overwriting all the existing properties. If the usecase is to
+  // add or update certain properties use setProperty() instead.
   public void setParameters(Map<String, String> params) {
     tTable.setParameters(params);
   }
@@ -446,6 +460,11 @@ public class Table implements Serializable {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public int getBucketingVersion() {
+    return Utilities.getBucketingVersion(
+        getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION));
   }
 
    @Override
@@ -517,7 +536,7 @@ public class Table implements Serializable {
   }
 
   public boolean isPartitionKey(String colName) {
-    return getPartColByName(colName) == null ? false : true;
+    return getPartColByName(colName) != null;
   }
 
   // TODO merge this with getBucketCols function
@@ -667,6 +686,10 @@ public class Table implements Serializable {
     tTable.setPartitionKeys(partCols);
   }
 
+  public String getCatName() {
+    return tTable.getCatName();
+  }
+
   public String getDbName() {
     return tTable.getDbName();
   }
@@ -727,6 +750,12 @@ public class Table implements Serializable {
   }
 
   /**
+   * @return The owner type of the table.
+   * @see org.apache.hadoop.hive.metastore.api.Table#getOwnerType()
+   */
+  public PrincipalType getOwnerType() { return tTable.getOwnerType(); }
+
+  /**
    * @return The table parameters.
    * @see org.apache.hadoop.hive.metastore.api.Table#getParameters()
    */
@@ -748,6 +777,14 @@ public class Table implements Serializable {
    */
   public void setOwner(String owner) {
     tTable.setOwner(owner);
+  }
+
+  /**
+   * @param ownerType
+   * @see org.apache.hadoop.hive.metastore.api.Table#setOwnerType(org.apache.hadoop.hive.metastore.api.PrincipalType)
+   */
+  public void setOwnerType(PrincipalType ownerType) {
+    tTable.setOwnerType(ownerType);
   }
 
   /**
@@ -846,7 +883,7 @@ public class Table implements Serializable {
   /**
    * @return the creation metadata (only for materialized views)
    */
-  public Map<String, BasicTxnInfo> getCreationMetadata() {
+  public CreationMetadata getCreationMetadata() {
     return tTable.getCreationMetadata();
   }
 
@@ -854,7 +891,7 @@ public class Table implements Serializable {
    * @param creationMetadata
    *          the creation metadata (only for materialized views)
    */
-  public void setCreationMetadata(Map<String, BasicTxnInfo> creationMetadata) {
+  public void setCreationMetadata(CreationMetadata creationMetadata) {
     tTable.setCreationMetadata(creationMetadata);
   }
 
@@ -871,13 +908,6 @@ public class Table implements Serializable {
 
   public boolean isMaterializedView() {
     return TableType.MATERIALIZED_VIEW.equals(getTableType());
-  }
-
-  /**
-   * @return whether this table is actually an index table
-   */
-  public boolean isIndexTable() {
-    return TableType.INDEX_TABLE.equals(getTableType());
   }
 
   /**
@@ -981,6 +1011,10 @@ public class Table implements Serializable {
     return tTable.isTemporary();
   }
 
+  public void setTemporary(boolean isTemporary) {
+    tTable.setTemporary(isTemporary);
+  }
+
   public static boolean hasMetastoreBasedSchema(HiveConf conf, String serdeLib) {
     return StringUtils.isEmpty(serdeLib) ||
         conf.getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname).contains(serdeLib);
@@ -988,13 +1022,20 @@ public class Table implements Serializable {
 
   public static boolean shouldStoreFieldsInMetastore(
       HiveConf conf, String serdeLib, Map<String, String> tableParams) {
-    if (hasMetastoreBasedSchema(conf, serdeLib))  return true;
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_LEGACY_SCHEMA_FOR_ALL_SERDES)) return true;
+    if (hasMetastoreBasedSchema(conf, serdeLib)) {
+      return true;
+    }
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_LEGACY_SCHEMA_FOR_ALL_SERDES)) {
+      return true;
+    }
     // Table may or may not be using metastore. Only the SerDe can tell us.
     AbstractSerDe deserializer = null;
     try {
       Class<?> clazz = conf.getClassByName(serdeLib);
-      if (!AbstractSerDe.class.isAssignableFrom(clazz)) return true; // The default.
+      if (!AbstractSerDe.class.isAssignableFrom(clazz))
+       {
+        return true; // The default.
+      }
       deserializer = ReflectionUtil.newInstance(
           conf.getClassByName(serdeLib).asSubclass(AbstractSerDe.class), conf);
     } catch (Exception ex) {
@@ -1007,8 +1048,8 @@ public class Table implements Serializable {
   public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols)
       throws HiveException {
     Set<String> colNames = new HashSet<>();
-    for (FieldSchema partCol: columns) {
-      String colName = normalize(partCol.getName());
+    for (FieldSchema col: columns) {
+      String colName = normalize(col.getName());
       if (colNames.contains(colName)) {
         throw new HiveException("Duplicate column name " + colName
             + " in the table definition.");

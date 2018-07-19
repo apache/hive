@@ -61,7 +61,7 @@ public class TestVectorUDFAdaptor {
   }
 
   @Test
-  public void testLongUDF()  {
+  public void testLongUDF() throws HiveException {
 
     // create a syntax tree for a simple function call "longudf(col0)"
     ExprNodeGenericFuncDesc funcDesc;
@@ -124,7 +124,7 @@ public class TestVectorUDFAdaptor {
   }
 
   @Test
-  public void testMultiArgumentUDF() {
+  public void testMultiArgumentUDF() throws HiveException {
 
     // create a syntax tree for a function call "testudf(col0, col1, col2)"
     ExprNodeGenericFuncDesc funcDesc;
@@ -246,7 +246,7 @@ public class TestVectorUDFAdaptor {
 
   // test the UDF adaptor for a generic UDF (as opposed to a legacy UDF)
   @Test
-  public void testGenericUDF() {
+  public void testGenericUDF() throws HiveException {
 
     // create a syntax tree for a function call 'myisnull(col0, "UNKNOWN")'
     ExprNodeGenericFuncDesc funcDesc;

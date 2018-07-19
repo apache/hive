@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set mapred.input.dir.recursive=true;
 
 -- run this test case in minimr to ensure it works in cluster

@@ -1,23 +1,23 @@
-PREHOOK: query: drop view masking_test
+PREHOOK: query: drop view masking_test_n0
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view masking_test
+POSTHOOK: query: drop view masking_test_n0
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create view masking_test as select cast(key as int) as key, value, '12' from src
+PREHOOK: query: create view masking_test_n0 as select cast(key as int) as key, value, '12' from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create view masking_test as select cast(key as int) as key, value, '12' from src
+PREHOOK: Output: default@masking_test_n0
+POSTHOOK: query: create view masking_test_n0 as select cast(key as int) as key, value, '12' from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test._c2 SIMPLE []
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select * from masking_test
+POSTHOOK: Output: default@masking_test_n0
+POSTHOOK: Lineage: masking_test_n0._c2 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select * from masking_test_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test
+POSTHOOK: query: explain select * from masking_test_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -29,6 +29,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -46,6 +47,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -53,14 +55,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test
+PREHOOK: query: select * from masking_test_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test
+POSTHOOK: query: select * from masking_test_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n0
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	0_lav	12
@@ -69,9 +71,9 @@ POSTHOOK: Input: default@src
 0	0_lav	12
 0	0_lav	12
 2	2_lav	12
-PREHOOK: query: explain select * from masking_test where key > 0
+PREHOOK: query: explain select * from masking_test_n0 where key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test where key > 0
+POSTHOOK: query: explain select * from masking_test_n0 where key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -83,6 +85,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -100,6 +103,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -107,56 +111,56 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test where key > 0
+PREHOOK: query: select * from masking_test_n0 where key > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test where key > 0
+POSTHOOK: query: select * from masking_test_n0 where key > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n0
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 4	4_lav	12
 8	8_lav	12
 2	2_lav	12
-PREHOOK: query: drop view masking_test
+PREHOOK: query: drop view masking_test_n0
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@masking_test
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: drop view masking_test
+PREHOOK: Input: default@masking_test_n0
+PREHOOK: Output: default@masking_test_n0
+POSTHOOK: query: drop view masking_test_n0
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@masking_test
-POSTHOOK: Output: default@masking_test
-PREHOOK: query: create view masking_test as select cast(key as int) as key, '12',
+POSTHOOK: Input: default@masking_test_n0
+POSTHOOK: Output: default@masking_test_n0
+PREHOOK: query: create view masking_test_n0 as select cast(key as int) as key, '12',
 '12', '12', '12', '12', '12', '12', '12', '12', '12', '12'
  from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create view masking_test as select cast(key as int) as key, '12',
+PREHOOK: Output: default@masking_test_n0
+POSTHOOK: query: create view masking_test_n0 as select cast(key as int) as key, '12',
 '12', '12', '12', '12', '12', '12', '12', '12', '12', '12'
  from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test._c1 SIMPLE []
-POSTHOOK: Lineage: masking_test._c10 SIMPLE []
-POSTHOOK: Lineage: masking_test._c11 SIMPLE []
-POSTHOOK: Lineage: masking_test._c2 SIMPLE []
-POSTHOOK: Lineage: masking_test._c3 SIMPLE []
-POSTHOOK: Lineage: masking_test._c4 SIMPLE []
-POSTHOOK: Lineage: masking_test._c5 SIMPLE []
-POSTHOOK: Lineage: masking_test._c6 SIMPLE []
-POSTHOOK: Lineage: masking_test._c7 SIMPLE []
-POSTHOOK: Lineage: masking_test._c8 SIMPLE []
-POSTHOOK: Lineage: masking_test._c9 SIMPLE []
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: explain select * from masking_test
+POSTHOOK: Output: default@masking_test_n0
+POSTHOOK: Lineage: masking_test_n0._c1 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c10 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c11 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c2 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c3 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c4 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c5 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c6 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c7 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c8 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0._c9 SIMPLE []
+POSTHOOK: Lineage: masking_test_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain select * from masking_test_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test
+POSTHOOK: query: explain select * from masking_test_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -168,6 +172,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -185,6 +190,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -192,14 +198,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test
+PREHOOK: query: select * from masking_test_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test
+POSTHOOK: query: select * from masking_test_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n0
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	12	12	12	12	12	12	12	12	12	12	12
@@ -208,9 +214,9 @@ POSTHOOK: Input: default@src
 0	12	12	12	12	12	12	12	12	12	12	12
 0	12	12	12	12	12	12	12	12	12	12	12
 2	12	12	12	12	12	12	12	12	12	12	12
-PREHOOK: query: explain select * from masking_test where key > 0
+PREHOOK: query: explain select * from masking_test_n0 where key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test where key > 0
+POSTHOOK: query: explain select * from masking_test_n0 where key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -222,6 +228,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -239,6 +246,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -246,14 +254,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test where key > 0
+PREHOOK: query: select * from masking_test_n0 where key > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test where key > 0
+POSTHOOK: query: select * from masking_test_n0 where key > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n0
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 4	12	12	12	12	12	12	12	12	12	12	12

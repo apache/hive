@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -595,9 +594,10 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
     List<Entry<String, Long>> sortedTables =
-        new LinkedList<>(tableToTotalSize.entrySet());
+        new ArrayList<>(tableToTotalSize.entrySet());
     Collections.sort(sortedTables, Collections.reverseOrder(
         new Comparator<Map.Entry<String, Long>>() {
+          @Override
           public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
             return (o1.getValue()).compareTo(o2.getValue());
           }
@@ -634,9 +634,10 @@ public class SharedWorkOptimizer extends Transform {
           StatsUtils.safeMult(op.getChildOperators().size(), size));
     }
     List<Entry<Operator<?>, Long>> sortedOps =
-        new LinkedList<>(opToTotalSize.entrySet());
+        new ArrayList<>(opToTotalSize.entrySet());
     Collections.sort(sortedOps, Collections.reverseOrder(
         new Comparator<Map.Entry<Operator<?>, Long>>() {
+          @Override
           public int compare(Map.Entry<Operator<?>, Long> o1, Map.Entry<Operator<?>, Long> o2) {
             int valCmp = o1.getValue().compareTo(o2.getValue());
             if (valCmp == 0) {
@@ -648,6 +649,7 @@ public class SharedWorkOptimizer extends Transform {
     return sortedOps;
   }
 
+  // FIXME: probably this should also be integrated with isSame() logics
   private static boolean areMergeable(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
           TableScanOperator tsOp1, TableScanOperator tsOp2) throws SemanticException {
     // First we check if the two table scan operators can actually be merged
@@ -907,8 +909,8 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableInputOps));
-    discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableOps));
+    discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache,
+        Sets.union(discardableInputOps, discardableOps)));
     discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, retainableOps,
         discardableInputOps));
     return new SharedResult(retainableOps, discardableOps, discardableInputOps,
@@ -945,11 +947,7 @@ public class SharedWorkOptimizer extends Transform {
             .get((TableScanOperator) op);
         for (Operator<?> dppSource : c) {
           // Remove the branches
-          Operator<?> currentOp = dppSource;
-          while (currentOp.getNumChild() <= 1) {
-            dppBranches.add(currentOp);
-            currentOp = currentOp.getParentOperators().get(0);
-          }
+          removeBranch(dppSource, dppBranches, ops);
         }
       }
     }
@@ -969,16 +967,29 @@ public class SharedWorkOptimizer extends Transform {
               findAscendantWorkOperators(pctx, optimizerCache, dppSource);
           if (!Collections.disjoint(ascendants, discardedOps)) {
             // Remove branch
-            Operator<?> currentOp = dppSource;
-            while (currentOp.getNumChild() <= 1) {
-              dppBranches.add(currentOp);
-              currentOp = currentOp.getParentOperators().get(0);
-            }
+            removeBranch(dppSource, dppBranches, ops);
           }
         }
       }
     }
     return dppBranches;
+  }
+
+  private static void removeBranch(Operator<?> currentOp, Set<Operator<?>> branchesOps,
+          Set<Operator<?>> discardableOps) {
+    if (currentOp.getNumChild() > 1) {
+      for (Operator<?> childOp : currentOp.getChildOperators()) {
+        if (!branchesOps.contains(childOp) && !discardableOps.contains(childOp)) {
+          return;
+        }
+      }
+    }
+    branchesOps.add(currentOp);
+    if (currentOp.getParentOperators() != null) {
+      for (Operator<?> parentOp : currentOp.getParentOperators()) {
+        removeBranch(parentOp, branchesOps, discardableOps);
+      }
+    }
   }
 
   private static List<Operator<?>> compareAndGatherOps(ParseContext pctx,

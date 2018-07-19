@@ -27,7 +27,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -35,20 +34,11 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.util.concurrent.SettableFuture;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.response.HttpResponseHandler;
-import io.druid.data.input.Row;
-import io.druid.query.Result;
-import io.druid.query.select.SelectResultValue;
-import io.druid.query.timeseries.TimeseriesResultValue;
-import io.druid.query.topn.TopNResultValue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
@@ -62,11 +52,10 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -74,22 +63,31 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.SettableFuture;
+import com.metamx.http.client.HttpClient;
+import com.metamx.http.client.response.HttpResponseHandler;
 
+import io.druid.data.input.Row;
 import io.druid.query.Query;
+import io.druid.query.Result;
+import io.druid.query.select.SelectResultValue;
+import io.druid.query.timeseries.TimeseriesResultValue;
+import io.druid.query.topn.TopNResultValue;
 
 /**
  * Basic tests for Druid SerDe. The examples are taken from Druid 0.9.1.1
@@ -159,15 +157,8 @@ public class TestDruidSerDe {
   };
 
   // Timeseries query results as records (types defined by metastore)
-  private static final String TIMESERIES_COLUMN_NAMES = "__time,sample_name1,sample_name2,sample_divide";
-  private static final String TIMESERIES_COLUMN_TYPES = "timestamp with local time zone,smallint,double,float";
-  private static final Object[][] TIMESERIES_QUERY_RESULTS_RECORDS_2 = new Object[][] {
-    new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), new ShortWritable((short) 0),
-        new DoubleWritable(1.0d), new FloatWritable(2.2222F) },
-    new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325462400000L).atZone(ZoneOffset.UTC))), new ShortWritable((short) 2),
-        new DoubleWritable(3.32d), new FloatWritable(4F) }
-  };
-
+  private static final String TIMESERIES_COLUMN_NAMES = "timestamp,sample_name1,sample_name2,sample_divide";
+  private static final String TIMESERIES_COLUMN_TYPES = "timestamp with local time zone,bigint,float,float";
   // TopN query
   private static final String TOPN_QUERY =
           "{  \"queryType\": \"topN\", "
@@ -285,25 +276,8 @@ public class TestDruidSerDe {
   };
 
   // TopN query results as records (types defined by metastore)
-  private static final String TOPN_COLUMN_NAMES = "__time,sample_dim,count,some_metric,sample_divide";
-  private static final String TOPN_COLUMN_TYPES = "timestamp with local time zone,string,bigint,double,float";
-  private static final Object[][] TOPN_QUERY_RESULTS_RECORDS_2 = new Object[][] {
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-                  new Text("dim1_val"), new LongWritable(111), new DoubleWritable(10669d),
-                  new FloatWritable(96.11711711711712F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-                  new Text("another_dim1_val"), new LongWritable(88), new DoubleWritable(28344d),
-                  new FloatWritable(322.09090909090907F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-                  new Text("dim1_val3"), new LongWritable(70), new DoubleWritable(871d),
-                  new FloatWritable(12.442857142857143F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-                  new Text("dim1_val4"), new LongWritable(62), new DoubleWritable(815d),
-                  new FloatWritable(13.14516129032258F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-                  new Text("dim1_val5"), new LongWritable(60), new DoubleWritable(2787d),
-                  new FloatWritable(46.45F) }
-  };
+  private static final String TOPN_COLUMN_NAMES = "timestamp,sample_dim,count,some_metric,sample_divide";
+  private static final String TOPN_COLUMN_TYPES = "timestamp with local time zone,string,bigint,float,float";
 
   // GroupBy query
   private static final String GROUP_BY_QUERY =
@@ -439,10 +413,10 @@ public class TestDruidSerDe {
 
   private static final Object[][] GROUP_BY_QUERY_RESULTS_RECORDS = new Object[][] {
           new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), new Text("India"),
-                  new Text("phone"), new LongWritable(88), new FloatWritable(29.91233453F),
+                  new Text("phone"), new LongWritable(88), new DoubleWritable(29.91233453),
                   new FloatWritable(60.32F) },
           new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))), new Text("Spain"),
-                  new Text("pc"), new LongWritable(16), new FloatWritable(172.93494959F),
+                  new Text("pc"), new LongWritable(16), new DoubleWritable(172.93494959),
                   new FloatWritable(6.333333F) }
   };
 
@@ -455,16 +429,14 @@ public class TestDruidSerDe {
   };
 
   // GroupBy query results as records (types defined by metastore)
-  private static final String GROUP_BY_COLUMN_NAMES = "__time,country,device,total_usage,data_transfer,avg_usage";
-  private static final String GROUP_BY_COLUMN_TYPES = "timestamp with local time zone,string,string,int,double,float";
-  private static final Object[][] GROUP_BY_QUERY_RESULTS_RECORDS_2 = new Object[][] {
-    new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), new Text("India"),
-            new Text("phone"), new IntWritable(88), new DoubleWritable(29.91233453),
-            new FloatWritable(60.32F) },
-    new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))), new Text("Spain"),
-            new Text("pc"), new IntWritable(16), new DoubleWritable(172.93494959),
-            new FloatWritable(6.333333F) }
-  };
+  private static final String GROUP_BY_COLUMN_NAMES = "timestamp,country,device,total_usage,data_transfer,avg_usage";
+  private static final String GROUP_BY_COLUMN_TYPES = "timestamp with local time zone,string,string,bigint,double,float";
+
+  private static final String GB_TIME_EXTRACTIONS_COLUMN_NAMES = "timestamp,extract,$f1";
+  private static final String GB_TIME_EXTRACTIONS_COLUMN_TYPES = "timestamp with local time zone,timestamp with local time zone,bigint";
+
+  private static final String GB_MONTH_EXTRACTIONS_COLUMN_NAMES = "timestamp,extract_month,$f1";
+  private static final String GB_MONTH_EXTRACTIONS_COLUMN_TYPES = "timestamp with local time zone,int,bigint";
 
   // Select query
   private static final String SELECT_QUERY =
@@ -488,7 +460,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 0,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-                  + "     \"robot\" : \"1\",   "
+                  + "     \"robot\" : 1,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -507,7 +479,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 1,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-                  + "     \"robot\" : \"0\",   "
+                  + "     \"robot\" : 0,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -526,7 +498,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 2,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-                  + "     \"robot\" : \"0\",   "
+                  + "     \"robot\" : 0,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -545,7 +517,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 3,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-                  + "     \"robot\" : \"0\",   "
+                  + "     \"robot\" : 0,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -564,7 +536,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 4,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-                  + "     \"robot\" : \"0\",   "
+                  + "     \"robot\" : 0,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -580,62 +552,32 @@ public class TestDruidSerDe {
                   + "    } "
                   + "   } ]  }} ]";
 
-  // Select query results as records
-  private static final Object[][] SELECT_QUERY_RESULTS_RECORDS = new Object[][] {
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new Text("1"),
-                  new Text("article"), new Text("0"), new Text("0"),
-                  new Text("11._korpus_(NOVJ)"), new Text("sl"), new Text("0"),
-                  new Text("EmausBot"),
-                  new FloatWritable(1.0F), new FloatWritable(39.0F), new FloatWritable(39.0F),
-                  new FloatWritable(39.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new Text("0"),
-                  new Text("article"), new Text("0"), new Text("0"),
-                  new Text("112_U.S._580"), new Text("en"), new Text("1"), new Text("MZMcBride"),
-                  new FloatWritable(1.0F), new FloatWritable(70.0F), new FloatWritable(70.0F),
-                  new FloatWritable(70.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new Text("0"),
-                  new Text("article"), new Text("0"), new Text("0"),
-                  new Text("113_U.S._243"), new Text("en"), new Text("1"), new Text("MZMcBride"),
-                  new FloatWritable(1.0F), new FloatWritable(77.0F), new FloatWritable(77.0F),
-                  new FloatWritable(77.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new Text("0"),
-                  new Text("article"), new Text("0"), new Text("0"),
-                  new Text("113_U.S._73"), new Text("en"), new Text("1"), new Text("MZMcBride"),
-                  new FloatWritable(1.0F), new FloatWritable(70.0F), new FloatWritable(70.0F),
-                  new FloatWritable(70.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new Text("0"),
-                  new Text("article"), new Text("0"), new Text("0"),
-                  new Text("113_U.S._756"), new Text("en"), new Text("1"), new Text("MZMcBride"),
-                  new FloatWritable(1.0F), new FloatWritable(68.0F), new FloatWritable(68.0F),
-                  new FloatWritable(68.0F), new FloatWritable(0.0F) }
-  };
-
   // Select query results as records (types defined by metastore)
   private static final String SELECT_COLUMN_NAMES = "__time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted";
-  private static final String SELECT_COLUMN_TYPES = "timestamp with local time zone,string,string,string,string,string,string,string,string,double,double,float,float,float";
-  private static final Object[][] SELECT_QUERY_RESULTS_RECORDS_2 = new Object[][] {
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new Text("1"),
+  private static final String SELECT_COLUMN_TYPES = "timestamp with local time zone,boolean,string,string,string,string,string,string,string,double,double,float,float,float";
+  private static final Object[][] SELECT_QUERY_RESULTS_RECORDS = new Object[][] {
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new BooleanWritable(true),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("11._korpus_(NOVJ)"), new Text("sl"), new Text("0"),
                   new Text("EmausBot"),
                   new DoubleWritable(1.0d), new DoubleWritable(39.0d), new FloatWritable(39.0F),
                   new FloatWritable(39.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new Text("0"),
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new BooleanWritable(false),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("112_U.S._580"), new Text("en"), new Text("1"), new Text("MZMcBride"),
                   new DoubleWritable(1.0d), new DoubleWritable(70.0d), new FloatWritable(70.0F),
                   new FloatWritable(70.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new Text("0"),
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new BooleanWritable(false),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("113_U.S._243"), new Text("en"), new Text("1"), new Text("MZMcBride"),
                   new DoubleWritable(1.0d), new DoubleWritable(77.0d), new FloatWritable(77.0F),
                   new FloatWritable(77.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new Text("0"),
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new BooleanWritable(false),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("113_U.S._73"), new Text("en"), new Text("1"), new Text("MZMcBride"),
                   new DoubleWritable(1.0d), new DoubleWritable(70.0d), new FloatWritable(70.0F),
                   new FloatWritable(70.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new Text("0"),
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new BooleanWritable(false),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("113_U.S._756"), new Text("en"), new Text("1"), new Text("MZMcBride"),
                   new DoubleWritable(1.0d), new DoubleWritable(68.0d), new FloatWritable(68.0F),
@@ -686,72 +628,59 @@ public class TestDruidSerDe {
     Configuration conf = new Configuration();
     Properties tbl;
     // Timeseries query
-    tbl = createPropertiesQuery("sample_datasource", Query.TIMESERIES, TIMESERIES_QUERY);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.TIMESERIES, TIMESERIES_QUERY,
-            tsQueryResults, TIMESERIES_QUERY_RESULTS_RECORDS
+    tbl = createPropertiesQuery("sample_datasource", Query.TIMESERIES, TIMESERIES_QUERY,
+        TIMESERIES_COLUMN_NAMES, TIMESERIES_COLUMN_TYPES
     );
-    // Timeseries query (simulating column types from metastore)
-    tbl.setProperty(serdeConstants.LIST_COLUMNS, TIMESERIES_COLUMN_NAMES);
-    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, TIMESERIES_COLUMN_TYPES);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.TIMESERIES, TIMESERIES_QUERY,
-            tsQueryResults, TIMESERIES_QUERY_RESULTS_RECORDS_2
-    );
-    // TopN query
-    tbl = createPropertiesQuery("sample_data", Query.TOPN, TOPN_QUERY);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.TOPN, TOPN_QUERY,
-            topNQueryResults, TOPN_QUERY_RESULTS_RECORDS
-    );
-    // TopN query (simulating column types from metastore)
-    tbl.setProperty(serdeConstants.LIST_COLUMNS, TOPN_COLUMN_NAMES);
-    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, TOPN_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.TOPN, TOPN_QUERY,
-            topNQueryResults, TOPN_QUERY_RESULTS_RECORDS_2
-    );
-    // GroupBy query
-    tbl = createPropertiesQuery("sample_datasource", Query.GROUP_BY, GROUP_BY_QUERY);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.GROUP_BY, GROUP_BY_QUERY,
-            groupByQueryResults, GROUP_BY_QUERY_RESULTS_RECORDS
-    );
-    // GroupBy query (simulating column types from metastore)
-    tbl.setProperty(serdeConstants.LIST_COLUMNS, GROUP_BY_COLUMN_NAMES);
-    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, GROUP_BY_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.GROUP_BY, GROUP_BY_QUERY,
-            groupByQueryResults, GROUP_BY_QUERY_RESULTS_RECORDS_2
-    );
-    tbl = createPropertiesQuery("sample_datasource", Query.GROUP_BY, GB_TIME_EXTRACTIONS);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.GROUP_BY, GB_TIME_EXTRACTIONS,
-            groupByTimeExtractQueryResults, GROUP_BY_QUERY_EXTRACTION_RESULTS_RECORDS
+    deserializeQueryResults(serDe, Query.TIMESERIES, TIMESERIES_QUERY, tsQueryResults,
+        TIMESERIES_QUERY_RESULTS_RECORDS
     );
 
-    tbl = createPropertiesQuery("sample_datasource", Query.GROUP_BY, GB_MONTH_EXTRACTIONS);
+    // TopN query
+    tbl = createPropertiesQuery("sample_data", Query.TOPN, TOPN_QUERY, TOPN_COLUMN_NAMES,
+        TOPN_COLUMN_TYPES
+    );
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    deserializeQueryResults(serDe, Query.TOPN, TOPN_QUERY, topNQueryResults,
+        TOPN_QUERY_RESULTS_RECORDS
+    );
+
+    // GroupBy query
+    tbl = createPropertiesQuery("sample_datasource", Query.GROUP_BY, GROUP_BY_QUERY,
+        GROUP_BY_COLUMN_NAMES, GROUP_BY_COLUMN_TYPES
+    );
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    deserializeQueryResults(serDe, Query.GROUP_BY, GROUP_BY_QUERY, groupByQueryResults,
+        GROUP_BY_QUERY_RESULTS_RECORDS
+    );
+
+    tbl = createPropertiesQuery("sample_datasource", Query.GROUP_BY, GB_TIME_EXTRACTIONS,
+        GB_TIME_EXTRACTIONS_COLUMN_NAMES, GB_TIME_EXTRACTIONS_COLUMN_TYPES
+    );
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    deserializeQueryResults(serDe, Query.GROUP_BY, GB_TIME_EXTRACTIONS,
+        groupByTimeExtractQueryResults, GROUP_BY_QUERY_EXTRACTION_RESULTS_RECORDS
+    );
+
+    tbl = createPropertiesQuery("sample_datasource", Query.GROUP_BY, GB_MONTH_EXTRACTIONS,
+        GB_MONTH_EXTRACTIONS_COLUMN_NAMES, GB_MONTH_EXTRACTIONS_COLUMN_TYPES
+    );
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     deserializeQueryResults(serDe, Query.GROUP_BY, GB_MONTH_EXTRACTIONS,
-            groupByMonthExtractQueryResults, GB_MONTH_EXTRACTION_RESULTS_RECORDS
+        groupByMonthExtractQueryResults, GB_MONTH_EXTRACTION_RESULTS_RECORDS
     );
     // Select query
-    tbl = createPropertiesQuery("wikipedia", Query.SELECT, SELECT_QUERY);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.SELECT, SELECT_QUERY,
-            selectQueryResults, SELECT_QUERY_RESULTS_RECORDS
+    tbl = createPropertiesQuery("wikipedia", Query.SELECT, SELECT_QUERY, SELECT_COLUMN_NAMES,
+        SELECT_COLUMN_TYPES
     );
-    // Select query (simulating column types from metastore)
-    tbl.setProperty(serdeConstants.LIST_COLUMNS, SELECT_COLUMN_NAMES);
-    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, SELECT_COLUMN_TYPES);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    deserializeQueryResults(serDe, Query.SELECT, SELECT_QUERY,
-            selectQueryResults, SELECT_QUERY_RESULTS_RECORDS_2
+    deserializeQueryResults(serDe, Query.SELECT, SELECT_QUERY, selectQueryResults,
+        SELECT_QUERY_RESULTS_RECORDS
     );
   }
 
   private static Properties createPropertiesQuery(String dataSource, String queryType,
-          String jsonQuery
+      String jsonQuery, String columnNames, String columnTypes
   ) {
     Properties tbl = new Properties();
 
@@ -759,6 +688,8 @@ public class TestDruidSerDe {
     tbl.setProperty(Constants.DRUID_DATA_SOURCE, dataSource);
     tbl.setProperty(Constants.DRUID_QUERY_JSON, jsonQuery);
     tbl.setProperty(Constants.DRUID_QUERY_TYPE, queryType);
+    tbl.setProperty(Constants.DRUID_QUERY_FIELD_NAMES, columnNames);
+    tbl.setProperty(Constants.DRUID_QUERY_FIELD_TYPES, columnTypes);
     return tbl;
   }
 
@@ -831,8 +762,8 @@ public class TestDruidSerDe {
   }
 
 
-  private static final String COLUMN_NAMES = "__time,c0,c1,c2,c3,c4,c5,c6,c7,c8,c9";
-  private static final String COLUMN_TYPES = "timestamp with local time zone,string,char(6),varchar(8),double,float,decimal(38,18),bigint,int,smallint,tinyint";
+  private static final String COLUMN_NAMES = "__time,c0,c1,c2,c3,c4,c5,c6,c7,c8";
+  private static final String COLUMN_TYPES = "timestamp with local time zone,string,char(6),varchar(8),double,float,bigint,int,smallint,tinyint";
   private static final Object[] ROW_OBJECT = new Object[] {
       new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
       new Text("dim1_val"),
@@ -840,12 +771,11 @@ public class TestDruidSerDe {
       new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)),
       new DoubleWritable(10669.3D),
       new FloatWritable(10669.45F),
-      new HiveDecimalWritable(HiveDecimal.create(1064.34D)),
       new LongWritable(1113939),
       new IntWritable(1112123),
       new ShortWritable((short) 12),
       new ByteWritable((byte) 0),
-      new TimestampWritable(new Timestamp(1377907200000L)) // granularity
+      new TimestampWritableV2(Timestamp.ofEpochSecond(1377907200L)) // granularity
   };
   private static final DruidWritable DRUID_WRITABLE = new DruidWritable(
       ImmutableMap.<String, Object>builder()
@@ -855,11 +785,10 @@ public class TestDruidSerDe {
           .put("c2", "dim3_val")
           .put("c3", 10669.3D)
           .put("c4", 10669.45F)
-          .put("c5", 1064.34D)
-          .put("c6", 1113939L)
-          .put("c7", 1112123)
-          .put("c8", (short) 12)
-          .put("c9", (byte) 0)
+          .put("c5", 1113939L)
+          .put("c6", 1112123)
+          .put("c7", (short) 12)
+          .put("c8", (byte) 0)
           .put("__time_granularity", 1377907200000L)
           .build());
 
@@ -944,7 +873,6 @@ public class TestDruidSerDe {
       new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)),
       new DoubleWritable(10669.3D),
       new FloatWritable(10669.45F),
-      new HiveDecimalWritable(HiveDecimal.create(1064.34D)),
       new LongWritable(1113939),
       new IntWritable(1112123),
       new ShortWritable((short) 12),
@@ -958,11 +886,10 @@ public class TestDruidSerDe {
           .put("c2", "dim3_val")
           .put("c3", 10669.3D)
           .put("c4", 10669.45F)
-          .put("c5", 1064.34D)
-          .put("c6", 1113939L)
-          .put("c7", 1112123)
-          .put("c8", (short) 12)
-          .put("c9", (byte) 0)
+          .put("c5", 1113939L)
+          .put("c6", 1112123)
+          .put("c7", (short) 12)
+          .put("c8", (byte) 0)
           .build());
 
   @Test

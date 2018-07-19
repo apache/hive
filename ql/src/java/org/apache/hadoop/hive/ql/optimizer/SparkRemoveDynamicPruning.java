@@ -58,14 +58,14 @@ public class SparkRemoveDynamicPruning implements NodeProcessor {
 
     if (context.getConf().isSparkDPPOnlyMapjoin() &&
         !op.isWithMapjoin()) {
-      LOG.info("Disabling dynamic partition pruning based on: " + desc.getTableScan().getName()
+      LOG.info("Disabling dynamic partition pruning based on: " + desc.getTableScanNames()
           + ". This is not part of a map join.");
       remove = true;
     }
     else if (desc.getStatistics().getDataSize() > context.getConf()
         .getLongVar(ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE)) {
       LOG.info("Disabling dynamic partition pruning based on: "
-          + desc.getTableScan().getName()
+          + desc.getTableScanNames()
           + ". Expected data size is too big: " + desc.getStatistics().getDataSize());
       remove = true;
     }

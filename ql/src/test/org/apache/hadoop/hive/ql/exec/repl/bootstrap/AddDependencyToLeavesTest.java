@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.junit.Test;
@@ -46,11 +47,11 @@ public class AddDependencyToLeavesTest {
   @Test
   public void shouldNotSkipIntermediateDependencyCollectionTasks() {
     Task<DependencyCollectionWork> collectionWorkTaskOne =
-        TaskFactory.get(new DependencyCollectionWork(), hiveConf);
+        TaskFactory.get(new DependencyCollectionWork());
     Task<DependencyCollectionWork> collectionWorkTaskTwo =
-        TaskFactory.get(new DependencyCollectionWork(), hiveConf);
+        TaskFactory.get(new DependencyCollectionWork());
     Task<DependencyCollectionWork> collectionWorkTaskThree =
-        TaskFactory.get(new DependencyCollectionWork(), hiveConf);
+        TaskFactory.get(new DependencyCollectionWork());
 
     @SuppressWarnings("unchecked") Task<? extends Serializable> rootTask = mock(Task.class);
     when(rootTask.getDependentTasks())

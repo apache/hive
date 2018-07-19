@@ -41,8 +41,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.exec.util.collectoroperator.RowVectorCollectorTestOperator;
-import org.apache.hadoop.hive.ql.exec.util.rowobjects.RowTestObjects;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeCaptureVectorToRowOutputOperator;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromConcat;
@@ -61,7 +59,6 @@ import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount.GenericUDAFCountEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
@@ -74,8 +71,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -220,7 +216,10 @@ public class TestVectorGroupByOperator {
     vectorDesc.setVecAggrDescs(
         new VectorAggregationDesc[] {
           new VectorAggregationDesc(
-              agg, new GenericUDAFCount.GenericUDAFCountEvaluator(), null, ColumnVector.Type.NONE, null,
+              agg.getGenericUDAFName(),
+              new GenericUDAFCount.GenericUDAFCountEvaluator(),
+              agg.getMode(),
+              null, ColumnVector.Type.NONE, null,
               TypeInfoFactory.longTypeInfo, ColumnVector.Type.LONG, VectorUDAFCountStar.class)});
 
     vectorDesc.setProcessingMode(VectorGroupByDesc.ProcessingMode.HASH);
@@ -1559,7 +1558,7 @@ public class TestVectorGroupByOperator {
         "avg",
         2,
         Arrays.asList(new Long[]{}),
-        null);
+        0.0);
   }
 
   @Test
@@ -1568,12 +1567,12 @@ public class TestVectorGroupByOperator {
         "avg",
         2,
         Arrays.asList(new Long[]{null}),
-        null);
+        0.0);
     testAggregateLongAggregate(
         "avg",
         2,
         Arrays.asList(new Long[]{null, null, null}),
-        null);
+        0.0);
     testAggregateLongAggregate(
         "avg",
         2,
@@ -1605,7 +1604,7 @@ public class TestVectorGroupByOperator {
         null,
         4096,
         1024,
-        null);
+        0.0);
   }
 
   @SuppressWarnings("unchecked")
@@ -1636,7 +1635,7 @@ public class TestVectorGroupByOperator {
         "variance",
         2,
         Arrays.asList(new Long[]{}),
-        null);
+        0.0);
   }
 
   @Test
@@ -1654,12 +1653,12 @@ public class TestVectorGroupByOperator {
         "variance",
         2,
         Arrays.asList(new Long[]{null}),
-        null);
+        0.0);
     testAggregateLongAggregate(
         "variance",
         2,
         Arrays.asList(new Long[]{null, null, null}),
-        null);
+        0.0);
     testAggregateLongAggregate(
         "variance",
         2,
@@ -1684,7 +1683,7 @@ public class TestVectorGroupByOperator {
         null,
         4096,
         1024,
-        null);
+        0.0);
   }
 
   @Test
@@ -1712,7 +1711,7 @@ public class TestVectorGroupByOperator {
         "var_samp",
         2,
         Arrays.asList(new Long[]{}),
-        null);
+        0.0);
   }
 
 
@@ -1741,7 +1740,7 @@ public class TestVectorGroupByOperator {
         "std",
         2,
         Arrays.asList(new Long[]{}),
-        null);
+        0.0);
   }
 
 
@@ -1762,7 +1761,7 @@ public class TestVectorGroupByOperator {
         null,
         4096,
         1024,
-        null);
+        0.0);
   }
 
 
@@ -1871,8 +1870,8 @@ public class TestVectorGroupByOperator {
           } else if (key instanceof LongWritable) {
             LongWritable lwKey = (LongWritable)key;
             keyValue.add(lwKey.get());
-          } else if (key instanceof TimestampWritable) {
-            TimestampWritable twKey = (TimestampWritable)key;
+          } else if (key instanceof TimestampWritableV2) {
+            TimestampWritableV2 twKey = (TimestampWritableV2)key;
             keyValue.add(twKey.getTimestamp());
           } else if (key instanceof DoubleWritable) {
             DoubleWritable dwKey = (DoubleWritable)key;
@@ -1992,9 +1991,9 @@ public class TestVectorGroupByOperator {
         } else if (key instanceof LongWritable) {
           LongWritable lwKey = (LongWritable)key;
           keyValue = lwKey.get();
-        } else if (key instanceof TimestampWritable) {
-          TimestampWritable twKey = (TimestampWritable)key;
-          keyValue = twKey.getTimestamp();
+        } else if (key instanceof TimestampWritableV2) {
+          TimestampWritableV2 twKey = (TimestampWritableV2)key;
+          keyValue = twKey.getTimestamp().toSqlTimestamp();
         } else if (key instanceof DoubleWritable) {
           DoubleWritable dwKey = (DoubleWritable)key;
           keyValue = dwKey.get();
@@ -2240,14 +2239,21 @@ public class TestVectorGroupByOperator {
 
         assertEquals (true, vals[0] instanceof LongWritable);
         LongWritable lw = (LongWritable) vals[0];
-        assertFalse (lw.get() == 0L);
 
         if (vals[1] instanceof DoubleWritable) {
           DoubleWritable dw = (DoubleWritable) vals[1];
-          assertEquals (key, expected, dw.get() / lw.get());
+          if (lw.get() != 0L) {
+            assertEquals (key, expected, dw.get() / lw.get());
+          } else {
+            assertEquals(key, expected, 0.0);
+          }
         } else if (vals[1] instanceof HiveDecimalWritable) {
           HiveDecimalWritable hdw = (HiveDecimalWritable) vals[1];
-          assertEquals (key, expected, hdw.getHiveDecimal().divide(HiveDecimal.create(lw.get())));
+          if (lw.get() != 0L) {
+            assertEquals (key, expected, hdw.getHiveDecimal().divide(HiveDecimal.create(lw.get())));
+          } else {
+            assertEquals(key, expected, HiveDecimal.ZERO);
+          }
         }
       }
     }
@@ -2275,10 +2281,14 @@ public class TestVectorGroupByOperator {
         assertEquals (true, vals[1] instanceof DoubleWritable);
         assertEquals (true, vals[2] instanceof DoubleWritable);
         LongWritable cnt = (LongWritable) vals[0];
-        DoubleWritable sum = (DoubleWritable) vals[1];
-        DoubleWritable var = (DoubleWritable) vals[2];
-        assertTrue (1 <= cnt.get());
-        validateVariance (key, (Double) expected, cnt.get(), sum.get(), var.get());
+        if (cnt.get() == 0) {
+          assertEquals(key, expected, 0.0);
+        } else {
+          DoubleWritable sum = (DoubleWritable) vals[1];
+          DoubleWritable var = (DoubleWritable) vals[2];
+          assertTrue (1 <= cnt.get());
+          validateVariance (key, (Double) expected, cnt.get(), sum.get(), var.get());
+        }
       }
     }
   }
@@ -2555,7 +2565,7 @@ public class TestVectorGroupByOperator {
         (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx, vectorDesc);
 
     FakeCaptureVectorToRowOutputOperator out = FakeCaptureVectorToRowOutputOperator.addCaptureOutputChild(cCtx, vgo);
-    vgo.initialize(null, null);
+    vgo.initialize(hconf, null);
 
     for (VectorizedRowBatch unit: data) {
       vgo.process(unit,  0);

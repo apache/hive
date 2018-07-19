@@ -19,10 +19,12 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * This class provides the implementation of vectorized substring, with a single start index
@@ -119,13 +121,13 @@ public class StringSubstrColStart extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
     BytesColumnVector inV = (BytesColumnVector) batch.cols[colNum];
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
 
     int n = batch.size;
 
@@ -137,82 +139,100 @@ public class StringSubstrColStart extends VectorExpression {
     int[] sel = batch.selected;
     int[] len = inV.length;
     int[] start = inV.start;
-    outV.initBuffer();
+    outputColVector.initBuffer();
+    boolean[] outputIsNull = outputColVector.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
     if (inV.isRepeating) {
-      outV.isRepeating = true;
-      if (!inV.noNulls && inV.isNull[0]) {
-        outV.isNull[0] = true;
-        outV.noNulls = false;
-        outV.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
-        return;
-      } else {
-        outV.noNulls = true;
+      if (inV.noNulls || !inV.isNull[0]) {
+        outputIsNull[0] = false;
         int offset = getSubstrStartOffset(vector[0], start[0], len[0], startIdx);
         if (offset != -1) {
-          outV.setVal(0, vector[0], offset, len[0] - (offset - start[0]));
+          outputColVector.setVal(0, vector[0], offset, len[0] - (offset - start[0]));
         } else {
-          outV.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
+          outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
+        }
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+        outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (batch.selectedInUse) {
+      if (!inV.noNulls) /* there are nulls in the inputColVector */ {
+
+        // Carefully handle NULLs...
+
+        for (int i = 0; i != n; ++i) {
+          int selected = sel[i];
+          if (!inV.isNull[selected]) {
+            outputIsNull[selected] = false;
+            int offset = getSubstrStartOffset(vector[selected], start[selected], len[selected],
+                startIdx);
+            outputColVector.isNull[selected] = false;
+            if (offset != -1) {
+              outputColVector.setVal(selected, vector[selected], offset,
+                  len[selected] - (offset - start[selected]));
+            } else {
+              outputColVector.setVal(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
+            }
+          } else {
+            outputColVector.isNull[selected] = true;
+            outputColVector.noNulls = false;
+          }
+        }
+      } else {
+        for (int i = 0; i != n; ++i) {
+          int selected = sel[i];
+          outputColVector.isNull[selected] = false;
+          int offset = getSubstrStartOffset(vector[selected], start[selected], len[selected],
+              startIdx);
+          if (offset != -1) {
+            outputColVector.setVal(selected, vector[selected], offset,
+                len[selected] - (offset - start[selected]));
+          } else {
+            outputColVector.setVal(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
+          }
         }
       }
     } else {
-      outV.isRepeating = false;
-      if (batch.selectedInUse) {
-        if (!inV.noNulls) {
-          outV.noNulls = false;
-          for (int i = 0; i != n; ++i) {
-            int selected = sel[i];
-            if (!inV.isNull[selected]) {
-              int offset = getSubstrStartOffset(vector[selected], start[selected], len[selected],
-                  startIdx);
-              outV.isNull[selected] = false;
-              if (offset != -1) {
-                outV.setVal(selected, vector[selected], offset,
-                    len[selected] - (offset - start[selected]));
-              } else {
-                outV.setVal(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
-              }
-            } else {
-              outV.isNull[selected] = true;
-            }
-          }
-        } else {
-          outV.noNulls = true;
-          for (int i = 0; i != n; ++i) {
-            int selected = sel[i];
-            int offset = getSubstrStartOffset(vector[selected], start[selected], len[selected],
-                startIdx);
+      if (!inV.noNulls)  /* there are nulls in the inputColVector */ {
+
+        // Carefully handle NULLs...
+
+        for (int i = 0; i != n; ++i) {
+          if (!inV.isNull[i]) {
+            outputColVector.isNull[i] = false;
+            int offset = getSubstrStartOffset(vector[i], start[i], len[i], startIdx);
             if (offset != -1) {
-              outV.setVal(selected, vector[selected], offset,
-                  len[selected] - (offset - start[selected]));
+              outputColVector.setVal(i, vector[i], offset, len[i] - (offset - start[i]));
             } else {
-              outV.setVal(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
+              outputColVector.setVal(i, EMPTY_STRING, 0, EMPTY_STRING.length);
             }
+          } else {
+            outputColVector.isNull[i] = true;
+            outputColVector.noNulls = false;
           }
         }
       } else {
-        if (!inV.noNulls) {
-          outV.noNulls = false;
-          System.arraycopy(inV.isNull, 0, outV.isNull, 0, n);
-          for (int i = 0; i != n; ++i) {
-            if (!inV.isNull[i]) {
-              int offset = getSubstrStartOffset(vector[i], start[i], len[i], startIdx);
-              if (offset != -1) {
-                outV.setVal(i, vector[i], offset, len[i] - (offset - start[i]));
-              } else {
-                outV.setVal(i, EMPTY_STRING, 0, EMPTY_STRING.length);
-              }
-            }
-          }
-        } else {
-          outV.noNulls = true;
-          for (int i = 0; i != n; ++i) {
-            int offset = getSubstrStartOffset(vector[i], start[i], len[i], startIdx);
-            if (offset != -1) {
-              outV.setVal(i, vector[i], offset, len[i] - (offset - start[i]));
-            } else {
-              outV.setVal(i, EMPTY_STRING, 0, EMPTY_STRING.length);
-            }
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for (int i = 0; i != n; ++i) {
+          int offset = getSubstrStartOffset(vector[i], start[i], len[i], startIdx);
+          if (offset != -1) {
+            outputColVector.setVal(i, vector[i], offset, len[i] - (offset - start[i]));
+          } else {
+            outputColVector.setVal(i, EMPTY_STRING, 0, EMPTY_STRING.length);
           }
         }
       }

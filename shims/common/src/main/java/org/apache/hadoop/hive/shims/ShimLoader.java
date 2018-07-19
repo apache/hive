@@ -17,13 +17,12 @@
  */
 package org.apache.hadoop.hive.shims;
 
-import org.apache.hadoop.util.VersionInfo;
-import org.apache.log4j.AppenderSkeleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.hadoop.util.VersionInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ShimLoader.
@@ -34,8 +33,6 @@ public abstract class ShimLoader {
   public static final String HADOOP23VERSIONNAME = "0.23";
 
   private static volatile HadoopShims hadoopShims;
-  private static JettyShims jettyShims;
-  private static AppenderSkeleton eventCounter;
   private static SchedulerShim schedulerShim;
 
   /**
@@ -92,13 +89,6 @@ public abstract class ShimLoader {
       }
     }
     return hadoopShims;
-  }
-
-  public static synchronized AppenderSkeleton getEventCounter() {
-    if (eventCounter == null) {
-      eventCounter = loadShims(EVENT_COUNTER_SHIM_CLASSES, AppenderSkeleton.class);
-    }
-    return eventCounter;
   }
 
   public static synchronized SchedulerShim getSchedulerShims() {

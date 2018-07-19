@@ -14,8 +14,8 @@ date_format('2015-04-08', 'w'),
 date_format('2015-04-08', 'W'),
 date_format('2015-04-08', 'D'),
 date_format('2015-04-08', 'd'),
-date_format(cast(null as string), 'dd'),
-date_format('01/29/2014', 'dd');
+date_format(cast(null as string), 'dd');
+
 
 --string timestamp
 select
@@ -27,8 +27,8 @@ date_format('2015-04-08 10:30', 'dd'),
 date_format('2015-04-08 10:30:45.123', 'S'),
 date_format('2015-04-08T10:30:45', 'dd'),
 date_format('2015-04-08 10', 'dd'),
-date_format(cast(null as string), 'dd'),
-date_format('04/08/2015 10:30:45', 'dd');
+date_format(cast(null as string), 'dd');
+
 
 --date
 select

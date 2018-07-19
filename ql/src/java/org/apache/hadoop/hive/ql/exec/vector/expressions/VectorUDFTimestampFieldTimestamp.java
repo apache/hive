@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -42,7 +44,8 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
   protected final int colNum;
   protected final int field;
 
-  protected transient final Calendar calendar = Calendar.getInstance();
+  protected transient final Calendar calendar = Calendar.getInstance(
+      TimeZone.getTimeZone("UTC"));
 
   public VectorUDFTimestampFieldTimestamp(int field, int colNum, int outputColumnNum) {
     super(outputColumnNum);
@@ -73,7 +76,7 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     Preconditions.checkState(
         ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory() == PrimitiveCategory.TIMESTAMP);
@@ -95,27 +98,41 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
       return;
     }
 
-    /* true for all algebraic UDFs with no state */
-    outV.isRepeating = inputColVec.isRepeating;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
 
     TimestampColumnVector timestampColVector = (TimestampColumnVector) inputColVec;
 
+    if (inputColVec.isRepeating) {
+      if (inputColVec.noNulls || !inputColVec.isNull[0]) {
+        outV.isNull[0] = false;
+        outV.vector[0] = getTimestampField(timestampColVector, 0);
+      } else {
+        outV.isNull[0] = true;
+        outV.noNulls = false;
+      }
+      outV.isRepeating = true;
+      return;
+    }
+
     if (inputColVec.noNulls) {
-      outV.noNulls = true;
       if (selectedInUse) {
         for(int j=0; j < n; j++) {
           int i = sel[j];
+          outV.isNull[i] = false;
           outV.vector[i] = getTimestampField(timestampColVector, i);
         }
       } else {
+        Arrays.fill(outV.isNull, 0, n, false);
         for(int i = 0; i < n; i++) {
           outV.vector[i] = getTimestampField(timestampColVector, i);
         }
       }
-    } else {
-      // Handle case with nulls. Don't do function if the value is null, to save time,
-      // because calling the function can be expensive.
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
       outV.noNulls = false;
+
       if (selectedInUse) {
         for(int j=0; j < n; j++) {
           int i = sel[j];

@@ -179,7 +179,6 @@ org.apache.hadoop.hive.conf.HiveConf;
            <th>End Time</th>
            <th>Elapsed Time (s)</th>
            <th>Requires Lock</th>
-           <th>Retry If Fail</th>
         </tr>
 
        <%if queryInfo.getQueryDisplay() != null && queryInfo.getQueryDisplay().getTaskDisplays() != null %>
@@ -191,7 +190,6 @@ org.apache.hadoop.hive.conf.HiveConf;
                    <td><% taskDisplay.getEndTime() == null ? "" : new Date(taskDisplay.getEndTime()) %></td>
                    <td><% taskDisplay.getElapsedTime() == null ? "" : taskDisplay.getElapsedTime()/1000 %> (s) </td>
                    <td><% taskDisplay.isRequireLock() %></td>
-                   <td><% taskDisplay.isRetryIfFail() %></td>
                </tr>
            </%for>
        </%if>
@@ -206,13 +204,13 @@ org.apache.hadoop.hive.conf.HiveConf;
     <div class="panel panel-default">
       <div class="panel-heading">Explain plan</div>
       <div class="panel-body">
-        <%if hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) %>
+        <%if hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT) %>
           <pre>
           <% queryInfo.getQueryDisplay() == null ? "Unknown" : queryInfo.getQueryDisplay().getExplainPlan() %>
           </pre>
         <%else>
           <pre>
-          Set configuration hive.log.explain.output to true to view future query plans
+          Set configuration hive.server2.webui.explain.output to true to view future query plans
           </pre>
         </%if>
       </div>

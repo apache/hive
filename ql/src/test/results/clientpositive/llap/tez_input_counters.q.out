@@ -1576,6 +1576,18 @@ Stage-1 HIVE COUNTERS:
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
    RECORDS_OUT_INTERMEDIATE_Map_1: 1000
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_10: 1
+   RECORDS_OUT_OPERATOR_GBY_9: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_8: 1000
+   RECORDS_OUT_OPERATOR_SEL_7: 1000
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+Stage-1 LLAP IO COUNTERS:
+   CACHE_MISS_BYTES: 3812
+   NUM_DECODED_BATCHES: 618
+   NUM_VECTOR_BATCHES: 618
+   ROWS_EMITTED: 1000
 Stage-1 INPUT COUNTERS:
    GROUPED_INPUT_SPLITS_Map_1: 1
    INPUT_DIRECTORIES_Map_1: 309
@@ -1595,6 +1607,18 @@ Stage-1 HIVE COUNTERS:
    RECORDS_IN_Map_1: 8
    RECORDS_OUT_0: 1
    RECORDS_OUT_INTERMEDIATE_Map_1: 8
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 8
+   RECORDS_OUT_OPERATOR_SEL_9: 8
+   RECORDS_OUT_OPERATOR_TS_0: 8
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 18
+   NUM_DECODED_BATCHES: 4
+   NUM_VECTOR_BATCHES: 4
+   ROWS_EMITTED: 8
 Stage-1 INPUT COUNTERS:
    GROUPED_INPUT_SPLITS_Map_1: 1
    INPUT_DIRECTORIES_Map_1: 2
@@ -1686,6 +1710,18 @@ Stage-1 HIVE COUNTERS:
    RECORDS_IN_Map_1: 240
    RECORDS_OUT_0: 1
    RECORDS_OUT_INTERMEDIATE_Map_1: 240
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 240
+   RECORDS_OUT_OPERATOR_SEL_9: 240
+   RECORDS_OUT_OPERATOR_TS_0: 240
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 922
+   NUM_DECODED_BATCHES: 148
+   NUM_VECTOR_BATCHES: 148
+   ROWS_EMITTED: 240
 Stage-1 INPUT COUNTERS:
    GROUPED_INPUT_SPLITS_Map_1: 1
    INPUT_DIRECTORIES_Map_1: 74
@@ -1783,6 +1819,22 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_0: 74
    RECORDS_OUT_1_default.testpart1: 240
    RECORDS_OUT_INTERMEDIATE_Map_1: 240
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 240
+   RECORDS_OUT_OPERATOR_FS_9: 74
+   RECORDS_OUT_OPERATOR_GBY_7: 74
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_14: 240
+   RECORDS_OUT_OPERATOR_SEL_11: 240
+   RECORDS_OUT_OPERATOR_SEL_13: 240
+   RECORDS_OUT_OPERATOR_SEL_8: 74
+   RECORDS_OUT_OPERATOR_TS_0: 240
+   TOTAL_TABLE_ROWS_WRITTEN: 240
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 922
+   NUM_DECODED_BATCHES: 148
+   NUM_VECTOR_BATCHES: 148
+   ROWS_EMITTED: 240
 Stage-1 INPUT COUNTERS:
    GROUPED_INPUT_SPLITS_Map_1: 1
    INPUT_DIRECTORIES_Map_1: 74
@@ -1807,6 +1859,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: v is not null (type: boolean)
                   Statistics: Num rows: 1000 Data size: 188000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: k (type: int), v (type: string)
@@ -1833,12 +1886,13 @@ STAGE PLANS:
                           Partition key expr: v
                           Statistics: Num rows: 500 Data size: 94000 Basic stats: COMPLETE Column stats: COMPLETE
                           Target Vertex: Map 4
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: v is not null (type: boolean)
                   Statistics: Num rows: 240 Data size: 45120 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: k (type: int), v (type: string)
@@ -1850,7 +1904,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 240 Data size: 45120 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1872,7 +1926,7 @@ STAGE PLANS:
                     Statistics: Num rows: 776 Data size: 6208 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: int)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -2291,6 +2345,28 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_INTERMEDIATE_Map_1: 1000
    RECORDS_OUT_INTERMEDIATE_Map_4: 240
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 952
+   RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
+   RECORDS_OUT_OPERATOR_EVENT_30: 309
+   RECORDS_OUT_OPERATOR_FS_34: 1
+   RECORDS_OUT_OPERATOR_GBY_29: 309
+   RECORDS_OUT_OPERATOR_GBY_33: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_MERGEJOIN_25: 952
+   RECORDS_OUT_OPERATOR_RS_11: 952
+   RECORDS_OUT_OPERATOR_RS_27: 1000
+   RECORDS_OUT_OPERATOR_RS_32: 240
+   RECORDS_OUT_OPERATOR_SEL_26: 1000
+   RECORDS_OUT_OPERATOR_SEL_28: 1000
+   RECORDS_OUT_OPERATOR_SEL_31: 240
+   RECORDS_OUT_OPERATOR_SEL_9: 952
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   RECORDS_OUT_OPERATOR_TS_3: 240
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 3812
+   CACHE_MISS_BYTES: 922
+   NUM_DECODED_BATCHES: 692
+   NUM_VECTOR_BATCHES: 692
+   ROWS_EMITTED: 1240
 Stage-1 INPUT COUNTERS:
    GROUPED_INPUT_SPLITS_Map_1: 1
    GROUPED_INPUT_SPLITS_Map_4: 1

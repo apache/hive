@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Vectorized instruction to get an element from a list with a scalar index and put
@@ -44,7 +45,7 @@ public class ListIndexColScalar extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -53,7 +54,10 @@ public class ListIndexColScalar extends VectorExpression {
     ListColumnVector listV = (ListColumnVector) batch.cols[listColumnNum];
     ColumnVector childV = listV.child;
 
-    outV.noNulls = true;
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
     if (listV.isRepeating) {
       if (listV.isNull[0]) {
         outV.isNull[0] = true;
@@ -63,8 +67,8 @@ public class ListIndexColScalar extends VectorExpression {
           outV.isNull[0] = true;
           outV.noNulls = false;
         } else {
-          outV.setElement(0, (int) (listV.offsets[0] + index), childV);
           outV.isNull[0] = false;
+          outV.setElement(0, (int) (listV.offsets[0] + index), childV);
         }
       }
       outV.isRepeating = true;
@@ -75,8 +79,8 @@ public class ListIndexColScalar extends VectorExpression {
           outV.isNull[j] = true;
           outV.noNulls = false;
         } else {
-          outV.setElement(j, (int) (listV.offsets[j] + index), childV);
           outV.isNull[j] = false;
+          outV.setElement(j, (int) (listV.offsets[j] + index), childV);
         }
       }
       outV.isRepeating = false;

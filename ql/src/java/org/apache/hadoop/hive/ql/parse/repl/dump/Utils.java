@@ -22,6 +22,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -37,8 +39,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +75,7 @@ public class Utils {
     }
   }
 
-  public static Iterable<? extends String> matchesDb(Hive db, String dbPattern) throws HiveException {
+  public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {
     if (dbPattern == null) {
       return db.getAllDatabases();
     } else {
@@ -79,7 +83,7 @@ public class Utils {
     }
   }
 
-  public static Iterable<? extends String> matchesTbl(Hive db, String dbName, String tblPattern)
+  public static Iterable<String> matchesTbl(Hive db, String dbName, String tblPattern)
       throws HiveException {
     if (tblPattern == null) {
       return getAllTables(db, dbName);
@@ -171,15 +175,17 @@ public class Utils {
       return false;
     }
 
-    if (tableHandle.isNonNative()) {
+    // if its metadata only, then dump metadata of non native tables also.
+    if (tableHandle.isNonNative() && !replicationSpec.isMetadataOnly()) {
       return false;
     }
 
     if (replicationSpec.isInReplicationScope()) {
-      boolean isAcidTable = AcidUtils.isTransactionalTable(tableHandle);
-      if (isAcidTable) {
-        return hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES);
+      if (!hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES) &&
+              MetaStoreUtils.isExternalTable(tableHandle.getTTable()) && !replicationSpec.isMetadataOnly()) {
+        return false;
       }
+
       return !tableHandle.isTemporary();
     }
     return true;
@@ -197,5 +203,18 @@ public class Utils {
       return false;
     }
     return shouldReplicate(replicationSpec, table, hiveConf);
+  }
+
+  static List<Path> getDataPathList(Path fromPath, ReplicationSpec replicationSpec, HiveConf conf)
+          throws IOException {
+    if (replicationSpec.isTransactionalTableDump()) {
+      try {
+        return AcidUtils.getValidDataPaths(fromPath, conf, replicationSpec.getValidWriteIdList());
+      } catch (FileNotFoundException e) {
+        throw new IOException(ErrorMsg.FILE_NOT_FOUND.format(e.getMessage()), e);
+      }
+    } else {
+      return Collections.singletonList(fromPath);
+    }
   }
 }

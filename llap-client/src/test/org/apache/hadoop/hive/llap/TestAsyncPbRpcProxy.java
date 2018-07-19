@@ -112,7 +112,9 @@ public class TestAsyncPbRpcProxy {
       super(numThreads, 1);
     }
 
-    protected void submitToExecutor(LlapProtocolClientProxy.CallableRequest request, LlapNodeId nodeId) {
+    @Override
+    protected <T extends Message, U extends Message> void submitToExecutor(
+        LlapProtocolClientProxy.CallableRequest<T, U> request, LlapNodeId nodeId) {
       numSubmissionsCounters++;
       MutableInt nodeCount = numInvocationsPerNode.get(nodeId);
       if (nodeCount == null) {

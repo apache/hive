@@ -56,16 +56,18 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
     boolean running = false;
     boolean done = false;
     int rc = 0;
-    Map<String, SparkStageProgress> lastProgressMap = null;
+    Map<SparkStage, SparkStageProgress> lastProgressMap = null;
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
 
     startTime = System.currentTimeMillis();
+    JobHandle.State state = null;
 
     while (true) {
       try {
-        JobHandle.State state = sparkJobStatus.getRemoteJobState();
+        state = sparkJobStatus.getRemoteJobState();
+        Preconditions.checkState(sparkJobStatus.isRemoteActive(), "Connection to remote Spark driver was lost");
 
         switch (state) {
         case SENT:
@@ -74,30 +76,28 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
           if ((timeCount > monitorTimeoutInterval)) {
             HiveException he = new HiveException(ErrorMsg.SPARK_JOB_MONITOR_TIMEOUT,
                 Long.toString(timeCount));
-            console.printError(he.getMessage());
-            console.printError("Status: " + state);
-            sparkJobStatus.setError(he);
+            sparkJobStatus.setMonitorError(he);
             running = false;
             done = true;
             rc = 2;
           }
           if (LOG.isDebugEnabled()) {
-            console.printInfo("state = " + state);
+            console.printInfo("Spark job state = " + state );
           }
           break;
         case STARTED:
           JobExecutionStatus sparkJobState = sparkJobStatus.getState();
           if (sparkJobState == JobExecutionStatus.RUNNING) {
-            Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
+            Map<SparkStage, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
             if (!running) {
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
               printAppInfo();
+              console.printInfo("Hive on Spark Session Web UI URL: " + sparkJobStatus.getWebUIURL());
               // print job stages.
               console.printInfo("\nQuery Hive on Spark job[" + sparkJobStatus.getJobId() +
                   "] stages: " + Arrays.toString(sparkJobStatus.getStageIds()));
 
-              console.printInfo("\nStatus: Running (Hive on Spark job["
-                + sparkJobStatus.getJobId() + "])");
+              console.printInfo("Spark job[" + sparkJobStatus.getJobId() + "] status = RUNNING");
               running = true;
 
               String format = "Job Progress Format\nCurrentTime StageId_StageAttemptId: "
@@ -131,48 +131,28 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
               }
             }
 
-            printStatus(progressMap, lastProgressMap);
+            updateFunction.printStatus(progressMap, lastProgressMap);
             lastProgressMap = progressMap;
-          } else if (sparkJobState == null) {
-            // in case the remote context crashes between JobStarted and JobSubmitted
-            Preconditions.checkState(sparkJobStatus.isRemoteActive(),
-                "Remote context becomes inactive.");
           }
           break;
         case SUCCEEDED:
-          Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
-          printStatus(progressMap, lastProgressMap);
+          Map<SparkStage, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
+          updateFunction.printStatus(progressMap, lastProgressMap);
           lastProgressMap = progressMap;
           double duration = (System.currentTimeMillis() - startTime) / 1000.0;
-          console.printInfo("Status: Finished successfully in "
-            + String.format("%.2f seconds", duration));
+          console.printInfo("Spark job[" + sparkJobStatus.getJobId() + "] finished successfully in "
+            + String.format("%.2f second(s)", duration));
           running = false;
           done = true;
           break;
         case FAILED:
-          String detail = sparkJobStatus.getError().getMessage();
-          StringBuilder errBuilder = new StringBuilder();
-          errBuilder.append("Job failed with ");
-          if (detail == null) {
-            errBuilder.append("UNKNOWN reason");
-          } else {
-            // We SerDe the Throwable as String, parse it for the root cause
-            final String CAUSE_CAPTION = "Caused by: ";
-            int index = detail.lastIndexOf(CAUSE_CAPTION);
-            if (index != -1) {
-              String rootCause = detail.substring(index + CAUSE_CAPTION.length());
-              index = rootCause.indexOf(System.getProperty("line.separator"));
-              if (index != -1) {
-                errBuilder.append(rootCause.substring(0, index));
-              } else {
-                errBuilder.append(rootCause);
-              }
-            } else {
-              errBuilder.append(detail);
-            }
-            detail = System.getProperty("line.separator") + detail;
-          }
-          console.printError(errBuilder.toString(), detail);
+          LOG.error("Spark job[" + sparkJobStatus.getJobId() + "] failed", sparkJobStatus.getSparkJobException());
+          running = false;
+          done = true;
+          rc = 3;
+          break;
+        case CANCELLED:
+          console.printInfo("Spark job[" + sparkJobStatus.getJobId() + " was cancelled");
           running = false;
           done = true;
           rc = 3;
@@ -184,19 +164,22 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
         }
       } catch (Exception e) {
         Exception finalException = e;
-        if (e instanceof InterruptedException) {
+        if (e instanceof InterruptedException ||
+                (e instanceof HiveException && e.getCause() instanceof InterruptedException)) {
           finalException = new HiveException(e, ErrorMsg.SPARK_JOB_INTERRUPTED);
-        }
-        String msg = " with exception '" + Utilities.getNameMessage(e) + "'";
-        msg = "Failed to monitor Job[" + sparkJobStatus.getJobId() + "]" + msg;
+          LOG.warn("Interrupted while monitoring the Hive on Spark application, exiting");
+        } else {
+          String msg = " with exception '" + Utilities.getNameMessage(e) + "' Last known state = " +
+                  (state != null ? state.name() : "UNKNOWN");
+          msg = "Failed to monitor Job[" + sparkJobStatus.getJobId() + "]" + msg;
 
-        // Has to use full name to make sure it does not conflict with
-        // org.apache.commons.lang.StringUtils
-        LOG.error(msg, e);
-        console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+          // Has to use full name to make sure it does not conflict with
+          // org.apache.commons.lang.StringUtils
+          console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+        }
         rc = 1;
         done = true;
-        sparkJobStatus.setError(finalException);
+        sparkJobStatus.setMonitorError(finalException);
       } finally {
         if (done) {
           break;

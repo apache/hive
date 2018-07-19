@@ -1,45 +1,45 @@
-PREHOOK: query: CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+PREHOOK: query: CREATE TABLE part_table_n1(key string, value string) PARTITIONED BY (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_table
-POSTHOOK: query: CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+PREHOOK: Output: default@part_table_n1
+POSTHOOK: query: CREATE TABLE part_table_n1(key string, value string) PARTITIONED BY (partitionId int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_table
-PREHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=1)
+POSTHOOK: Output: default@part_table_n1
+PREHOOK: query: INSERT OVERWRITE TABLE part_table_n1 PARTITION (partitionId=1)
   SELECT key, value FROM src ORDER BY key, value LIMIT 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@part_table@partitionid=1
-POSTHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=1)
+PREHOOK: Output: default@part_table_n1@partitionid=1
+POSTHOOK: query: INSERT OVERWRITE TABLE part_table_n1 PARTITION (partitionId=1)
   SELECT key, value FROM src ORDER BY key, value LIMIT 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@part_table@partitionid=1
-POSTHOOK: Lineage: part_table PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
+POSTHOOK: Output: default@part_table_n1@partitionid=1
+POSTHOOK: Lineage: part_table_n1 PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table_n1 PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE part_table_n1 PARTITION (partitionId=2)
   SELECT key, value FROM src1 ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@part_table@partitionid=2
-POSTHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
+PREHOOK: Output: default@part_table_n1@partitionid=2
+POSTHOOK: query: INSERT OVERWRITE TABLE part_table_n1 PARTITION (partitionId=2)
   SELECT key, value FROM src1 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@part_table@partitionid=2
-POSTHOOK: Lineage: part_table PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@part_table_n1@partitionid=2
+POSTHOOK: Lineage: part_table_n1 PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table_n1 PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
@@ -55,6 +55,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((partitionid = 1) and key is not null) (type: boolean)
             Statistics: Num rows: 100 Data size: 1070 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -70,6 +71,7 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 1070 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -115,6 +117,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 110 Data size: 1177 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -137,38 +140,38 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_table
-PREHOOK: Input: default@part_table@partitionid=1
-PREHOOK: Input: default@part_table@partitionid=2
+PREHOOK: Input: default@part_table_n1
+PREHOOK: Input: default@part_table_n1@partitionid=1
+PREHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_table
-POSTHOOK: Input: default@part_table@partitionid=1
-POSTHOOK: Input: default@part_table@partitionid=2
+POSTHOOK: Input: default@part_table_n1
+POSTHOOK: Input: default@part_table_n1@partitionid=1
+POSTHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
 128	3
 146	2
 150	1
 PREHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
@@ -183,6 +186,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((partitionid = 1) and key is not null) (type: boolean)
             Statistics: Num rows: 100 Data size: 1070 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -198,6 +202,7 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 1070 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -245,38 +250,38 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_table
-PREHOOK: Input: default@part_table@partitionid=1
-PREHOOK: Input: default@part_table@partitionid=2
+PREHOOK: Input: default@part_table_n1
+PREHOOK: Input: default@part_table_n1@partitionid=1
+PREHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_table
-POSTHOOK: Input: default@part_table@partitionid=1
-POSTHOOK: Input: default@part_table@partitionid=2
+POSTHOOK: Input: default@part_table_n1
+POSTHOOK: Input: default@part_table_n1@partitionid=1
+POSTHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
 128	3
 146	2
 150	1
 PREHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
@@ -292,6 +297,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -307,6 +313,7 @@ STAGE PLANS:
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -352,6 +359,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 27 Data size: 210 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -374,22 +382,22 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_table
-PREHOOK: Input: default@part_table@partitionid=2
+PREHOOK: Input: default@part_table_n1
+PREHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_table
-POSTHOOK: Input: default@part_table@partitionid=2
+POSTHOOK: Input: default@part_table_n1
+POSTHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
 	100
 128	1
@@ -409,14 +417,14 @@ POSTHOOK: Input: default@part_table@partitionid=2
 98	1
 PREHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
@@ -431,6 +439,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -446,6 +455,7 @@ STAGE PLANS:
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -493,22 +503,22 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_table
-PREHOOK: Input: default@part_table@partitionid=2
+PREHOOK: Input: default@part_table_n1
+PREHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT x.key AS key, count(1) AS cnt
-FROM part_table x JOIN part_table y ON (x.key = y.key)
+FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_table
-POSTHOOK: Input: default@part_table@partitionid=2
+POSTHOOK: Input: default@part_table_n1
+POSTHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
 	100
 128	1

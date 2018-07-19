@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToFloat;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToFloat;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToFloatViaLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToDouble;
@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 @VectorizedExpressions({CastTimestampToDouble.class, CastLongToFloatViaLongToDouble.class,
-    CastDecimalToDouble.class, CastStringToFloat.class})
+    CastDecimalToFloat.class, CastStringToFloat.class})
 public class UDFToFloat extends UDF {
   private final FloatWritable floatWritable = new FloatWritable();
 
@@ -181,7 +181,7 @@ public class UDFToFloat extends UDF {
     }
   }
 
-  public FloatWritable evaluate(TimestampWritable i) {
+  public FloatWritable evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {

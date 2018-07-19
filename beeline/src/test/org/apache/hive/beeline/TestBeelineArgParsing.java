@@ -255,6 +255,19 @@ public class TestBeelineArgParsing {
   }
 
   /**
+   * Test beeline with multiple initfiles in -i.
+   */
+  @Test
+  public void testMultipleInitFiles() {
+    TestBeeline bl = new TestBeeline();
+    String[] args = new String[] {"-i", "/url/to/file1", "-i", "/url/to/file2"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    String[] files = bl.getOpts().getInitFiles();
+    Assert.assertEquals("/url/to/file1", files[0]);
+    Assert.assertEquals("/url/to/file2", files[1]);
+  }
+
+  /**
    * Displays the usage.
    */
   @Test

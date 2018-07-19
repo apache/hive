@@ -41,6 +41,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src_p
+            filterExpr: ((!@#$%^&*()_q = 'a') and (x+1 = '10')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (x+1 = '10') (type: boolean)
@@ -59,6 +60,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)

@@ -25,13 +25,13 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateParser;
 
-import java.sql.Date;
+import java.util.Arrays;
 
 public class VectorUDFDateAddColScalar extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -43,7 +43,6 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
 
   private transient final Text text = new Text();
   private transient final DateParser dateParser = new DateParser();
-  private transient final Date date = new Date(0);
 
   // Transient members initialized by transientInit method.
   private transient PrimitiveCategory primitiveCategory;
@@ -71,58 +70,90 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     ColumnVector inputCol = batch.cols[this.colNum];
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
     final boolean selectedInUse = (inputCol.isRepeating == false) && batch.selectedInUse;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if(batch.size == 0) {
       /* n != batch.size when isRepeating */
       return;
     }
 
-    /* true for all algebraic UDFs with no state */
-    outV.isRepeating = inputCol.isRepeating;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
     switch (primitiveCategory) {
       case DATE:
-        if (inputCol.noNulls) {
-          outV.noNulls = true;
-          if (selectedInUse) {
-            for(int j=0; j < n; j++) {
-              int i = sel[j];
-              outV.vector[i] = evaluateDate(inputCol, i);
+        if (inputCol.isRepeating) {
+          if (inputCol.noNulls || !inputCol.isNull[0]) {
+            outputColVector.isNull[0] = false;
+            outputColVector.vector[0] = evaluateDate(inputCol, 0);
+          } else {
+            outputColVector.isNull[0] = true;
+            outputColVector.noNulls = false;
+          }
+          outputColVector.isRepeating = true;
+        } else if (inputCol.noNulls) {
+          if (batch.selectedInUse) {
+
+            // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+            if (!outputColVector.noNulls) {
+              for(int j = 0; j != n; j++) {
+               final int i = sel[j];
+               // Set isNull before call in case it changes it mind.
+               outputIsNull[i] = false;
+               outputColVector.vector[i] = evaluateDate(inputCol, i);
+             }
+            } else {
+              for(int j = 0; j != n; j++) {
+                final int i = sel[j];
+                outputColVector.vector[i] = evaluateDate(inputCol, i);
+              }
             }
           } else {
-            for(int i = 0; i < n; i++) {
-              outV.vector[i] = evaluateDate(inputCol, i);
+            if (!outputColVector.noNulls) {
+
+              // Assume it is almost always a performance win to fill all of isNull so we can
+              // safely reset noNulls.
+              Arrays.fill(outputIsNull, false);
+              outputColVector.noNulls = true;
+            }
+            for(int i = 0; i != n; i++) {
+              outputColVector.vector[i] = evaluateDate(inputCol, i);
             }
           }
-        } else {
+        } else /* there are nulls in the inputColVector */ {
+
+          // Carefully handle NULLs..
+
           // Handle case with nulls. Don't do function if the value is null, to save time,
           // because calling the function can be expensive.
-          outV.noNulls = false;
+          outputColVector.noNulls = false;
+
           if (selectedInUse) {
             for(int j = 0; j < n; j++) {
               int i = sel[j];
-              outV.isNull[i] = inputCol.isNull[i];
+              outputColVector.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
-                outV.vector[i] = evaluateDate(inputCol, i);
+                outputColVector.vector[i] = evaluateDate(inputCol, i);
               }
             }
           } else {
             for(int i = 0; i < n; i++) {
-              outV.isNull[i] = inputCol.isNull[i];
+              outputColVector.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
-                outV.vector[i] = evaluateDate(inputCol, i);
+                outputColVector.vector[i] = evaluateDate(inputCol, i);
               }
             }
           }
@@ -130,35 +161,66 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
         break;
 
       case TIMESTAMP:
-        if (inputCol.noNulls) {
-          outV.noNulls = true;
+        if (inputCol.isRepeating) {
+          if (inputCol.noNulls || !inputCol.isNull[0]) {
+            outputColVector.isNull[0] = false;
+            outputColVector.vector[0] = evaluateTimestamp(inputCol, 0);
+          } else {
+            outputColVector.isNull[0] = true;
+            outputColVector.noNulls = false;
+          }
+          outputColVector.isRepeating = true;
+        } else if (inputCol.noNulls) {
           if (batch.selectedInUse) {
-            for(int j=0; j < n; j++) {
-              int i = sel[j];
-              outV.vector[i] = evaluateTimestamp(inputCol, i);
+
+            // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+            if (!outputColVector.noNulls) {
+              for(int j = 0; j != n; j++) {
+               final int i = sel[j];
+               // Set isNull before call in case it changes it mind.
+               outputIsNull[i] = false;
+               outputColVector.vector[i] = evaluateTimestamp(inputCol, i);
+             }
+            } else {
+              for(int j = 0; j != n; j++) {
+                final int i = sel[j];
+                outputColVector.vector[i] = evaluateTimestamp(inputCol, i);
+              }
             }
           } else {
-            for(int i = 0; i < n; i++) {
-              outV.vector[i] = evaluateTimestamp(inputCol, i);
+            if (!outputColVector.noNulls) {
+
+              // Assume it is almost always a performance win to fill all of isNull so we can
+              // safely reset noNulls.
+              Arrays.fill(outputIsNull, false);
+              outputColVector.noNulls = true;
+            }
+            for(int i = 0; i != n; i++) {
+              outputColVector.vector[i] = evaluateTimestamp(inputCol, i);
             }
           }
-        } else {
+        } else /* there are nulls in the inputColVector */ {
+
+          // Carefully handle NULLs..
+
           // Handle case with nulls. Don't do function if the value is null, to save time,
           // because calling the function can be expensive.
-          outV.noNulls = false;
+          outputColVector.noNulls = false;
+
           if (batch.selectedInUse) {
             for(int j = 0; j < n; j++) {
               int i = sel[j];
-              outV.isNull[i] = inputCol.isNull[i];
+              outputColVector.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
-                outV.vector[i] = evaluateTimestamp(inputCol, i);
+                outputColVector.vector[i] = evaluateTimestamp(inputCol, i);
               }
             }
           } else {
             for(int i = 0; i < n; i++) {
-              outV.isNull[i] = inputCol.isNull[i];
+              outputColVector.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
-                outV.vector[i] = evaluateTimestamp(inputCol, i);
+                outputColVector.vector[i] = evaluateTimestamp(inputCol, i);
               }
             }
           }
@@ -168,35 +230,66 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
       case STRING:
       case CHAR:
       case VARCHAR:
-        if (inputCol.noNulls) {
-          outV.noNulls = true;
+        if (inputCol.isRepeating) {
+          if (inputCol.noNulls || !inputCol.isNull[0]) {
+            outputColVector.isNull[0] = false;
+            evaluateString(inputCol, outputColVector, 0);
+          } else {
+            outputColVector.isNull[0] = true;
+            outputColVector.noNulls = false;
+          }
+          outputColVector.isRepeating = true;
+        } else if (inputCol.noNulls) {
           if (batch.selectedInUse) {
-            for(int j=0; j < n; j++) {
-              int i = sel[j];
-              evaluateString(inputCol, outV, i);
+
+            // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+            if (!outputColVector.noNulls) {
+              for(int j = 0; j != n; j++) {
+               final int i = sel[j];
+               // Set isNull before call in case it changes it mind.
+               outputIsNull[i] = false;
+               evaluateString(inputCol, outputColVector, i);
+             }
+            } else {
+              for(int j = 0; j != n; j++) {
+                final int i = sel[j];
+                evaluateString(inputCol, outputColVector, i);
+              }
             }
           } else {
-            for(int i = 0; i < n; i++) {
-              evaluateString(inputCol, outV, i);
+            if (!outputColVector.noNulls) {
+
+              // Assume it is almost always a performance win to fill all of isNull so we can
+              // safely reset noNulls.
+              Arrays.fill(outputIsNull, false);
+              outputColVector.noNulls = true;
+            }
+            for(int i = 0; i != n; i++) {
+              evaluateString(inputCol, outputColVector, i);
             }
           }
-        } else {
+        } else /* there are nulls in the inputColVector */ {
+
+          // Carefully handle NULLs..
+
           // Handle case with nulls. Don't do function if the value is null, to save time,
           // because calling the function can be expensive.
-          outV.noNulls = false;
+          outputColVector.noNulls = false;
+
           if (batch.selectedInUse) {
             for(int j = 0; j < n; j++) {
               int i = sel[j];
-              outV.isNull[i] = inputCol.isNull[i];
+              outputColVector.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
-                evaluateString(inputCol, outV, i);
+                evaluateString(inputCol, outputColVector, i);
               }
             }
           } else {
             for(int i = 0; i < n; i++) {
-              outV.isNull[i] = inputCol.isNull[i];
+              outputColVector.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
-                evaluateString(inputCol, outV, i);
+                evaluateString(inputCol, outputColVector, i);
               }
             }
           }
@@ -210,7 +303,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   protected long evaluateTimestamp(ColumnVector columnVector, int index) {
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
     // Convert to date value (in days)
-    long days = DateWritable.millisToDays(tcv.getTime(index));
+    long days = DateWritableV2.millisToDays(tcv.getTime(index));
     if (isPositive) {
       days += numDays;
     } else {
@@ -233,13 +326,14 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   protected void evaluateString(ColumnVector columnVector, LongColumnVector outputVector, int i) {
     BytesColumnVector bcv = (BytesColumnVector) columnVector;
     text.set(bcv.vector[i], bcv.start[i], bcv.length[i]);
-    boolean parsed = dateParser.parseDate(text.toString(), date);
+    org.apache.hadoop.hive.common.type.Date hDate = new org.apache.hadoop.hive.common.type.Date();
+    boolean parsed = dateParser.parseDate(text.toString(), hDate);
     if (!parsed) {
       outputVector.noNulls = false;
       outputVector.isNull[i] = true;
       return;
     }
-    long days = DateWritable.millisToDays(date.getTime());
+    long days = DateWritableV2.millisToDays(hDate.toEpochMilli());
     if (isPositive) {
       days += numDays;
     } else {

@@ -36,6 +36,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
@@ -50,9 +51,10 @@ STAGE PLANS:
                   value expressions: _col1 (type: string), _col3 (type: string)
           TableScan
             alias: b
+            filterExpr: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (('27' = key) and (ds = '2008-04-08')) (type: boolean)
+              predicate: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), hr (type: string)
@@ -90,6 +92,7 @@ STAGE PLANS:
               key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
               sort order: ++++
               Statistics: Num rows: 250000 Data size: 5562000 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: '27' (type: string), KEY.reducesinkkey0 (type: string), '2008-04-08' (type: string), KEY.reducesinkkey1 (type: string), '27' (type: string), KEY.reducesinkkey2 (type: string), '2008-04-08' (type: string), KEY.reducesinkkey3 (type: string)
@@ -184,6 +187,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = '27') (type: boolean)
@@ -198,9 +202,10 @@ STAGE PLANS:
                   value expressions: _col1 (type: string), _col3 (type: string)
           TableScan
             alias: b
+            filterExpr: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ('27' = key) (type: boolean)
+              predicate: (key = '27') (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), hr (type: string)
@@ -238,6 +243,7 @@ STAGE PLANS:
               key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
               sort order: ++++
               Statistics: Num rows: 250000 Data size: 5562000 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: '27' (type: string), KEY.reducesinkkey0 (type: string), '2008-04-08' (type: string), KEY.reducesinkkey1 (type: string), '27' (type: string), KEY.reducesinkkey2 (type: string), '2008-04-08' (type: string), KEY.reducesinkkey3 (type: string)

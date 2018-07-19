@@ -58,34 +58,10 @@ default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -94,49 +70,17 @@ default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src1			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src1			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src1			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-PREHOOK: query: DROP DATABASE IF EXISTS SYS
+PREHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS SYS
+POSTHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE SYS
 PREHOOK: type: CREATEDATABASE
@@ -329,7 +273,7 @@ TBLPROPERTIES (
   \"OWNER_NAME\",
   \"OWNER_TYPE\"
 FROM
-  DBS"
+  \"DBS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@DBS
@@ -353,7 +297,7 @@ TBLPROPERTIES (
   \"OWNER_NAME\",
   \"OWNER_TYPE\"
 FROM
-  DBS"
+  \"DBS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@DBS
@@ -481,110 +425,6 @@ FROM
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@GLOBAL_PRIVS
-POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `IDXS` (
-  `INDEX_ID` bigint,
-  `CREATE_TIME` int,
-  `DEFERRED_REBUILD` boolean,
-  `INDEX_HANDLER_CLASS` string,
-  `INDEX_NAME` string,
-  `INDEX_TBL_ID` bigint,
-  `LAST_ACCESS_TIME` int,
-  `ORIG_TBL_ID` bigint,
-  `SD_ID` bigint,
-  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"CREATE_TIME\",
-  \"DEFERRED_REBUILD\",
-  \"INDEX_HANDLER_CLASS\",
-  \"INDEX_NAME\",
-  \"INDEX_TBL_ID\",
-  \"LAST_ACCESS_TIME\",
-  \"ORIG_TBL_ID\",
-  \"SD_ID\"
-FROM
-  \"IDXS\""
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: SYS@IDXS
-PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `IDXS` (
-  `INDEX_ID` bigint,
-  `CREATE_TIME` int,
-  `DEFERRED_REBUILD` boolean,
-  `INDEX_HANDLER_CLASS` string,
-  `INDEX_NAME` string,
-  `INDEX_TBL_ID` bigint,
-  `LAST_ACCESS_TIME` int,
-  `ORIG_TBL_ID` bigint,
-  `SD_ID` bigint,
-  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"CREATE_TIME\",
-  \"DEFERRED_REBUILD\",
-  \"INDEX_HANDLER_CLASS\",
-  \"INDEX_NAME\",
-  \"INDEX_TBL_ID\",
-  \"LAST_ACCESS_TIME\",
-  \"ORIG_TBL_ID\",
-  \"SD_ID\"
-FROM
-  \"IDXS\""
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: SYS@IDXS
-POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
-  `INDEX_ID` bigint,
-  `PARAM_KEY` string,
-  `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"PARAM_KEY\",
-  \"PARAM_VALUE\"
-FROM
-  \"INDEX_PARAMS\""
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: SYS@INDEX_PARAMS
-PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
-  `INDEX_ID` bigint,
-  `PARAM_KEY` string,
-  `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"PARAM_KEY\",
-  \"PARAM_VALUE\"
-FROM
-  \"INDEX_PARAMS\""
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: SYS@INDEX_PARAMS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_ID` bigint,
@@ -1530,7 +1370,7 @@ TBLPROPERTIES (
   \"VIEW_EXPANDED_TEXT\",
   \"VIEW_ORIGINAL_TEXT\",
   \"IS_REWRITE_ENABLED\"
-FROM TBLS"
+FROM \"TBLS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@TBLS
@@ -1567,10 +1407,84 @@ TBLPROPERTIES (
   \"VIEW_EXPANDED_TEXT\",
   \"VIEW_ORIGINAL_TEXT\",
   \"IS_REWRITE_ENABLED\"
-FROM TBLS"
+FROM \"TBLS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@TBLS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `DB_NAME` string,
+  `TBL_NAME` string,
+  `TXN_LIST` string,
+  CONSTRAINT `SYS_PK_MV_CREATION_METADATA` PRIMARY KEY (`MV_CREATION_METADATA_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"DB_NAME\",
+  \"TBL_NAME\",
+  \"TXN_LIST\"
+FROM \"MV_CREATION_METADATA\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@MV_CREATION_METADATA
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `DB_NAME` string,
+  `TBL_NAME` string,
+  `TXN_LIST` string,
+  CONSTRAINT `SYS_PK_MV_CREATION_METADATA` PRIMARY KEY (`MV_CREATION_METADATA_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"DB_NAME\",
+  \"TBL_NAME\",
+  \"TXN_LIST\"
+FROM \"MV_CREATION_METADATA\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@MV_CREATION_METADATA
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `MV_TABLES_USED` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `TBL_ID` bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"TBL_ID\"
+FROM \"MV_TABLES_USED\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@MV_TABLES_USED
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `MV_TABLES_USED` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `TBL_ID` bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"TBL_ID\"
+FROM \"MV_TABLES_USED\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@MV_TABLES_USED
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `TBL_COLUMN_GRANT_ID` bigint,
@@ -1934,15 +1848,17 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `VERSION` (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@VERSION
 POSTHOOK: Output: database:sys
-PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
+PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: sys@version
-POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
+POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: sys@version
-POSTHOOK: Lineage: version.schema_version SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: version.ver_id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: version.version_comment SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: version.schema_version SCRIPT []
+POSTHOOK: Lineage: version.ver_id SCRIPT []
+POSTHOOK: Lineage: version.version_comment SCRIPT []
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
@@ -2057,6 +1973,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
   `UPDATE_RULE` string,
   `DELETE_RULE` string,
   `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
   CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -2075,7 +1992,8 @@ TBLPROPERTIES (
   \"CONSTRAINT_TYPE\",
   \"UPDATE_RULE\",
   \"DELETE_RULE\",
-  \"ENABLE_VALIDATE_RELY\"
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
 FROM
   \"KEY_CONSTRAINTS\""
 )
@@ -2096,6 +2014,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
   `UPDATE_RULE` string,
   `DELETE_RULE` string,
   `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
   CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -2114,7 +2033,8 @@ TBLPROPERTIES (
   \"CONSTRAINT_TYPE\",
   \"UPDATE_RULE\",
   \"DELETE_RULE\",
-  \"ENABLE_VALIDATE_RELY\"
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
 FROM
   \"KEY_CONSTRAINTS\""
 )
@@ -2244,16 +2164,16 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  r.NAME RP_NAME,
-  t.NAME NAME,
-  TRIGGER_EXPRESSION,
-  ACTION_EXPRESSION
+  r.\"NAME\" AS RP_NAME,
+  t.\"NAME\" AS NAME,
+  \"TRIGGER_EXPRESSION\",
+  \"ACTION_EXPRESSION\"
 FROM
-  WM_TRIGGER t
+  \"WM_TRIGGER\" t
 JOIN
-  WM_RESOURCEPLAN r
+  \"WM_RESOURCEPLAN\" r
 ON
-  t.RP_ID = r.RP_ID"
+  t.\"RP_ID\" = r.\"RP_ID\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_TRIGGERS
@@ -2269,16 +2189,16 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  r.NAME RP_NAME,
-  t.NAME NAME,
-  TRIGGER_EXPRESSION,
-  ACTION_EXPRESSION
+  r.\"NAME\" AS RP_NAME,
+  t.\"NAME\" AS NAME,
+  \"TRIGGER_EXPRESSION\",
+  \"ACTION_EXPRESSION\"
 FROM
-  WM_TRIGGER t
+  \"WM_TRIGGER\" t
 JOIN
-  WM_RESOURCEPLAN r
+  \"WM_RESOURCEPLAN\" r
 ON
-  t.RP_ID = r.RP_ID"
+  t.\"RP_ID\" = r.\"RP_ID\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_TRIGGERS
@@ -2295,17 +2215,17 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME,
-  WM_POOL.PATH,
-  WM_POOL.ALLOC_FRACTION,
-  WM_POOL.QUERY_PARALLELISM,
-  WM_POOL.SCHEDULING_POLICY
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"WM_POOL\".\"PATH\",
+  \"WM_POOL\".\"ALLOC_FRACTION\",
+  \"WM_POOL\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"SCHEDULING_POLICY\"
 FROM
-  WM_POOL
+  \"WM_POOL\"
 JOIN
-  WM_RESOURCEPLAN
+  \"WM_RESOURCEPLAN\"
 ON
-  WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+  \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_POOLS
@@ -2322,17 +2242,17 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME,
-  WM_POOL.PATH,
-  WM_POOL.ALLOC_FRACTION,
-  WM_POOL.QUERY_PARALLELISM,
-  WM_POOL.SCHEDULING_POLICY
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"WM_POOL\".\"PATH\",
+  \"WM_POOL\".\"ALLOC_FRACTION\",
+  \"WM_POOL\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"SCHEDULING_POLICY\"
 FROM
-  WM_POOL
+  \"WM_POOL\"
 JOIN
-  WM_RESOURCEPLAN
+  \"WM_RESOURCEPLAN\"
 ON
-  WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+  \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_POOLS
@@ -2347,21 +2267,21 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME RP_NAME,
-  WM_POOL.PATH POOL_PATH,
-  WM_TRIGGER.NAME TRIGGER_NAME
-FROM WM_POOL_TO_TRIGGER
-  JOIN WM_POOL ON WM_POOL_TO_TRIGGER.POOL_ID = WM_POOL.POOL_ID
-  JOIN WM_TRIGGER ON WM_POOL_TO_TRIGGER.TRIGGER_ID = WM_TRIGGER.TRIGGER_ID
-  JOIN WM_RESOURCEPLAN ON WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  \"WM_POOL\".\"PATH\" AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_POOL_TO_TRIGGER\"
+  JOIN \"WM_POOL\" ON \"WM_POOL_TO_TRIGGER\".\"POOL_ID\" = \"WM_POOL\".\"POOL_ID\"
+  JOIN \"WM_TRIGGER\" ON \"WM_POOL_TO_TRIGGER\".\"TRIGGER_ID\" = \"WM_TRIGGER\".\"TRIGGER_ID\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
 UNION
 SELECT
-  WM_RESOURCEPLAN.NAME RP_NAME,
-  '<unmanaged queries>' POOL_PATH,
-  WM_TRIGGER.NAME TRIGGER_NAME
-FROM WM_TRIGGER
-  JOIN WM_RESOURCEPLAN ON WM_TRIGGER.RP_ID = WM_RESOURCEPLAN.RP_ID
-WHERE WM_TRIGGER.IS_IN_UNMANAGED = 1
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  '<unmanaged queries>' AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_TRIGGER\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_TRIGGER\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+WHERE CAST(\"WM_TRIGGER\".\"IS_IN_UNMANAGED\" AS CHAR) IN ('1', 't')
 "
 )
 PREHOOK: type: CREATETABLE
@@ -2377,21 +2297,21 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME RP_NAME,
-  WM_POOL.PATH POOL_PATH,
-  WM_TRIGGER.NAME TRIGGER_NAME
-FROM WM_POOL_TO_TRIGGER
-  JOIN WM_POOL ON WM_POOL_TO_TRIGGER.POOL_ID = WM_POOL.POOL_ID
-  JOIN WM_TRIGGER ON WM_POOL_TO_TRIGGER.TRIGGER_ID = WM_TRIGGER.TRIGGER_ID
-  JOIN WM_RESOURCEPLAN ON WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  \"WM_POOL\".\"PATH\" AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_POOL_TO_TRIGGER\"
+  JOIN \"WM_POOL\" ON \"WM_POOL_TO_TRIGGER\".\"POOL_ID\" = \"WM_POOL\".\"POOL_ID\"
+  JOIN \"WM_TRIGGER\" ON \"WM_POOL_TO_TRIGGER\".\"TRIGGER_ID\" = \"WM_TRIGGER\".\"TRIGGER_ID\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
 UNION
 SELECT
-  WM_RESOURCEPLAN.NAME RP_NAME,
-  '<unmanaged queries>' POOL_PATH,
-  WM_TRIGGER.NAME TRIGGER_NAME
-FROM WM_TRIGGER
-  JOIN WM_RESOURCEPLAN ON WM_TRIGGER.RP_ID = WM_RESOURCEPLAN.RP_ID
-WHERE WM_TRIGGER.IS_IN_UNMANAGED = 1
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  '<unmanaged queries>' AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_TRIGGER\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_TRIGGER\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+WHERE CAST(\"WM_TRIGGER\".\"IS_IN_UNMANAGED\" AS CHAR) IN ('1', 't')
 "
 )
 POSTHOOK: type: CREATETABLE
@@ -2409,14 +2329,14 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME,
-  ENTITY_TYPE,
-  ENTITY_NAME,
-  case when WM_POOL.PATH is null then '<unmanaged>' else WM_POOL.PATH end,
-  ORDERING
-FROM WM_MAPPING
-JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
-LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"ENTITY_TYPE\",
+  \"ENTITY_NAME\",
+  case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
+  \"ORDERING\"
+FROM \"WM_MAPPING\"
+JOIN \"WM_RESOURCEPLAN\" ON \"WM_MAPPING\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_ID\"
 "
 )
 PREHOOK: type: CREATETABLE
@@ -2434,22 +2354,22 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME,
-  ENTITY_TYPE,
-  ENTITY_NAME,
-  case when WM_POOL.PATH is null then '<unmanaged>' else WM_POOL.PATH end,
-  ORDERING
-FROM WM_MAPPING
-JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
-LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"ENTITY_TYPE\",
+  \"ENTITY_NAME\",
+  case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
+  \"ORDERING\"
+FROM \"WM_MAPPING\"
+JOIN \"WM_RESOURCEPLAN\" ON \"WM_MAPPING\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_ID\"
 "
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
 POSTHOOK: Output: database:sys
-PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
@@ -2473,18 +2393,26 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
   `DEFAULT_CHARACTER_SET_NAME`,
   `SQL_PATH`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
-  `NAME`,
-  `OWNER_NAME`,
+  D.`NAME`,
+  D.`OWNER_NAME`,
   cast(null as string),
   cast(null as string),
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  sys.DBS
+  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+WHERE
+  NOT restrict_information_schema() OR
+  D.`DB_ID` = T.`DB_ID`
+  AND T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 PREHOOK: Output: database:information_schema
 POSTHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
@@ -2497,27 +2425,35 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
   `DEFAULT_CHARACTER_SET_NAME`,
   `SQL_PATH`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
-  `NAME`,
-  `OWNER_NAME`,
+  D.`NAME`,
+  D.`OWNER_NAME`,
   cast(null as string),
   cast(null as string),
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  sys.DBS
+  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+WHERE
+  NOT restrict_information_schema() OR
+  D.`DB_ID` = T.`DB_ID`
+  AND T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: SCHEMATA.catalog_name SIMPLE []
 POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog EXPRESSION []
 POSTHOOK: Lineage: SCHEMATA.default_character_set_name EXPRESSION []
 POSTHOOK: Lineage: SCHEMATA.default_character_set_schema EXPRESSION []
-POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)dbs.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 #### A masked pattern was here ####
-POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)dbs.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
 PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
 (
   `TABLE_CATALOG`,
@@ -2533,7 +2469,7 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
   `IS_TYPED`,
   `COMMIT_ACTION`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -2547,11 +2483,16 @@ SELECT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D
+  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
 WHERE
   D.`DB_ID` = T.`DB_ID`
+  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@TABLES
 PREHOOK: Output: database:information_schema
@@ -2570,7 +2511,7 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
   `IS_TYPED`,
   `COMMIT_ACTION`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -2584,11 +2525,16 @@ SELECT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D
+  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
 WHERE
   D.`DB_ID` = T.`DB_ID`
+  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@TABLES
 POSTHOOK: Output: database:information_schema
@@ -2615,9 +2561,9 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
   `IS_GRANTABLE`,
   `WITH_HIERARCHY`
 ) AS
-SELECT
-  `GRANTOR`,
-  `PRINCIPAL_NAME`,
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
   'default',
   D.`NAME`,
   T.`TBL_NAME`,
@@ -2625,12 +2571,18 @@ SELECT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  sys.`TBL_PRIVS` P,
-  sys.`TBLS` T,
-  sys.`DBS` D
+  `sys`.`TBL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_PRIVS` P2
 WHERE
-  P.TBL_ID = T.TBL_ID
-  AND T.DB_ID = D.DB_ID
+  P.`TBL_ID` = T.`TBL_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
@@ -2648,9 +2600,9 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
   `IS_GRANTABLE`,
   `WITH_HIERARCHY`
 ) AS
-SELECT
-  `GRANTOR`,
-  `PRINCIPAL_NAME`,
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
   'default',
   D.`NAME`,
   T.`TBL_NAME`,
@@ -2658,12 +2610,18 @@ SELECT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  sys.`TBL_PRIVS` P,
-  sys.`TBLS` T,
-  sys.`DBS` D
+  `sys`.`TBL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_PRIVS` P2
 WHERE
-  P.TBL_ID = T.TBL_ID
-  AND T.DB_ID = D.DB_ID
+  P.`TBL_ID` = T.`TBL_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
@@ -2728,7 +2686,7 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
   `DECLARED_NUMERIC_PRECISION`,
   `DECLARED_NUMERIC_SCALE`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -2817,18 +2775,26 @@ SELECT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  sys.`COLUMNS_V2` C,
-  sys.`SDS` S,
-  sys.`TBLS` T,
-  sys.`DBS` D
+  `sys`.`COLUMNS_V2` C,
+  `sys`.`SDS` S,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_COL_PRIVS` P
 WHERE
   S.`SD_ID` = T.`SD_ID`
   AND T.`DB_ID` = D.`DB_ID`
   AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_COL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbl_col_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 PREHOOK: Output: database:information_schema
@@ -2882,7 +2848,7 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
   `DECLARED_NUMERIC_PRECISION`,
   `DECLARED_NUMERIC_SCALE`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -2971,18 +2937,26 @@ SELECT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  sys.`COLUMNS_V2` C,
-  sys.`SDS` S,
-  sys.`TBLS` T,
-  sys.`DBS` D
+  `sys`.`COLUMNS_V2` C,
+  `sys`.`SDS` S,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_COL_PRIVS` P
 WHERE
   S.`SD_ID` = T.`SD_ID`
   AND T.`DB_ID` = D.`DB_ID`
   AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_COL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 POSTHOOK: Output: database:information_schema
@@ -3044,32 +3018,35 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
   `PRIVILEGE_TYPE`,
   `IS_GRANTABLE`
 ) AS
-SELECT
-  `GRANTOR`,
-  `PRINCIPAL_NAME`,
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
   'default',
   D.`NAME`,
   T.`TBL_NAME`,
-  C.`COLUMN_NAME`,
+  P.`COLUMN_NAME`,
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  sys.`TBL_COL_PRIVS` P,
-  sys.`TBLS` T,
-  sys.`DBS` D,
-  sys.`COLUMNS_V2` C,
-  sys.`SDS` S
+  `sys`.`TBL_COL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`SDS` S,
+  `sys`.`TBL_PRIVS` P2
 WHERE
   S.`SD_ID` = T.`SD_ID`
   AND T.`DB_ID` = D.`DB_ID`
   AND P.`TBL_ID` = T.`TBL_ID`
-  AND P.`COLUMN_NAME` = C.`COLUMN_NAME`
-  AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
 PREHOOK: Input: sys@tbl_col_privs
+PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
 PREHOOK: Output: database:information_schema
@@ -3084,36 +3061,39 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
   `PRIVILEGE_TYPE`,
   `IS_GRANTABLE`
 ) AS
-SELECT
-  `GRANTOR`,
-  `PRINCIPAL_NAME`,
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
   'default',
   D.`NAME`,
   T.`TBL_NAME`,
-  C.`COLUMN_NAME`,
+  P.`COLUMN_NAME`,
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  sys.`TBL_COL_PRIVS` P,
-  sys.`TBLS` T,
-  sys.`DBS` D,
-  sys.`COLUMNS_V2` C,
-  sys.`SDS` S
+  `sys`.`TBL_COL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`SDS` S,
+  `sys`.`TBL_PRIVS` P2
 WHERE
   S.`SD_ID` = T.`SD_ID`
   AND T.`DB_ID` = D.`DB_ID`
   AND P.`TBL_ID` = T.`TBL_ID`
-  AND P.`COLUMN_NAME` = C.`COLUMN_NAME`
-  AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
 POSTHOOK: Input: sys@tbl_col_privs
+POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: COLUMN_PRIVILEGES.column_name SIMPLE [(columns_v2)c.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.column_name SIMPLE [(tbl_col_privs)p.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantee SIMPLE [(tbl_col_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantor SIMPLE [(tbl_col_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.is_grantable EXPRESSION [(tbl_col_privs)p.FieldSchema(name:grant_option, type:int, comment:from deserializer), ]
@@ -3134,7 +3114,7 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
   `IS_TRIGGER_DELETABLE`,
   `IS_TRIGGER_INSERTABLE_INTO`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -3147,12 +3127,19 @@ SELECT
   false
 FROM
   `sys`.`DBS` D,
-  `sys`.`TBLS` T
+  `sys`.`TBLS` T,
+  `sys`.`TBL_PRIVS` P
 WHERE
-   D.`DB_ID` = T.`DB_ID` AND
-   length(T.VIEW_ORIGINAL_TEXT) > 0
+  D.`DB_ID` = T.`DB_ID`
+  AND length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@VIEWS
 PREHOOK: Output: database:information_schema
@@ -3169,7 +3156,7 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
   `IS_TRIGGER_DELETABLE`,
   `IS_TRIGGER_INSERTABLE_INTO`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -3182,12 +3169,19 @@ SELECT
   false
 FROM
   `sys`.`DBS` D,
-  `sys`.`TBLS` T
+  `sys`.`TBLS` T,
+  `sys`.`TBL_PRIVS` P
 WHERE
-   D.`DB_ID` = T.`DB_ID` AND
-   length(T.VIEW_ORIGINAL_TEXT) > 0
+  D.`DB_ID` = T.`DB_ID`
+  AND length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@VIEWS
 POSTHOOK: Output: database:information_schema
@@ -3216,8 +3210,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@bucketing_cols
 #### A masked pattern was here ####
 key	0
-key	0
-key	0
 value	0
 PREHOOK: query: select count(*) from cds
 PREHOOK: type: QUERY
@@ -3227,7 +3219,7 @@ POSTHOOK: query: select count(*) from cds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@cds
 #### A masked pattern was here ####
-71
+57
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3239,8 +3231,8 @@ POSTHOOK: Input: sys@columns_v2
 a	decimal(10,2)	0
 action_expression	string	3
 add_time	int	1
-aint	int	0
 alloc_fraction	double	2
+avg_col_len	double	14
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
@@ -3272,22 +3264,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@global_privs
 #### A masked pattern was here ####
 admin	admin
-PREHOOK: query: select index_name, index_handler_class from idxs order by index_name limit 5
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@idxs
-#### A masked pattern was here ####
-POSTHOOK: query: select index_name, index_handler_class from idxs order by index_name limit 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@idxs
-#### A masked pattern was here ####
-PREHOOK: query: select param_key, param_value from index_params order by param_key, param_value limit 5
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@index_params
-#### A masked pattern was here ####
-POSTHOOK: query: select param_key, param_value from index_params order by param_key, param_value limit 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@index_params
-#### A masked pattern was here ####
 PREHOOK: query: select part_name from partitions order by part_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partitions
@@ -3296,11 +3272,6 @@ POSTHOOK: query: select part_name from partitions order by part_name limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partitions
 #### A masked pattern was here ####
-ds=2008-04-08/hr=11
-ds=2008-04-08/hr=12
-ds=2008-04-09/hr=11
-ds=2008-04-09/hr=12
-dt=2014
 PREHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_keys
@@ -3309,10 +3280,6 @@ POSTHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_n
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_keys
 #### A masked pattern was here ####
-ds	string
-dt	string
-dt	string
-hr	string
 PREHOOK: query: select part_key_val, integer_idx from partition_key_vals order by part_key_val, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_key_vals
@@ -3321,11 +3288,6 @@ POSTHOOK: query: select part_key_val, integer_idx from partition_key_vals order 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_key_vals
 #### A masked pattern was here ####
-11	1
-11	1
-12	1
-12	1
-2008-04-08	0
 PREHOOK: query: select param_key, param_value from partition_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3334,11 +3296,6 @@ POSTHOOK: query: select param_key, param_value from partition_params order by pa
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 #### A masked pattern was here ####
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
 PREHOOK: query: select grantor, principal_name from part_col_privs order by grantor, principal_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_privs
@@ -3373,6 +3330,95 @@ POSTHOOK: query: select principal_name, grantor from role_map order by principal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@role_map
 #### A masked pattern was here ####
+PREHOOK: query: explain vectorization detail
+select count(*) from sds
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select count(*) from sds
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sds
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hive.storage.jdbc.JdbcInputFormat IS false, hive.vectorized.use.row.serde.deserialize IS false
+                inputFileFormats: org.apache.hive.storage.jdbc.JdbcInputFormat
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from sds
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sds
@@ -3381,7 +3427,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-77
+57
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -3398,11 +3444,11 @@ POSTHOOK: query: select sequence_name from sequence_table order by sequence_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sequence_table
 #### A masked pattern was here ####
+org.apache.hadoop.hive.metastore.model.MCatalog
 org.apache.hadoop.hive.metastore.model.MColumnDescriptor
 org.apache.hadoop.hive.metastore.model.MDatabase
 org.apache.hadoop.hive.metastore.model.MFunction
 org.apache.hadoop.hive.metastore.model.MGlobalPrivilege
-org.apache.hadoop.hive.metastore.model.MPartition
 PREHOOK: query: select name, slib from serdes order by name, slib limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serdes
@@ -3424,11 +3470,11 @@ POSTHOOK: query: select param_key, param_value from serde_params order by param_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@serde_params
 #### A masked pattern was here ####
-field.delim	,
-field.delim	,
-field.delim	,
-field.delim	,
-field.delim	,
+serialization.format	1
+serialization.format	1
+serialization.format	1
+serialization.format	1
+serialization.format	1
 PREHOOK: query: select skewed_col_name from skewed_col_names order by skewed_col_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_col_names
@@ -3504,10 +3550,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 alltypesorc
-alltypesparquet
 bucketing_cols
-cbo_t1
-cbo_t2
+cds
+column_privileges
+columns
 PREHOOK: query: select column_name, grantor, principal_name from tbl_col_privs order by column_name, principal_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbl_col_privs
@@ -3538,8 +3584,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
 alltypesorc	cbigint	3115	6064
-alltypesorc	cboolean1	3114	NULL
-alltypesorc	cboolean2	3115	NULL
+alltypesorc	cboolean1	3114	0
+alltypesorc	cboolean2	3115	0
 alltypesorc	cdouble	3114	5569
 alltypesorc	cfloat	3115	131
 alltypesorc	cint	3115	6029
@@ -3555,16 +3601,6 @@ POSTHOOK: query: select table_name, partition_name, column_name, num_nulls, num_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@part_col_stats
 #### A masked pattern was here ####
-cbo_t1	dt=2014	c_boolean	2	NULL
-cbo_t1	dt=2014	c_float	2	1
-cbo_t1	dt=2014	c_int	2	1
-cbo_t1	dt=2014	key	2	4
-cbo_t1	dt=2014	value	2	4
-cbo_t2	dt=2014	c_boolean	2	NULL
-cbo_t2	dt=2014	c_float	2	2
-cbo_t2	dt=2014	c_int	2	2
-cbo_t2	dt=2014	key	2	5
-cbo_t2	dt=2014	value	2	5
 PREHOOK: query: select schema_version from version order by schema_version limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@version
@@ -3606,11 +3642,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"entity_name":"true","entity_type":"true","ordering":"true","pool_path":"true","rp_name":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"next_val":"true","sequence_name":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
 #### A masked pattern was here ####
+{"BASIC_STATS":"true","COLUMN_STATS":{"db_id":"true","param_key":"true","param_value":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"param_key":"true","param_value":"true","serde_id":"true"}}	0	0	0	0
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3621,11 +3657,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 POSTHOOK: Input: sys@partition_stats_view
 #### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
-{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
 PREHOOK: query: describe sys.tab_col_stats
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: sys@tab_col_stats
@@ -3688,7 +3719,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -3724,49 +3755,43 @@ PREHOOK: Input: database:information_schema
 POSTHOOK: query: use INFORMATION_SCHEMA
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:information_schema
+Warning: Shuffle Join MERGEJOIN[20][tables = [d, t, p]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from SCHEMATA
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@schemata
 PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from SCHEMATA
 POSTHOOK: type: QUERY
 POSTHOOK: Input: information_schema@schemata
 POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 3
+Warning: Shuffle Join MERGEJOIN[38][tables = [t, d, p]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from TABLES order by TABLE_SCHEMA, TABLE_NAME
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@tables
 PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 POSTHOOK: query: select * from TABLES order by TABLE_SCHEMA, TABLE_NAME
 POSTHOOK: type: QUERY
 POSTHOOK: Input: information_schema@tables
 POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 default	default	alltypesorc	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	alltypesparquet	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	cbo_t1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	cbo_t2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	cbo_t3	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	lineitem	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	moretypes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	part	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	scr_txn	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_buck	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_cbo	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_json	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_sequencefile	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_skew	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_thrift	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	srcbucket	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	srcbucket2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	srcpart	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	information_schema	column_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	columns	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	schemata	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
@@ -3782,9 +3807,9 @@ default	sys	db_version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	dbs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	funcs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	global_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	idxs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	index_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -3818,6 +3843,7 @@ default	sys	wm_pools	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_pools_to_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_resourceplans	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+Warning: Shuffle Join MERGEJOIN[60][tables = [p, t, d, p2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@table_privileges
@@ -3836,18 +3862,20 @@ hive_test_user	hive_test_user	default	default	alltypesorc	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	INSERT	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	SELECT	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	INSERT	YES	NO
+Warning: Shuffle Join MERGEJOIN[82][tables = [c, s, t, d, p]] in Stage 'Reducer 5' is a cross product
 PREHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@columns
 PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbl_col_privs
 PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 POSTHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
@@ -3856,55 +3884,41 @@ POSTHOOK: Input: information_schema@columns
 POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-default	default	alltypesorc	ctinyint	0	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
-default	default	alltypesorc	csmallint	1	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
-default	default	alltypesorc	cint	2	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
-default	default	alltypesorc	cbigint	3	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
-default	default	alltypesorc	cfloat	4	NULL	YES	float	NULL	NULL	23	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	float	23	2
-default	default	alltypesorc	cdouble	5	NULL	YES	double	NULL	NULL	53	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	double	53	2
-default	default	alltypesorc	cstring1	6	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
-default	default	alltypesorc	cstring2	7	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
-default	default	alltypesorc	ctimestamp1	8	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
-default	default	alltypesorc	ctimestamp2	9	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
-default	default	alltypesorc	cboolean1	10	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
-default	default	alltypesorc	cboolean2	11	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
-default	default	moretypes	a	0	NULL	YES	decimal(10,2)	NULL	NULL	10	10	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	decimal(10,2)	10	10
-default	default	moretypes	b	1	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
-default	default	moretypes	c	2	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
-default	default	moretypes	d	3	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
-default	default	moretypes	e	4	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
-default	default	moretypes	f	5	NULL	YES	varchar(10)	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	varchar(10)	NULL	NULL
-default	default	moretypes	g	6	NULL	YES	char(3)	3	3	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	char(3)	NULL	NULL
+Warning: Shuffle Join MERGEJOIN[82][tables = [p, t, d, s, p2]] in Stage 'Reducer 5' is a cross product
 PREHOOK: query: select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@column_privileges
-PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
 PREHOOK: Input: sys@tbl_col_privs
+PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 POSTHOOK: query: select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: information_schema@column_privileges
-POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
 POSTHOOK: Input: sys@tbl_col_privs
+POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
+Warning: Shuffle Join MERGEJOIN[38][tables = [d, t, p]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@views
 PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 POSTHOOK: query: select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME
 POSTHOOK: type: QUERY
 POSTHOOK: Input: information_schema@views
 POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 information_schema	column_privileges

@@ -1,0 +1,18 @@
+PREHOOK: query: CREATE TABLE hmsserdetable (name string) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hmsserdetable
+POSTHOOK: query: CREATE TABLE hmsserdetable (name string) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hmsserdetable
+PREHOOK: query: DESCRIBE hmsserdetable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hmsserdetable
+POSTHOOK: query: DESCRIBE hmsserdetable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hmsserdetable
+name                	string              	                    
+PREHOOK: query: ALTER TABLE hmsserdetable UPDATE COLUMNS
+PREHOOK: type: ALTERTABLE_UPDATECOLUMNS
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. hmsserdetable has serde org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe for which schema is already handled by HMS.

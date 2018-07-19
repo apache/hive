@@ -318,7 +318,9 @@ public class Registry {
     try {
       functionName = functionName.toLowerCase();
       if (FunctionUtils.isQualifiedFunctionName(functionName)) {
-        return getQualifiedFunctionInfoUnderLock(functionName);
+        FunctionInfo functionInfo = getQualifiedFunctionInfoUnderLock(functionName);
+        addToCurrentFunctions(functionName, functionInfo);
+        return functionInfo;
       }
       // First try without qualifiers - would resolve builtin/temp functions.
       // Otherwise try qualifying with current db name.
@@ -327,19 +329,33 @@ public class Registry {
         throw new SemanticException ("UDF " + functionName + " is not allowed");
       }
       if (functionInfo == null) {
-        String qualifiedName = FunctionUtils.qualifyFunctionName(
+        functionName = FunctionUtils.qualifyFunctionName(
             functionName, SessionState.get().getCurrentDatabase().toLowerCase());
-        functionInfo = getQualifiedFunctionInfoUnderLock(qualifiedName);
+        functionInfo = getQualifiedFunctionInfoUnderLock(functionName);
       }
-    return functionInfo;
+      addToCurrentFunctions(functionName, functionInfo);
+      return functionInfo;
     } finally {
       lock.unlock();
     }
 
   }
 
+  private void addToCurrentFunctions(String functionName, FunctionInfo functionInfo) {
+    if (SessionState.get() != null && functionInfo != null) {
+      SessionState.get().getCurrentFunctionsInUse().put(functionName, functionInfo);
+    }
+  }
+
   public WindowFunctionInfo getWindowFunctionInfo(String functionName) throws SemanticException {
+    // First try without qualifiers - would resolve builtin/temp functions
     FunctionInfo info = getFunctionInfo(WINDOW_FUNC_PREFIX + functionName);
+    // Try qualifying with current db name for permanent functions
+    if (info == null) {
+      String qualifiedName = FunctionUtils.qualifyFunctionName(
+              functionName, SessionState.get().getCurrentDatabase().toLowerCase());
+      info = getFunctionInfo(WINDOW_FUNC_PREFIX + qualifiedName);
+    }
     if (info instanceof WindowFunctionInfo) {
       return (WindowFunctionInfo) info;
     }

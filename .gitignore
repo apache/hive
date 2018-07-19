@@ -31,3 +31,4 @@ itests/hive-blobstore/src/test/resources/blobstore-conf.xml
 .DS_Store
 patchprocess
 standalone-metastore/src/gen/version
+standalone-metastore/metastore-common/src/gen/version

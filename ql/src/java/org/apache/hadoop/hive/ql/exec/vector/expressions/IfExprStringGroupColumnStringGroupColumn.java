@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
@@ -55,7 +56,7 @@ public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -67,8 +68,10 @@ public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = arg2ColVector.noNulls && arg3ColVector.noNulls;
-    outputColVector.isRepeating = false; // may override later
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     int n = batch.size;
     long[] vector1 = arg1ColVector.vector;
 
@@ -86,7 +89,7 @@ public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
      * of code paths.
      */
     if (arg1ColVector.isRepeating) {
-      if (vector1[0] == 1) {
+      if ((arg1ColVector.noNulls || !arg1ColVector.isNull[0]) && vector1[0] == 1) {
         arg2ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
       } else {
         arg3ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
@@ -97,6 +100,11 @@ public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
     // extend any repeating values and noNulls indicator in the inputs
     arg2ColVector.flatten(batch.selectedInUse, sel, n);
     arg3ColVector.flatten(batch.selectedInUse, sel, n);
+
+    /*
+     * Do careful maintenance of NULLs.
+     */
+    outputColVector.noNulls = false;
 
     if (arg1ColVector.noNulls) {
       if (batch.selectedInUse) {
@@ -134,6 +142,7 @@ public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
         }
       }
     } else /* there are nulls */ {
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];

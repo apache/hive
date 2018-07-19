@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE flights_tiny (
+PREHOOK: query: CREATE TABLE flights_tiny_n1 (
   origin_city_name STRING,
   dest_city_name STRING,
   fl_date DATE,
@@ -7,8 +7,8 @@ PREHOOK: query: CREATE TABLE flights_tiny (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@flights_tiny
-POSTHOOK: query: CREATE TABLE flights_tiny (
+PREHOOK: Output: default@flights_tiny_n1
+POSTHOOK: query: CREATE TABLE flights_tiny_n1 (
   origin_city_name STRING,
   dest_city_name STRING,
   fl_date DATE,
@@ -17,35 +17,35 @@ POSTHOOK: query: CREATE TABLE flights_tiny (
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@flights_tiny
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny
+POSTHOOK: Output: default@flights_tiny_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@flights_tiny
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny
+PREHOOK: Output: default@flights_tiny_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@flights_tiny
+POSTHOOK: Output: default@flights_tiny_n1
 PREHOOK: query: CREATE TABLE flights_tiny_orc STORED AS ORC AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny
+FROM flights_tiny_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@flights_tiny
+PREHOOK: Input: default@flights_tiny_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@flights_tiny_orc
 POSTHOOK: query: CREATE TABLE flights_tiny_orc STORED AS ORC AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny
+FROM flights_tiny_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@flights_tiny
+POSTHOOK: Input: default@flights_tiny_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@flights_tiny_orc
-POSTHOOK: Lineage: flights_tiny_orc.arr_delay SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:arr_delay, type:float, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.dest_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:dest_city_name, type:string, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.fl_date SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.fl_num SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_num, type:int, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.fl_time EXPRESSION [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.origin_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.arr_delay SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.dest_city_name SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.fl_date SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.fl_num SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.fl_time EXPRESSION [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.origin_city_name SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:origin_city_name, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM flights_tiny_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny_orc
@@ -232,17 +232,17 @@ POSTHOOK: query: select fl_date, count(*) from flights_tiny_orc group by fl_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_orc sort by fl_num, fl_date limit 25
@@ -297,8 +297,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -475,8 +475,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -529,17 +529,17 @@ POSTHOOK: query: select fl_date, count(*) from flights_tiny_orc group by fl_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: CREATE TABLE flights_tiny_orc_partitioned_date (
   origin_city_name STRING,
@@ -908,17 +908,17 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_orc_partitioned_date
@@ -969,8 +969,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1204,8 +1204,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1406,8 +1406,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1484,17 +1484,17 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: CREATE TABLE flights_tiny_orc_partitioned_timestamp (
   origin_city_name STRING,
@@ -1863,18 +1863,18 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-20 07:00:00	11
-2010-10-23 07:00:00	12
-2010-10-25 07:00:00	12
-2010-10-22 07:00:00	11
-2010-10-26 07:00:00	13
-2010-10-29 07:00:00	12
-2010-10-31 07:00:00	8
 2010-10-21 07:00:00	12
 2010-10-24 07:00:00	12
+2010-10-31 07:00:00	8
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-30 07:00:00	11
+2010-10-20 07:00:00	11
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
 2010-10-27 07:00:00	11
 2010-10-28 07:00:00	12
-2010-10-30 07:00:00	11
+2010-10-29 07:00:00	12
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_orc_partitioned_timestamp
 PREHOOK: type: QUERY
@@ -1924,8 +1924,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2159,8 +2159,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -2361,8 +2361,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2439,38 +2439,38 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-20 07:00:00	11
-2010-10-23 07:00:00	12
-2010-10-25 07:00:00	12
-2010-10-22 07:00:00	11
-2010-10-26 07:00:00	13
-2010-10-29 07:00:00	12
-2010-10-31 07:00:00	8
 2010-10-21 07:00:00	12
 2010-10-24 07:00:00	12
+2010-10-31 07:00:00	8
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-30 07:00:00	11
+2010-10-20 07:00:00	11
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
 2010-10-27 07:00:00	11
 2010-10-28 07:00:00	12
-2010-10-30 07:00:00	11
+2010-10-29 07:00:00	12
 PREHOOK: query: CREATE TABLE flights_tiny_parquet STORED AS PARQUET AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny
+FROM flights_tiny_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@flights_tiny
+PREHOOK: Input: default@flights_tiny_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@flights_tiny_parquet
 POSTHOOK: query: CREATE TABLE flights_tiny_parquet STORED AS PARQUET AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny
+FROM flights_tiny_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@flights_tiny
+POSTHOOK: Input: default@flights_tiny_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@flights_tiny_parquet
-POSTHOOK: Lineage: flights_tiny_parquet.arr_delay SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:arr_delay, type:float, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.dest_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:dest_city_name, type:string, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.fl_date SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.fl_num SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_num, type:int, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.fl_time EXPRESSION [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.origin_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.arr_delay SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.dest_city_name SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.fl_date SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.fl_num SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.fl_time EXPRESSION [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.origin_city_name SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:origin_city_name, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM flights_tiny_parquet
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny_parquet
@@ -2657,17 +2657,17 @@ POSTHOOK: query: select fl_date, count(*) from flights_tiny_parquet group by fl_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_parquet sort by fl_num, fl_date limit 25
@@ -2954,17 +2954,17 @@ POSTHOOK: query: select fl_date, count(*) from flights_tiny_parquet group by fl_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: CREATE TABLE flights_tiny_parquet_partitioned_date (
   origin_city_name STRING,
@@ -3333,17 +3333,17 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-2
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-30
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-31
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_parquet_partitioned_date
@@ -3909,17 +3909,17 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-2
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-30
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-31
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: CREATE TABLE flights_tiny_parquet_partitioned_timestamp (
   origin_city_name STRING,
@@ -4288,18 +4288,18 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-20 07:00:00	11
-2010-10-23 07:00:00	12
-2010-10-25 07:00:00	12
-2010-10-22 07:00:00	11
-2010-10-26 07:00:00	13
-2010-10-29 07:00:00	12
-2010-10-31 07:00:00	8
 2010-10-21 07:00:00	12
 2010-10-24 07:00:00	12
+2010-10-31 07:00:00	8
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-30 07:00:00	11
+2010-10-20 07:00:00	11
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
 2010-10-27 07:00:00	11
 2010-10-28 07:00:00	12
-2010-10-30 07:00:00	11
+2010-10-29 07:00:00	12
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_parquet_partitioned_timestamp
 PREHOOK: type: QUERY
@@ -4864,15 +4864,15 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-20 07:00:00	11
-2010-10-23 07:00:00	12
-2010-10-25 07:00:00	12
-2010-10-22 07:00:00	11
-2010-10-26 07:00:00	13
-2010-10-29 07:00:00	12
-2010-10-31 07:00:00	8
 2010-10-21 07:00:00	12
 2010-10-24 07:00:00	12
+2010-10-31 07:00:00	8
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-30 07:00:00	11
+2010-10-20 07:00:00	11
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
 2010-10-27 07:00:00	11
 2010-10-28 07:00:00	12
-2010-10-30 07:00:00	11
+2010-10-29 07:00:00	12

@@ -1,3 +1,6 @@
+--! qt:dataset:src
+
+set hive.vectorized.execution.enabled=false;
 drop table if exists testSets;
 drop table if exists testSets2;
 create table testSets (

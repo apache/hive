@@ -1,64 +1,64 @@
-PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: query: create table src_autho_test_n6 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: create table src_autho_test as select * from src
+PREHOOK: Output: default@src_autho_test_n6
+POSTHOOK: query: create table src_autho_test_n6 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_autho_test
-POSTHOOK: Lineage: src_autho_test.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_autho_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create view v1 as select * from src
+POSTHOOK: Output: default@src_autho_test_n6
+POSTHOOK: Lineage: src_autho_test_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_autho_test_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view v1_n10 as select * from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v1
-POSTHOOK: query: create view v1 as select * from src
+PREHOOK: Output: default@v1_n10
+POSTHOOK: query: create view v1_n10 as select * from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v1
-POSTHOOK: Lineage: v1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: v1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create view v2 as select * from v1
+POSTHOOK: Output: default@v1_n10
+POSTHOOK: Lineage: v1_n10.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v1_n10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view v2_n4 as select * from v1_n10
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n10
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v2
-POSTHOOK: query: create view v2 as select * from v1
+PREHOOK: Output: default@v2_n4
+POSTHOOK: query: create view v2_n4 as select * from v1_n10
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n10
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v2
-POSTHOOK: Lineage: v2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: v2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: grant select on table v2 to user hive_test_user
+POSTHOOK: Output: default@v2_n4
+POSTHOOK: Lineage: v2_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v2_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: grant select on table v2_n4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@v2
-POSTHOOK: query: grant select on table v2 to user hive_test_user
+PREHOOK: Output: default@v2_n4
+POSTHOOK: query: grant select on table v2_n4 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@v2
-PREHOOK: query: grant select(key) on table src_autho_test to user hive_test_user
+POSTHOOK: Output: default@v2_n4
+PREHOOK: query: grant select(key) on table src_autho_test_n6 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: grant select(key) on table src_autho_test to user hive_test_user
+PREHOOK: Output: default@src_autho_test_n6
+POSTHOOK: query: grant select(key) on table src_autho_test_n6 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: select v2.key from v2 join (select key from src_autho_test)subq on v2.value=subq.key order by key limit 10
+POSTHOOK: Output: default@src_autho_test_n6
+PREHOOK: query: select v2_n4.key from v2_n4 join (select key from src_autho_test_n6)subq on v2_n4.value=subq.key order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@src_autho_test
-PREHOOK: Input: default@v1
-PREHOOK: Input: default@v2
+PREHOOK: Input: default@src_autho_test_n6
+PREHOOK: Input: default@v1_n10
+PREHOOK: Input: default@v2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select v2.key from v2 join (select key from src_autho_test)subq on v2.value=subq.key order by key limit 10
+POSTHOOK: query: select v2_n4.key from v2_n4 join (select key from src_autho_test_n6)subq on v2_n4.value=subq.key order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Input: default@v1
-POSTHOOK: Input: default@v2
+POSTHOOK: Input: default@src_autho_test_n6
+POSTHOOK: Input: default@v1_n10
+POSTHOOK: Input: default@v2_n4
 #### A masked pattern was here ####

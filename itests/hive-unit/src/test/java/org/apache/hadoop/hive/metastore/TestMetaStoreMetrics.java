@@ -49,9 +49,7 @@ public class TestMetaStoreMetrics {
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
     //Increments one HMS connection
-    int port = MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
-
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));
@@ -64,7 +62,7 @@ public class TestMetaStoreMetrics {
     driver.run("show databases");
 
     //one call by init, one called here.
-    Assert.assertEquals(2, Metrics.getRegistry().getTimers().get("api_get_all_databases").getCount());
+    Assert.assertEquals(2, Metrics.getRegistry().getTimers().get("api_get_databases").getCount());
   }
 
   @Test
@@ -134,6 +132,7 @@ public class TestMetaStoreMetrics {
   @Test
   public void testConnections() throws Exception {
 
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     //initial state is one connection
     int initialCount =
         (Integer)Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue();
@@ -147,13 +146,13 @@ public class TestMetaStoreMetrics {
 
     //close one connection, verify still two left
     msc.close();
-    Thread.sleep(500);  // TODO Evil!  Need to figure out a way to remove this sleep.
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     Assert.assertEquals(initialCount + 1,
         Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
 
     //close one connection, verify still one left
     msc2.close();
-    Thread.sleep(500);  // TODO Evil!  Need to figure out a way to remove this sleep.
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     Assert.assertEquals(initialCount,
         Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
   }

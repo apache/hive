@@ -51,7 +51,7 @@ public interface LlapServiceInstance extends ServiceInstance {
   /**
    * Memory and Executors available for the LLAP tasks
    * 
-   * This does not include the size of the cache or the actual vCores allocated via Slider.
+   * This does not include the size of the cache or the actual vCores allocated via YARN.
    * 
    * @return
    */

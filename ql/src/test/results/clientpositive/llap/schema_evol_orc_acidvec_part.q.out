@@ -80,7 +80,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:part:int, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:part:int, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -221,7 +221,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:d:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:d:string, 5:part:int, 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -416,7 +416,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:double, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:double, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -550,7 +550,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:char(50), 3:c3:char(15), 4:c4:varchar(50), 5:c5:varchar(15), 6:c6:string, 7:c7:char(50), 8:c8:char(15), 9:c9:varchar(50), 10:c10:varchar(15), 11:b:string, 12:part:int, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:char(50), 3:c3:char(15), 4:c4:varchar(50), 5:c5:varchar(15), 6:c6:string, 7:c7:char(50), 8:c8:char(15), 9:c9:varchar(50), 10:c10:varchar(15), 11:b:string, 12:part:int, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -682,7 +682,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:tinyint, 2:c2:smallint, 3:c3:int, 4:c4:bigint, 5:c5:tinyint, 6:c6:smallint, 7:c7:int, 8:c8:bigint, 9:c9:tinyint, 10:c10:smallint, 11:c11:int, 12:c12:bigint, 13:c13:tinyint, 14:c14:smallint, 15:c15:int, 16:c16:bigint, 17:c17:tinyint, 18:c18:smallint, 19:c19:int, 20:c20:bigint, 21:b:string, 22:part:int, 23:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:tinyint, 2:c2:smallint, 3:c3:int, 4:c4:bigint, 5:c5:tinyint, 6:c6:smallint, 7:c7:int, 8:c8:bigint, 9:c9:tinyint, 10:c10:smallint, 11:c11:int, 12:c12:bigint, 13:c13:tinyint, 14:c14:smallint, 15:c15:int, 16:c16:bigint, 17:c17:tinyint, 18:c18:smallint, 19:c19:int, 20:c20:bigint, 21:b:string, 22:part:int, 23:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -805,7 +805,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:char(50), 9:c9:char(5), 10:c10:char(5), 11:c11:char(5), 12:c12:char(5), 13:c13:varchar(50), 14:c14:varchar(50), 15:c15:varchar(50), 16:c16:varchar(50), 17:c17:varchar(5), 18:c18:varchar(5), 19:c19:varchar(5), 20:c20:varchar(5), 21:b:string, 22:part:int, 23:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:char(50), 9:c9:char(5), 10:c10:char(5), 11:c11:char(5), 12:c12:char(5), 13:c13:varchar(50), 14:c14:varchar(50), 15:c15:varchar(50), 16:c16:varchar(50), 17:c17:varchar(5), 18:c18:varchar(5), 19:c19:varchar(5), 20:c20:varchar(5), 21:b:string, 22:part:int, 23:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -932,7 +932,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:decimal(38,18), 2:c2:float, 3:c3:double, 4:c4:decimal(38,18), 5:c5:float, 6:c6:double, 7:c7:decimal(38,18), 8:c8:float, 9:c9:double, 10:c10:decimal(38,18), 11:c11:float, 12:c12:double, 13:c13:decimal(38,18), 14:c14:float, 15:c15:double, 16:b:string, 17:part:int, 18:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:decimal(38,18), 2:c2:float, 3:c3:double, 4:c4:decimal(38,18), 5:c5:float, 6:c6:double, 7:c7:decimal(38,18), 8:c8:float, 9:c9:double, 10:c10:decimal(38,18), 11:c11:float, 12:c12:double, 13:c13:decimal(38,18), 14:c14:float, 15:c15:double, 16:b:string, 17:part:int, 18:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -1050,7 +1050,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:char(50), 5:c5:char(50), 6:c6:char(50), 7:c7:char(7), 8:c8:char(7), 9:c9:char(7), 10:c10:varchar(50), 11:c11:varchar(50), 12:c12:varchar(50), 13:c13:varchar(7), 14:c14:varchar(7), 15:c15:varchar(7), 16:b:string, 17:part:int, 18:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:char(50), 5:c5:char(50), 6:c6:char(50), 7:c7:char(7), 8:c8:char(7), 9:c9:char(7), 10:c10:varchar(50), 11:c11:varchar(50), 12:c12:varchar(50), 13:c13:varchar(7), 14:c14:varchar(7), 15:c15:varchar(7), 16:b:string, 17:part:int, 18:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -1170,7 +1170,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:varchar(50), 9:c9:varchar(50), 10:c10:varchar(50), 11:b:string, 12:part:int, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:varchar(50), 9:c9:varchar(50), 10:c10:varchar(50), 11:b:string, 12:part:int, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -1281,7 +1281,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:char(50), 2:c2:char(9), 3:c3:varchar(50), 4:c4:char(9), 5:c5:varchar(50), 6:c6:varchar(9), 7:c7:string, 8:c8:char(50), 9:c9:char(9), 10:c10:string, 11:b:string, 12:part:int, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:char(50), 2:c2:char(9), 3:c3:varchar(50), 4:c4:char(9), 5:c5:varchar(50), 6:c6:varchar(9), 7:c7:string, 8:c8:char(50), 9:c9:char(9), 10:c10:string, 11:b:string, 12:part:int, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -1415,7 +1415,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:tinyint, 2:c2:tinyint, 3:c3:tinyint, 4:c4:tinyint, 5:c5:tinyint, 6:c6:tinyint, 7:c7:smallint, 8:c8:smallint, 9:c9:smallint, 10:c10:smallint, 11:c11:smallint, 12:c12:int, 13:c13:int, 14:c14:int, 15:c15:int, 16:c16:bigint, 17:c17:bigint, 18:c18:bigint, 19:b:string, 20:part:int, 21:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:tinyint, 2:c2:tinyint, 3:c3:tinyint, 4:c4:tinyint, 5:c5:tinyint, 6:c6:tinyint, 7:c7:smallint, 8:c8:smallint, 9:c9:smallint, 10:c10:smallint, 11:c11:smallint, 12:c12:int, 13:c13:int, 14:c14:int, 15:c15:int, 16:c16:bigint, 17:c17:bigint, 18:c18:bigint, 19:b:string, 20:part:int, 21:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -1540,7 +1540,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:smallint, 2:c2:int, 3:c3:bigint, 4:c4:decimal(38,18), 5:c5:float, 6:c6:double, 7:c7:int, 8:c8:bigint, 9:c9:decimal(38,18), 10:c10:float, 11:c11:double, 12:c12:bigint, 13:c13:decimal(38,18), 14:c14:float, 15:c15:double, 16:c16:decimal(38,18), 17:c17:float, 18:c18:double, 19:b:string, 20:part:int, 21:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:smallint, 2:c2:int, 3:c3:bigint, 4:c4:decimal(38,18), 5:c5:float, 6:c6:double, 7:c7:int, 8:c8:bigint, 9:c9:decimal(38,18), 10:c10:float, 11:c11:double, 12:c12:bigint, 13:c13:decimal(38,18), 14:c14:float, 15:c15:double, 16:c16:decimal(38,18), 17:c17:float, 18:c18:double, 19:b:string, 20:part:int, 21:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -1651,7 +1651,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:decimal(38,18), 2:c2:decimal(38,18), 3:c3:float, 4:b:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:decimal(38,18), 2:c2:decimal(38,18), 3:c3:float, 4:b:string, 5:part:int, 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -1741,7 +1741,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:float, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:float, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true

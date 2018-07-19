@@ -297,7 +297,7 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
         try {
           this.mtbw.close();
         } catch (MutationsRejectedException var7) {
-          if(var7.getAuthorizationFailuresMap().size() >= 0) {
+          if(var7.getAuthorizationFailuresMap().size() > 0) {
             Map tables = new HashMap();
 
             Map.Entry ke;

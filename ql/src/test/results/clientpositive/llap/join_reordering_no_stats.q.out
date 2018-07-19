@@ -100,6 +100,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem_nostats
+                  filterExpr: (l_partkey is not null and l_suppkey is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (l_partkey is not null and l_suppkey is not null) (type: boolean)
@@ -114,12 +115,13 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: part_nostats
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_partkey is not null (type: boolean)
@@ -133,12 +135,13 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: supplier_nostats
+                  filterExpr: s_suppkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_suppkey is not null (type: boolean)
@@ -152,7 +155,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -190,7 +193,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -233,6 +236,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem_nostats
+                  filterExpr: (l_partkey is not null and l_suppkey is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (l_partkey is not null and l_suppkey is not null) (type: boolean)
@@ -247,12 +251,13 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: part_nostats
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_partkey is not null (type: boolean)
@@ -266,12 +271,13 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: supplier_nostats
+                  filterExpr: s_suppkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_suppkey is not null (type: boolean)
@@ -285,7 +291,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -323,7 +329,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -344,73 +350,73 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+PREHOOK: query: CREATE TABLE Employee_Part_n1(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@Employee_Part
-POSTHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+PREHOOK: Output: default@Employee_Part_n1
+POSTHOOK: query: CREATE TABLE Employee_Part_n1(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@Employee_Part
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='USA')
+POSTHOOK: Output: default@Employee_Part_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n1 partition(employeeSalary='2000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='USA')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n1 partition(employeeSalary='2000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='UK')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=2000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='2000.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='UK')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='2000.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='USA')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=2000.0/country=UK
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='3000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='USA')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='3000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='4000.0', country='USA')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=3000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='4000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='4000.0', country='USA')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='4000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3500.0', country='UK')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=4000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='3500.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3500.0', country='UK')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='3500.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=3500.0/country=UK
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='UK')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=3500.0/country=UK
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n1 partition(employeeSalary='3000.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='UK')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n1 partition(employeeSalary='3000.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
-PREHOOK: query: explain select count(1) from Employee_Part,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=3000.0/country=UK
+PREHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1) from Employee_Part,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
+POSTHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -430,6 +436,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem_nostats
+                  filterExpr: (l_partkey is not null and l_suppkey is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (l_partkey is not null and l_suppkey is not null) (type: boolean)
@@ -444,12 +451,13 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: supplier_nostats
+                  filterExpr: s_suppkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_suppkey is not null (type: boolean)
@@ -463,26 +471,27 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: employee_part
-                  Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                  alias: employee_part_n1
+                  filterExpr: employeeid is not null (type: boolean)
+                  Statistics: Num rows: 8 Data size: 28 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: employeeid is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 21 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: employeeid (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6 Data size: 21 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 6 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+                        Statistics: Num rows: 6 Data size: 21 Basic stats: PARTIAL Column stats: NONE
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -509,27 +518,27 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                Statistics: Num rows: 6 Data size: 23 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 23 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -541,9 +550,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select count(1) from Employee_Part,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
+PREHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1) from Employee_Part,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
+POSTHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -563,6 +572,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem_nostats
+                  filterExpr: (l_partkey is not null and l_suppkey is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (l_partkey is not null and l_suppkey is not null) (type: boolean)
@@ -572,17 +582,38 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col1 (type: int)
+                        key expressions: _col0 (type: int)
                         sort order: +
-                        Map-reduce partition columns: _col1 (type: int)
+                        Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: int)
-            Execution mode: llap
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
+                  alias: employee_part_n1
+                  filterExpr: employeeid is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: employeeid is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: employeeid (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
                   alias: supplier_nostats
+                  filterExpr: s_suppkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_suppkey is not null (type: boolean)
@@ -596,26 +627,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: employee_part
-                  Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: employeeid is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: employeeid (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 6 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 6 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -624,15 +636,15 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int)
+                  0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: int)
+                  key expressions: _col1 (type: int)
                   sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -640,29 +652,29 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col0 (type: int)
+                  0 _col1 (type: int)
                   1 _col0 (type: int)
-                Statistics: Num rows: 6 Data size: 23 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -674,14 +686,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table Employee_Part
+PREHOOK: query: drop table Employee_Part_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@employee_part
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: drop table Employee_Part
+PREHOOK: Input: default@employee_part_n1
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: drop table Employee_Part_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@employee_part
-POSTHOOK: Output: default@employee_part
+POSTHOOK: Input: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1
 PREHOOK: query: drop table supplier_nostats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@supplier_nostats

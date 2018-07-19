@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -49,6 +48,8 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
+import org.apache.hadoop.hive.ql.plan.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -60,6 +61,8 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * QueryPlan can be serialized to disk so that we can restart/resume the
@@ -109,6 +112,7 @@ public class QueryPlan implements Serializable {
   private final HiveOperation operation;
   private final boolean acidResourcesInQuery;
   private final Set<FileSinkDesc> acidSinks; // Note: both full-ACID and insert-only sinks.
+  private final DDLDesc.DDLDescWithWriteId acidDdlDesc;
   private Boolean autoCommitValue;
 
   public QueryPlan() {
@@ -120,6 +124,7 @@ public class QueryPlan implements Serializable {
     this.operation = command;
     this.acidResourcesInQuery = false;
     this.acidSinks = Collections.emptySet();
+    this.acidDdlDesc = null;
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
@@ -148,6 +153,7 @@ public class QueryPlan implements Serializable {
     this.resultSchema = resultSchema;
     this.acidResourcesInQuery = sem.hasTransactionalInQuery();
     this.acidSinks = sem.getAcidFileSinks();
+    this.acidDdlDesc = sem.getAcidDdlDesc();
   }
 
   /**
@@ -162,6 +168,11 @@ public class QueryPlan implements Serializable {
   Set<FileSinkDesc> getAcidSinks() {
     return acidSinks;
   }
+
+  DDLDescWithWriteId getAcidDdlDesc() {
+    return acidDdlDesc;
+  }
+
   public String getQueryStr() {
     return queryString;
   }

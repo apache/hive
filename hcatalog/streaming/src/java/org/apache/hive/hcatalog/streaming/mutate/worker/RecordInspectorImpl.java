@@ -29,7 +29,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * Standard {@link RecordInspector} implementation that uses the supplied {@link ObjectInspector} and
  * {@link AcidOutputFormat.Options#recordIdColumn(int) record id column} to extract {@link RecordIdentifier
  * RecordIdentifiers}, and calculate bucket ids from records.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class RecordInspectorImpl implements RecordInspector {
 
   private final StructObjectInspector structObjectInspector;

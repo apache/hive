@@ -34,9 +34,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 100.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -46,15 +47,17 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) < 200.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 200.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 200.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -64,6 +67,7 @@ STAGE PLANS:
                         keys:
                           0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
                           1 UDFToDouble(_col0) (type: double)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -77,9 +81,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 100.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -118,9 +123,11 @@ STAGE PLANS:
                                 sort order: 
                                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                                 value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)

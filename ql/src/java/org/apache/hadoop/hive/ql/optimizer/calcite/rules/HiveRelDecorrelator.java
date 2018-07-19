@@ -53,22 +53,14 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Correlate;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.Values;
-import org.apache.calcite.rel.logical.LogicalAggregate;
 import org.apache.calcite.rel.logical.LogicalCorrelate;
-import org.apache.calcite.rel.logical.LogicalFilter;
-import org.apache.calcite.rel.logical.LogicalIntersect;
-import org.apache.calcite.rel.logical.LogicalJoin;
-import org.apache.calcite.rel.logical.LogicalProject;
-import org.apache.calcite.rel.logical.LogicalUnion;
 import org.apache.calcite.rel.metadata.RelMdUtil;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.rel.rules.FilterJoinRule;
-import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -104,6 +96,8 @@ import org.apache.calcite.util.ReflectiveVisitor;
 import org.apache.calcite.util.Stacks;
 import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -137,7 +131,7 @@ import java.util.Stack;
  * NOTE: this whole logic is replicated from Calcite's RelDecorrelator
  *  and is exteneded to make it suitable for HIVE
  *    We should get rid of this and replace it with Calcite's RelDecorrelator
- *    once that works with Join, Project etc instead of LogicalJoin, LogicalProject.
+ *    once that works with Join, Project etc instead of Join, Project.
  *    At this point this has differed from Calcite's version significantly so cannot
  *    get rid of this.
  *
@@ -198,8 +192,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     this.cm = cm;
     this.rexBuilder = cluster.getRexBuilder();
     this.context = context;
-    relBuilder = RelFactories.LOGICAL_BUILDER.create(cluster, null);
-
+    relBuilder = HiveRelFactories.HIVE_BUILDER.create(cluster, null);
   }
 
   //~ Methods ----------------------------------------------------------------
@@ -245,8 +238,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     HepProgram program = HepProgram.builder()
             .addRuleInstance(new AdjustProjectForCountAggregateRule(false))
             .addRuleInstance(new AdjustProjectForCountAggregateRule(true))
-            .addRuleInstance(FilterJoinRule.FILTER_ON_JOIN)
-            .addRuleInstance(FilterProjectTransposeRule.INSTANCE)
+            .addRuleInstance(HiveFilterJoinRule.FILTER_ON_JOIN)
+            .addRuleInstance(HiveFilterProjectTransposeRule.INSTANCE)
             // FilterCorrelateRule rule mistakenly pushes a FILTER, consiting of correlated vars,
             // on top of LogicalCorrelate to within  left input for scalar corr queries
             // which causes exception during decorrelation. This has been disabled for now.
@@ -265,8 +258,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     if (frame != null) {
       // has been rewritten; apply rules post-decorrelation
       final HepProgram program2 = HepProgram.builder()
-              .addRuleInstance(FilterJoinRule.FILTER_ON_JOIN)
-              .addRuleInstance(FilterJoinRule.JOIN)
+              .addRuleInstance(HiveFilterJoinRule.FILTER_ON_JOIN)
+              .addRuleInstance(HiveFilterJoinRule.JOIN)
               .build();
 
       final HepPlanner planner2 = createPlanner(program2);
@@ -504,11 +497,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
   }
 
   /**
-   * Rewrites a {@link LogicalAggregate}.
+   * Rewrites a {@link Aggregate}.
    *
    * @param rel Aggregate to rewrite
    */
-  public Frame decorrelateRel(LogicalAggregate rel) throws SemanticException{
+  public Frame decorrelateRel(Aggregate rel) throws SemanticException{
     if (rel.getGroupType() != Aggregate.Group.SIMPLE) {
       throw new AssertionError(Bug.CALCITE_461_FIXED);
     }
@@ -654,12 +647,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
               newInputOutputFieldCount + i);
     }
 
-    relBuilder.push(
-            LogicalAggregate.create(newProject,
-                    false,
-                    newGroupSet,
-                    null,
-                    newAggCalls));
+    relBuilder.push(newProject)
+        .aggregate(relBuilder.groupKey(newGroupSet, null), newAggCalls);
 
     if (!omittedConstants.isEmpty()) {
       final List<RexNode> postProjects = new ArrayList<>(relBuilder.fields());
@@ -877,17 +866,17 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     final List<RexNode> oldProjects = rel.getProjects();
     final List<RelDataTypeField> relOutput = rel.getRowType().getFieldList();
 
-    // LogicalProject projects the original expressions,
+    // Project projects the original expressions,
     // plus any correlated variables the input wants to pass along.
     final List<Pair<RexNode, String>> projects = Lists.newArrayList();
 
-    // If this LogicalProject has correlated reference, create value generator
+    // If this Project has correlated reference, create value generator
     // and produce the correlated variables in the new output.
     if (cm.mapRefRelToCorRef.containsKey(rel)) {
       frame = decorrelateInputWithValueGenerator(rel);
     }
 
-    // LogicalProject projects the original expressions
+    // Project projects the original expressions
     final Map<Integer, Integer> mapOldToNewOutputs =  new HashMap<>();
     int newPos;
     for (newPos = 0; newPos < oldProjects.size(); newPos++) {
@@ -917,11 +906,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         corDefOutputs);
   }
   /**
-   * Rewrite LogicalProject.
+   * Rewrite Project.
    *
    * @param rel the project rel to rewrite
    */
-  public Frame decorrelateRel(LogicalProject rel) throws SemanticException{
+  public Frame decorrelateRel(Project rel) throws SemanticException{
     //
     // Rewrite logic:
     //
@@ -937,17 +926,17 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     final List<RexNode> oldProjects = rel.getProjects();
     final List<RelDataTypeField> relOutput = rel.getRowType().getFieldList();
 
-    // LogicalProject projects the original expressions,
+    // Project projects the original expressions,
     // plus any correlated variables the input wants to pass along.
     final List<Pair<RexNode, String>> projects = Lists.newArrayList();
 
-    // If this LogicalProject has correlated reference, create value generator
+    // If this Project has correlated reference, create value generator
     // and produce the correlated variables in the new output.
     if (cm.mapRefRelToCorRef.containsKey(rel)) {
       frame = decorrelateInputWithValueGenerator(rel);
     }
 
-    // LogicalProject projects the original expressions
+    // Project projects the original expressions
     final Map<Integer, Integer> mapOldToNewOutputs = new HashMap<>();
     int newPos;
     for (newPos = 0; newPos < oldProjects.size(); newPos++) {
@@ -977,13 +966,6 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
   /**
    * Create RelNode tree that produces a list of correlated variables.
-   *
-   * @param correlations         correlated variables to generate
-   * @param valueGenFieldOffset  offset in the output that generated columns
-   *                             will start
-   * @param mapCorVarToOutputPos output positions for the correlated variables
-   *                             generated
-   * @return RelNode the root of the resultant RelNode tree
    */
   private RelNode createValueGenerator(
           Iterable<CorRef> correlations,
@@ -1039,11 +1021,9 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       assert newInput != null;
 
       if (!joinedInputs.contains(newInput)) {
-        RelNode project =
-                RelOptUtil.createProject(
-                        newInput,
-                        mapNewInputToOutputs.get(newInput));
-        RelNode distinct = RelOptUtil.createDistinctRel(project);
+        RelNode project = RelOptUtil.createProject(
+            HiveRelFactories.HIVE_PROJECT_FACTORY, newInput, mapNewInputToOutputs.get(newInput));
+        RelNode distinct = relBuilder.push(project).distinct().build();
         RelOptCluster cluster = distinct.getCluster();
 
         joinedInputs.add(newInput);
@@ -1053,10 +1033,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         if (r == null) {
           r = distinct;
         } else {
-          r =
-                  LogicalJoin.create(r, distinct,
-                          cluster.getRexBuilder().makeLiteral(true),
-                          ImmutableSet.<CorrelationId>of(), JoinRelType.INNER);
+          r = relBuilder.push(r).push(distinct)
+              .join(JoinRelType.INNER, cluster.getRexBuilder().makeLiteral(true)).build();
         }
       }
     }
@@ -1153,13 +1131,12 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
                     leftInputOutputCount,
                     corDefOutputs);
 
-    RelNode join =
-            LogicalJoin.create(frame.r, valueGenRel, rexBuilder.makeLiteral(true),
-                    ImmutableSet.<CorrelationId>of(), JoinRelType.INNER);
+    RelNode join = relBuilder.push(frame.r).push(valueGenRel)
+        .join(JoinRelType.INNER, rexBuilder.makeLiteral(true)).build();
 
-    // LogicalJoin or LogicalFilter does not change the old input ordering. All
+    // Join or Filter does not change the old input ordering. All
     // input fields from newLeftInput(i.e. the original input to the old
-    // LogicalFilter) are in the output and in the same position.
+    // Filter) are in the output and in the same position.
     return register(oldInput, join, frame.oldToNewOutputs, corDefOutputs);
   }
 
@@ -1242,16 +1219,16 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     //
     // Rewrite logic:
     //
-    // 1. If a LogicalFilter references a correlated field in its filter
-    // condition, rewrite the LogicalFilter to be
-    //   LogicalFilter
-    //     LogicalJoin(cross product)
+    // 1. If a Filter references a correlated field in its filter
+    // condition, rewrite the Filter to be
+    //   Filter
+    //     Join(cross product)
     //       OriginalFilterInput
     //       ValueGenerator(produces distinct sets of correlated variables)
     // and rewrite the correlated fieldAccess in the filter condition to
-    // reference the LogicalJoin output.
+    // reference the Join output.
     //
-    // 2. If LogicalFilter does not reference correlated variables, simply
+    // 2. If Filter does not reference correlated variables, simply
     // rewrite the filter condition using new input.
     //
 
@@ -1263,7 +1240,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     }
 
     Frame oldInputFrame = frame;
-    // If this LogicalFilter has correlated reference, create value generator
+    // If this Filter has correlated reference, create value generator
     // and produce the correlated variables in the new output.
     if (cm.mapRefRelToCorRef.containsKey(rel)) {
       frame = decorrelateInputWithValueGenerator(rel);
@@ -1306,24 +1283,24 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
   }
 
     /**
-     * Rewrite LogicalFilter.
+     * Rewrite Filter.
      *
      * @param rel the filter rel to rewrite
      */
-  public Frame decorrelateRel(LogicalFilter rel) {
+  public Frame decorrelateRel(Filter rel) {
     //
     // Rewrite logic:
     //
-    // 1. If a LogicalFilter references a correlated field in its filter
-    // condition, rewrite the LogicalFilter to be
-    //   LogicalFilter
-    //     LogicalJoin(cross product)
+    // 1. If a Filter references a correlated field in its filter
+    // condition, rewrite the Filter to be
+    //   Filter
+    //     Join(cross product)
     //       OriginalFilterInput
     //       ValueGenerator(produces distinct sets of correlated variables)
     // and rewrite the correlated fieldAccess in the filter condition to
-    // reference the LogicalJoin output.
+    // reference the Join output.
     //
-    // 2. If LogicalFilter does not reference correlated variables, simply
+    // 2. If Filter does not reference correlated variables, simply
     // rewrite the filter condition using new input.
     //
 
@@ -1334,7 +1311,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       return null;
     }
 
-    // If this LogicalFilter has correlated reference, create value generator
+    // If this Filter has correlated reference, create value generator
     // and produce the correlated variables in the new output.
     if (cm.mapRefRelToCorRef.containsKey(rel)) {
       frame = decorrelateInputWithValueGenerator(rel);
@@ -1500,9 +1477,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
             rightFrame.oldToNewOutputs.get(i) + newLeftFieldCount);
       }
 
-      newJoin = LogicalJoin.create(leftFrame.r, rightFrame.r, condition,
-          ImmutableSet.<CorrelationId>of(), rel.getJoinType().toJoinType());
-
+      newJoin = relBuilder.push(leftFrame.r).push(rightFrame.r)
+          .join(rel.getJoinType().toJoinType(), condition).build();
     }
 
     valueGen.pop();
@@ -1564,11 +1540,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     return register(rel, newJoin, mapOldToNewOutputs, corDefOutputs);
   }
   /**
-   * Rewrite LogicalJoin.
+   * Rewrite Join.
    *
-   * @param rel LogicalJoin
+   * @param rel Join
    */
-  public Frame decorrelateRel(LogicalJoin rel) {
+  public Frame decorrelateRel(Join rel) {
     //
     // Rewrite logic:
     //
@@ -1684,11 +1660,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
    * @param join          Join
    * @param project       Original project as the right-hand input of the join
    * @param nullIndicatorPos Position of null indicator
-   * @return the subtree with the new LogicalProject at the root
+   * @return the subtree with the new Project at the root
    */
   private RelNode projectJoinOutputWithNullability(
-          LogicalJoin join,
-          LogicalProject project,
+          Join join,
+          Project project,
           int nullIndicatorPos) {
     final RelDataTypeFactory typeFactory = join.getCluster().getTypeFactory();
     final RelNode left = join.getLeft();
@@ -1730,7 +1706,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       newProjExprs.add(Pair.of(newProjExpr, pair.right));
     }
 
-    return RelOptUtil.createProject(join, newProjExprs, false);
+    return RelOptUtil.createProject(join, Pair.left(newProjExprs), Pair.right(newProjExprs),
+        false, relBuilder);
   }
 
   /**
@@ -1741,11 +1718,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
    * @param project the original project as the RHS input of the join
    * @param isCount Positions which are calls to the <code>COUNT</code>
    *                aggregation function
-   * @return the subtree with the new LogicalProject at the root
+   * @return the subtree with the new Project at the root
    */
   private RelNode aggregateCorrelatorOutput(
           Correlate correlate,
-          LogicalProject project,
+          Project project,
           Set<Integer> isCount) {
     final RelNode left = correlate.getLeft();
     final JoinRelType joinType = correlate.getJoinType().toJoinType();
@@ -1777,7 +1754,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       newProjects.add(Pair.of(newProjExpr, pair.right));
     }
 
-    return RelOptUtil.createProject(correlate, newProjects, false);
+    return RelOptUtil.createProject(correlate, Pair.left(newProjects), Pair.right(newProjects),
+        false, relBuilder);
   }
 
   /**
@@ -1792,8 +1770,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
    */
   private boolean checkCorVars(
           LogicalCorrelate correlate,
-          LogicalProject project,
-          LogicalFilter filter,
+          Project project,
+          Filter filter,
           List<RexFieldAccess> correlatedJoinKeys) {
     if (filter != null) {
       assert correlatedJoinKeys != null;
@@ -1852,7 +1830,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
    *
    * @param input        Input relational expression
    * @param additionalExprs Additional expressions and names
-   * @return the new LogicalProject
+   * @return the new Project
    */
   private RelNode createProjectWithAdditionalExprs(
           RelNode input,
@@ -1868,7 +1846,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
                       field.e.getName()));
     }
     projects.addAll(additionalExprs);
-    return RelOptUtil.createProject(input, projects, false);
+    return RelOptUtil.createProject(input, Pair.left(projects), Pair.right(projects),
+        false, relBuilder);
   }
 
   /* Returns an immutable map with the identity [0: 0, .., count-1: count-1]. */
@@ -2157,7 +2136,6 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
           }
         }
 
-        final RelDataType newType;
         if (!isSpecialCast) {
           // TODO: ideally this only needs to be called if the result
           // type will also change. However, since that requires
@@ -2165,7 +2143,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
           // decides return type based on input types, for now all
           // operators will be recreated with new type if any operand
           // changed, unless the operator has "built-in" type.
-          newType = rexBuilder.deriveReturnType(operator, clonedOperands);
+          newCall = rexBuilder.ensureType(
+              call.getType(),
+              rexBuilder.makeCall(
+                  rexBuilder.deriveReturnType(operator, clonedOperands), operator, clonedOperands),
+              true);
         } else {
           // Use the current return type when creating a new call, for
           // operators with return type built into the operator
@@ -2175,13 +2157,12 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
           // TODO: Comments in RexShuttle.visitCall() mention other
           // types in this category. Need to resolve those together
           // and preferably in the base class RexShuttle.
-          newType = call.getType();
+          newCall =
+              rexBuilder.makeCall(
+                  call.getType(),
+                  operator,
+                  clonedOperands);
         }
-        newCall =
-                rexBuilder.makeCall(
-                        newType,
-                        operator,
-                        clonedOperands);
       } else {
         newCall = call;
       }
@@ -2206,16 +2187,16 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     RemoveSingleAggregateRule() {
       super(
               operand(
-                      LogicalAggregate.class,
+                      Aggregate.class,
                       operand(
-                              LogicalProject.class,
-                              operand(LogicalAggregate.class, any()))));
+                              Project.class,
+                              operand(Aggregate.class, any()))));
     }
 
     public void onMatch(RelOptRuleCall call) {
-      LogicalAggregate singleAggregate = call.rel(0);
-      LogicalProject project = call.rel(1);
-      LogicalAggregate aggregate = call.rel(2);
+      Aggregate singleAggregate = call.rel(0);
+      Project project = call.rel(1);
+      Aggregate aggregate = call.rel(2);
 
       // check singleAggRel is single_value agg
       if ((!singleAggregate.getGroupSet().isEmpty())
@@ -2241,15 +2222,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       // singleAggRel produces a nullable type, so create the new
       // projection that casts proj expr to a nullable type.
       final RelOptCluster cluster = project.getCluster();
-      RelNode newProject =
-              RelOptUtil.createProject(aggregate,
-                      ImmutableList.of(
-                              rexBuilder.makeCast(
-                                      cluster.getTypeFactory().createTypeWithNullability(
-                                              projExprs.get(0).getType(),
-                                              true),
-                                      projExprs.get(0))),
-                      null);
+      RelNode newProject = RelOptUtil.createProject(aggregate,
+          ImmutableList.of(rexBuilder.makeCast(
+                  cluster.getTypeFactory().createTypeWithNullability(projExprs.get(0).getType(), true),
+                  projExprs.get(0))),
+          null, false, relBuilder);
       call.transformTo(newProject);
     }
   }
@@ -2260,16 +2237,16 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       super(
               operand(LogicalCorrelate.class,
                       operand(RelNode.class, any()),
-                      operand(LogicalAggregate.class,
-                              operand(LogicalProject.class,
+                      operand(Aggregate.class,
+                              operand(Project.class,
                                       operand(RelNode.class, any())))));
     }
 
     public void onMatch(RelOptRuleCall call) {
       final LogicalCorrelate correlate = call.rel(0);
       final RelNode left = call.rel(1);
-      final LogicalAggregate aggregate = call.rel(2);
-      final LogicalProject project = call.rel(3);
+      final Aggregate aggregate = call.rel(2);
+      final Project project = call.rel(3);
       RelNode right = call.rel(4);
       final RelOptCluster cluster = correlate.getCluster();
 
@@ -2281,9 +2258,12 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       //
       // CorrelateRel(left correlation, condition = true)
       //   LeftInputRel
-      //   LogicalAggregate (groupby (0) single_value())
-      //     LogicalProject-A (may reference coVar)
+      //   Aggregate (groupby (0) single_value())
+      //     Project-A (may reference coVar)
       //       RightInputRel
+      if(correlate.getJoinType() != SemiJoinType.LEFT) {
+        return;
+      }
       final JoinRelType joinType = correlate.getJoinType().toJoinType();
 
       // corRel.getCondition was here, however Correlate was updated so it
@@ -2311,18 +2291,18 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
       int nullIndicatorPos;
 
-      if ((right instanceof LogicalFilter)
+      if ((right instanceof Filter)
               && cm.mapRefRelToCorRef.containsKey(right)) {
         // rightInputRel has this shape:
         //
-        //       LogicalFilter (references corvar)
+        //       Filter (references corvar)
         //         FilterInputRel
 
         // If rightInputRel is a filter and contains correlated
         // reference, make sure the correlated keys in the filter
         // condition forms a unique key of the RHS.
 
-        LogicalFilter filter = (LogicalFilter) right;
+        Filter filter = (Filter) right;
         right = filter.getInput();
 
         assert right instanceof HepRelVertex;
@@ -2342,7 +2322,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         // refs. These comparisons are AND'ed together.
         List<RexNode> tmpRightJoinKeys = Lists.newArrayList();
         List<RexNode> correlatedJoinKeys = Lists.newArrayList();
-        RelOptUtil.splitCorrelatedFilterCondition(
+        HiveRelOptUtil.splitCorrelatedFilterCondition(
                 filter,
                 tmpRightJoinKeys,
                 correlatedJoinKeys,
@@ -2386,8 +2366,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         // Change the plan to this structure.
         // Note that the aggregateRel is removed.
         //
-        // LogicalProject-A' (replace corvar to input ref from the LogicalJoin)
-        //   LogicalJoin (replace corvar to input ref from LeftInputRel)
+        // Project-A' (replace corvar to input ref from the Join)
+        //   Join (replace corvar to input ref from LeftInputRel)
         //     LeftInputRel
         //     RightInputRel(oreviously FilterInputRel)
 
@@ -2410,11 +2390,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
         // Change the plan to this structure.
         //
-        // LogicalProject-A' (replace corvar to input ref from LogicalJoin)
-        //   LogicalJoin (left, condition = true)
+        // Project-A' (replace corvar to input ref from Join)
+        //   Join (left, condition = true)
         //     LeftInputRel
-        //     LogicalAggregate(groupby(0), single_value(0), s_v(1)....)
-        //       LogicalProject-B (everything from input plus literal true)
+        //     Aggregate(groupby(0), single_value(0), s_v(1)....)
+        //       Project-B (everything from input plus literal true)
         //         ProjInputRel
 
         // make the new projRel to provide a null indicator
@@ -2426,7 +2406,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
         // make the new aggRel
         right =
-                RelOptUtil.createSingleValueAggRel(cluster, right);
+                HiveRelOptUtil.createSingleValueAggRel(cluster, right, HiveRelFactories.HIVE_AGGREGATE_FACTORY);
 
         // The last field:
         //     single_value(true)
@@ -2439,9 +2419,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       }
 
       // make the new join rel
-      LogicalJoin join =
-              LogicalJoin.create(left, right, joinCond,
-                      ImmutableSet.<CorrelationId>of(), joinType);
+      Join join = (Join) relBuilder.push(left).push(right)
+          .join(joinType, joinCond).build();
 
       RelNode newProject =
               projectJoinOutputWithNullability(join, project, nullIndicatorPos);
@@ -2459,18 +2438,18 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       super(
               operand(LogicalCorrelate.class,
                       operand(RelNode.class, any()),
-                      operand(LogicalProject.class,
-                              operand(LogicalAggregate.class, null, Aggregate.IS_SIMPLE,
-                                      operand(LogicalProject.class,
+                      operand(Project.class,
+                              operand(Aggregate.class, null, Aggregate.IS_SIMPLE,
+                                      operand(Project.class,
                                               operand(RelNode.class, any()))))));
     }
 
     public void onMatch(RelOptRuleCall call) {
       final LogicalCorrelate correlate = call.rel(0);
       final RelNode left = call.rel(1);
-      final LogicalProject aggOutputProject = call.rel(2);
-      final LogicalAggregate aggregate = call.rel(3);
-      final LogicalProject aggInputProject = call.rel(4);
+      final Project aggOutputProject = call.rel(2);
+      final Aggregate aggregate = call.rel(3);
+      final Project aggInputProject = call.rel(4);
       RelNode right = call.rel(5);
       final RelOptCluster cluster = correlate.getCluster();
 
@@ -2482,14 +2461,18 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       //
       // CorrelateRel(left correlation, condition = true)
       //   LeftInputRel
-      //   LogicalProject-A (a RexNode)
-      //     LogicalAggregate (groupby (0), agg0(), agg1()...)
-      //       LogicalProject-B (references coVar)
+      //   Project-A (a RexNode)
+      //     Aggregate (groupby (0), agg0(), agg1()...)
+      //       Project-B (references coVar)
       //         rightInputRel
 
       // check aggOutputProject projects only one expression
       final List<RexNode> aggOutputProjects = aggOutputProject.getProjects();
       if (aggOutputProjects.size() != 1) {
+        return;
+      }
+
+      if(correlate.getJoinType() != SemiJoinType.LEFT) {
         return;
       }
 
@@ -2523,13 +2506,13 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         }
       }
 
-      if ((right instanceof LogicalFilter)
+      if ((right instanceof Filter)
               && cm.mapRefRelToCorRef.containsKey(right)) {
         // rightInputRel has this shape:
         //
-        //       LogicalFilter (references corvar)
+        //       Filter (references corvar)
         //         FilterInputRel
-        LogicalFilter filter = (LogicalFilter) right;
+        Filter filter = (Filter) right;
         right = filter.getInput();
 
         assert right instanceof HepRelVertex;
@@ -2550,7 +2533,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         // expressions. These comparisons are AND'ed together.
         List<RexNode> rightJoinKeys = Lists.newArrayList();
         List<RexNode> tmpCorrelatedJoinKeys = Lists.newArrayList();
-        RelOptUtil.splitCorrelatedFilterCondition(
+        HiveRelOptUtil.splitCorrelatedFilterCondition(
                 filter,
                 rightJoinKeys,
                 tmpCorrelatedJoinKeys,
@@ -2600,21 +2583,21 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         //
         // CorrelateRel(left correlation, condition = true)
         //   LeftInputRel
-        //   LogicalProject-A (a RexNode)
-        //     LogicalAggregate (groupby(0), agg0(),agg1()...)
-        //       LogicalProject-B (may reference coVar)
-        //         LogicalFilter (references corVar)
+        //   Project-A (a RexNode)
+        //     Aggregate (groupby(0), agg0(),agg1()...)
+        //       Project-B (may reference coVar)
+        //         Filter (references corVar)
         //           RightInputRel (no correlated reference)
         //
 
         // to this plan:
         //
-        // LogicalProject-A' (all gby keys + rewritten nullable ProjExpr)
-        //   LogicalAggregate (groupby(all left input refs)
+        // Project-A' (all gby keys + rewritten nullable ProjExpr)
+        //   Aggregate (groupby(all left input refs)
         //                 agg0(rewritten expression),
         //                 agg1()...)
-        //     LogicalProject-B' (rewriten original projected exprs)
-        //       LogicalJoin(replace corvar w/ input ref from LeftInputRel)
+        //     Project-B' (rewriten original projected exprs)
+        //       Join(replace corvar w/ input ref from LeftInputRel)
         //         LeftInputRel
         //         RightInputRel
         //
@@ -2626,14 +2609,14 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         // projection list from the RHS for simplicity to avoid
         // searching for non-null fields.
         //
-        // LogicalProject-A' (all gby keys + rewritten nullable ProjExpr)
-        //   LogicalAggregate (groupby(all left input refs),
+        // Project-A' (all gby keys + rewritten nullable ProjExpr)
+        //   Aggregate (groupby(all left input refs),
         //                 count(nullIndicator), other aggs...)
-        //     LogicalProject-B' (all left input refs plus
+        //     Project-B' (all left input refs plus
         //                    the rewritten original projected exprs)
-        //       LogicalJoin(replace corvar to input ref from LeftInputRel)
+        //       Join(replace corvar to input ref from LeftInputRel)
         //         LeftInputRel
-        //         LogicalProject (everything from RightInputRel plus
+        //         Project (everything from RightInputRel plus
         //                     the nullIndicator "true")
         //           RightInputRel
         //
@@ -2668,20 +2651,20 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         //
         // CorrelateRel(left correlation, condition = true)
         //   LeftInputRel
-        //   LogicalProject-A (a RexNode)
-        //     LogicalAggregate (groupby(0), agg0(), agg1()...)
-        //       LogicalProject-B (references coVar)
+        //   Project-A (a RexNode)
+        //     Aggregate (groupby(0), agg0(), agg1()...)
+        //       Project-B (references coVar)
         //         RightInputRel (no correlated reference)
         //
 
         // to this plan:
         //
-        // LogicalProject-A' (all gby keys + rewritten nullable ProjExpr)
-        //   LogicalAggregate (groupby(all left input refs)
+        // Project-A' (all gby keys + rewritten nullable ProjExpr)
+        //   Aggregate (groupby(all left input refs)
         //                 agg0(rewritten expression),
         //                 agg1()...)
-        //     LogicalProject-B' (rewriten original projected exprs)
-        //       LogicalJoin (LOJ cond = true)
+        //     Project-B' (rewriten original projected exprs)
+        //       Join (LOJ cond = true)
         //         LeftInputRel
         //         RightInputRel
         //
@@ -2693,14 +2676,14 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         // projection list from the RHS for simplicity to avoid
         // searching for non-null fields.
         //
-        // LogicalProject-A' (all gby keys + rewritten nullable ProjExpr)
-        //   LogicalAggregate (groupby(all left input refs),
+        // Project-A' (all gby keys + rewritten nullable ProjExpr)
+        //   Aggregate (groupby(all left input refs),
         //                 count(nullIndicator), other aggs...)
-        //     LogicalProject-B' (all left input refs plus
+        //     Project-B' (all left input refs plus
         //                    the rewritten original projected exprs)
-        //       LogicalJoin(replace corvar to input ref from LeftInputRel)
+        //       Join(replace corvar to input ref from LeftInputRel)
         //         LeftInputRel
-        //         LogicalProject (everything from RightInputRel plus
+        //         Project (everything from RightInputRel plus
         //                     the nullIndicator "true")
         //           RightInputRel
       } else {
@@ -2718,9 +2701,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
                               Pair.<RexNode, String>of(rexBuilder.makeLiteral(true),
                                       "nullIndicator")));
 
-      LogicalJoin join =
-              LogicalJoin.create(left, right, joinCond,
-                      ImmutableSet.<CorrelationId>of(), joinType);
+      Join join = (Join) relBuilder.push(left).push(right)
+          .join(joinType, joinCond).build();
 
       // To the consumer of joinOutputProjRel, nullIndicator is located
       // at the end
@@ -2754,11 +2736,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       joinOutputProjects.add(
               rexBuilder.makeInputRef(join, nullIndicatorPos));
 
-      RelNode joinOutputProject =
-              RelOptUtil.createProject(
-                      join,
-                      joinOutputProjects,
-                      null);
+      RelNode joinOutputProject = RelOptUtil.createProject(
+          join, joinOutputProjects, null, false, relBuilder);
 
       // nullIndicator is now at a different location in the output of
       // the join
@@ -2793,12 +2772,9 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
       ImmutableBitSet groupSet =
               ImmutableBitSet.range(groupCount);
-      LogicalAggregate newAggregate =
-              LogicalAggregate.create(joinOutputProject,
-                      false,
-                      groupSet,
-                      null,
-                      newAggCalls);
+      Aggregate newAggregate =
+          (Aggregate) relBuilder.push(joinOutputProject)
+              .aggregate(relBuilder.groupKey(groupSet, null), newAggCalls).build();
 
       List<RexNode> newAggOutputProjectList = Lists.newArrayList();
       for (int i : groupSet) {
@@ -2815,11 +2791,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
                               true),
                       newAggOutputProjects));
 
-      RelNode newAggOutputProject =
-              RelOptUtil.createProject(
-                      newAggregate,
-                      newAggOutputProjectList,
-                      null);
+      RelNode newAggOutputProject = RelOptUtil.createProject(
+          newAggregate, newAggOutputProjectList, null, false, relBuilder);
 
       call.transformTo(newAggOutputProject);
 
@@ -2844,19 +2817,19 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
               flavor
                       ? operand(LogicalCorrelate.class,
                       operand(RelNode.class, any()),
-                      operand(LogicalProject.class,
-                              operand(LogicalAggregate.class, any())))
+                      operand(Project.class,
+                              operand(Aggregate.class, any())))
                       : operand(LogicalCorrelate.class,
                       operand(RelNode.class, any()),
-                      operand(LogicalAggregate.class, any())));
+                      operand(Aggregate.class, any())));
       this.flavor = flavor;
     }
 
     public void onMatch(RelOptRuleCall call) {
       final LogicalCorrelate correlate = call.rel(0);
       final RelNode left = call.rel(1);
-      final LogicalProject aggOutputProject;
-      final LogicalAggregate aggregate;
+      final Project aggOutputProject;
+      final Aggregate aggregate;
       if (flavor) {
         aggOutputProject = call.rel(2);
         aggregate = call.rel(3);
@@ -2870,11 +2843,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         for (int i = 0; i < fields.size(); i++) {
           projects.add(RexInputRef.of2(projects.size(), fields));
         }
-        aggOutputProject =
-                (LogicalProject) RelOptUtil.createProject(
-                        aggregate,
-                        projects,
-                        false);
+        aggOutputProject = (Project) RelOptUtil.createProject(
+            aggregate, Pair.left(projects), Pair.right(projects), false, relBuilder);
       }
       onMatch2(call, correlate, left, aggOutputProject, aggregate);
     }
@@ -2883,8 +2853,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
             RelOptRuleCall call,
             LogicalCorrelate correlate,
             RelNode leftInput,
-            LogicalProject aggOutputProject,
-            LogicalAggregate aggregate) {
+            Project aggOutputProject,
+            Aggregate aggregate) {
       if (generatedCorRels.contains(correlate)) {
         // This correlator was generated by a previous invocation of
         // this rule. No further work to do.
@@ -2899,12 +2869,16 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       //
       // CorrelateRel(left correlation, condition = true)
       //   LeftInputRel
-      //   LogicalProject-A (a RexNode)
-      //     LogicalAggregate (groupby (0), agg0(), agg1()...)
+      //   Project-A (a RexNode)
+      //     Aggregate (groupby (0), agg0(), agg1()...)
 
       // check aggOutputProj projects only one expression
       List<RexNode> aggOutputProjExprs = aggOutputProject.getProjects();
       if (aggOutputProjExprs.size() != 1) {
+        return;
+      }
+
+      if(correlate.getJoinType() != SemiJoinType.LEFT) {
         return;
       }
 
@@ -2940,7 +2914,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       //             replacing references to count() with case statement)
       //   Correlator(left correlation, condition = true)
       //     LeftInputRel
-      //     LogicalAggregate (groupby (0), agg0(), agg1()...)
+      //     Aggregate (groupby (0), agg0(), agg1()...)
       //
       LogicalCorrelate newCorrelate =
               LogicalCorrelate.create(leftInput, aggregate,
@@ -3179,21 +3153,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       mightRequireValueGen = true;
       return rel;
     }
-    public RelNode visit(LogicalUnion rel) {
-      mightRequireValueGen = true;
-      return rel;
-    }
-    public RelNode visit(LogicalIntersect rel) {
-      mightRequireValueGen = true;
-      return rel;
-    }
-
     public RelNode visit(HiveIntersect rel) {
-      mightRequireValueGen = true;
-      return rel;
-    }
-
-    @Override public RelNode visit(LogicalJoin rel) {
       mightRequireValueGen = true;
       return rel;
     }
@@ -3206,29 +3166,9 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         return rel;
       }
     }
-    @Override public RelNode visit(LogicalProject rel) {
-      if(!(hasRexOver(((LogicalProject)rel).getProjects()))) {
-        mightRequireValueGen = false;
-        return super.visit(rel);
-      } else {
-        mightRequireValueGen = true;
-        return rel;
-      }
-    }
     @Override public RelNode visit(HiveAggregate rel) {
       // if there are aggregate functions or grouping sets we will need
       // value generator
-      if(rel.getAggCallList().isEmpty() && !rel.indicator) {
-        this.mightRequireValueGen = false;
-        return super.visit(rel);
-      } else {
-        // need to reset to true in case previous aggregate/project
-        // has set it to false
-        this.mightRequireValueGen = true;
-        return rel;
-      }
-    }
-    @Override public RelNode visit(LogicalAggregate rel) {
       if(rel.getAggCallList().isEmpty() && !rel.indicator) {
         this.mightRequireValueGen = false;
         return super.visit(rel);
@@ -3279,16 +3219,6 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
               mapFieldAccessToCorVar);
     }
 
-    @Override public RelNode visit(LogicalJoin join) {
-      try {
-        Stacks.push(stack, join);
-        join.getCondition().accept(rexVisitor(join));
-      } finally {
-        Stacks.pop(stack, join);
-      }
-      return visitJoin(join);
-    }
-
     public RelNode visit(HiveJoin join) {
       try {
         Stacks.push(stack, join);
@@ -3329,6 +3259,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       }
       return super.visit(project);
     }
+
     public RelNode visit(final HiveFilter filter) {
       try {
         Stacks.push(stack, filter);
@@ -3337,27 +3268,6 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         Stacks.pop(stack, filter);
       }
       return super.visit(filter);
-    }
-    @Override public RelNode visit(final LogicalFilter filter) {
-      try {
-        Stacks.push(stack, filter);
-        filter.getCondition().accept(rexVisitor(filter));
-      } finally {
-        Stacks.pop(stack, filter);
-      }
-      return super.visit(filter);
-    }
-
-    @Override public RelNode visit(LogicalProject project) {
-      try {
-        Stacks.push(stack, project);
-        for (RexNode node : project.getProjects()) {
-          node.accept(rexVisitor(project));
-        }
-      } finally {
-        Stacks.pop(stack, project);
-      }
-      return super.visit(project);
     }
 
     private RexVisitorImpl<Void> rexVisitor(final RelNode rel) {

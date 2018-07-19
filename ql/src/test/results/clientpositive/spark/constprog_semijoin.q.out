@@ -1,61 +1,61 @@
-PREHOOK: query: create table table1 (id int, val string, val1 string, dimid int)
+PREHOOK: query: create table table1_n10 (id int, val string, val1 string, dimid int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: create table table1 (id int, val string, val1 string, dimid int)
+PREHOOK: Output: default@table1_n10
+POSTHOOK: query: create table table1_n10 (id int, val string, val1 string, dimid int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: insert into table1 (id, val, val1, dimid) values (1, 't1val01', 'val101', 100), (2, 't1val02', 'val102', 200), (3, 't1val03', 'val103', 103), (3, 't1val01', 'val104', 100), (2, 't1val05', 'val105', 200), (3, 't1val01', 'val106', 103), (1, 't1val07', 'val107', 200), (2, 't1val01', 'val108', 200), (3, 't1val09', 'val109', 103), (4,'t1val01', 'val110', 200)
+POSTHOOK: Output: default@table1_n10
+PREHOOK: query: insert into table1_n10 (id, val, val1, dimid) values (1, 't1val01', 'val101', 100), (2, 't1val02', 'val102', 200), (3, 't1val03', 'val103', 103), (3, 't1val01', 'val104', 100), (2, 't1val05', 'val105', 200), (3, 't1val01', 'val106', 103), (1, 't1val07', 'val107', 200), (2, 't1val01', 'val108', 200), (3, 't1val09', 'val109', 103), (4,'t1val01', 'val110', 200)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table1
-POSTHOOK: query: insert into table1 (id, val, val1, dimid) values (1, 't1val01', 'val101', 100), (2, 't1val02', 'val102', 200), (3, 't1val03', 'val103', 103), (3, 't1val01', 'val104', 100), (2, 't1val05', 'val105', 200), (3, 't1val01', 'val106', 103), (1, 't1val07', 'val107', 200), (2, 't1val01', 'val108', 200), (3, 't1val09', 'val109', 103), (4,'t1val01', 'val110', 200)
+PREHOOK: Output: default@table1_n10
+POSTHOOK: query: insert into table1_n10 (id, val, val1, dimid) values (1, 't1val01', 'val101', 100), (2, 't1val02', 'val102', 200), (3, 't1val03', 'val103', 103), (3, 't1val01', 'val104', 100), (2, 't1val05', 'val105', 200), (3, 't1val01', 'val106', 103), (1, 't1val07', 'val107', 200), (2, 't1val01', 'val108', 200), (3, 't1val09', 'val109', 103), (4,'t1val01', 'val110', 200)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.dimid SCRIPT []
-POSTHOOK: Lineage: table1.id SCRIPT []
-POSTHOOK: Lineage: table1.val SCRIPT []
-POSTHOOK: Lineage: table1.val1 SCRIPT []
-PREHOOK: query: create table table2 (id int, val2 string)
+POSTHOOK: Output: default@table1_n10
+POSTHOOK: Lineage: table1_n10.dimid SCRIPT []
+POSTHOOK: Lineage: table1_n10.id SCRIPT []
+POSTHOOK: Lineage: table1_n10.val SCRIPT []
+POSTHOOK: Lineage: table1_n10.val1 SCRIPT []
+PREHOOK: query: create table table2_n6 (id int, val2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: create table table2 (id int, val2 string)
+PREHOOK: Output: default@table2_n6
+POSTHOOK: query: create table table2_n6 (id int, val2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: insert into table2 (id, val2) values (1, 't2val201'), (2, 't2val202'), (3, 't2val203')
+POSTHOOK: Output: default@table2_n6
+PREHOOK: query: insert into table2_n6 (id, val2) values (1, 't2val201'), (2, 't2val202'), (3, 't2val203')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table2
-POSTHOOK: query: insert into table2 (id, val2) values (1, 't2val201'), (2, 't2val202'), (3, 't2val203')
+PREHOOK: Output: default@table2_n6
+POSTHOOK: query: insert into table2_n6 (id, val2) values (1, 't2val201'), (2, 't2val202'), (3, 't2val203')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table2
-POSTHOOK: Lineage: table2.id SCRIPT []
-POSTHOOK: Lineage: table2.val2 SCRIPT []
-PREHOOK: query: create table table3 (id int)
+POSTHOOK: Output: default@table2_n6
+POSTHOOK: Lineage: table2_n6.id SCRIPT []
+POSTHOOK: Lineage: table2_n6.val2 SCRIPT []
+PREHOOK: query: create table table3_n0 (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table3
-POSTHOOK: query: create table table3 (id int)
+PREHOOK: Output: default@table3_n0
+POSTHOOK: query: create table table3_n0 (id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table3
-PREHOOK: query: insert into table3 (id) values (100), (100), (101), (102), (103)
+POSTHOOK: Output: default@table3_n0
+PREHOOK: query: insert into table3_n0 (id) values (100), (100), (101), (102), (103)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table3
-POSTHOOK: query: insert into table3 (id) values (100), (100), (101), (102), (103)
+PREHOOK: Output: default@table3_n0
+POSTHOOK: query: insert into table3_n0 (id) values (100), (100), (101), (102), (103)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table3
-POSTHOOK: Lineage: table3.id SCRIPT []
-PREHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01'
+POSTHOOK: Output: default@table3_n0
+POSTHOOK: Lineage: table3_n0.id SCRIPT []
+PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id where table1_n10.val = 't1val01'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01'
+POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id where table1_n10.val = 't1val01'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -71,7 +71,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: table1
+                  alias: table1_n10
+                  filterExpr: ((val = 't1val01') and dimid is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((val = 't1val01') and dimid is not null) (type: boolean)
@@ -86,10 +87,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col3 (type: int)
                         Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: table3
+                  alias: table3_n0
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -108,6 +111,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -136,22 +140,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01'
+PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id where table1_n10.val = 't1val01'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table3
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id where table1.val = 't1val01'
+POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id where table1_n10.val = 't1val01'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	t1val01	val101
 3	t1val01	val104
 3	t1val01	val106
-PREHOOK: query: explain select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id
+PREHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id left semi join table3_n0 on table1_n10.dimid = table3_n0.id
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id
+POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id left semi join table3_n0 on table1_n10.dimid = table3_n0.id
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -168,7 +172,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: table1
+                  alias: table1_n10
+                  filterExpr: ((val = 't1val01') and id is not null and dimid is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
@@ -183,10 +188,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: int)
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: table2
+                  alias: table2_n6
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -201,10 +208,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: table3
+                  alias: table3_n0
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -223,6 +232,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -267,24 +277,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id
+PREHOOK: query: select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id left semi join table3_n0 on table1_n10.dimid = table3_n0.id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table2
-PREHOOK: Input: default@table3
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table2_n6
+PREHOOK: Input: default@table3_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select table1.id, table1.val, table2.val2 from table1 inner join table2 on table1.val = 't1val01' and table1.id = table2.id left semi join table3 on table1.dimid = table3.id
+POSTHOOK: query: select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id left semi join table3_n0 on table1_n10.dimid = table3_n0.id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table2
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table2_n6
+POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	t1val01	t2val201
 3	t1val01	t2val203
 3	t1val01	t2val203
-PREHOOK: query: explain select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id
+PREHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id
+POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -301,7 +311,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: table1
+                  alias: table1_n10
+                  filterExpr: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
@@ -316,10 +327,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col2 (type: int)
                         Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: table3
+                  alias: table3_n0
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -338,10 +351,12 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: table2
+                  alias: table2_n6
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -356,6 +371,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -399,24 +415,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id
+PREHOOK: query: select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table2
-PREHOOK: Input: default@table3
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table2_n6
+PREHOOK: Input: default@table3_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select table1.id, table1.val, table2.val2 from table1 left semi join table3 on table1.dimid = table3.id inner join table2 on table1.val = 't1val01' and table1.id = table2.id
+POSTHOOK: query: select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table2
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table2_n6
+POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	t1val01	t2val201
 3	t1val01	t2val203
 3	t1val01	t2val203
-PREHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100
+PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100
+POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -432,7 +448,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: table1
+                  alias: table1_n10
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: false (type: boolean)
@@ -447,10 +463,12 @@ STAGE PLANS:
                         Map-reduce partition columns: 100 (type: int), true (type: boolean)
                         Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: table3
+                  alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -469,6 +487,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: boolean)
                           Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -493,19 +512,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100
+PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table3
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid <> 100
+POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200)
+PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200)
+POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -521,7 +540,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: table1
+                  alias: table1_n10
+                  filterExpr: (dimid = 100) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (dimid = 100) (type: boolean)
@@ -536,10 +556,12 @@ STAGE PLANS:
                         Map-reduce partition columns: 100 (type: int), true (type: boolean)
                         Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: table3
+                  alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -558,6 +580,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: boolean)
                           Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -582,21 +605,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200)
+PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table3
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  IN (100,200)
+POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	t1val01	val101
 3	t1val01	val104
-PREHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200
+PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200
+POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -612,7 +635,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: table1
+                  alias: table1_n10
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: false (type: boolean)
@@ -627,10 +650,12 @@ STAGE PLANS:
                         Map-reduce partition columns: 100 (type: int), true (type: boolean)
                         Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: table3
+                  alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -649,6 +674,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: boolean)
                           Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -673,19 +699,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200
+PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table3
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 200
+POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100
+PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100
+POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -701,7 +727,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: table1
+                  alias: table1_n10
+                  filterExpr: (dimid = 100) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (dimid = 100) (type: boolean)
@@ -716,10 +743,12 @@ STAGE PLANS:
                         Map-reduce partition columns: 100 (type: int), true (type: boolean)
                         Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: table3
+                  alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -738,6 +767,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: boolean)
                           Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -762,21 +792,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100
+PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table3
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100 where table1.dimid  = 100
+POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	t1val01	val101
 3	t1val01	val104
-PREHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100
+PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100
+POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -792,7 +822,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: table1
+                  alias: table1_n10
+                  filterExpr: (dimid = 100) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (dimid = 100) (type: boolean)
@@ -807,10 +838,12 @@ STAGE PLANS:
                         Map-reduce partition columns: 100 (type: int), true (type: boolean)
                         Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: table3
+                  alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -829,6 +862,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: boolean)
                           Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -853,15 +887,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100
+PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table3
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select table1.id, table1.val, table1.val1 from table1 left semi join table3 on table1.dimid = table3.id and table3.id = 100
+POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	t1val01	val101
 3	t1val01	val104

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -25,7 +26,9 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,13 +36,9 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -54,8 +53,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import static org.mockito.Mockito.when;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test HiveAuthorizer api invocation
@@ -63,7 +62,7 @@ import static org.mockito.Mockito.when;
 public class TestHiveAuthorizerCheckInvocation {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());;
   protected static HiveConf conf;
-  protected static IDriver driver;
+  protected static Driver driver;
   private static final String tableName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
       + "Table";
   private static final String viewName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
@@ -103,18 +102,19 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
 
     SessionState.start(conf);
-    driver = DriverFactory.newDriver(conf);
+    driver = new Driver(conf);
     runCmd("create table " + tableName
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create view " + viewName + " as select * from " + tableName);
-    runCmd("create database " + dbName);
+    runCmd("create database " + dbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')");
     runCmd("create table " + fullInTableName + "(i int)");
     // Need a separate table for ACID testing since it has to be bucketed and it has to be Acid
     runCmd("create table " + acidTableName + " (i int, j int, k int) clustered by (k) into 2 buckets " +
         "stored as orc TBLPROPERTIES ('transactional'='true')");
   }
 
-  private static void runCmd(String cmd) throws CommandNeedRetryException {
+  private static void runCmd(String cmd) throws Exception {
     CommandProcessorResponse resp = driver.run(cmd);
     assertEquals(0, resp.getResponseCode());
   }
@@ -126,13 +126,12 @@ public class TestHiveAuthorizerCheckInvocation {
     runCmd("drop table if exists " + tableName);
     runCmd("drop table if exists " + viewName);
     runCmd("drop table if exists " + fullInTableName);
-    runCmd("drop database if exists " + dbName );
+    runCmd("drop database if exists " + dbName + " CASCADE");
     driver.close();
   }
 
   @Test
-  public void testInputSomeColumnsUsed() throws HiveAuthzPluginException, HiveAccessControlException,
-      CommandNeedRetryException {
+  public void testInputSomeColumnsUsed() throws Exception {
 
     reset(mockedAuthorizer);
     int status = driver.compile("select i from " + tableName
@@ -148,8 +147,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testInputSomeColumnsUsedView() throws HiveAuthzPluginException, HiveAccessControlException,
-  CommandNeedRetryException {
+  public void testInputSomeColumnsUsedView() throws Exception {
 
     reset(mockedAuthorizer);
     int status = driver.compile("select i from " + viewName
@@ -165,15 +163,14 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testInputSomeColumnsUsedJoin() throws HiveAuthzPluginException, HiveAccessControlException,
-  CommandNeedRetryException {
-    
+  public void testInputSomeColumnsUsedJoin() throws Exception {
+
     reset(mockedAuthorizer);
     int status = driver.compile("select " + viewName + ".i, " + tableName + ".city from "
         + viewName + " join " + tableName + " on " + viewName + ".city = " + tableName
         + ".city where " + tableName + ".k = 'X'");
     assertEquals(0, status);
-    
+
     List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
     Collections.sort(inputs);
     assertEquals(inputs.size(), 2);
@@ -194,8 +191,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testInputAllColumnsUsed() throws HiveAuthzPluginException, HiveAccessControlException,
-      CommandNeedRetryException {
+  public void testInputAllColumnsUsed() throws Exception {
 
     reset(mockedAuthorizer);
     int status = driver.compile("select * from " + tableName + " order by i");
@@ -210,15 +206,13 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testCreateTableWithDb() throws HiveAuthzPluginException, HiveAccessControlException,
-      CommandNeedRetryException {
+  public void testCreateTableWithDb() throws Exception {
     final String newTable = "ctTableWithDb";
     checkCreateViewOrTableWithDb(newTable, "create table " + dbName + "." + newTable + "(i int)");
   }
 
   @Test
-  public void testCreateViewWithDb() throws HiveAuthzPluginException, HiveAccessControlException,
-      CommandNeedRetryException {
+  public void testCreateViewWithDb() throws Exception {
     final String newTable = "ctViewWithDb";
     checkCreateViewOrTableWithDb(newTable, "create table " + dbName + "." + newTable + "(i int)");
   }
@@ -251,8 +245,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testInputNoColumnsUsed() throws HiveAuthzPluginException, HiveAccessControlException,
-      CommandNeedRetryException {
+  public void testInputNoColumnsUsed() throws Exception {
 
     reset(mockedAuthorizer);
     int status = driver.compile("describe " + tableName);
@@ -265,8 +258,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testPermFunction() throws HiveAuthzPluginException, HiveAccessControlException,
-      CommandNeedRetryException {
+  public void testPermFunction() throws Exception {
 
     reset(mockedAuthorizer);
     final String funcName = "testauthfunc1";
@@ -278,7 +270,7 @@ public class TestHiveAuthorizerCheckInvocation {
 
     HivePrivilegeObject funcObj;
     HivePrivilegeObject dbObj;
-    assertEquals("number of output object", 2, outputs.size());
+    assertEquals("number of output objects", 2, outputs.size());
     if(outputs.get(0).getType() == HivePrivilegeObjectType.FUNCTION) {
       funcObj = outputs.get(0);
       dbObj = outputs.get(1);
@@ -293,11 +285,93 @@ public class TestHiveAuthorizerCheckInvocation {
 
     assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
     assertTrue("db name", dbName.equalsIgnoreCase(dbObj.getDbname()));
+
+    // actually create the permanent function
+    CommandProcessorResponse cresponse = driver.run(null, true);
+    assertEquals(0, cresponse.getResponseCode());
+
+    // Verify privilege objects
+    reset(mockedAuthorizer);
+    status = driver.compile("select  " + dbName + "." + funcName + "() , i from " + tableName);
+    assertEquals(0, status);
+
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    assertEquals("number of input objects", 2, inputs.size());
+    HivePrivilegeObject tableObj;
+    if (inputs.get(0).getType() == HivePrivilegeObjectType.FUNCTION) {
+      funcObj = inputs.get(0);
+      tableObj = inputs.get(1);
+    } else {
+      funcObj = inputs.get(1);
+      tableObj = inputs.get(0);
+    }
+
+    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
+    assertEquals("function name", funcName.toLowerCase(), funcObj.getObjectName().toLowerCase());
+    assertEquals("db name", dbName.toLowerCase(), funcObj.getDbname().toLowerCase());
+
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
+    assertEquals("table name", tableName.toLowerCase(), tableObj.getObjectName().toLowerCase());
+
+    // create 2nd permanent function
+    String funcName2 = "funcName2";
+    cresponse = driver
+        .run("create function " + dbName + "." + funcName2 + " as 'org.apache.hadoop.hive.ql.udf.UDFRand'");
+    assertEquals(0, cresponse.getResponseCode());
+
+    // try using 2nd permanent function and verify its only 2nd one that shows up
+    // for auth
+    reset(mockedAuthorizer);
+    status = driver.compile("select  " + dbName + "." + funcName2 + "(i)  from " + tableName);
+    assertEquals(0, status);
+
+    inputs = getHivePrivilegeObjectInputs().getLeft();
+    assertEquals("number of input objects", 2, inputs.size());
+    if (inputs.get(0).getType() == HivePrivilegeObjectType.FUNCTION) {
+      funcObj = inputs.get(0);
+      tableObj = inputs.get(1);
+    } else {
+      funcObj = inputs.get(1);
+      tableObj = inputs.get(0);
+    }
+
+    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
+    assertEquals("function name", funcName2.toLowerCase(), funcObj.getObjectName().toLowerCase());
+    assertEquals("db name", dbName.toLowerCase(), funcObj.getDbname().toLowerCase());
+
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
+    assertEquals("table name", tableName.toLowerCase(), tableObj.getObjectName().toLowerCase());
+
+    // try using both permanent functions
+    reset(mockedAuthorizer);
+    status = driver.compile(
+        "select  " + dbName + "." + funcName2 + "(i), " + dbName + "." + funcName + "(), j  from " + tableName);
+    assertEquals(0, status);
+
+    inputs = getHivePrivilegeObjectInputs().getLeft();
+    assertEquals("number of input objects", 3, inputs.size());
+    boolean foundF1 = false;
+    boolean foundF2 = false;
+    boolean foundTable = false;
+    for (HivePrivilegeObject inp : inputs) {
+      if (inp.getType() == HivePrivilegeObjectType.FUNCTION) {
+        if (funcName.equalsIgnoreCase(inp.getObjectName())) {
+          foundF1 = true;
+        } else if (funcName2.equalsIgnoreCase(inp.getObjectName())) {
+          foundF2 = true;
+        }
+      } else if (inp.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW
+          && tableName.equalsIgnoreCase(inp.getObjectName().toLowerCase())) {
+        foundTable = true;
+      }
+    }
+    assertTrue("Found " + funcName, foundF1);
+    assertTrue("Found " + funcName2, foundF2);
+    assertTrue("Found Table", foundTable);
   }
 
   @Test
-  public void testTempFunction() throws HiveAuthzPluginException, HiveAccessControlException,
-      CommandNeedRetryException {
+  public void testTempFunction() throws Exception {
 
     reset(mockedAuthorizer);
     final String funcName = "testAuthFunc2";
@@ -313,8 +387,98 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testUpdateSomeColumnsUsed() throws HiveAuthzPluginException,
-      HiveAccessControlException, CommandNeedRetryException {
+  public void testTempTable() throws Exception {
+
+    String tmpTableDir = getDefaultTmp() + File.separator + "THSAC_testTableTable";
+
+    final String tableName = "testTempTable";
+    { // create temp table
+      reset(mockedAuthorizer);
+      int status = driver.run("create temporary table " + tableName + "(i int) location '" + tmpTableDir + "'")
+          .getResponseCode();
+      assertEquals(0, status);
+
+      List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+      List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+
+      // only the URI should be passed for authorization check
+      assertEquals("input count", 1, inputs.size());
+      assertEquals("input type", HivePrivilegeObjectType.LOCAL_URI, inputs.get(0).getType());
+
+      // only the dbname should be passed authorization check
+      assertEquals("output count", 1, outputs.size());
+      assertEquals("output type", HivePrivilegeObjectType.DATABASE, outputs.get(0).getType());
+
+      status = driver.compile("select * from " + tableName);
+      assertEquals(0, status);
+    }
+    { // select from the temp table
+      reset(mockedAuthorizer);
+      int status = driver.compile("insert into " + tableName + " values(1)");
+      assertEquals(0, status);
+
+      // temp tables should be skipped from authorization
+      List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+      List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+      System.err.println("inputs " + inputs);
+      System.err.println("outputs " + outputs);
+
+      assertEquals("input count", 0, inputs.size());
+      assertEquals("output count", 0, outputs.size());
+    }
+    { // select from the temp table
+      reset(mockedAuthorizer);
+      int status = driver.compile("select * from " + tableName);
+      assertEquals(0, status);
+
+      // temp tables should be skipped from authorization
+      List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+      List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+      System.err.println("inputs " + inputs);
+      System.err.println("outputs " + outputs);
+
+      assertEquals("input count", 0, inputs.size());
+      assertEquals("output count", 0, outputs.size());
+    }
+
+  }
+
+  @Test
+  public void testTempTableImplicit() throws Exception {
+    final String tableName = "testTempTableImplicit";
+    int status = driver.run("create table " + tableName + "(i int)").getResponseCode();
+    assertEquals(0, status);
+
+    reset(mockedAuthorizer);
+    status = driver.compile("insert into " + tableName + " values (1)");
+    assertEquals(0, status);
+
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+
+    // only the URI should be passed for authorization check
+    assertEquals("input count", 0, inputs.size());
+
+    reset(mockedAuthorizer);
+    status = driver.compile("select * from " + tableName);
+    assertEquals(0, status);
+
+    inputs = getHivePrivilegeObjectInputs().getLeft();
+    outputs = getHivePrivilegeObjectInputs().getRight();
+
+    // temp tables should be skipped from authorization
+    assertEquals("input count", 1, inputs.size());
+    assertEquals("output count", 0, outputs.size());
+
+  }
+
+  private String getDefaultTmp() {
+    return System.getProperty("test.tmp.dir",
+        "target" + File.separator + "test" + File.separator + "tmp");
+  }
+
+  @Test
+  public void testUpdateSomeColumnsUsed() throws Exception {
     reset(mockedAuthorizer);
     int status = driver.compile("update " + acidTableName + " set i = 5 where j = 3");
     assertEquals(0, status);
@@ -333,8 +497,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testUpdateSomeColumnsUsedExprInSet() throws HiveAuthzPluginException,
-      HiveAccessControlException, CommandNeedRetryException {
+  public void testUpdateSomeColumnsUsedExprInSet() throws Exception {
     reset(mockedAuthorizer);
     int status = driver.compile("update " + acidTableName + " set i = 5, j = k where j = 3");
     assertEquals(0, status);
@@ -355,8 +518,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testDelete() throws HiveAuthzPluginException,
-      HiveAccessControlException, CommandNeedRetryException {
+  public void testDelete() throws Exception {
     reset(mockedAuthorizer);
     int status = driver.compile("delete from " + acidTableName + " where j = 3");
     assertEquals(0, status);
@@ -370,8 +532,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testShowTables() throws HiveAuthzPluginException,
-      HiveAccessControlException, CommandNeedRetryException {
+  public void testShowTables() throws Exception {
     reset(mockedAuthorizer);
     int status = driver.compile("show tables");
     assertEquals(0, status);
@@ -384,8 +545,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testDescDatabase() throws HiveAuthzPluginException,
-      HiveAccessControlException, CommandNeedRetryException {
+  public void testDescDatabase() throws Exception {
     reset(mockedAuthorizer);
     int status = driver.compile("describe database " + dbName);
     assertEquals(0, status);
@@ -411,8 +571,7 @@ public class TestHiveAuthorizerCheckInvocation {
   }
 
   @Test
-  public void testReplDump() throws HiveAuthzPluginException, HiveAccessControlException,
-      CommandNeedRetryException {
+  public void testReplDump() throws Exception {
 
     resetAuthorizer();
     int status = driver.compile("repl dump " + dbName);

@@ -1,3 +1,5 @@
+--! qt:dataset:alltypesorc
+
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
 

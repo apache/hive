@@ -1,18 +1,18 @@
-PREHOOK: query: create table masking_test_subq as select cast(key as int) as key, value from src
+PREHOOK: query: create table masking_test_subq_n3 as select cast(key as int) as key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test_subq
-POSTHOOK: query: create table masking_test_subq as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_subq_n3
+POSTHOOK: query: create table masking_test_subq_n3 as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test_subq
-POSTHOOK: Lineage: masking_test_subq.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test_subq.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select * from masking_test_subq
+POSTHOOK: Output: default@masking_test_subq_n3
+POSTHOOK: Lineage: masking_test_subq_n3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_subq_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select * from masking_test_subq_n3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test_subq
+POSTHOOK: query: explain select * from masking_test_subq_n3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -25,7 +25,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -40,6 +41,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -58,6 +60,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -104,7 +107,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -148,14 +152,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test_subq
+PREHOOK: query: select * from masking_test_subq_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test_subq
+PREHOOK: Input: default@masking_test_subq_n3
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test_subq
+POSTHOOK: query: select * from masking_test_subq_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test_subq
+POSTHOOK: Input: default@masking_test_subq_n3
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	val_0
@@ -658,9 +662,9 @@ POSTHOOK: Input: default@src
 498	val_498
 498	val_498
 498	val_498
-PREHOOK: query: explain select * from masking_test_subq where key > 0
+PREHOOK: query: explain select * from masking_test_subq_n3 where key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test_subq where key > 0
+POSTHOOK: query: explain select * from masking_test_subq_n3 where key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -673,7 +677,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -688,6 +693,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -706,6 +712,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -752,7 +759,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -796,14 +804,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test_subq where key > 0
+PREHOOK: query: select * from masking_test_subq_n3 where key > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test_subq
+PREHOOK: Input: default@masking_test_subq_n3
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test_subq where key > 0
+POSTHOOK: query: select * from masking_test_subq_n3 where key > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test_subq
+POSTHOOK: Input: default@masking_test_subq_n3
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2	val_2
@@ -1303,9 +1311,9 @@ POSTHOOK: Input: default@src
 498	val_498
 498	val_498
 498	val_498
-PREHOOK: query: explain select key from masking_test_subq where key > 0
+PREHOOK: query: explain select key from masking_test_subq_n3 where key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key from masking_test_subq where key > 0
+POSTHOOK: query: explain select key from masking_test_subq_n3 where key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -1318,7 +1326,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -1333,6 +1342,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -1351,6 +1361,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1397,7 +1408,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -1440,14 +1452,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key from masking_test_subq where key > 0
+PREHOOK: query: select key from masking_test_subq_n3 where key > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test_subq
+PREHOOK: Input: default@masking_test_subq_n3
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select key from masking_test_subq where key > 0
+POSTHOOK: query: select key from masking_test_subq_n3 where key > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test_subq
+POSTHOOK: Input: default@masking_test_subq_n3
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2
@@ -1947,9 +1959,9 @@ POSTHOOK: Input: default@src
 498
 498
 498
-PREHOOK: query: explain select value from masking_test_subq where key > 0
+PREHOOK: query: explain select value from masking_test_subq_n3 where key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select value from masking_test_subq where key > 0
+POSTHOOK: query: explain select value from masking_test_subq_n3 where key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -1962,7 +1974,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -1977,6 +1990,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -1995,6 +2009,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -2041,7 +2056,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -2089,14 +2105,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select value from masking_test_subq where key > 0
+PREHOOK: query: select value from masking_test_subq_n3 where key > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test_subq
+PREHOOK: Input: default@masking_test_subq_n3
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select value from masking_test_subq where key > 0
+POSTHOOK: query: select value from masking_test_subq_n3 where key > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test_subq
+POSTHOOK: Input: default@masking_test_subq_n3
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 val_2
@@ -2596,9 +2612,9 @@ val_497
 val_498
 val_498
 val_498
-PREHOOK: query: explain select * from masking_test_subq join srcpart on (masking_test_subq.key = srcpart.key)
+PREHOOK: query: explain select * from masking_test_subq_n3 join srcpart on (masking_test_subq_n3.key = srcpart.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test_subq join srcpart on (masking_test_subq.key = srcpart.key)
+POSTHOOK: query: explain select * from masking_test_subq_n3 join srcpart on (masking_test_subq_n3.key = srcpart.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -2612,7 +2628,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -2627,6 +2644,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -2645,6 +2663,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -2691,7 +2710,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -2740,6 +2760,7 @@ STAGE PLANS:
               value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: srcpart
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -2777,9 +2798,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test_subq join srcpart on (masking_test_subq.key = srcpart.key)
+PREHOOK: query: select * from masking_test_subq_n3 join srcpart on (masking_test_subq_n3.key = srcpart.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test_subq
+PREHOOK: Input: default@masking_test_subq_n3
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -2787,9 +2808,9 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test_subq join srcpart on (masking_test_subq.key = srcpart.key)
+POSTHOOK: query: select * from masking_test_subq_n3 join srcpart on (masking_test_subq_n3.key = srcpart.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test_subq
+POSTHOOK: Input: default@masking_test_subq_n3
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -6909,9 +6930,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 498	val_498	498	val_498	2008-04-09	12
 498	val_498	498	val_498	2008-04-09	12
 498	val_498	498	val_498	2008-04-08	12
-PREHOOK: query: explain select * from default.masking_test_subq where key > 0
+PREHOOK: query: explain select * from default.masking_test_subq_n3 where key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from default.masking_test_subq where key > 0
+POSTHOOK: query: explain select * from default.masking_test_subq_n3 where key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -6924,7 +6945,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -6939,6 +6961,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -6957,6 +6980,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -7003,7 +7027,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -7047,14 +7072,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from default.masking_test_subq where key > 0
+PREHOOK: query: select * from default.masking_test_subq_n3 where key > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test_subq
+PREHOOK: Input: default@masking_test_subq_n3
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from default.masking_test_subq where key > 0
+POSTHOOK: query: select * from default.masking_test_subq_n3 where key > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test_subq
+POSTHOOK: Input: default@masking_test_subq_n3
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2	val_2
@@ -7554,9 +7579,9 @@ POSTHOOK: Input: default@src
 498	val_498
 498	val_498
 498	val_498
-PREHOOK: query: explain select * from masking_test_subq where masking_test_subq.key > 0
+PREHOOK: query: explain select * from masking_test_subq_n3 where masking_test_subq_n3.key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test_subq where masking_test_subq.key > 0
+POSTHOOK: query: explain select * from masking_test_subq_n3 where masking_test_subq_n3.key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -7569,7 +7594,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -7584,6 +7610,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -7602,6 +7629,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -7648,7 +7676,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -7692,14 +7721,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test_subq where masking_test_subq.key > 0
+PREHOOK: query: select * from masking_test_subq_n3 where masking_test_subq_n3.key > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test_subq
+PREHOOK: Input: default@masking_test_subq_n3
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test_subq where masking_test_subq.key > 0
+POSTHOOK: query: select * from masking_test_subq_n3 where masking_test_subq_n3.key > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test_subq
+POSTHOOK: Input: default@masking_test_subq_n3
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2	val_2
@@ -8213,9 +8242,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((UDFToDouble(key) > 0.0D) and (UDFToDouble(key) < 10.0D) and ((UDFToDouble(key) % 2.0D) = 0.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) % 2.0) = 0.0) and (UDFToDouble(key) < 10.0) and (UDFToDouble(key) > 0.0)) (type: boolean)
+              predicate: (((UDFToDouble(key) % 2.0D) = 0.0D) and (UDFToDouble(key) < 10.0D) and (UDFToDouble(key) > 0.0D)) (type: boolean)
               Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), upper(value) (type: string)
@@ -8228,6 +8258,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

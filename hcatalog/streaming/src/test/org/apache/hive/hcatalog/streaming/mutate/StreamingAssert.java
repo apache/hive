@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -71,7 +71,7 @@ public class StreamingAssert {
   private List<String> partition;
   private IMetaStoreClient metaStoreClient;
   private Directory dir;
-  private ValidTxnList txns;
+  private ValidWriteIdList writeIds;
   private List<AcidUtils.ParsedDelta> currentDeltas;
   private long min;
   private long max;
@@ -83,9 +83,9 @@ public class StreamingAssert {
     this.table = table;
     this.partition = partition;
 
-    txns = metaStoreClient.getValidTxns();
+    writeIds = metaStoreClient.getValidWriteIds(AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
     partitionLocation = getPartitionLocation();
-    dir = AcidUtils.getAcidState(partitionLocation, conf, txns);
+    dir = AcidUtils.getAcidState(partitionLocation, conf, writeIds);
     assertEquals(0, dir.getObsolete().size());
     assertEquals(0, dir.getOriginalFiles().size());
 
@@ -95,8 +95,8 @@ public class StreamingAssert {
     System.out.println("Files found: ");
     for (AcidUtils.ParsedDelta parsedDelta : currentDeltas) {
       System.out.println(parsedDelta.getPath().toString());
-      max = Math.max(parsedDelta.getMaxTransaction(), max);
-      min = Math.min(parsedDelta.getMinTransaction(), min);
+      max = Math.max(parsedDelta.getMaxWriteId(), max);
+      min = Math.min(parsedDelta.getMinWriteId(), min);
     }
   }
 
@@ -108,18 +108,18 @@ public class StreamingAssert {
     assertExpectedFileCount(0);
   }
 
-  public void assertMinTransactionId(long expectedMinTransactionId) {
+  public void assertMinWriteId(long expectedMinWriteId) {
     if (currentDeltas.isEmpty()) {
       throw new AssertionError("No data");
     }
-    assertEquals(expectedMinTransactionId, min);
+    assertEquals(expectedMinWriteId, min);
   }
 
-  public void assertMaxTransactionId(long expectedMaxTransactionId) {
+  public void assertMaxWriteId(long expectedMaxWriteId) {
     if (currentDeltas.isEmpty()) {
       throw new AssertionError("No data");
     }
-    assertEquals(expectedMaxTransactionId, max);
+    assertEquals(expectedMaxWriteId, max);
   }
 
   List<Record> readRecords() throws Exception {
@@ -143,9 +143,9 @@ public class StreamingAssert {
     job.set(hive_metastoreConstants.BUCKET_COUNT, Integer.toString(table.getSd().getNumBuckets()));
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "id,msg");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "bigint:string");
-    AcidUtils.setAcidTableScan(job,true);
+    AcidUtils.setAcidOperationalProperties(job, true, null);
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
-    job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
+    job.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIds.toString());
     InputSplit[] splits = inputFormat.getSplits(job, 1);
     assertEquals(numSplitsExpected, splits.length);
 
@@ -160,7 +160,7 @@ public class StreamingAssert {
 
       while (recordReader.next(key, value)) {
         RecordIdentifier recordIdentifier = recordReader.getRecordIdentifier();
-        Record record = new Record(new RecordIdentifier(recordIdentifier.getTransactionId(),
+        Record record = new Record(new RecordIdentifier(recordIdentifier.getWriteId(),
           recordIdentifier.getBucketProperty(), recordIdentifier.getRowId()), value.toString());
         System.out.println(record);
         records.add(record);

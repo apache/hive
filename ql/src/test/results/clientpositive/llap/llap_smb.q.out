@@ -146,7 +146,7 @@ PREHOOK: Input: default@orc_a@y=2001/q=7
 PREHOOK: Input: default@orc_a@y=2001/q=8
 PREHOOK: Input: default@orc_a@y=2001/q=9
 PREHOOK: Input: default@orc_b
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_a
@@ -171,27 +171,27 @@ POSTHOOK: Input: default@orc_a@y=2001/q=7
 POSTHOOK: Input: default@orc_a@y=2001/q=8
 POSTHOOK: Input: default@orc_a@y=2001/q=9
 POSTHOOK: Input: default@orc_b
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-2000	2	6578
-2001	8	9438
-2000	3	6149
-2000	5	5720
+#### A masked pattern was here ####
+2000	0	6721
+2000	4	7865
+2000	7	6149
 2000	9	8151
+2001	3	6149
+2001	7	6149
+2000	2	6578
 2001	0	6721
 2001	1	7493
 2001	2	6578
-2001	4	7865
 2001	9	8151
 2000	1	7493
-2000	7	6149
+2000	3	6149
+2000	5	5720
+2000	6	5577
 2000	8	9438
 2001	6	5577
-2001	7	6149
-2000	0	6721
-2000	4	7865
-2000	6	5577
-2001	3	6149
+2001	4	7865
 2001	5	5720
+2001	8	9438
 PREHOOK: query: explain
 select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q
 PREHOOK: type: QUERY
@@ -215,18 +215,18 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: id is not null (type: boolean)
-                  Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: id is not null (type: boolean)
-                    Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
             Map Operator Tree:
                 TableScan
                   alias: a
                   filterExpr: id is not null (type: boolean)
-                  Statistics: Num rows: 5000 Data size: 80000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: id is not null (type: boolean)
-                    Statistics: Num rows: 5000 Data size: 80000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Merge Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -234,18 +234,18 @@ STAGE PLANS:
                         0 id (type: bigint)
                         1 id (type: bigint)
                       outputColumnNames: _col2, _col3
-                      Statistics: Num rows: 987 Data size: 7896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         keys: _col2 (type: int), _col3 (type: smallint)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: smallint)
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: smallint)
-                          Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: bigint)
             Execution mode: llap
         Reducer 2 
@@ -256,10 +256,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: smallint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -295,7 +295,7 @@ PREHOOK: Input: default@orc_a@y=2001/q=7
 PREHOOK: Input: default@orc_a@y=2001/q=8
 PREHOOK: Input: default@orc_a@y=2001/q=9
 PREHOOK: Input: default@orc_b
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_a
@@ -320,27 +320,27 @@ POSTHOOK: Input: default@orc_a@y=2001/q=7
 POSTHOOK: Input: default@orc_a@y=2001/q=8
 POSTHOOK: Input: default@orc_a@y=2001/q=9
 POSTHOOK: Input: default@orc_b
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-2000	2	6578
-2001	8	9438
-2000	3	6149
-2000	5	5720
+#### A masked pattern was here ####
+2000	0	6721
+2000	4	7865
+2000	7	6149
 2000	9	8151
+2001	3	6149
+2001	7	6149
+2000	2	6578
 2001	0	6721
 2001	1	7493
 2001	2	6578
-2001	4	7865
 2001	9	8151
 2000	1	7493
-2000	7	6149
+2000	3	6149
+2000	5	5720
+2000	6	5577
 2000	8	9438
 2001	6	5577
-2001	7	6149
-2000	0	6721
-2000	4	7865
-2000	6	5577
-2001	3	6149
+2001	4	7865
 2001	5	5720
+2001	8	9438
 PREHOOK: query: DROP TABLE orc_a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_a

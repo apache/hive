@@ -45,6 +45,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: non_string_part
+            filterExpr: (cint > 0) (type: boolean)
             Statistics: Num rows: 3073 Data size: 339150 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -78,8 +79,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -148,6 +149,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: non_string_part
+            filterExpr: (cint > 0) (type: boolean)
             Statistics: Num rows: 3073 Data size: 339150 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -180,8 +182,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

@@ -52,6 +52,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: join_rc1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -67,6 +68,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: join_rc2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

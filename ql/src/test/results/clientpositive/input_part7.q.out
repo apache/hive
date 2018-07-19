@@ -24,6 +24,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((ds = '2008-04-08') and (key < 100)) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -49,6 +50,7 @@ STAGE PLANS:
                       auto parallelism: false
           TableScan
             alias: y
+            filterExpr: ((ds = '2008-04-08') and (key < 100)) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -108,6 +110,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -156,6 +159,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -172,8 +176,8 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [a-subquery1:_u1-subquery1:x, a-subquery2:_u1-subquery2:y]
-        /srcpart/ds=2008-04-08/hr=12 [a-subquery1:_u1-subquery1:x, a-subquery2:_u1-subquery2:y]
+        /srcpart/ds=2008-04-08/hr=11 [a:_u1-subquery1:x, a:_u1-subquery2:y]
+        /srcpart/ds=2008-04-08/hr=12 [a:_u1-subquery1:x, a:_u1-subquery2:y]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator

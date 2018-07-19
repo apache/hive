@@ -17,23 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TextConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Description(name = "from_utc_timestamp",
              value = "from_utc_timestamp(timestamp, string timezone) - "
@@ -45,7 +45,6 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
   private transient PrimitiveObjectInspector[] argumentOIs;
   private transient TimestampConverter timestampConverter;
   private transient TextConverter textConverter;
-  private transient SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private transient TimeZone tzUTC = TimeZone.getTimeZone("UTC");
 
   @Override
@@ -70,26 +69,6 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
     return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
   }
 
-  /**
-   * Parse the timestamp string using the input TimeZone.
-   * This does not parse fractional seconds.
-   * @param tsString
-   * @param tz
-   * @return
-   */
-  protected Timestamp timestampFromString(String tsString, TimeZone tz) {
-    dateFormat.setTimeZone(tz);
-    try {
-      java.util.Date date = dateFormat.parse(tsString);
-      if (date == null) {
-        return null;
-      }
-      return new Timestamp(date.getTime());
-    } catch (ParseException err) {
-      return null;
-    }
-  }
-
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object o0 = arguments[0].get();
@@ -106,7 +85,7 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
       return null;
     }
 
-    Timestamp inputTs = ((TimestampWritable) converted_o0).getTimestamp();
+    Timestamp inputTs = ((TimestampWritableV2) converted_o0).getTimestamp();
 
     String tzStr = textConverter.convert(o1).toString();
     TimeZone timezone = TimeZone.getTimeZone(tzStr);
@@ -123,21 +102,15 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
 
     // inputTs is the year/month/day/hour/minute/second in the local timezone.
     // For this UDF we want it in the timezone represented by fromTz
-    Timestamp fromTs = timestampFromString(inputTs.toString(), fromTz);
+    TimestampTZ fromTs = TimestampTZUtil.parse(inputTs.toString(), fromTz.toZoneId());
     if (fromTs == null) {
       return null;
     }
 
     // Now output this timestamp's millis value to the equivalent toTz.
-    dateFormat.setTimeZone(toTz);
-    Timestamp result = Timestamp.valueOf(dateFormat.format(fromTs));
-
-    if (inputTs.getNanos() != 0) {
-      result.setNanos(inputTs.getNanos());
-    }
-
+    Timestamp result = Timestamp.valueOf(
+        fromTs.getZonedDateTime().withZoneSameInstant(toTz.toZoneId()).toLocalDateTime().toString());
     return result;
-
   }
 
   @Override

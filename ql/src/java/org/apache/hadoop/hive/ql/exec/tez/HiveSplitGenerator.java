@@ -29,9 +29,13 @@ import java.util.Set;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,18 +91,21 @@ public class HiveSplitGenerator extends InputInitializer {
   private final MapWork work;
   private final SplitGrouper splitGrouper = new SplitGrouper();
   private final SplitLocationProvider splitLocationProvider;
+  private boolean generateSingleSplit;
 
-  public HiveSplitGenerator(Configuration conf, MapWork work) throws IOException {
+  public HiveSplitGenerator(Configuration conf, MapWork work, final boolean generateSingleSplit) throws IOException {
     super(null);
 
     this.conf = conf;
     this.work = work;
     this.jobConf = new JobConf(conf);
+    this.generateSingleSplit = generateSingleSplit;
 
     // Assuming grouping enabled always.
     userPayloadProto = MRInputUserPayloadProto.newBuilder().setGroupingEnabled(true).build();
 
-    this.splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
+    this.splitLocationProvider =
+        Utils.getSplitLocationProvider(conf, work.getCacheAffinity(), LOG);
     LOG.info("SplitLocationProvider: " + splitLocationProvider);
 
     // Read all credentials into the credentials instance stored in JobConf.
@@ -124,13 +131,14 @@ public class HiveSplitGenerator extends InputInitializer {
 
     this.jobConf = new JobConf(conf);
 
-    this.splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
-    LOG.info("SplitLocationProvider: " + splitLocationProvider);
-
     // Read all credentials into the credentials instance stored in JobConf.
     ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 
     this.work = Utilities.getMapWork(jobConf);
+
+    this.splitLocationProvider =
+        Utils.getSplitLocationProvider(conf, work.getCacheAffinity(), LOG);
+    LOG.info("SplitLocationProvider: " + splitLocationProvider);
 
     // Events can start coming in the moment the InputInitializer is created. The pruner
     // must be setup and initialized here so that it sets up it's structures to start accepting events.
@@ -198,8 +206,42 @@ public class HiveSplitGenerator extends InputInitializer {
           conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
             TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
 
-        // Raw splits
-        InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
+        InputSplit[] splits;
+        if (generateSingleSplit &&
+          conf.get(HiveConf.ConfVars.HIVETEZINPUTFORMAT.varname).equals(HiveInputFormat.class.getName())) {
+          MapWork mapWork = Utilities.getMapWork(jobConf);
+          List<Path> paths = Utilities.getInputPathsTez(jobConf, mapWork);
+          FileSystem fs = paths.get(0).getFileSystem(jobConf);
+          FileStatus[] fileStatuses = fs.listStatus(paths.get(0));
+          if (fileStatuses.length == 0) {
+            // generate single split typically happens when reading data out of order by queries.
+            // if order by query returns no rows, no files will exists in input path
+            splits = new InputSplit[0];
+          } else {
+            // if files exists in input path then it has to be 1 as this code path gets triggered only
+            // of order by queries which is expected to write only one file (written by one reducer)
+            Preconditions.checkState(paths.size() == 1 && fileStatuses.length == 1 &&
+                mapWork.getAliasToPartnInfo().size() == 1,
+              "Requested to generate single split. Paths and fileStatuses are expected to be 1. " +
+                "Got paths: " + paths.size() + " fileStatuses: " + fileStatuses.length);
+            splits = new InputSplit[1];
+            FileStatus fileStatus = fileStatuses[0];
+            BlockLocation[] locations = fs.getFileBlockLocations(fileStatus, 0, fileStatus.getLen());
+            Set<String> hostsSet = new HashSet<>();
+            for (BlockLocation location : locations) {
+              hostsSet.addAll(Lists.newArrayList(location.getHosts()));
+            }
+            String[] hosts = hostsSet.toArray(new String[0]);
+            FileSplit fileSplit = new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), hosts);
+            String alias = mapWork.getAliases().get(0);
+            PartitionDesc partDesc = mapWork.getAliasToPartnInfo().get(alias);
+            String partIF = partDesc.getInputFileFormatClassName();
+            splits[0] = new HiveInputFormat.HiveInputSplit(fileSplit, partIF);
+          }
+        } else {
+          // Raw splits
+          splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
+        }
         // Sort the splits, so that subsequent grouping is consistent.
         Arrays.sort(splits, new InputSplitComparator());
         LOG.info("Number of input splits: " + splits.length + ". " + availableSlots

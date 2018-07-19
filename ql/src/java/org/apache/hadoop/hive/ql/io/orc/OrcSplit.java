@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.ColumnarSplit;
@@ -189,6 +190,14 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     return hasFooter;
   }
 
+  /**
+   * @return {@code true} if file schema doesn't have Acid metadata columns
+   * Such file may be in a delta_x_y/ or base_x due to being added via
+   * "load data" command.  It could be at partition|table root due to table having
+   * been converted from non-acid to acid table.  It could even be something like
+   * "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0" if it was written by an
+   * "insert into t select ... from A union all select ... from B"
+   */
   public boolean isOriginal() {
     return isOriginal;
   }
@@ -233,14 +242,16 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   @Override
   public boolean canUseLlapIo(Configuration conf) {
     final boolean hasDelta = deltas != null && !deltas.isEmpty();
-    final boolean isAcidRead = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN);
-    final boolean isVectorized = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
-    final AcidUtils.AcidOperationalProperties acidOperationalProperties
-        = AcidUtils.getAcidOperationalProperties(conf);
-    final boolean isSplitUpdate = acidOperationalProperties.isSplitUpdate();
-    assert isSplitUpdate : "should be true in Hive 3.0";
+    final boolean isAcidRead = AcidUtils.isFullAcidScan(conf);
+    final boolean isVectorized = HiveConf.getBoolVar(conf, ConfVars.HIVE_VECTORIZATION_ENABLED);
+    Boolean isSplitUpdate = null;
+    if (isAcidRead) {
+      final AcidUtils.AcidOperationalProperties acidOperationalProperties
+          = AcidUtils.getAcidOperationalProperties(conf);
+      isSplitUpdate = acidOperationalProperties.isSplitUpdate();
+      // TODO: this is brittle. Who said everyone has to upgrade using upgrade process?
+      assert isSplitUpdate : "should be true in Hive 3.0";
+    }
 
     if (isOriginal) {
       if (!isAcidRead && !hasDelta) {
@@ -248,7 +259,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
         return true;
       }
     } else {
-      if (isAcidRead && hasBase && isVectorized) {
+      boolean isAcidEnabled = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ACID_ENABLED);
+      if (isAcidEnabled && isAcidRead && hasBase && isVectorized) {
         if (hasDelta) {
           if (isSplitUpdate) {
             // Base with delete deltas

@@ -75,7 +75,7 @@ public class GlobalLimitOptimizer extends Transform {
     // The query only qualifies when there are only one top operator
     // and there is no transformer or UDTF and no block sampling
     // is used.
-    if (ctx.getTryCount() == 0 && topOps.size() == 1
+    if (topOps.size() == 1
         && !globalLimitCtx.ifHasTransformOrUDTF() &&
         nameToSplitSample.isEmpty()) {
 

@@ -19,14 +19,14 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-it</artifactId>
   <packaging>pom</packaging>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>4.0.0-SNAPSHOT</version>
   <name>Hive Integration - Parent</name>
 
   <properties>
@@ -99,10 +99,10 @@
                           cd -
                         fi
                         tar -zxf $DOWNLOAD_DIR/$tarName -C $BASE_DIR
-                        mv $BASE_DIR/spark-${spark.version}-bin-hadoop2-without-hive $BASE_DIR/$finalName
+                        mv $BASE_DIR/spark-${spark.version}-bin-hadoop3-beta1-without-hive $BASE_DIR/$finalName
                       }
                       mkdir -p $DOWNLOAD_DIR
-                      download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${spark.version}-bin-hadoop2-without-hive.tgz" "spark"
+                      download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${spark.version}-bin-hadoop3-beta1-without-hive.tgz" "spark"
                       cp -f $HIVE_ROOT/data/conf/spark/log4j2.properties $BASE_DIR/spark/conf/
                     </echo>
                   </target>

@@ -24,6 +24,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -59,27 +60,29 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: cint is not null (type: boolean)
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), CAST( cstring1 AS varchar(128)) (type: varchar(128))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: varchar(128))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(128))
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -94,16 +97,17 @@ STAGE PLANS:
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: int), _col1 (type: varchar(128))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: varchar(128))
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -113,7 +117,7 @@ STAGE PLANS:
           Select Operator
             expressions: _col0 (type: int), _col1 (type: varchar(128))
             outputColumnNames: a, b
-            Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
               mode: hash
@@ -153,6 +157,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -194,10 +199,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	2                   
-	numRows             	0                   
+	numRows             	10                  
 	rawDataSize         	0                   
-	totalSize           	1798                
+	totalSize           	1899                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -238,10 +244,11 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{}                  
+	bucketing_version   	2                   
 	numFiles            	4                   
-	numRows             	0                   
+	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	2909                
+	totalSize           	3275                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

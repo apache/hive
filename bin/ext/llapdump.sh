@@ -23,7 +23,7 @@ llapdump () {
 }
 
 llapdump_help () {
-  echo "usage ./hive llapdump [-l <url>] [-u <user>] [-p <pwd>] <query>"
+  echo "usage ./hive --service llapdump [-l <url>] [-u <user>] [-p <pwd>] <query>"
   echo ""
   echo "  --location (-l)  hs2 url"
   echo "  --user (-u)      user name"

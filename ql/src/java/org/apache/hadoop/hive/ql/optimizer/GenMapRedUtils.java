@@ -243,12 +243,12 @@ public final class GenMapRedUtils {
         MapredWork plan = (MapredWork) currTask.getWork();
         for (int pos = 0; pos < size; pos++) {
           String taskTmpDir = taskTmpDirLst.get(pos);
-          TableDesc tt_desc = tt_descLst.get(pos);
+          Path taskTmpDirPath = new Path(taskTmpDir);
           MapWork mWork = plan.getMapWork();
-          if (mWork.getPathToAliases().get(taskTmpDir) == null) {
+          if (!mWork.getPathToAliases().containsKey(taskTmpDirPath)) {
             taskTmpDir = taskTmpDir.intern();
-            Path taskTmpDirPath = StringInternUtils.internUriStringsInPath(new Path(taskTmpDir));
-            mWork.removePathToAlias(taskTmpDirPath);
+            StringInternUtils.internUriStringsInPath(taskTmpDirPath);
+            TableDesc tt_desc = tt_descLst.get(pos);
             mWork.addPathToAlias(taskTmpDirPath, taskTmpDir);
             mWork.addPathToPartitionInfo(taskTmpDirPath, new PartitionDesc(tt_desc, null));
             mWork.getAliasToWork().put(taskTmpDir, topOperators.get(pos));
@@ -409,8 +409,7 @@ public final class GenMapRedUtils {
     Task<? extends Serializable> parentTask = opProcCtx.getCurrTask();
 
     MapredWork childPlan = getMapRedWork(parseCtx);
-    Task<? extends Serializable> childTask = TaskFactory.get(childPlan, parseCtx
-        .getConf());
+    Task<? extends Serializable> childTask = TaskFactory.get(childPlan);
     Operator<? extends OperatorDesc> reducer = cRS.getChildOperators().get(0);
 
     // Add the reducer
@@ -492,7 +491,7 @@ public final class GenMapRedUtils {
       HiveConf conf, boolean local) throws SemanticException {
     ArrayList<Path> partDir = new ArrayList<Path>();
     ArrayList<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
-    boolean isAcidTable = false;
+    boolean isFullAcidTable = false;
 
     Path tblDir = null;
     plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
@@ -504,7 +503,7 @@ public final class GenMapRedUtils {
     if (partsList == null) {
       try {
         partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
-        isAcidTable = tsOp.getConf().isAcidTable();
+        isFullAcidTable = tsOp.getConf().isFullAcidTable();
       } catch (SemanticException e) {
         throw e;
       }
@@ -541,8 +540,8 @@ public final class GenMapRedUtils {
     long sizeNeeded = Integer.MAX_VALUE;
     int fileLimit = -1;
     if (parseCtx.getGlobalLimitCtx().isEnable()) {
-      if (isAcidTable) {
-        LOG.info("Skip Global Limit optimization for ACID table");
+      if (isFullAcidTable) {
+        LOG.info("Skipping Global Limit optimization for an ACID table");
         parseCtx.getGlobalLimitCtx().disableOpt();
       } else {
         long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),
@@ -1270,8 +1269,8 @@ public final class GenMapRedUtils {
     FileSinkDesc fsInputDesc = fsInput.getConf();
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("Creating merge work from " + System.identityHashCode(fsInput)
-        + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getTransactionId() : null)
-        + " into " + finalName);
+          + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getTableWriteId() : null)
+          + " into " + finalName);
     }
 
     boolean isBlockMerge = (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
@@ -1280,7 +1279,7 @@ public final class GenMapRedUtils {
             fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class));
 
     RowSchema inputRS = fsInput.getSchema();
-    Long srcMmWriteId = fsInputDesc.isMmTable() ? fsInputDesc.getTransactionId() : null;
+    Long srcMmWriteId = fsInputDesc.isMmTable() ? fsInputDesc.getTableWriteId() : null;
     FileSinkDesc fsOutputDesc = null;
     TableScanOperator tsMerge = null;
     if (!isBlockMerge) {
@@ -1509,22 +1508,12 @@ public final class GenMapRedUtils {
           table = null;
         }
       } else if (mvWork.getLoadFileWork().getCreateViewDesc() != null) {
-        if (mvWork.getLoadFileWork().getCreateViewDesc().isReplace()) {
-          // ALTER MV ... REBUILD
-          String tableName = mvWork.getLoadFileWork().getCreateViewDesc().getViewName();
-          try {
-            table = Hive.get().getTable(tableName);
-          } catch (HiveException e) {
-            throw new RuntimeException("unexpected; MV should be present already..: " + tableName, e);
-          }
-        } else {
-          // CREATE MATERIALIZED VIEW ...
-          try {
-            table = mvWork.getLoadFileWork().getCreateViewDesc().toTable(hconf);
-          } catch (HiveException e) {
-            LOG.debug("can't pre-create table for MV", e);
-            table = null;
-          }
+        // CREATE MATERIALIZED VIEW ...
+        try {
+          table = mvWork.getLoadFileWork().getCreateViewDesc().toTable(hconf);
+        } catch (HiveException e) {
+          LOG.debug("can't pre-create table for MV", e);
+          table = null;
         }
       } else {
         throw new RuntimeException("unexpected; this should be a CTAS or a CREATE/REBUILD MV - however no desc present");
@@ -1556,7 +1545,7 @@ public final class GenMapRedUtils {
     columnStatsWork.truncateExisting(truncate);
 
     columnStatsWork.setSourceTask(currTask);
-    Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork, hconf);
+    Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork);
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list
     // of dynamic partition list to the StatsTask
@@ -1675,7 +1664,7 @@ public final class GenMapRedUtils {
       fmd = new OrcFileMergeDesc();
     }
     fmd.setIsMmTable(fsInputDesc.isMmTable());
-    fmd.setTxnId(fsInputDesc.getTransactionId());
+    fmd.setWriteId(fsInputDesc.getTableWriteId());
     int stmtId = fsInputDesc.getStatementId();
     fmd.setStmtId(stmtId == -1 ? 0 : stmtId);
     fmd.setDpCtx(fsInputDesc.getDynPartCtx());
@@ -1811,10 +1800,10 @@ public final class GenMapRedUtils {
     // conflicts.
     // TODO: if we are not dealing with concatenate DDL, we should not create a merge+move path
     //       because it should be impossible to get incompatible outputs.
-    Task<? extends Serializable> mergeOnlyMergeTask = TaskFactory.get(mergeWork, conf);
-    Task<? extends Serializable> moveOnlyMoveTask = TaskFactory.get(workForMoveOnlyTask, conf);
-    Task<? extends Serializable> mergeAndMoveMergeTask = TaskFactory.get(mergeWork, conf);
-    Task<? extends Serializable> mergeAndMoveMoveTask = TaskFactory.get(moveWork, conf);
+    Task<? extends Serializable> mergeOnlyMergeTask = TaskFactory.get(mergeWork);
+    Task<? extends Serializable> moveOnlyMoveTask = TaskFactory.get(workForMoveOnlyTask);
+    Task<? extends Serializable> mergeAndMoveMergeTask = TaskFactory.get(mergeWork);
+    Task<? extends Serializable> mergeAndMoveMoveTask = TaskFactory.get(moveWork);
 
     // NOTE! It is necessary merge task is the parent of the move task, and not
     // the other way around, for the proper execution of the execute method of
@@ -1832,7 +1821,7 @@ public final class GenMapRedUtils {
     listTasks.add(mergeOnlyMergeTask);
     listTasks.add(mergeAndMoveMergeTask);
 
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, conf);
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork);
     cndTsk.setListTasks(listTasks);
 
     // create resolver
@@ -1918,12 +1907,12 @@ public final class GenMapRedUtils {
         mvTasks, fsOp.getConf().getFinalDirName(), fsOp.getConf().isMmTable());
 
     // TODO: wtf?!! why is this in this method? This has nothing to do with anything.
-    if (mvTask != null && isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
+    if (isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
         && !fsOp.getConf().isMaterialization()) {
       // mark the MapredWork and FileSinkOperator for gathering stats
       fsOp.getConf().setGatherStats(true);
       fsOp.getConf().setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
-      if (!mvTask.hasFollowingStatsTask()) {
+      if (mvTask != null && !mvTask.hasFollowingStatsTask()) {
         GenMapRedUtils.addStatsTask(fsOp, mvTask, currTask, hconf);
       }
     }

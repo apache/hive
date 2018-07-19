@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE doctors4
+PREHOOK: query: CREATE TABLE doctors4_n2
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -34,8 +34,8 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@doctors4
-POSTHOOK: query: CREATE TABLE doctors4
+PREHOOK: Output: default@doctors4_n2
+POSTHOOK: query: CREATE TABLE doctors4_n2
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -71,26 +71,26 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@doctors4
-PREHOOK: query: DESCRIBE doctors4
+POSTHOOK: Output: default@doctors4_n2
+PREHOOK: query: DESCRIBE doctors4_n2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@doctors4
-POSTHOOK: query: DESCRIBE doctors4
+PREHOOK: Input: default@doctors4_n2
+POSTHOOK: query: DESCRIBE doctors4_n2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@doctors4
+POSTHOOK: Input: default@doctors4_n2
 number              	int                 	Order of playing the role
 first_name          	string              	first name of actor playing role
 last_name           	string              	last name of actor playing role
 extra_field         	string              	an extra field not in the original file
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@doctors4
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4
+PREHOOK: Output: default@doctors4_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@doctors4
-PREHOOK: query: CREATE TABLE episodes
+POSTHOOK: Output: default@doctors4_n2
+PREHOOK: query: CREATE TABLE episodes_n3
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -98,7 +98,7 @@ INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
 TBLPROPERTIES ('avro.schema.literal'='{
   "namespace": "testing.hive.avro.serde",
-  "name": "episodes",
+  "name": "episodes_n3",
   "type": "record",
   "fields": [
     {
@@ -120,8 +120,8 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@episodes
-POSTHOOK: query: CREATE TABLE episodes
+PREHOOK: Output: default@episodes_n3
+POSTHOOK: query: CREATE TABLE episodes_n3
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -129,7 +129,7 @@ INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
 TBLPROPERTIES ('avro.schema.literal'='{
   "namespace": "testing.hive.avro.serde",
-  "name": "episodes",
+  "name": "episodes_n3",
   "type": "record",
   "fields": [
     {
@@ -151,35 +151,35 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@episodes
-PREHOOK: query: DESCRIBE episodes
+POSTHOOK: Output: default@episodes_n3
+PREHOOK: query: DESCRIBE episodes_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@episodes
-POSTHOOK: query: DESCRIBE episodes
+PREHOOK: Input: default@episodes_n3
+POSTHOOK: query: DESCRIBE episodes_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@episodes
+POSTHOOK: Input: default@episodes_n3
 title               	string              	episode title       
 air_date            	string              	initial date        
 doctor              	int                 	main actor playing the Doctor in episode
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@episodes
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
+PREHOOK: Output: default@episodes_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@episodes
+POSTHOOK: Output: default@episodes_n3
 PREHOOK: query: SELECT e.title, e.air_date, d.first_name, d.last_name, d.extra_field, e.air_date
-FROM doctors4 d JOIN episodes e ON (d.number=e.doctor)
+FROM doctors4_n2 d JOIN episodes_n3 e ON (d.number=e.doctor)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@doctors4
-PREHOOK: Input: default@episodes
+PREHOOK: Input: default@doctors4_n2
+PREHOOK: Input: default@episodes_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT e.title, e.air_date, d.first_name, d.last_name, d.extra_field, e.air_date
-FROM doctors4 d JOIN episodes e ON (d.number=e.doctor)
+FROM doctors4_n2 d JOIN episodes_n3 e ON (d.number=e.doctor)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@doctors4
-POSTHOOK: Input: default@episodes
+POSTHOOK: Input: default@doctors4_n2
+POSTHOOK: Input: default@episodes_n3
 #### A masked pattern was here ####
 An Unearthly Child	23 November 1963	William	Hartnell	fishfingers and custard	23 November 1963
 Castrolava	4 January 1982	Peter	Davison	fishfingers and custard	4 January 1982

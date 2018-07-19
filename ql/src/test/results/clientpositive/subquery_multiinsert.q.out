@@ -28,7 +28,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_5
 RUN: Stage-0:DDL
-Warning: Shuffle Join JOIN[31][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[38][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -75,6 +75,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
+            filterExpr: ((key > '2') and key is null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > '2') and key is null) (type: boolean)
@@ -90,6 +91,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -97,12 +99,12 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (_col0 = 0) (type: boolean)
+            predicate: (_col0 = 0L) (type: boolean)
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: 0 (type: bigint)
+                keys: 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -164,6 +166,7 @@ STAGE PLANS:
               value expressions: _col1 (type: string)
           TableScan
             alias: s1
+            filterExpr: (key > '2') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > '2') (type: boolean)
@@ -209,6 +212,7 @@ STAGE PLANS:
               sort order: +
               Statistics: Num rows: 275 Data size: 5396 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -272,6 +276,7 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
+            filterExpr: ((key > '9') and value is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > '9') and value is not null) (type: boolean)
@@ -349,6 +354,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -363,7 +369,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-Warning: Shuffle Join JOIN[31][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[38][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: from src b 
 INSERT OVERWRITE TABLE src_4 
   select * 
@@ -556,8 +562,8 @@ POSTHOOK: Input: default@src_5
 199	val_199
 199	val_199
 2	val_2
-Warning: Map Join MAPJOIN[56][bigTable=b] in task 'Stage-14:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[31][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[80][bigTable=b] in task 'Stage-14:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[38][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -608,6 +614,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
+            filterExpr: ((key > '2') and key is null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > '2') and key is null) (type: boolean)
@@ -623,6 +630,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -630,12 +638,12 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (_col0 = 0) (type: boolean)
+            predicate: (_col0 = 0L) (type: boolean)
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: 0 (type: bigint)
+                keys: 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -692,6 +700,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -705,6 +714,7 @@ STAGE PLANS:
         sq_2:s1 
           TableScan
             alias: s1
+            filterExpr: (key > '2') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > '2') (type: boolean)
@@ -742,6 +752,7 @@ STAGE PLANS:
                     sort order: +
                     Statistics: Num rows: 275 Data size: 5396 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: string)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -806,6 +817,7 @@ STAGE PLANS:
         sq_1:a 
           TableScan
             alias: a
+            filterExpr: ((key > '9') and value is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > '9') and value is not null) (type: boolean)
@@ -888,6 +900,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -941,8 +954,8 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-Warning: Map Join MAPJOIN[56][bigTable=b] in task 'Stage-14:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[31][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[80][bigTable=b] in task 'Stage-14:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[38][tables = [b, sq_2_notin_nullcheck]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: from src b 
 INSERT OVERWRITE TABLE src_4 
   select * 

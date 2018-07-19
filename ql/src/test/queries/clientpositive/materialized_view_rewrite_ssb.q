@@ -1,10 +1,13 @@
+--! qt:dataset:part
+
+set hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
 set hive.stats.column.autogather=true;
 
-CREATE TABLE `customer_ext`(
+CREATE TABLE `customer_ext_n0`(
   `c_custkey` bigint, 
   `c_name` string, 
   `c_address` string, 
@@ -17,9 +20,9 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into table `customer_ext`;
+LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into table `customer_ext_n0`;
 
-CREATE TABLE `customer`(
+CREATE TABLE `customer_n1`(
   `c_custkey` bigint, 
   `c_name` string, 
   `c_address` string, 
@@ -32,10 +35,10 @@ CREATE TABLE `customer`(
 STORED AS ORC
 TBLPROPERTIES ('transactional'='true');
 
-INSERT INTO `customer`
-SELECT * FROM `customer_ext`;
+INSERT INTO `customer_n1`
+SELECT * FROM `customer_ext_n0`;
 
-CREATE TABLE `dates_ext`(
+CREATE TABLE `dates_ext_n0`(
   `d_datekey` bigint, 
   `d_date` string, 
   `d_dayofweek` string, 
@@ -57,9 +60,9 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/ssb/date/' into table `dates_ext`;
+LOAD DATA LOCAL INPATH '../../data/files/ssb/date/' into table `dates_ext_n0`;
 
-CREATE TABLE `dates`(
+CREATE TABLE `dates_n0`(
   `d_datekey` bigint, 
   `d_date` string, 
   `d_dayofweek` string, 
@@ -82,10 +85,10 @@ CREATE TABLE `dates`(
 STORED AS ORC
 TBLPROPERTIES ('transactional'='true');
 
-INSERT INTO `dates`
-SELECT * FROM `dates_ext`;
+INSERT INTO `dates_n0`
+SELECT * FROM `dates_ext_n0`;
 
-CREATE TABLE `ssb_part_ext`(
+CREATE TABLE `ssb_part_ext_n0`(
   `p_partkey` bigint, 
   `p_name` string, 
   `p_mfgr` string, 
@@ -99,9 +102,9 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/ssb/part/' into table `ssb_part_ext`;
+LOAD DATA LOCAL INPATH '../../data/files/ssb/part/' into table `ssb_part_ext_n0`;
 
-CREATE TABLE `ssb_part`(
+CREATE TABLE `ssb_part_n0`(
   `p_partkey` bigint, 
   `p_name` string, 
   `p_mfgr` string, 
@@ -115,10 +118,10 @@ CREATE TABLE `ssb_part`(
 STORED AS ORC
 TBLPROPERTIES ('transactional'='true');
 
-INSERT INTO `ssb_part`
-SELECT * FROM `ssb_part_ext`;
+INSERT INTO `ssb_part_n0`
+SELECT * FROM `ssb_part_ext_n0`;
 
-CREATE TABLE `supplier_ext`(
+CREATE TABLE `supplier_ext_n0`(
   `s_suppkey` bigint, 
   `s_name` string, 
   `s_address` string, 
@@ -130,9 +133,9 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/ssb/supplier/' into table `supplier_ext`;
+LOAD DATA LOCAL INPATH '../../data/files/ssb/supplier/' into table `supplier_ext_n0`;
 
-CREATE TABLE `supplier`(
+CREATE TABLE `supplier_n0`(
   `s_suppkey` bigint, 
   `s_name` string, 
   `s_address` string, 
@@ -144,10 +147,10 @@ CREATE TABLE `supplier`(
 STORED AS ORC
 TBLPROPERTIES ('transactional'='true');
 
-INSERT INTO `supplier`
-SELECT * FROM `supplier_ext`;
+INSERT INTO `supplier_n0`
+SELECT * FROM `supplier_ext_n0`;
 
-CREATE TABLE `lineorder_ext`(
+CREATE TABLE `lineorder_ext_n0`(
   `lo_orderkey` bigint, 
   `lo_linenumber` int, 
   `lo_custkey` bigint not null disable rely,
@@ -169,9 +172,9 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/ssb/lineorder/' into table `lineorder_ext`;
+LOAD DATA LOCAL INPATH '../../data/files/ssb/lineorder/' into table `lineorder_ext_n0`;
 
-CREATE TABLE `lineorder`(
+CREATE TABLE `lineorder_n0`(
   `lo_orderkey` bigint, 
   `lo_linenumber` int, 
   `lo_custkey` bigint not null disable rely,
@@ -190,23 +193,23 @@ CREATE TABLE `lineorder`(
   `lo_commitdate` bigint, 
   `lo_shipmode` string,
   primary key (`lo_orderkey`) disable rely,
-  constraint fk1 foreign key (`lo_custkey`) references `customer`(`c_custkey`) disable rely,
-  constraint fk2 foreign key (`lo_orderdate`) references `dates`(`d_datekey`) disable rely,
-  constraint fk3 foreign key (`lo_partkey`) references `ssb_part`(`p_partkey`) disable rely,
-  constraint fk4 foreign key (`lo_suppkey`) references `supplier`(`s_suppkey`) disable rely)
+  constraint fk1 foreign key (`lo_custkey`) references `customer_n1`(`c_custkey`) disable rely,
+  constraint fk2 foreign key (`lo_orderdate`) references `dates_n0`(`d_datekey`) disable rely,
+  constraint fk3 foreign key (`lo_partkey`) references `ssb_part_n0`(`p_partkey`) disable rely,
+  constraint fk4 foreign key (`lo_suppkey`) references `supplier_n0`(`s_suppkey`) disable rely)
 STORED AS ORC
 TBLPROPERTIES ('transactional'='true');
 
-INSERT INTO `lineorder`
-SELECT * FROM `lineorder_ext`;
+INSERT INTO `lineorder_n0`
+SELECT * FROM `lineorder_ext_n0`;
 
-analyze table customer compute statistics for columns;
-analyze table dates compute statistics for columns;
-analyze table ssb_part compute statistics for columns;
-analyze table supplier compute statistics for columns;
-analyze table lineorder compute statistics for columns;
+analyze table customer_n1 compute statistics for columns;
+analyze table dates_n0 compute statistics for columns;
+analyze table ssb_part_n0 compute statistics for columns;
+analyze table supplier_n0 compute statistics for columns;
+analyze table lineorder_n0 compute statistics for columns;
 
-CREATE MATERIALIZED VIEW `ssb_mv` ENABLE REWRITE
+CREATE MATERIALIZED VIEW `ssb_mv_n0`
 AS
 SELECT
   c_city,
@@ -228,7 +231,7 @@ SELECT
   lo_extendedprice * lo_discount discounted_price,
   lo_revenue - lo_supplycost net_revenue
 FROM
-  customer, dates, lineorder, ssb_part, supplier
+  customer_n1, dates_n0, lineorder_n0, ssb_part_n0, supplier_n0
 where
   lo_orderdate = d_datekey
   and lo_partkey = p_partkey
@@ -240,7 +243,7 @@ explain
 select 
     sum(lo_extendedprice*lo_discount) as revenue
 from 
-    lineorder, dates
+    lineorder_n0, dates_n0
 where 
     lo_orderdate = d_datekey
     and d_year = 1993
@@ -252,7 +255,7 @@ explain
 select 
     sum(lo_extendedprice*lo_discount) as revenue
 from 
-    lineorder, dates
+    lineorder_n0, dates_n0
 where 
     lo_orderdate = d_datekey
     and d_yearmonthnum = 199401
@@ -264,7 +267,7 @@ explain
 select 
     sum(lo_extendedprice*lo_discount) as revenue
 from 
-    lineorder, dates
+    lineorder_n0, dates_n0
 where 
     lo_orderdate = d_datekey
     and d_weeknuminyear = 6
@@ -277,7 +280,7 @@ explain
 select 
     sum(lo_revenue) as lo_revenue, d_year, p_brand1
 from 
-    lineorder, dates, ssb_part, supplier
+    lineorder_n0, dates_n0, ssb_part_n0, supplier_n0
 where 
     lo_orderdate = d_datekey
     and lo_partkey = p_partkey
@@ -294,7 +297,7 @@ explain
 select 
     sum(lo_revenue) as lo_revenue, d_year, p_brand1
 from 
-    lineorder, dates, ssb_part, supplier
+    lineorder_n0, dates_n0, ssb_part_n0, supplier_n0
 where 
     lo_orderdate = d_datekey
     and lo_partkey = p_partkey
@@ -311,7 +314,7 @@ explain
 select 
     sum(lo_revenue) as lo_revenue, d_year, p_brand1
 from 
-    lineorder, dates, ssb_part, supplier
+    lineorder_n0, dates_n0, ssb_part_n0, supplier_n0
 where 
     lo_orderdate = d_datekey
     and lo_partkey = p_partkey
@@ -329,7 +332,7 @@ select
     c_nation, s_nation, d_year,
     sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n1, lineorder_n0, supplier_n0, dates_n0
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -347,7 +350,7 @@ explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n1, lineorder_n0, supplier_n0, dates_n0
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -365,7 +368,7 @@ explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n1, lineorder_n0, supplier_n0, dates_n0
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -383,7 +386,7 @@ explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n1, lineorder_n0, supplier_n0, dates_n0
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -402,7 +405,7 @@ select
     d_year, c_nation,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates_n0, customer_n1, supplier_n0, ssb_part_n0, lineorder_n0
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -422,7 +425,7 @@ select
     d_year, s_nation, p_category,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates_n0, customer_n1, supplier_n0, ssb_part_n0, lineorder_n0
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -443,7 +446,7 @@ select
     d_year, s_city, p_brand1,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates_n0, customer_n1, supplier_n0, ssb_part_n0, lineorder_n0
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -458,4 +461,4 @@ group by
 order by 
     d_year, s_city, p_brand1;
 
-DROP MATERIALIZED VIEW `ssb_mv`;
+DROP MATERIALIZED VIEW `ssb_mv_n0`;

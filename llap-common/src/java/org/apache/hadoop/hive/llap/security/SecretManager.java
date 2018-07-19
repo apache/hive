@@ -165,8 +165,6 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
 
   private static LlapZkConf createLlapZkConf(
       Configuration conf, String llapPrincipal, String llapKeytab, String clusterId) {
-     String principal = HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_KERBEROS_PRINCIPAL, llapPrincipal);
-     String keyTab = HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_KERBEROS_KEYTAB_FILE, llapKeytab);
      // Override the default delegation token lifetime for LLAP.
      // Also set all the necessary ZK settings to defaults and LLAP configs, if not set.
      final Configuration zkConf = new Configuration(conf);
@@ -176,11 +174,11 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     zkConf.setLong(DelegationTokenManager.RENEW_INTERVAL, tokenLifetime);
     try {
       zkConf.set(ZK_DTSM_ZK_KERBEROS_PRINCIPAL,
-          SecurityUtil.getServerPrincipal(principal, "0.0.0.0"));
+          SecurityUtil.getServerPrincipal(llapPrincipal, "0.0.0.0"));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    zkConf.set(ZK_DTSM_ZK_KERBEROS_KEYTAB, keyTab);
+    zkConf.set(ZK_DTSM_ZK_KERBEROS_KEYTAB, llapKeytab);
     String zkPath = "zkdtsm_" + clusterId;
     LOG.info("Using {} as ZK secret manager path", zkPath);
     zkConf.set(ZK_DTSM_ZNODE_WORKING_PATH, zkPath);
@@ -199,7 +197,7 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
 
     UserGroupInformation zkUgi = null;
     try {
-      zkUgi = LlapUtil.loginWithKerberos(principal, keyTab);
+      zkUgi = LlapUtil.loginWithKerberos(llapPrincipal, llapKeytab);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

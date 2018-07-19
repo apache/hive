@@ -247,8 +247,9 @@ public abstract class VectorExpression implements Serializable {
   /**
    * This is the primary method to implement expression logic.
    * @param batch
+   * @throws HiveException 
    */
-  public abstract void evaluate(VectorizedRowBatch batch);
+  public abstract void evaluate(VectorizedRowBatch batch) throws HiveException;
 
   public void init(Configuration conf) {
     if (childExpressions != null) {
@@ -264,7 +265,7 @@ public abstract class VectorExpression implements Serializable {
    * Evaluate the child expressions on the given input batch.
    * @param vrg {@link VectorizedRowBatch}
    */
-  final protected void evaluateChildren(VectorizedRowBatch vrg) {
+  final protected void evaluateChildren(VectorizedRowBatch vrg) throws HiveException {
     if (childExpressions != null) {
       for (VectorExpression ve : childExpressions) {
         ve.evaluate(vrg);
@@ -285,26 +286,35 @@ public abstract class VectorExpression implements Serializable {
   }
 
   protected String getParamTypeString(int typeNum) {
-    if (inputTypeInfos == null || inputDataTypePhysicalVariations == null) {
-      fake++;
+    if (inputTypeInfos == null) {
+      return "<input types is null>";
     }
-    if (typeNum >= inputTypeInfos.length || typeNum >= inputDataTypePhysicalVariations.length) {
-      fake++;
+    if (inputDataTypePhysicalVariations == null) {
+      return "<input data type physical variations is null>";
     }
     return getTypeName(inputTypeInfos[typeNum], inputDataTypePhysicalVariations[typeNum]);
   }
 
-  static int fake;
-
   public static String getTypeName(TypeInfo typeInfo, DataTypePhysicalVariation dataTypePhysicalVariation) {
     if (typeInfo == null) {
-      fake++;
+      return "<input type is null>";
     }
     if (dataTypePhysicalVariation != null && dataTypePhysicalVariation != DataTypePhysicalVariation.NONE) {
       return typeInfo.toString() + "/" + dataTypePhysicalVariation;
     } else {
       return typeInfo.toString();
     }
+  }
+
+  /**
+   * A vector expression which implements a checked execution to account for overflow handling
+   * should override this method and return true. In such a case Vectorizer will use Checked
+   * variation of the vector expression to process data
+   * @return true if vector expression implements a Checked variation of vector expression
+   */
+  public boolean supportsCheckedExecution() {
+    // default is false
+    return false;
   }
 
   @Override

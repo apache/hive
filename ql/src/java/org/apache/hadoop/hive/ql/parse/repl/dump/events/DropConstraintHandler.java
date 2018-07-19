@@ -21,7 +21,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-public class DropConstraintHandler extends AbstractEventHandler {
+class DropConstraintHandler extends AbstractEventHandler {
   DropConstraintHandler(NotificationEvent event) {
     super(event);
   }

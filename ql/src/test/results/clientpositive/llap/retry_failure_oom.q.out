@@ -1,0 +1,43 @@
+PREHOOK: query: create table tx(a int,f string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tx
+POSTHOOK: query: create table tx(a int,f string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tx
+PREHOOK: query: insert into tx values (1,'non_existent_file')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tx
+POSTHOOK: query: insert into tx values (1,'non_existent_file')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tx
+POSTHOOK: Lineage: tx.a SCRIPT []
+POSTHOOK: Lineage: tx.f SCRIPT []
+PREHOOK: query: select assert_true_oom(1 > a) from tx group by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx
+#### A masked pattern was here ####
+Status: Failed
+Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+PREHOOK: query: select assert_true_oom(2 > a) from tx group by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true_oom(2 > a) from tx group by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx
+#### A masked pattern was here ####
+NULL

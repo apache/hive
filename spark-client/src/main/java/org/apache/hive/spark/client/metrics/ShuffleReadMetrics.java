@@ -42,28 +42,43 @@ public class ShuffleReadMetrics implements Serializable {
   public final long fetchWaitTime;
   /** Total number of remote bytes read from the shuffle by tasks. */
   public final long remoteBytesRead;
+  /** Shuffle data that was read from the local disk (as opposed to from a remote executor). */
+  public final long localBytesRead;
+  /** Total number of remotes bytes read to disk from the shuffle by this task. */
+  public final long remoteBytesReadToDisk;
+  /** Total number of records read from the shuffle by this task. */
+  public final long recordsRead;
 
   private ShuffleReadMetrics() {
     // For Serialization only.
-    this(0, 0, 0L, 0L);
+    this(0, 0, 0L, 0L, 0L, 0L, 0L);
   }
 
   public ShuffleReadMetrics(
       long remoteBlocksFetched,
       long localBlocksFetched,
       long fetchWaitTime,
-      long remoteBytesRead) {
+      long remoteBytesRead,
+      long localBytesRead,
+      long remoteBytesReadToDisk,
+      long recordsRead) {
     this.remoteBlocksFetched = remoteBlocksFetched;
     this.localBlocksFetched = localBlocksFetched;
     this.fetchWaitTime = fetchWaitTime;
     this.remoteBytesRead = remoteBytesRead;
+    this.localBytesRead = localBytesRead;
+    this.remoteBytesReadToDisk = remoteBytesReadToDisk;
+    this.recordsRead = recordsRead;
   }
 
   public ShuffleReadMetrics(TaskMetrics metrics) {
     this(metrics.shuffleReadMetrics().remoteBlocksFetched(),
       metrics.shuffleReadMetrics().localBlocksFetched(),
       metrics.shuffleReadMetrics().fetchWaitTime(),
-      metrics.shuffleReadMetrics().remoteBytesRead());
+      metrics.shuffleReadMetrics().remoteBytesRead(),
+      metrics.shuffleReadMetrics().localBytesRead(),
+      metrics.shuffleReadMetrics().remoteBytesReadToDisk(),
+      metrics.shuffleReadMetrics().recordsRead());
   }
 
   /**
@@ -73,4 +88,13 @@ public class ShuffleReadMetrics implements Serializable {
     return remoteBlocksFetched + localBlocksFetched;
   }
 
+  @Override
+  public String toString() {
+    return "ShuffleReadMetrics{" +
+            "remoteBlocksFetched=" + remoteBlocksFetched +
+            ", localBlocksFetched=" + localBlocksFetched +
+            ", fetchWaitTime=" + fetchWaitTime +
+            ", remoteBytesRead=" + remoteBytesRead +
+            '}';
+  }
 }

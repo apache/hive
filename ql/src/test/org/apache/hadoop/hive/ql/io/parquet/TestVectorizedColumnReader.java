@@ -35,7 +35,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static junit.framework.TestCase.assertFalse;
 import static org.apache.parquet.hadoop.api.ReadSupport.PARQUET_READ_SCHEMA;
 
 public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
@@ -55,26 +54,40 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
   @Test
   public void testIntRead() throws Exception {
     intRead(isDictionaryEncoding);
+    longReadInt(isDictionaryEncoding);
+    floatReadInt(isDictionaryEncoding);
+    doubleReadInt(isDictionaryEncoding);
   }
 
   @Test
   public void testLongRead() throws Exception {
     longRead(isDictionaryEncoding);
+    floatReadLong(isDictionaryEncoding);
+    doubleReadLong(isDictionaryEncoding);
+  }
+
+  @Test
+  public void testTimestamp() throws Exception {
+    timestampRead(isDictionaryEncoding);
+    stringReadTimestamp(isDictionaryEncoding);
   }
 
   @Test
   public void testDoubleRead() throws Exception {
     doubleRead(isDictionaryEncoding);
+    stringReadDouble(isDictionaryEncoding);
   }
 
   @Test
   public void testFloatRead() throws Exception {
     floatRead(isDictionaryEncoding);
+    doubleReadFloat(isDictionaryEncoding);
   }
 
   @Test
   public void testBooleanRead() throws Exception {
     booleanRead();
+    stringReadBoolean();
   }
 
   @Test
@@ -101,6 +114,7 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
   @Test
   public void decimalRead() throws Exception {
     decimalRead(isDictionaryEncoding);
+    stringReadDecimal(isDictionaryEncoding);
   }
 
   private class TestVectorizedParquetRecordReader extends VectorizedParquetRecordReader {

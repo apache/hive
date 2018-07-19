@@ -49,8 +49,8 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private boolean isCompressed = false;
     private Properties properties;
     private Reporter reporter;
-    private long minimumTransactionId;
-    private long maximumTransactionId;
+    private long minimumWriteId;
+    private long maximumWriteId;
     private int bucketId;
     /**
      * Based on {@link org.apache.hadoop.hive.ql.metadata.Hive#mvFile(HiveConf, FileSystem, Path, FileSystem, Path, boolean, boolean)}
@@ -156,22 +156,22 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     }
 
     /**
-     * The minimum transaction id that is included in this file.
-     * @param min minimum transaction id
+     * The minimum write id that is included in this file.
+     * @param min minimum write id
      * @return this
      */
-    public Options minimumTransactionId(long min) {
-      this.minimumTransactionId = min;
+    public Options minimumWriteId(long min) {
+      this.minimumWriteId = min;
       return this;
     }
 
     /**
-     * The maximum transaction id that is included in this file.
-     * @param max maximum transaction id
+     * The maximum write id that is included in this file.
+     * @param max maximum write id
      * @return this
      */
-    public Options maximumTransactionId(long max) {
-      this.maximumTransactionId = max;
+    public Options maximumWriteId(long max) {
+      this.maximumWriteId = max;
       return this;
     }
 
@@ -236,7 +236,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
      */
     public Options statementId(int id) {
       if(id >= AcidUtils.MAX_STATEMENTS_PER_TXN) {
-        throw new RuntimeException("Too many statements for transactionId: " + maximumTransactionId);
+        throw new RuntimeException("Too many statements for writeId: " + maximumWriteId);
       }
       if(id < -1) {
         throw new IllegalArgumentException("Illegal statementId value: " + id);
@@ -277,12 +277,12 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
       return reporter;
     }
 
-    public long getMinimumTransactionId() {
-      return minimumTransactionId;
+    public long getMinimumWriteId() {
+      return minimumWriteId;
     }
 
-    public long getMaximumTransactionId() {
-      return maximumTransactionId;
+    public long getMaximumWriteId() {
+      return maximumWriteId;
     }
 
     public boolean isWritingBase() {

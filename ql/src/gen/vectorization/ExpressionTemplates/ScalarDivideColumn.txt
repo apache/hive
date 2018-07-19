@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import java.util.Arrays;
+
+import org.apache.hadoop.hive.ql.exec.vector.expressions.OverflowUtils;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
@@ -30,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Generated from template ScalarArithmeticColumn.txt.
@@ -63,7 +67,13 @@ public class <ClassName> extends VectorExpression {
    *
    * @batch a package of rows with each column stored in a vector
    */
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -74,59 +84,125 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector.noNulls;
-    outputColVector.isRepeating = inputColVector.isRepeating;
-    int n = batch.size;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     <OperandType2>[] vector = inputColVector.vector;
     <ReturnType>[] outputVector = outputColVector.vector;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-
     boolean hasDivBy0 = false;
     if (inputColVector.isRepeating) {
-      <OperandType2> denom = vector[0];
-      outputVector[0] = value <OperatorSymbol> denom;
-      hasDivBy0 = hasDivBy0 || (denom == 0);
-
-      // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0];
+     if (inputColVector.noNulls || !inputIsNull[0]) {
+       outputIsNull[0] = false;
+       final <OperandType2> denom = vector[0];
+       hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+       if (denom != 0) {
+         outputVector[0] = value <OperatorSymbol> denom;
+       }
+#ELSE
+       outputVector[0] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
+     } else {
+       outputIsNull[0] = true;
+       outputColVector.noNulls = false;
+     }
+     outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          <OperandType2> denom = vector[i];
-          outputVector[i] = value <OperatorSymbol> denom;
-          hasDivBy0 = hasDivBy0 || (denom == 0);
-        }
+
+         // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+         if (!outputColVector.noNulls) {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             outputIsNull[i] = false;
+             <OperandType2> denom = vector[i];
+             hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+             if (denom != 0) {
+               outputVector[i] = value <OperatorSymbol> denom;
+             }
+#ELSE
+             outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
+          }
+         } else {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             final <OperandType2> denom = vector[i];
+             hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+             if (denom != 0) {
+               outputVector[i] = value <OperatorSymbol> denom;
+             }
+#ELSE
+             outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
+           }
+         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
-          <OperandType2> denom = vector[i];
-          outputVector[i] = value <OperatorSymbol> denom;
+          final <OperandType2> denom = vector[i];
           hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = value <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
         }
       }
-    } else {                         /* there are nulls */
+    } else /* there are NULLs in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          <OperandType2> denom = vector[i];
-          outputVector[i] = value <OperatorSymbol> denom;
-          hasDivBy0 = hasDivBy0 || (denom == 0);
           outputIsNull[i] = inputIsNull[i];
+          final <OperandType2> denom = vector[i];
+          hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = value <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
         }
       } else {
-        for(int i = 0; i != n; i++) {
-          <OperandType2> denom = vector[i];
-          outputVector[i] = value <OperatorSymbol> denom;
-          hasDivBy0 = hasDivBy0 || (denom == 0);
-        }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
+        for(int i = 0; i != n; i++) {
+          final <OperandType2> denom = vector[i];
+          hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = value <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
+        }
       }
     }
 
+#IF CHECKED
+    //when operating in checked mode make sure we handle overflows similar to non-vectorized expression
+    OverflowUtils.accountForOverflow<CamelReturnType>(getOutputTypeInfo(), outputColVector,
+        batch.selectedInUse, sel, n);
+#ELSE
+#ENDIF CHECKED
     if (!hasDivBy0) {
       NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
     } else {

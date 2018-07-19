@@ -1,12 +1,12 @@
-PREHOOK: query: DROP TABLE over1k
+PREHOOK: query: DROP TABLE over1k_n7
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE over1k
+POSTHOOK: query: DROP TABLE over1k_n7
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE hundredorc
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hundredorc
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: query: CREATE TABLE over1k_n7(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -21,8 +21,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1k
-POSTHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: Output: default@over1k_n7
+POSTHOOK: query: CREATE TABLE over1k_n7(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -37,15 +37,15 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+POSTHOOK: Output: default@over1k_n7
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n7
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over1k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+PREHOOK: Output: default@over1k_n7
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n7
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over1k
+POSTHOOK: Output: default@over1k_n7
 PREHOOK: query: CREATE TABLE hundredorc(t tinyint,
            si smallint,
            i int,
@@ -76,25 +76,25 @@ STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hundredorc
-PREHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k LIMIT 100
+PREHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k_n7 LIMIT 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n7
 PREHOOK: Output: default@hundredorc
-POSTHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k LIMIT 100
+POSTHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k_n7 LIMIT 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n7
 POSTHOOK: Output: default@hundredorc
-POSTHOOK: Lineage: hundredorc.b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: hundredorc.bin SIMPLE [(over1k)over1k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: hundredorc.bo SIMPLE [(over1k)over1k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: hundredorc.d SIMPLE [(over1k)over1k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: hundredorc.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: hundredorc.f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: hundredorc.i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: hundredorc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: hundredorc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: hundredorc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: hundredorc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: hundredorc.b SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: hundredorc.bin SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: hundredorc.bo SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: hundredorc.d SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: hundredorc.dec SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: hundredorc.f SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: hundredorc.i SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: hundredorc.s SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: hundredorc.si SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: hundredorc.t SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: hundredorc.ts SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:ts, type:timestamp, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT sum(hash(*)) k
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
@@ -126,6 +126,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: bin is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: bin is not null (type: boolean)
@@ -144,6 +145,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: bin is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -170,7 +172,7 @@ STAGE PLANS:
                     1 _col10 (type: binary)
                   Map Join Vectorization:
                       bigTableKeyExpressions: col 10:binary
-                      bigTableValueExpressions: col 0:tinyint, col 1:smallint, col 2:int, col 3:bigint, col 4:float, col 5:double, col 6:boolean, col 7:string, col 8:timestamp, col 9:decimal(4,2), col 10:binary
+                      bigTableValueExpressions: col 0:tinyint, col 1:smallint, col 2:int, col 3:bigint, col 4:float, col 5:double, col 6:boolean, col 7:string, col 8:timestamp, ConvertDecimal64ToDecimal(col 9:decimal(4,2)/DECIMAL_64) -> 12:decimal(4,2), col 10:binary
                       className: VectorMapJoinOperator
                       native: false
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
@@ -211,8 +213,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: true
@@ -296,7 +298,7 @@ order by k
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hundredorc
 #### A masked pattern was here ####
--27832781952
+-8303557760
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(*), bin
 FROM hundredorc
@@ -364,8 +366,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -509,6 +511,7 @@ STAGE PLANS:
         $hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: i is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: i is not null (type: boolean)
@@ -527,6 +530,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: i is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -582,8 +586,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

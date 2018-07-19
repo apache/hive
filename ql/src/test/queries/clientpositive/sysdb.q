@@ -1,10 +1,14 @@
+--! qt:dataset:alltypesorc
 set hive.strict.checks.cartesian.product=false;
 
 set hive.compute.query.using.stats=false;
 
 set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 set hive.cbo.enable=false;
+
+-- SORT_QUERY_RESULTS
 
 create table src_buck (key int, value string) clustered by(value) into 2 buckets;
 
@@ -24,7 +28,7 @@ CREATE TABLE moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint,
 
 show grant user hive_test_user;
 
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.0.0.hive.sql;
+source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.0.hive.sql;
 
 use sys;
 
@@ -42,10 +46,6 @@ select grantor, principal_name from db_privs order by grantor, principal_name li
 
 select grantor, principal_name from global_privs order by grantor, principal_name limit 5;
 
-select index_name, index_handler_class from idxs order by index_name limit 5;
-
-select param_key, param_value from index_params order by param_key, param_value limit 5;
-
 select part_name from partitions order by part_name limit 5;
 
 select pkey_name, pkey_type from partition_keys order by pkey_name limit 5;
@@ -61,6 +61,9 @@ select grantor, principal_name from part_privs order by grantor, principal_name 
 select role_name from roles order by role_name limit 5;
 
 select principal_name, grantor from role_map order by principal_name, grantor limit 5;
+
+explain vectorization detail
+select count(*) from sds;
 
 select count(*) from sds;
 

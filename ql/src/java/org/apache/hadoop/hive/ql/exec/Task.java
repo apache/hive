@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -67,7 +68,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected static transient Logger LOG = LoggerFactory.getLogger(Task.class);
   protected int taskTag;
   private boolean isLocalMode =false;
-  private boolean retryCmdWhenFail = false;
 
   public static final int NO_TAG = 0;
   public static final int COMMON_JOIN = 1;
@@ -579,14 +579,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return false;
   }
 
-  public boolean ifRetryCmdWhenFail() {
-    return retryCmdWhenFail;
-  }
-
-  public void setRetryCmdWhenFail(boolean retryCmdWhenFail) {
-    this.retryCmdWhenFail = retryCmdWhenFail;
-  }
-
   public QueryPlan getQueryPlan() {
     return queryPlan;
   }
@@ -610,7 +602,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public void shutdown() {
   }
 
-  Throwable getException() {
+  public Throwable getException() {
     return exception;
   }
 
@@ -653,4 +645,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return queryState;
   }
 
+  public HiveTxnManager getTxnMgr() {
+    return driverContext.getCtx().getHiveTxnManager();
+  }
 }

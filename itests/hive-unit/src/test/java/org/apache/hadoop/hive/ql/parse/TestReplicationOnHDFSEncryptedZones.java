@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 public class TestReplicationOnHDFSEncryptedZones {
   private static String jksFile = System.getProperty("java.io.tmpdir") + "/test.jks";
@@ -83,7 +84,8 @@ public class TestReplicationOnHDFSEncryptedZones {
   public void setup() throws Throwable {
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
-    primary.run("create database " + primaryDbName);
+    primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')");
   }
 
   @Test
@@ -94,6 +96,8 @@ public class TestReplicationOnHDFSEncryptedZones {
         new HashMap<String, String>() {{
           put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
           put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
+          put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
+                  UserGroupInformation.getCurrentUser().getUserName());
         }}, "test_key123");
 
     WarehouseInstance.Tuple tuple =
@@ -105,7 +109,8 @@ public class TestReplicationOnHDFSEncryptedZones {
 
     replica
         .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation
-            + "' with('hive.repl.add.raw.reserved.namespace'='true')")
+                + "' with('hive.repl.add.raw.reserved.namespace'='true', "
+                + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='')")
         .run("use " + replicatedDbName)
         .run("repl status " + replicatedDbName)
         .verifyResult(tuple.lastReplicationId)

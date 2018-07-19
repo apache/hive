@@ -28,6 +28,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: li
+                  filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -69,6 +70,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -129,6 +131,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: l_partkey is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -300,6 +303,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: li
+                  filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -342,6 +346,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -403,6 +408,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: l_partkey is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

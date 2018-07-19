@@ -15,8 +15,8 @@ INSERT INTO TABLE nonskewtable VALUES ("1", "val_1");
 INSERT INTO TABLE nonskewtable VALUES ("2", "val_2");
 
 EXPLAIN
-CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key;
-CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key;
+CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key;
+CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key;
 
-SELECT * FROM result;
+SELECT * FROM result_n1;
 

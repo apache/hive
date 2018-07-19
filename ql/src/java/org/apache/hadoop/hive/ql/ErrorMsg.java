@@ -62,7 +62,6 @@ public enum ErrorMsg {
   //========================== 10000 range starts here ========================//
   INVALID_TABLE(10001, "Table not found", "42S02"),
   INVALID_COLUMN(10002, "Invalid column reference"),
-  INVALID_INDEX(10003, "Invalid index"),
   INVALID_TABLE_OR_COLUMN(10004, "Invalid table alias or column reference"),
   AMBIGUOUS_TABLE_OR_COLUMN(10005, "Ambiguous table alias or column reference"),
   INVALID_PARTITION(10006, "Partition not found"),
@@ -200,8 +199,8 @@ public enum ErrorMsg {
   NEED_TABLE_SPECIFICATION(10117, "Table name could be determined; It should be specified "),
   PARTITION_EXISTS(10118, "Partition already exists"),
   TABLE_DATA_EXISTS(10119, "Table exists and contains data files"),
-  INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the import spec. "),
-  EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table. "),
+  INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the Export/Import spec. "),
+  EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table."),
   INSERT_INTO_BUCKETIZED_TABLE(10122, "Bucketized tables do not support INSERT INTO:"),
   PARTSPEC_DIFFER_FROM_SCHEMA(10125, "Partition columns in partition specification are "
       + "not the same as that defined in the table schema. "
@@ -239,7 +238,6 @@ public enum ErrorMsg {
 
   INVALID_JDO_FILTER_EXPRESSION(10143, "Invalid expression for JDO filter"),
 
-  SHOW_CREATETABLE_INDEX(10144, "SHOW CREATE TABLE does not support tables of type INDEX_TABLE."),
   ALTER_BUCKETNUM_NONBUCKETIZED_TBL(10145, "Table is not bucketized."),
 
   TRUNCATE_FOR_NON_MANAGED_TABLE(10146, "Cannot truncate non-managed table {0}.", true),
@@ -325,8 +323,9 @@ public enum ErrorMsg {
             " A subpartition value is specified without specifying the parent partition's value"),
   TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
             " cannot be exchanged."),
+  EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES(10236, "Exchange partition is not allowed with "
+          + "transactional tables. Alternatively, shall use load data or insert overwrite to move partitions."),
 
-  TRUNCATE_COLUMN_INDEXED_TABLE(10236, "Can not truncate columns from table with indexes"),
   TRUNCATE_COLUMN_NOT_RC(10237, "Only RCFileFormat supports column truncation."),
   TRUNCATE_COLUMN_ARCHIVED(10238, "Column truncation cannot be performed on archived partitions."),
   TRUNCATE_BUCKETED_COLUMN(10239,
@@ -426,7 +425,6 @@ public enum ErrorMsg {
       "Grouping sets aggregations (with rollups or cubes) are not allowed when " +
       "HIVEMULTIGROUPBYSINGLEREDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
   CANNOT_RETRIEVE_TABLE_METADATA(10316, "Error while retrieving table metadata"),
-  CANNOT_DROP_INDEX(10317, "Error while dropping index"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),
   IO_ERROR(10320, "Error while performing IO operation "),
@@ -456,6 +454,17 @@ public enum ErrorMsg {
   HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY(10409, "Expression in GROUPING function not present in GROUP BY"),
   ALTER_TABLE_NON_PARTITIONED_TABLE_CASCADE_NOT_SUPPORTED(10410,
       "Alter table with non-partitioned table does not support cascade"),
+  HIVE_GROUPING_SETS_SIZE_LIMIT(10411,
+    "Grouping sets size cannot be greater than 64"),
+  REBUILD_NO_MATERIALIZED_VIEW(10412, "Rebuild command only valid for materialized views"),
+  LOAD_DATA_ACID_FILE(10413,
+      "\"{0}\" was created created by Acid write - it cannot be loaded into anther Acid table",
+      true),
+  ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, "Attempt to do update or delete on table {0} that is " +
+    "insert-only transactional", true),
+  LOAD_DATA_LAUNCH_JOB_IO_ERROR(10415, "Encountered I/O error while parsing rewritten load data into insert query"),
+  LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
+
 
   //========================== 20000 range starts here ========================//
 
@@ -486,9 +495,19 @@ public enum ErrorMsg {
   FILE_NOT_FOUND(20012, "File not found: {0}", "64000", true),
   WRONG_FILE_FORMAT(20013, "Wrong file format. Please check the file's format.", "64000", true),
 
-  SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark job is submitted to an invalid queue: {0}."
-      + " Please fix and try again.", true),
+  SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark app for session {0} was submitted to an invalid" +
+          " queue: {1}. Please fix and try again.", true),
   SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
+
+  //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
+  //method in HiveMetaStoreClient
+  REPL_EVENTS_MISSING_IN_METASTORE(20016, "Notification events are missing in the meta store."),
+  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20017, "Load path {0} not valid as target database is bootstrapped " +
+          "from some other path : {1}."),
+  REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20018, "File is missing from both source and cm path."),
+  REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
+  REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,
+          "Source of replication (repl.source.for) is not set in the database properties."),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
@@ -555,32 +574,36 @@ public enum ErrorMsg {
 
   SPARK_GET_JOB_INFO_TIMEOUT(30036,
       "Spark job timed out after {0} seconds while getting job info", true),
-  SPARK_JOB_MONITOR_TIMEOUT(30037, "Job hasn't been submitted after {0}s." +
+  SPARK_JOB_MONITOR_TIMEOUT(30037, "Job hasn''t been submitted after {0}s." +
       " Aborting it.\nPossible reasons include network issues, " +
       "errors in remote driver or the cluster has no available resources, etc.\n" +
-      "Please check YARN or Spark driver's logs for further information.\n" +
+      "Please check YARN or Spark driver''s logs for further information.\n" +
       "The timeout is controlled by " + HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT + ".", true),
 
   // Various errors when creating Spark client
   SPARK_CREATE_CLIENT_TIMEOUT(30038,
       "Timed out while creating Spark client for session {0}.", true),
   SPARK_CREATE_CLIENT_QUEUE_FULL(30039,
-      "Failed to create Spark client because job queue is full: {0}.", true),
+      "Failed to create Spark client for session {0} because job queue is full: {1}.", true),
   SPARK_CREATE_CLIENT_INTERRUPTED(30040,
       "Interrupted while creating Spark client for session {0}", true),
   SPARK_CREATE_CLIENT_ERROR(30041,
-      "Failed to create Spark client for Spark session {0}", true),
+      "Failed to create Spark client for Spark session {0}: {1}", true),
   SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST(30042,
-      "Failed to create Spark client due to invalid resource request: {0}", true),
+      "Failed to create Spark client for session {0} due to invalid resource request: {1}", true),
   SPARK_CREATE_CLIENT_CLOSED_SESSION(30043,
       "Cannot create Spark client on a closed session {0}", true),
 
   SPARK_JOB_INTERRUPTED(30044, "Spark job was interrupted while executing"),
+  SPARK_GET_JOB_INFO_INTERRUPTED(30045, "Spark job was interrupted while getting job info"),
+  SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}"),
+
+  REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired."),
 
   //========================== 40000 range starts here ========================//
 
-  SPARK_JOB_RUNTIME_ERROR(40001,
-      "Spark job failed during runtime. Please check stacktrace for the root cause.")
+  SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
+  SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true)
   ;
 
   private int errorCode;

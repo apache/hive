@@ -63,7 +63,7 @@ public class WriteEntity extends Entity implements Serializable {
 
   public WriteEntity(Database database, WriteType type) {
     super(database, true);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   /**
@@ -74,12 +74,12 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public WriteEntity(Table t, WriteType type) {
     super(t, true);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   public WriteEntity(Table t, WriteType type, boolean complete) {
     super(t, complete);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   /**
@@ -104,12 +104,12 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public WriteEntity(Partition p, WriteType type) {
     super(p, true);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   public WriteEntity(DummyPartition p, WriteType type, boolean complete) {
     super(p, complete);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   /**
@@ -161,6 +161,9 @@ public class WriteEntity extends Entity implements Serializable {
    * @param type new operation type
    */
   public void setWriteType(WriteType type) {
+    setWriteTypeInternal(type);
+  }
+  private void setWriteTypeInternal(WriteType type) {
     writeType = type;
   }
 

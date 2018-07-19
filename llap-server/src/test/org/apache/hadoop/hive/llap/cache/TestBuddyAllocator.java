@@ -66,16 +66,7 @@ public class TestBuddyAllocator {
     }
 
     @Override
-    public String debugDumpForOom() {
-      return "";
-    }
-
-    @Override
     public void updateMaxSize(long maxSize) {
-    }
-
-    @Override
-    public void debugDumpShort(StringBuilder sb) {
     }
   }
 

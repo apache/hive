@@ -413,7 +413,7 @@ public class TestOperators extends TestCase {
         "inputformat 'org.apache.hadoop.hive.ql.exec.TestOperators$CustomInFmt' " +
         "outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' " +
         "tblproperties ('myprop1'='val1', 'myprop2' = 'val2')";
-    Driver driver = new Driver();
+    Driver driver = new Driver(conf);
     CommandProcessorResponse response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
     List<Object> result = new ArrayList<Object>();
@@ -452,6 +452,11 @@ public class TestOperators extends TestCase {
     assertEquals(defaultNoConditionalTaskSize, convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize,
       hiveConf, llapInfo).getAdjustedNoConditionalTaskSize());
     hiveConf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "llap");
+
+    if ("llap".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+      llapInfo = LlapClusterStateForCompile.getClusterInfo(hiveConf);
+      llapInfo.initClusterInfo();
+    }
 
     // default executors is 4, max slots is 3. so 3 * 20% of noconditional task size will be oversubscribed
     hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR.varname, "0.2");

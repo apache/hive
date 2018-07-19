@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.optimize.listbucketing=true;
 set mapred.input.dir.recursive=true;	
@@ -5,7 +6,6 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false; 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
 
 -- List bucketing query logic test case. We simulate the directory structure by DML here. 
 -- Test condition: 

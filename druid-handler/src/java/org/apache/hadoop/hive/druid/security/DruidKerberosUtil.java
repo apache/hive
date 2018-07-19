@@ -75,7 +75,7 @@ public class DruidKerberosUtil
       byte[] outToken = gssContext.initSecContext(inToken, 0, inToken.length);
       gssContext.dispose();
       // Base64 encoded and stringified token for server
-      log.info("Got valid challenge for host {}", serverName);
+      log.debug("Got valid challenge for host {}", serverName);
       return new String(base64codec.encode(outToken), StandardCharsets.US_ASCII);
     }
     catch (GSSException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
@@ -96,10 +96,11 @@ public class DruidKerberosUtil
     boolean isSSL = uri.getScheme().equals("https");
     List<HttpCookie> cookies = cookieStore.getCookies();
 
-    for (HttpCookie c : cookies) {
+    for (int i = 0; i < cookies.size(); i++) {
       // If this is a secured cookie and the current connection is non-secured,
       // then, skip this cookie. We need to skip this cookie because, the cookie
       // replay will not be transmitted to the server.
+      HttpCookie c = cookies.get(i);
       if (c.getSecure() && !isSSL) {
         continue;
       }

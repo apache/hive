@@ -10,97 +10,97 @@ POSTHOOK: type: DESCFUNCTION
 replicate_rows(n, cols...) - turns 1 row into n rows
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDTFReplicateRows
 Function type:BUILTIN
-PREHOOK: query: create table t (x bigint, y string, z int)
+PREHOOK: query: create table t_n13 (x bigint, y string, z int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (x bigint, y string, z int)
+PREHOOK: Output: default@t_n13
+POSTHOOK: query: create table t_n13 (x bigint, y string, z int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into table t values (3,'2',0),(2,'3',1),(0,'2',2),(-1,'k',3)
+POSTHOOK: Output: default@t_n13
+PREHOOK: query: insert into table t_n13 values (3,'2',0),(2,'3',1),(0,'2',2),(-1,'k',3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into table t values (3,'2',0),(2,'3',1),(0,'2',2),(-1,'k',3)
+PREHOOK: Output: default@t_n13
+POSTHOOK: query: insert into table t_n13 values (3,'2',0),(2,'3',1),(0,'2',2),(-1,'k',3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-POSTHOOK: Lineage: t.z SCRIPT []
-PREHOOK: query: SELECT replicate_rows(x,y) FROM t
+POSTHOOK: Output: default@t_n13
+POSTHOOK: Lineage: t_n13.x SCRIPT []
+POSTHOOK: Lineage: t_n13.y SCRIPT []
+POSTHOOK: Lineage: t_n13.z SCRIPT []
+PREHOOK: query: SELECT replicate_rows(x,y) FROM t_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT replicate_rows(x,y) FROM t
+POSTHOOK: query: SELECT replicate_rows(x,y) FROM t_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n13
 #### A masked pattern was here ####
 3	2
 3	2
 3	2
 2	3
 2	3
-PREHOOK: query: SELECT replicate_rows(x,y,y) FROM t
+PREHOOK: query: SELECT replicate_rows(x,y,y) FROM t_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT replicate_rows(x,y,y) FROM t
+POSTHOOK: query: SELECT replicate_rows(x,y,y) FROM t_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n13
 #### A masked pattern was here ####
 3	2	2
 3	2	2
 3	2	2
 2	3	3
 2	3	3
-PREHOOK: query: SELECT replicate_rows(x,y,y,y,z) FROM t
+PREHOOK: query: SELECT replicate_rows(x,y,y,y,z) FROM t_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT replicate_rows(x,y,y,y,z) FROM t
+POSTHOOK: query: SELECT replicate_rows(x,y,y,y,z) FROM t_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n13
 #### A masked pattern was here ####
 3	2	2	2	0
 3	2	2	2	0
 3	2	2	2	0
 2	3	3	3	1
 2	3	3	3	1
-PREHOOK: query: select y,x from (SELECT replicate_rows(x,y) as (x,y) FROM t)subq
+PREHOOK: query: select y,x from (SELECT replicate_rows(x,y) as (x,y) FROM t_n13)subq
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n13
 #### A masked pattern was here ####
-POSTHOOK: query: select y,x from (SELECT replicate_rows(x,y) as (x,y) FROM t)subq
+POSTHOOK: query: select y,x from (SELECT replicate_rows(x,y) as (x,y) FROM t_n13)subq
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n13
 #### A masked pattern was here ####
 2	3
 2	3
 2	3
 3	2
 3	2
-PREHOOK: query: select z,y,x from(SELECT replicate_rows(x,y,y) as (z,y,x) FROM t)subq
+PREHOOK: query: select z,y,x from(SELECT replicate_rows(x,y,y) as (z,y,x) FROM t_n13)subq
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n13
 #### A masked pattern was here ####
-POSTHOOK: query: select z,y,x from(SELECT replicate_rows(x,y,y) as (z,y,x) FROM t)subq
+POSTHOOK: query: select z,y,x from(SELECT replicate_rows(x,y,y) as (z,y,x) FROM t_n13)subq
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n13
 #### A masked pattern was here ####
 3	2	2
 3	2	2
 3	2	2
 2	3	3
 2	3	3
-PREHOOK: query: SELECT replicate_rows(x,concat(y,'...'),y) FROM t
+PREHOOK: query: SELECT replicate_rows(x,concat(y,'...'),y) FROM t_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT replicate_rows(x,concat(y,'...'),y) FROM t
+POSTHOOK: query: SELECT replicate_rows(x,concat(y,'...'),y) FROM t_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n13
 #### A masked pattern was here ####
 3	2...	2
 3	2...	2

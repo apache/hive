@@ -25,8 +25,10 @@ import org.apache.hadoop.hive.llap.daemon.impl.AMReporter;
 import org.apache.hadoop.hive.llap.daemon.impl.QueryIdentifier;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -44,6 +46,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@RunWith(RetryTestRunner.class)
 public class TestAMReporter {
   @Test(timeout = 5000)
   public void testMultipleAM() throws InterruptedException {
@@ -69,9 +72,9 @@ public class TestAMReporter {
     String umbilicalUser = "user";
     QueryIdentifier queryId = new QueryIdentifier("app", 0);
     amReporter.registerTask(am1Location, am1Port, umbilicalUser, null, queryId,
-      mock(TezTaskAttemptID.class));
+      mock(TezTaskAttemptID.class), false);
     amReporter.registerTask(am2Location, am2Port, umbilicalUser, null, queryId,
-      mock(TezTaskAttemptID.class));
+      mock(TezTaskAttemptID.class), false);
 
     Thread.currentThread().sleep(2000);
     // verify both am get node heartbeat
@@ -97,7 +100,8 @@ public class TestAMReporter {
           return null;
         }
       }).when(umbilical).nodeHeartbeat(any(Text.class), any(Text.class), anyInt(),
-        any(LlapTaskUmbilicalProtocol.TezAttemptArray.class));
+        any(LlapTaskUmbilicalProtocol.TezAttemptArray.class),
+        any(LlapTaskUmbilicalProtocol.BooleanArray.class));
       return umbilical;
     }
   }

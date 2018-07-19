@@ -450,9 +450,11 @@ isCondition
     : KW_NULL -> Identifier["isnull"]
     | KW_TRUE -> Identifier["istrue"]
     | KW_FALSE -> Identifier["isfalse"]
+    | KW_UNKNOWN -> Identifier["isnull"]
     | KW_NOT KW_NULL -> Identifier["isnotnull"]
     | KW_NOT KW_TRUE -> Identifier["isnottrue"]
     | KW_NOT KW_FALSE -> Identifier["isnotfalse"]
+    | KW_NOT KW_UNKNOWN -> Identifier["isnotnull"]
     ;
 
 precedenceUnaryPrefixExpression
@@ -663,7 +665,7 @@ precedenceOrExpression
 
 booleanValue
     :
-    KW_TRUE^ | KW_FALSE^
+    KW_TRUE^ | KW_FALSE^ | KW_UNKNOWN^
     ;
 
 booleanValueTok
@@ -719,6 +721,7 @@ sysFuncNames
     | KW_INT
     | KW_BIGINT
     | KW_FLOAT
+    | KW_REAL
     | KW_DOUBLE
     | KW_BOOLEAN
     | KW_STRING
@@ -791,7 +794,7 @@ principalIdentifier
 nonReserved
     :
     KW_ABORT | KW_ADD | KW_ADMIN | KW_AFTER | KW_ANALYZE | KW_ARCHIVE | KW_ASC | KW_BEFORE | KW_BUCKET | KW_BUCKETS
-    | KW_CASCADE | KW_CHANGE | KW_CLUSTER | KW_CLUSTERED | KW_CLUSTERSTATUS | KW_COLLECTION | KW_COLUMNS
+    | KW_CASCADE | KW_CHANGE | KW_CHECK | KW_CLUSTER | KW_CLUSTERED | KW_CLUSTERSTATUS | KW_COLLECTION | KW_COLUMNS
     | KW_COMMENT | KW_COMPACT | KW_COMPACTIONS | KW_COMPUTE | KW_CONCATENATE | KW_CONTINUE | KW_DATA | KW_DAY
     | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY 
     | KW_DESC | KW_DIRECTORIES | KW_DIRECTORY | KW_DISABLE | KW_DISTRIBUTE | KW_DOW | KW_ELEM_TYPE 
@@ -832,13 +835,15 @@ nonReserved
     | KW_ZONE
     | KW_TIMESTAMPTZ
     | KW_DEFAULT
+    | KW_REOPTIMIZATION
     | KW_RESOURCE | KW_PLAN | KW_PLANS | KW_QUERY_PARALLELISM | KW_ACTIVATE | KW_MOVE | KW_DO
     | KW_POOL | KW_ALLOC_FRACTION | KW_SCHEDULING_POLICY | KW_PATH | KW_MAPPING | KW_WORKLOAD | KW_MANAGEMENT | KW_ACTIVE | KW_UNMANAGED
+    | KW_UNKNOWN
 
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.
 sql11ReservedKeywordsUsedAsFunctionName
     :
-    KW_IF | KW_ARRAY | KW_MAP | KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_GROUPING | KW_INT | KW_SMALLINT | KW_TIMESTAMP
+    KW_IF | KW_ARRAY | KW_MAP | KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_REAL | KW_GROUPING | KW_INT | KW_SMALLINT | KW_TIMESTAMP
     ;

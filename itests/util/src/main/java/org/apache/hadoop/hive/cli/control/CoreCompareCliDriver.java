@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Strings;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -33,6 +32,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import com.google.common.base.Strings;
 public class CoreCompareCliDriver extends CliAdapter{
 
   private static QTestUtil qt;
@@ -55,6 +56,7 @@ public class CoreCompareCliDriver extends CliAdapter{
       hiveConfDir, hadoopVer, initScript, cleanupScript, false);
 
       // do a one time initialization
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
 
@@ -128,16 +130,15 @@ public class CoreCompareCliDriver extends CliAdapter{
         qt.addFile(new File(queryDirectory, versionFile), true);
       }
 
-      if (qt.shouldBeSkipped(fname)) {
-        return;
-      }
-
       int ecode = 0;
+
+      qt.cliInit(new File(fpath));
+
       List<String> outputs = new ArrayList<>(versionFiles.size());
       for (String versionFile : versionFiles) {
         // 1 for "_" after tname; 3 for ".qv" at the end. Version is in between.
         String versionStr = versionFile.substring(tname.length() + 1, versionFile.length() - 3);
-        outputs.add(qt.cliInit(tname + "." + versionStr, false));
+        outputs.add(qt.cliInit(new File(queryDirectory, tname + "." + versionStr)));
         // TODO: will this work?
         ecode = qt.executeClient(versionFile, fname);
         if (ecode != 0) {

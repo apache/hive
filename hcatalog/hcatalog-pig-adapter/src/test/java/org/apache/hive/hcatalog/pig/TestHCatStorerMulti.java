@@ -30,7 +30,6 @@ import java.util.Set;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
@@ -38,8 +37,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.Pair;
-
-import org.apache.pig.ExecType;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.PigServer;
 
 import org.junit.After;
@@ -79,15 +77,15 @@ public class TestHCatStorerMulti {
     this.storageFormat = storageFormat;
   }
 
-  private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
+  private void dropTable(String tablename) throws Exception {
     driver.run("drop table " + tablename);
   }
 
-  private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema, String partitionedBy) throws Exception {
     AbstractHCatLoaderTest.createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
-  private void createTable(String tablename, String schema) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema) throws Exception {
     createTable(tablename, schema, null);
   }
 
@@ -124,7 +122,7 @@ public class TestHCatStorerMulti {
 
     populateBasicFile();
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
     server.registerQuery("store A into '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();");
@@ -144,7 +142,7 @@ public class TestHCatStorerMulti {
 
     populateBasicFile();
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
 
@@ -169,7 +167,7 @@ public class TestHCatStorerMulti {
 
     populateBasicFile();
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
     server.registerQuery("store A into '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();");
@@ -212,7 +210,7 @@ public class TestHCatStorerMulti {
     writer.close();
   }
 
-  private void cleanup() throws IOException, CommandNeedRetryException {
+  private void cleanup() throws Exception {
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);

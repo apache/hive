@@ -74,4 +74,5 @@ public class LateralViewJoinDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

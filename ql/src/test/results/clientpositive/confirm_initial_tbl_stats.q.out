@@ -19,7 +19,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -105,7 +105,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	307                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	6.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -134,7 +134,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	430                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	431                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	6.802               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -163,7 +163,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	307                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	6.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -199,7 +199,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -237,7 +237,7 @@ data_type           	tinyint
 min                 	-64                 	 	 	 	 	 	 	 	 	 	 
 max                 	62                  	 	 	 	 	 	 	 	 	 	 
 num_nulls           	3115                	 	 	 	 	 	 	 	 	 	 
-distinct_count      	127                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	130                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -272,8 +272,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alltypesorc
 col_name            	ctimestamp1         	 	 	 	 	 	 	 	 	 	 
 data_type           	timestamp           	 	 	 	 	 	 	 	 	 	 
-min                 	-30                 	 	 	 	 	 	 	 	 	 	 
-max                 	31                  	 	 	 	 	 	 	 	 	 	 
+min                 	-28830              	 	 	 	 	 	 	 	 	 	 
+max                 	-28769              	 	 	 	 	 	 	 	 	 	 
 num_nulls           	3115                	 	 	 	 	 	 	 	 	 	 
 distinct_count      	35                  	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 

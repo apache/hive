@@ -95,7 +95,7 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("bonecp.test");
     addToExpectedRestrictedMap("hive.druid.broker.address.default");
     addToExpectedRestrictedMap("hive.druid.coordinator.address.default");
-    addToExpectedRestrictedMap("hikari.test");
+    addToExpectedRestrictedMap("hikaricp.test");
     addToExpectedRestrictedMap("hadoop.bin.path");
     addToExpectedRestrictedMap("yarn.bin.path");
     addToExpectedRestrictedMap("hive.spark.client.connect.timeout");
@@ -106,6 +106,8 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("_hive.tmp_table_space");
     addToExpectedRestrictedMap("_hive.hdfs.session.path");
     addToExpectedRestrictedMap("hive.spark.client.rpc.server.address");
+    addToExpectedRestrictedMap("spark.home");
+    addToExpectedRestrictedMap("hive.privilege.synchronizer.interval");
   }
 
   @AfterClass

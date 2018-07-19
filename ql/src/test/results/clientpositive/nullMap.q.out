@@ -1,4 +1,4 @@
-PREHOOK: query: create table map_txt (
+PREHOOK: query: create table map_txt_n0 (
   id int,
   content map<int,string>
 )
@@ -7,8 +7,8 @@ null defined as '\\N'
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@map_txt
-POSTHOOK: query: create table map_txt (
+PREHOOK: Output: default@map_txt_n0
+POSTHOOK: query: create table map_txt_n0 (
   id int,
   content map<int,string>
 )
@@ -17,30 +17,30 @@ null defined as '\\N'
 stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@map_txt
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/mapNull.txt' INTO TABLE map_txt
+POSTHOOK: Output: default@map_txt_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/mapNull.txt' INTO TABLE map_txt_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@map_txt
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/mapNull.txt' INTO TABLE map_txt
+PREHOOK: Output: default@map_txt_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/mapNull.txt' INTO TABLE map_txt_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@map_txt
-PREHOOK: query: select * from map_txt
+POSTHOOK: Output: default@map_txt_n0
+PREHOOK: query: select * from map_txt_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@map_txt
+PREHOOK: Input: default@map_txt_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from map_txt
+POSTHOOK: query: select * from map_txt_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@map_txt
+POSTHOOK: Input: default@map_txt_n0
 #### A masked pattern was here ####
 1	NULL
-PREHOOK: query: select id, map_keys(content) from map_txt
+PREHOOK: query: select id, map_keys(content) from map_txt_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@map_txt
+PREHOOK: Input: default@map_txt_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select id, map_keys(content) from map_txt
+POSTHOOK: query: select id, map_keys(content) from map_txt_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@map_txt
+POSTHOOK: Input: default@map_txt_n0
 #### A masked pattern was here ####
 1	[]

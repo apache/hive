@@ -17,12 +17,25 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.ConstraintEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
@@ -50,6 +63,7 @@ public class LoadConstraint {
   private final ConstraintEvent event;
   private final String dbNameToLoadIn;
   private final TaskTracker tracker;
+  private final MessageDeserializer deserializer = MessageFactory.getInstance().getDeserializer();
 
   public LoadConstraint(Context context, ConstraintEvent event, String dbNameToLoadIn,
       TaskTracker existingTracker) {
@@ -73,7 +87,7 @@ public class LoadConstraint {
       String nnsString = json.getString("nns");
       List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
 
-      if (pksString != null && !pksString.isEmpty()) {
+      if (pksString != null && !pksString.isEmpty() && !isPrimaryKeysAlreadyLoaded(pksString)) {
         AddPrimaryKeyHandler pkHandler = new AddPrimaryKeyHandler();
         DumpMetaData pkDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_PRIMARYKEY, Long.MAX_VALUE, Long.MAX_VALUE, null,
             context.hiveConf);
@@ -81,10 +95,10 @@ public class LoadConstraint {
         tasks.addAll(pkHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, null, fromPath.toString(), null, pkDumpMetaData, context.hiveConf,
-                context.hiveDb, null, LOG)));
+                context.hiveDb, context.nestedContext, LOG)));
       }
 
-      if (uksString != null && !uksString.isEmpty()) {
+      if (uksString != null && !uksString.isEmpty() && !isUniqueConstraintsAlreadyLoaded(uksString)) {
         AddUniqueConstraintHandler ukHandler = new AddUniqueConstraintHandler();
         DumpMetaData ukDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_UNIQUECONSTRAINT, Long.MAX_VALUE, Long.MAX_VALUE, null,
             context.hiveConf);
@@ -92,10 +106,10 @@ public class LoadConstraint {
         tasks.addAll(ukHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, null, fromPath.toString(), null, ukDumpMetaData, context.hiveConf,
-                context.hiveDb, null, LOG)));
+                context.hiveDb, context.nestedContext, LOG)));
       }
 
-      if (nnsString != null && !nnsString.isEmpty()) {
+      if (nnsString != null && !nnsString.isEmpty() && !isNotNullConstraintsAlreadyLoaded(nnsString)) {
         AddNotNullConstraintHandler nnHandler = new AddNotNullConstraintHandler();
         DumpMetaData nnDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_NOTNULLCONSTRAINT, Long.MAX_VALUE, Long.MAX_VALUE, null,
             context.hiveConf);
@@ -103,10 +117,10 @@ public class LoadConstraint {
         tasks.addAll(nnHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, null, fromPath.toString(), null, nnDumpMetaData, context.hiveConf,
-                context.hiveDb, null, LOG)));
+                context.hiveDb, context.nestedContext, LOG)));
       }
 
-      if (fksString != null && !fksString.isEmpty()) {
+      if (fksString != null && !fksString.isEmpty() && !isForeignKeysAlreadyLoaded(fksString)) {
         AddForeignKeyHandler fkHandler = new AddForeignKeyHandler();
         DumpMetaData fkDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_FOREIGNKEY, Long.MAX_VALUE, Long.MAX_VALUE, null,
             context.hiveConf);
@@ -114,7 +128,7 @@ public class LoadConstraint {
         tasks.addAll(fkHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, null, fromPath.toString(), null, fkDumpMetaData, context.hiveConf,
-                context.hiveDb, null, LOG)));
+                context.hiveDb, context.nestedContext, LOG)));
       }
 
       tasks.forEach(tracker::addTask);
@@ -122,6 +136,74 @@ public class LoadConstraint {
     } catch (Exception e) {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
+  }
+
+  private boolean isPrimaryKeysAlreadyLoaded(String pksMsgString) throws Exception {
+    AddPrimaryKeyMessage msg = deserializer.getAddPrimaryKeyMessage(pksMsgString);
+    List<SQLPrimaryKey> pksInMsg = msg.getPrimaryKeys();
+    if (pksInMsg.isEmpty()) {
+      return true;
+    }
+
+    String dbName = StringUtils.isBlank(dbNameToLoadIn) ? pksInMsg.get(0).getTable_db() : dbNameToLoadIn;
+    List<SQLPrimaryKey> pks;
+    try {
+      pks = context.hiveDb.getPrimaryKeyList(dbName, pksInMsg.get(0).getTable_name());
+    } catch (NoSuchObjectException e) {
+      return false;
+    }
+    return ((pks != null) && !pks.isEmpty());
+  }
+
+  private boolean isForeignKeysAlreadyLoaded(String fksMsgString) throws Exception {
+    AddForeignKeyMessage msg = deserializer.getAddForeignKeyMessage(fksMsgString);
+    List<SQLForeignKey> fksInMsg = msg.getForeignKeys();
+    if (fksInMsg.isEmpty()) {
+      return true;
+    }
+
+    String dbName = StringUtils.isBlank(dbNameToLoadIn) ? fksInMsg.get(0).getFktable_db() : dbNameToLoadIn;
+    List<SQLForeignKey> fks;
+    try {
+      fks = context.hiveDb.getForeignKeyList(dbName, fksInMsg.get(0).getFktable_name());
+    } catch (NoSuchObjectException e) {
+      return false;
+    }
+    return ((fks != null) && !fks.isEmpty());
+  }
+
+  private boolean isUniqueConstraintsAlreadyLoaded(String uksMsgString) throws Exception {
+    AddUniqueConstraintMessage msg = deserializer.getAddUniqueConstraintMessage(uksMsgString);
+    List<SQLUniqueConstraint> uksInMsg = msg.getUniqueConstraints();
+    if (uksInMsg.isEmpty()) {
+      return true;
+    }
+
+    String dbName = StringUtils.isBlank(dbNameToLoadIn) ? uksInMsg.get(0).getTable_db() : dbNameToLoadIn;
+    List<SQLUniqueConstraint> uks;
+    try {
+      uks = context.hiveDb.getUniqueConstraintList(dbName, uksInMsg.get(0).getTable_name());
+    } catch (NoSuchObjectException e) {
+      return false;
+    }
+    return ((uks != null) && !uks.isEmpty());
+  }
+
+  private boolean isNotNullConstraintsAlreadyLoaded(String nnsMsgString) throws Exception {
+    AddNotNullConstraintMessage msg = deserializer.getAddNotNullConstraintMessage(nnsMsgString);
+    List<SQLNotNullConstraint> nnsInMsg = msg.getNotNullConstraints();
+    if (nnsInMsg.isEmpty()) {
+      return true;
+    }
+
+    String dbName = StringUtils.isBlank(dbNameToLoadIn) ? nnsInMsg.get(0).getTable_db() : dbNameToLoadIn;
+    List<SQLNotNullConstraint> nns;
+    try {
+      nns = context.hiveDb.getNotNullConstraintList(dbName, nnsInMsg.get(0).getTable_name());
+    } catch (NoSuchObjectException e) {
+      return false;
+    }
+    return ((nns != null) && !nns.isEmpty());
   }
 
 }

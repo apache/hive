@@ -47,7 +47,7 @@ POSTHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
 POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).order_amount SCRIPT []
 POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).sales_order_id SCRIPT []
 PREHOOK: query: ANALYZE TABLE ss PARTITION(country,year,month,day) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@ss
 PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
 PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
@@ -58,7 +58,7 @@ PREHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
 PREHOOK: Output: default@ss@country=US/year=2015/month=2/day=1
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE ss PARTITION(country,year,month,day) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@ss
 POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
 POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
@@ -82,6 +82,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: ((country = 'US') and (year = 2015) and (month = 2) and (day = 1)) (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: order_amount (type: float)
@@ -96,6 +97,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -130,9 +132,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: (UDFToDouble((((year * 10000) + (month * 100)) + day)) = 2015010.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
-              predicate: (UDFToDouble((((year * 10000) + (month * 100)) + day)) = 2015010.0) (type: boolean)
+              predicate: (UDFToDouble((((year * 10000) + (month * 100)) + day)) = 2015010.0D) (type: boolean)
               Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: order_amount (type: float)
@@ -147,6 +150,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
                     value expressions: _col0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -181,6 +185,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: (201511.0D = 201511.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: order_amount (type: float)
@@ -195,6 +200,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -229,9 +235,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0) (type: boolean)
+              predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: order_amount (type: float)
@@ -246,6 +253,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -280,9 +288,10 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: ss
+          filterExpr: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)
           Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0) (type: boolean)
+            predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: '1' (type: string)

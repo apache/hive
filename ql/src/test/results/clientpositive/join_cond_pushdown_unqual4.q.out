@@ -1,4 +1,4 @@
-PREHOOK: query: create table part2( 
+PREHOOK: query: create table part2_n4( 
     p2_partkey INT,
     p2_name STRING,
     p2_mfgr STRING,
@@ -11,8 +11,8 @@ PREHOOK: query: create table part2(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part2
-POSTHOOK: query: create table part2( 
+PREHOOK: Output: default@part2_n4
+POSTHOOK: query: create table part2_n4( 
     p2_partkey INT,
     p2_name STRING,
     p2_mfgr STRING,
@@ -25,8 +25,8 @@ POSTHOOK: query: create table part2(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part2
-PREHOOK: query: create table part3( 
+POSTHOOK: Output: default@part2_n4
+PREHOOK: query: create table part3_n1( 
     p3_partkey INT,
     p3_name STRING,
     p3_mfgr STRING,
@@ -39,8 +39,8 @@ PREHOOK: query: create table part3(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part3
-POSTHOOK: query: create table part3( 
+PREHOOK: Output: default@part3_n1
+POSTHOOK: query: create table part3_n1( 
     p3_partkey INT,
     p3_name STRING,
     p3_mfgr STRING,
@@ -53,13 +53,13 @@ POSTHOOK: query: create table part3(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part3
+POSTHOOK: Output: default@part3_n1
 PREHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p1.p_name = p2_name join part p4 
+from part p1 join part2_n4 p2 join part3_n1 p3 on p1.p_name = p2_name join part p4 
 where p2_name = p3_name and p1.p_name = p4.p_name
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p1.p_name = p2_name join part p4 
+from part p1 join part2_n4 p2 join part3_n1 p3 on p1.p_name = p2_name join part p4 
 where p2_name = p3_name and p1.p_name = p4.p_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -72,6 +72,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p2
+            filterExpr: p2_name is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: p2_name is not null (type: boolean)
@@ -88,6 +89,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
           TableScan
             alias: p3
+            filterExpr: p3_name is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: p3_name is not null (type: boolean)
@@ -104,6 +106,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
           TableScan
             alias: p1
+            filterExpr: p_name is not null (type: boolean)
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_name is not null (type: boolean)
@@ -120,6 +123,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
           TableScan
             alias: p4
+            filterExpr: p_name is not null (type: boolean)
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_name is not null (type: boolean)
@@ -166,12 +170,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_name = p1.p_name join part p4 
+from part p1 join part2_n4 p2 join part3_n1 p3 on p2_name = p1.p_name join part p4 
 where p2_name = p3_name and p1.p_partkey = p4.p_partkey 
             and p1.p_partkey = p2_partkey
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_name = p1.p_name join part p4 
+from part p1 join part2_n4 p2 join part3_n1 p3 on p2_name = p1.p_name join part p4 
 where p2_name = p3_name and p1.p_partkey = p4.p_partkey 
             and p1.p_partkey = p2_partkey
 POSTHOOK: type: QUERY
@@ -187,6 +191,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p2
+            filterExpr: (p2_name is not null and p2_partkey is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (p2_name is not null and p2_partkey is not null) (type: boolean)
@@ -203,6 +208,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
           TableScan
             alias: p3
+            filterExpr: p3_name is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: p3_name is not null (type: boolean)
@@ -245,6 +251,7 @@ STAGE PLANS:
               value expressions: _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: int), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: int), _col15 (type: string), _col16 (type: double), _col17 (type: string)
           TableScan
             alias: p1
+            filterExpr: (p_name is not null and p_partkey is not null) (type: boolean)
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (p_name is not null and p_partkey is not null) (type: boolean)
@@ -287,6 +294,7 @@ STAGE PLANS:
               value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: int), _col10 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col14 (type: int), _col15 (type: string), _col16 (type: double), _col17 (type: string), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: int), _col24 (type: string), _col25 (type: double), _col26 (type: string)
           TableScan
             alias: p4
+            filterExpr: p_partkey is not null (type: boolean)
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_partkey is not null (type: boolean)

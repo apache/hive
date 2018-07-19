@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.InputByteBuffer;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -279,7 +279,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     case TIMESTAMP:
       {
         if (tempTimestampBytes == null) {
-          tempTimestampBytes = new byte[TimestampWritable.BINARY_SORTABLE_LENGTH];
+          tempTimestampBytes = new byte[TimestampWritableV2.BINARY_SORTABLE_LENGTH];
         }
         final boolean invert = columnSortOrderIsDesc[fieldIndex];
         for (int i = 0; i < tempTimestampBytes.length; i++) {

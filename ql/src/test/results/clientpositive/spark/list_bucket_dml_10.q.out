@@ -55,6 +55,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                           properties:
                             bucket_count -1
+                            bucketing_version 2
                             column.name.delimiter ,
                             columns key,value
                             columns.comments 
@@ -73,6 +74,7 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src]
             Path -> Partition:
@@ -84,6 +86,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -106,6 +109,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -140,6 +144,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 

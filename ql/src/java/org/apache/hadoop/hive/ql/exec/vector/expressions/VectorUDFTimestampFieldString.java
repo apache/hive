@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.text.ParseException;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 /**
  * Abstract class to return various fields from a String.
@@ -39,7 +40,8 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
   protected final int fieldLength;
   private static final String patternMin = "0000-00-00 00:00:00.000000000";
   private static final String patternMax = "9999-19-99 29:59:59.999999999";
-  protected transient final Calendar calendar = Calendar.getInstance();
+  protected transient final Calendar calendar = Calendar.getInstance(
+      TimeZone.getTimeZone("UTC"));
 
   public VectorUDFTimestampFieldString(int colNum, int outputColumnNum, int fieldStart, int fieldLength) {
     super(outputColumnNum);
@@ -87,7 +89,7 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -106,11 +108,27 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
       return;
     }
 
-    // true for all algebraic UDFs with no state
-    outV.isRepeating = inputCol.isRepeating;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
+
+    if (inputCol.isRepeating) {
+      if (inputCol.noNulls || !inputCol.isNull[0]) {
+        try {
+          outV.isNull[0] = false;
+          outV.vector[0] = getField(inputCol.vector[0], inputCol.start[0], inputCol.length[0]);
+        } catch (ParseException e) {
+          outV.noNulls = false;
+          outV.isNull[0] = true;
+        }
+      } else {
+        outV.isNull[0] = true;
+        outV.noNulls = false;
+      }
+      outV.isRepeating = true;
+      return;
+    }
 
     if (inputCol.noNulls) {
-      outV.noNulls = true;
       if (selectedInUse) {
         for (int j = 0; j < n; j++) {
           int i = sel[j];
@@ -133,11 +151,11 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
           }
         }
       }
-    } else {
+    } else /* there are nulls in the inputColVector */ {
 
-      // Handle case with nulls. Don't do function if the value is null, to save time,
-      // because calling the function can be expensive.
+      // Carefully handle NULLs...
       outV.noNulls = false;
+
       if (selectedInUse) {
         for (int j = 0; j < n; j++) {
           int i = sel[j];

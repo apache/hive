@@ -3,17 +3,17 @@ set hive.mapred.mode=nonstrict;
 
 
 
-create table studenttab10k (age2 int);
-insert into studenttab10k values(1);
+create table studenttab10k_n0 (age2 int);
+insert into studenttab10k_n0 values(1);
 
 create table student_acid (age int, grade int)
  clustered by (age) into 1 buckets;
 
-insert into student_acid(age) select * from studenttab10k;
+insert into student_acid(age) select * from studenttab10k_n0;
 
 select * from student_acid;
 
-insert into student_acid(grade, age) select 3 g, * from studenttab10k;
+insert into student_acid(grade, age) select 3 g, * from studenttab10k_n0;
 
 select * from student_acid;
 

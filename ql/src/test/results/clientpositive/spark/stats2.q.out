@@ -25,6 +25,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -38,6 +39,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.analyze_t1
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator
@@ -135,7 +137,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_t1
-                  Statistics: Num rows: 392 Data size: 232480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 392 Data size: 232480 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats Work

@@ -1,55 +1,55 @@
-PREHOOK: query: create table t (i int,a string,b string)
+PREHOOK: query: create table t_n1 (i int,a string,b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (i int,a string,b string)
+PREHOOK: Output: default@t_n1
+POSTHOOK: query: create table t_n1 (i int,a string,b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values (1,'hello','world'),(2,'bye',null)
+POSTHOOK: Output: default@t_n1
+PREHOOK: query: insert into t_n1 values (1,'hello','world'),(2,'bye',null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (1,'hello','world'),(2,'bye',null)
+PREHOOK: Output: default@t_n1
+POSTHOOK: query: insert into t_n1 values (1,'hello','world'),(2,'bye',null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a SCRIPT []
-POSTHOOK: Lineage: t.b SCRIPT []
-POSTHOOK: Lineage: t.i SCRIPT []
-PREHOOK: query: select * from t where t.b is null
+POSTHOOK: Output: default@t_n1
+POSTHOOK: Lineage: t_n1.a SCRIPT []
+POSTHOOK: Lineage: t_n1.b SCRIPT []
+POSTHOOK: Lineage: t_n1.i SCRIPT []
+PREHOOK: query: select * from t_n1 where t_n1.b is null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where t.b is null
+POSTHOOK: query: select * from t_n1 where t_n1.b is null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n1
 #### A masked pattern was here ####
 2	bye	NULL
-PREHOOK: query: with cte as (select t.a as a,t.a as b,t.a as c from t where t.b is null) select * from cte
+PREHOOK: query: with cte as (select t_n1.a as a,t_n1.a as b,t_n1.a as c from t_n1 where t_n1.b is null) select * from cte
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n1
 #### A masked pattern was here ####
-POSTHOOK: query: with cte as (select t.a as a,t.a as b,t.a as c from t where t.b is null) select * from cte
+POSTHOOK: query: with cte as (select t_n1.a as a,t_n1.a as b,t_n1.a as c from t_n1 where t_n1.b is null) select * from cte
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n1
 #### A masked pattern was here ####
 bye	bye	bye
-PREHOOK: query: select t.a as a,t.a as b,t.a as c from t where t.b is null
+PREHOOK: query: select t_n1.a as a,t_n1.a as b,t_n1.a as c from t_n1 where t_n1.b is null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select t.a as a,t.a as b,t.a as c from t where t.b is null
+POSTHOOK: query: select t_n1.a as a,t_n1.a as b,t_n1.a as c from t_n1 where t_n1.b is null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n1
 #### A masked pattern was here ####
 bye	bye	bye
-PREHOOK: query: with cte as (select t.a as a,t.a as b,t.a as c from t where t.b is not null) select * from cte
+PREHOOK: query: with cte as (select t_n1.a as a,t_n1.a as b,t_n1.a as c from t_n1 where t_n1.b is not null) select * from cte
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n1
 #### A masked pattern was here ####
-POSTHOOK: query: with cte as (select t.a as a,t.a as b,t.a as c from t where t.b is not null) select * from cte
+POSTHOOK: query: with cte as (select t_n1.a as a,t_n1.a as b,t_n1.a as c from t_n1 where t_n1.b is not null) select * from cte
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n1
 #### A masked pattern was here ####
 hello	hello	hello

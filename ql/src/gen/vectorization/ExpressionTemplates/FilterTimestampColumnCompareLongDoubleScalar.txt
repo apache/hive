@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Generated from template FilterTimestampColumnCompareScalar.txt, which covers comparison
@@ -51,7 +52,13 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -59,18 +66,10 @@ public class <ClassName> extends VectorExpression {
 
     TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[colNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    int n = batch.size;
-
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
+    boolean[] inputIsNull = inputColVector.isNull;
 
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero
-        //Repeating property will not change.
         if (!(inputColVector.<GetTimestampLongDoubleMethod>(0) <OperatorSymbol> value)) {
           //Entire batch is filtered out.
           batch.size = 0;
@@ -98,9 +97,7 @@ public class <ClassName> extends VectorExpression {
       }
     } else {
       if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero
-        //Repeating property will not change.
-        if (!nullPos[0]) {
+        if (!inputIsNull[0]) {
           if (!(inputColVector.<GetTimestampLongDoubleMethod>(0) <OperatorSymbol> value)) {
             //Entire batch is filtered out.
             batch.size = 0;
@@ -112,7 +109,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
            if (inputColVector.<GetTimestampLongDoubleMethod>(i) <OperatorSymbol> value) {
              sel[newSize++] = i;
            }
@@ -123,7 +120,7 @@ public class <ClassName> extends VectorExpression {
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (inputColVector.<GetTimestampLongDoubleMethod>(i) <OperatorSymbol> value) {
               sel[newSize++] = i;
             }

@@ -154,15 +154,9 @@ public class <ClassName> extends VectorAggregateExpression {
         }
       } else {
         if (inputStructColVector.isRepeating) {
-          if (batch.selectedInUse) {
-            iterateHasNullsRepeatingSelectionWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              countVector[0], sumVector[0], batchSize, batch.selected, inputStructColVector.isNull);
-          } else {
-            iterateHasNullsRepeatingWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              countVector[0], sumVector[0], batchSize, inputStructColVector.isNull);
-          }
+          iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, bufferIndex,
+            countVector[0], sumVector[0], batchSize, inputStructColVector.isNull);
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
@@ -224,29 +218,6 @@ public class <ClassName> extends VectorAggregateExpression {
           i);
         myagg.merge(countVector[i], sumVector[i]);
       }
-    }
-
-    private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
-      VectorAggregationBufferRow[] aggregationBufferSets,
-      int bufferIndex,
-      long count,
-      double sum,
-      int batchSize,
-      int[] selection,
-      boolean[] isNull) {
-
-      if (isNull[0]) {
-        return;
-      }
-
-      for (int i=0; i < batchSize; ++i) {
-        Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets,
-          bufferIndex,
-          i);
-        myagg.merge(count, sum);
-      }
-
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
@@ -334,7 +305,7 @@ public class <ClassName> extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation)agg;
 
       if (inputStructColVector.isRepeating) {
-        if (inputStructColVector.noNulls) {
+        if (inputStructColVector.noNulls || !inputStructColVector.isNull[0]) {
           if (myagg.isNull) {
             myagg.isNull = false;
             myagg.mergeCount = 0;
@@ -507,9 +478,12 @@ public class <ClassName> extends VectorAggregateExpression {
 
 #IF PARTIAL2
     ColumnVector[] fields = outputColVector.fields;
+    fields[AVERAGE_COUNT_FIELD_INDEX].isNull[batchIndex] = false;
     ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.mergeCount;
+    fields[AVERAGE_SUM_FIELD_INDEX].isNull[batchIndex] = false;
     ((DoubleColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.mergeSum;
 
+    // NULL out useless source field.
     ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];
     sourceColVector.isRepeating = true;
     sourceColVector.noNulls = false;

@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestAvroDeserializer {
@@ -256,6 +257,20 @@ public class TestAvroDeserializer {
   }
 
   @Test
+  public void canDeserializeSingleItemUnions() throws SerDeException, IOException {
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.SINGLE_ITEM_UNION_SCHEMA);
+    GenericData.Record record = new GenericData.Record(s);
+
+    record.put("aUnion", "this is a string");
+
+    ResultPair result = unionTester(s, record);
+    assertTrue(result.value instanceof String);
+    assertEquals("this is a string", result.value);
+    UnionObjectInspector uoi = (UnionObjectInspector)result.oi;
+    assertEquals(0, uoi.getTag(result.unionObject));
+  }
+
+  @Test
   public void canDeserializeUnions() throws SerDeException, IOException {
     Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.UNION_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
@@ -359,6 +374,58 @@ public class TestAvroDeserializer {
     Object value = fieldObjectInspector.getField(theUnion);
 
     return new ResultPair(fieldObjectInspector, value, theUnion);
+  }
+
+  @Test
+  public void primitiveSchemaEvolution() throws Exception {
+    Schema fileSchema = AvroSerdeUtils.getSchemaFor(
+     "{\n"
+         + "  \"type\": \"record\",\n"
+         + "  \"name\": \"r1\",\n"
+         + "  \"fields\": [\n"
+         + "    {\n"
+         + "      \"name\": \"int_field\",\n"
+         + "      \"type\": \"int\"\n"
+         + "    }\n"
+         + "  ]\n"
+         + "}"
+    );
+    Schema readerSchema = AvroSerdeUtils.getSchemaFor(
+       "{\n"
+           + "  \"type\": \"record\",\n"
+           + "  \"name\": \"r1\",\n"
+           + "  \"fields\": [\n"
+           + "    {\n"
+           + "      \"name\": \"int_field\",\n"
+           + "      \"type\": \"int\"\n"
+           + "    },\n"
+           + "    {\n"
+           + "      \"name\": \"dec_field\",\n"
+           + "      \"type\": [\n"
+           + "        \"null\",\n"
+           + "        {\n"
+           + "          \"type\": \"bytes\",\n"
+           + "          \"logicalType\": \"decimal\",\n"
+           + "          \"precision\": 5,\n"
+           + "          \"scale\": 4\n"
+           + "        }\n"
+           + "      ],\n"
+           + "      \"default\": null\n"
+           + "    }\n"
+           + "  ]\n"
+           + "}"
+    );
+    GenericData.Record record = new GenericData.Record(fileSchema);
+
+    record.put("int_field", 1);
+    assertTrue(GENERIC_DATA.validate(fileSchema, record));
+    AvroGenericRecordWritable garw = Utils.serializeAndDeserializeRecord(record);
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(readerSchema);
+
+    AvroDeserializer de = new AvroDeserializer();
+    List<Object> row = (List<Object>) de.deserialize(aoig.getColumnNames(), aoig.getColumnTypes(), garw, readerSchema);
+    Assert.assertEquals(1, row.get(0));
+    Assert.assertNull(row.get(1));
   }
 
   @Test // Enums are one of two types we fudge for Hive. Enums go in, Strings come out.

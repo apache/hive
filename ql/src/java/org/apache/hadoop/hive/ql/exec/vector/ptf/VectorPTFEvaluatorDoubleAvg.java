@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 import com.google.common.base.Preconditions;
@@ -34,10 +33,6 @@ import com.google.common.base.Preconditions;
  * Sum up non-null column values; group result is sum / non-null count.
  */
 public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDoubleAvg.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected boolean isGroupResultNull;
   protected double sum;
@@ -50,7 +45,9 @@ public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+      throws HiveException {
+
     evaluateInputExpr(batch);
 
     // Sum all non-null double column values for avg; maintain isGroupResultNull; after last row of
@@ -66,7 +63,7 @@ public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
     if (doubleColVector.isRepeating) {
 
-      if (doubleColVector.noNulls) {
+      if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
 
         // We have a repeated value.  The sum increases by value * batch.size.
         if (isGroupResultNull) {

@@ -49,8 +49,7 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       VectorExpression keyExpression = keyExpressions[i];
 
       TypeInfo typeInfo = keyExpression.getOutputTypeInfo();
-      Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
-      addKey(columnVectorType);
+      addKey(typeInfo);
 
       // The output of the key expression is the input column.
       final int inputColumnNum = keyExpression.getOutputColumnNum();
@@ -150,7 +149,7 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       TimestampColumnVector inputColumnVector = (TimestampColumnVector) inputBatch.cols[inputColumnNum];
       TimestampColumnVector outputColumnVector = (TimestampColumnVector) outputBatch.cols[outputColumnNum];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
-
+        outputColumnVector.isNull[outputBatch.size] = false;
         outputColumnVector.setElement(outputBatch.size, 0, inputColumnVector);
       } else {
         outputColumnVector.noNulls = false;
@@ -163,7 +162,7 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       IntervalDayTimeColumnVector inputColumnVector = (IntervalDayTimeColumnVector) inputBatch.cols[inputColumnNum];
       IntervalDayTimeColumnVector outputColumnVector = (IntervalDayTimeColumnVector) outputBatch.cols[outputColumnNum];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
-
+        outputColumnVector.isNull[outputBatch.size] = false;
         outputColumnVector.setElement(outputBatch.size, 0, inputColumnVector);
       } else {
         outputColumnVector.noNulls = false;

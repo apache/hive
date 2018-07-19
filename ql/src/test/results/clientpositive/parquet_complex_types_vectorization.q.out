@@ -184,6 +184,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquet_complex_types
+            filterExpr: (l1[0] > 1000) (type: boolean)
             Statistics: Num rows: 1023 Data size: 5115 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -456,6 +457,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquet_complex_types
+            filterExpr: (l1[0] > 1000) (type: boolean)
             Statistics: Num rows: 1024 Data size: 5120 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -728,6 +730,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquet_complex_types
+            filterExpr: (l1[0] > 1000) (type: boolean)
             Statistics: Num rows: 1025 Data size: 5125 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

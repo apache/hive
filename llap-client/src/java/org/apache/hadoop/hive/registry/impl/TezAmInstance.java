@@ -13,29 +13,27 @@
  */
 package org.apache.hadoop.hive.registry.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
 
 import org.apache.commons.codec.binary.Base64;
-
-import com.google.common.io.ByteStreams;
-
-import org.apache.tez.common.security.JobTokenIdentifier;
-
-import org.apache.hadoop.security.token.Token;
-
-import java.io.IOException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.types.AddressTypes;
 import org.apache.hadoop.registry.client.types.Endpoint;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
+import org.apache.hadoop.security.token.Token;
+import org.apache.tez.common.security.JobTokenIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.io.ByteStreams;
 
 public class TezAmInstance extends ServiceInstanceBase {
   private static final Logger LOG = LoggerFactory.getLogger(TezAmInstance.class);
   private final int pluginPort;
   private Token<JobTokenIdentifier> token;
 
-  public TezAmInstance(ServiceRecord srv) throws IOException {
+  TezAmInstance(ServiceRecord srv) throws IOException {
     super(srv, TezAmRegistryImpl.IPC_TEZCLIENT);
     final Endpoint plugin = srv.getInternalEndpoint(TezAmRegistryImpl.IPC_PLUGIN);
     if (plugin != null) {
@@ -52,6 +50,12 @@ public class TezAmInstance extends ServiceInstanceBase {
 
   public String getSessionId() {
     return getProperties().get(TezAmRegistryImpl.AM_SESSION_ID);
+  }
+  
+  public int getGuaranteedCount() {
+    String str = getProperties().get(TezAmRegistryImpl.AM_GUARANTEED_COUNT);
+    if (!StringUtils.isEmpty(str)) return 0;
+    return Integer.parseInt(str);
   }
 
   public String getPluginTokenJobId() {
@@ -76,7 +80,7 @@ public class TezAmInstance extends ServiceInstanceBase {
 
   @Override
   public String toString() {
-    return "TezAmInstance [" + getSessionId() + ", host=" + host + ", rpcPort=" + rpcPort +
+    return "TezAmInstance [" + getSessionId() + ", host=" + getHost() + ", rpcPort=" + getRpcPort() +
         ", pluginPort=" + pluginPort + ", token=" + token + "]";
   }
 

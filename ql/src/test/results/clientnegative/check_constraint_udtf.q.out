@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10326]: Invalid Constraint syntax Invalid CHECK constraint expression: explode(array(2,3)). UDTF's are not supported outside the SELECT clause, nor nested in expressions

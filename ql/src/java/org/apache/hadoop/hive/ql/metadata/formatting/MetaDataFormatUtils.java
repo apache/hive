@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -32,7 +33,6 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
@@ -42,21 +42,20 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
+import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
-import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hive.common.util.HiveStringUtils;
 
 import com.google.common.collect.Lists;
@@ -109,7 +108,7 @@ public final class MetaDataFormatUtils {
       return "";
     }
 
-    DateWritable writableValue = new DateWritable((int) val.getDaysSinceEpoch());
+    DateWritableV2 writableValue = new DateWritableV2((int) val.getDaysSinceEpoch());
     return writableValue.toString();
   }
 
@@ -136,47 +135,8 @@ public final class MetaDataFormatUtils {
     return null;
   }
 
-  public static String getIndexInformation(Index index, boolean isOutputPadded) {
-    StringBuilder indexInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-
-    List<String> indexColumns = new ArrayList<String>();
-
-    indexColumns.add(index.getIndexName());
-    indexColumns.add(index.getOrigTableName());
-
-    // index key names
-    List<FieldSchema> indexKeys = index.getSd().getCols();
-    StringBuilder keyString = new StringBuilder();
-    boolean first = true;
-    for (FieldSchema key : indexKeys)
-    {
-      if (!first)
-      {
-        keyString.append(", ");
-      }
-      keyString.append(key.getName());
-      first = false;
-    }
-
-    indexColumns.add(keyString.toString());
-
-    indexColumns.add(index.getIndexTableName());
-
-    // index type
-    String indexHandlerClass = index.getIndexHandlerClass();
-    IndexType indexType = HiveIndex.getIndexTypeByClassName(indexHandlerClass);
-    indexColumns.add(indexType.getName());
-
-    String comment = HiveStringUtils.escapeJava(index.getParameters().get("comment"));
-    indexColumns.add(comment);
-
-    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded, true);
-
-    return indexInfo.toString();
-  }
-
   public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-          UniqueConstraint ukInfo, NotNullConstraint nnInfo) {
+          UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo) {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
@@ -195,6 +155,14 @@ public final class MetaDataFormatUtils {
     if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
       constraintsInfo.append(LINE_DELIM).append("# Not Null Constraints").append(LINE_DELIM);
       getNotNullConstraintsInformation(constraintsInfo, nnInfo);
+    }
+    if (dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Default Constraints").append(LINE_DELIM);
+      getDefaultConstraintsInformation(constraintsInfo, dInfo);
+    }
+    if (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Check Constraints").append(LINE_DELIM);
+      getCheckConstraintsInformation(constraintsInfo, cInfo);
     }
     return constraintsInfo.toString();
   }
@@ -296,6 +264,74 @@ public final class MetaDataFormatUtils {
     }
   }
 
+  private static void getDefaultConstraintColInformation(StringBuilder constraintsInfo,
+                                                        DefaultConstraint.DefaultConstraintCol ukCol) {
+    String[] fkcFields = new String[2];
+    fkcFields[0] = "Column Name:" + ukCol.colName;
+    fkcFields[1] = "Default Value:" + ukCol.defaultVal;
+    formatOutput(fkcFields, constraintsInfo);
+  }
+
+  private static void getCheckConstraintColInformation(StringBuilder constraintsInfo,
+                                                         CheckConstraint.CheckConstraintCol ukCol) {
+    String[] fkcFields = new String[2];
+    fkcFields[0] = "Column Name:" + ukCol.colName;
+    fkcFields[1] = "Check Value:" + ukCol.checkExpression;
+    formatOutput(fkcFields, constraintsInfo);
+  }
+
+  private static void getDefaultConstraintRelInformation(
+      StringBuilder constraintsInfo,
+      String constraintName,
+      List<DefaultConstraint.DefaultConstraintCol> ukRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (ukRel != null && ukRel.size() > 0) {
+      for (DefaultConstraint.DefaultConstraintCol ukc : ukRel) {
+        getDefaultConstraintColInformation(constraintsInfo, ukc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void getCheckConstraintRelInformation(
+      StringBuilder constraintsInfo,
+      String constraintName,
+      List<CheckConstraint.CheckConstraintCol> ukRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (ukRel != null && ukRel.size() > 0) {
+      for (CheckConstraint.CheckConstraintCol ukc : ukRel) {
+        getCheckConstraintColInformation(constraintsInfo, ukc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void getDefaultConstraintsInformation(StringBuilder constraintsInfo,
+                                                        DefaultConstraint dInfo) {
+    formatOutput("Table:",
+        dInfo.getDatabaseName() + "." + dInfo.getTableName(),
+        constraintsInfo);
+    Map<String, List<DefaultConstraint.DefaultConstraintCol>> defaultConstraints = dInfo.getDefaultConstraints();
+    if (defaultConstraints != null && defaultConstraints.size() > 0) {
+      for (Map.Entry<String, List<DefaultConstraint.DefaultConstraintCol>> me : defaultConstraints.entrySet()) {
+        getDefaultConstraintRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
+  private static void getCheckConstraintsInformation(StringBuilder constraintsInfo,
+                                                       CheckConstraint dInfo) {
+    formatOutput("Table:",
+                 dInfo.getDatabaseName() + "." + dInfo.getTableName(),
+                 constraintsInfo);
+    Map<String, List<CheckConstraint.CheckConstraintCol>> checkConstraints = dInfo.getCheckConstraints();
+    if (checkConstraints != null && checkConstraints.size() > 0) {
+      for (Map.Entry<String, List<CheckConstraint.CheckConstraintCol>> me : checkConstraints.entrySet()) {
+        getCheckConstraintRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
   public static String getPartitionInformation(Partition part) {
     StringBuilder tableInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
@@ -390,6 +426,7 @@ public final class MetaDataFormatUtils {
   private static void getTableMetaDataInformation(StringBuilder tableInfo, Table  tbl,
       boolean isOutputPadded) {
     formatOutput("Database:", tbl.getDbName(), tableInfo);
+    formatOutput("OwnerType:", (tbl.getOwnerType() != null) ? tbl.getOwnerType().name() : "null", tableInfo);
     formatOutput("Owner:", tbl.getOwner(), tableInfo);
     formatOutput("CreateTime:", formatDate(tbl.getTTable().getCreateTime()), tableInfo);
     formatOutput("LastAccessTime:", formatDate(tbl.getTTable().getLastAccessTime()), tableInfo);
@@ -438,10 +475,16 @@ public final class MetaDataFormatUtils {
     List<String> keys = new ArrayList<String>(params.keySet());
     Collections.sort(keys);
     for (String key : keys) {
+      String value = params.get(key);
+      if (key.equals(StatsSetupConst.NUM_ERASURE_CODED_FILES)) {
+        if ("0".equals(value)) {
+          continue;
+        }
+      }
       tableInfo.append(FIELD_DELIM); // Ensures all params are indented.
       formatOutput(key,
-          escapeUnicode ? StringEscapeUtils.escapeJava(params.get(key))
-              : HiveStringUtils.escapeJava(params.get(key)),
+          escapeUnicode ? StringEscapeUtils.escapeJava(value)
+              : HiveStringUtils.escapeJava(value),
           tableInfo, isOutputPadded);
     }
   }
@@ -713,12 +756,6 @@ public final class MetaDataFormatUtils {
     return DescTableDesc.getSchema(showColStats).split("#")[0].split(",");
   }
 
-  public static String getIndexColumnsHeader() {
-    StringBuilder indexCols = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-    formatOutput(ShowIndexesDesc.getSchema().split("#")[0].split(","), indexCols);
-    return indexCols.toString();
-  }
-
   public static MetaDataFormatter getFormatter(HiveConf conf) {
     if ("json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text"))) {
       return new JsonMetaDataFormatter();
@@ -802,7 +839,9 @@ public final class MetaDataFormatUtils {
         if (p2.pool == null) {
           return (p1.pool == null) ? 0 : -1;
         }
-        if (p1.pool == null) return 1;
+        if (p1.pool == null) {
+          return 1;
+        }
         return Double.compare(p2.pool.getAllocFraction(), p1.pool.getAllocFraction());
       });
       for (PoolTreeNode child : children) {

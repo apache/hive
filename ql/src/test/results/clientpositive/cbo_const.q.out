@@ -33,9 +33,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 1000
-PREHOOK: query: drop view t1
+PREHOOK: query: drop view t1_n107
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view t1
+POSTHOOK: query: drop view t1_n107
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create table t1_new (key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
@@ -69,7 +69,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_new@ds=2011-10-16
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).key SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).value SIMPLE []
-PREHOOK: query: create view t1 partitioned on (ds) as
+PREHOOK: query: create view t1_n107 partitioned on (ds) as
 select * from
 (
 select key, value, ds from t1_new
@@ -79,8 +79,8 @@ select key, value, ds from t1_new
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1_new
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create view t1 partitioned on (ds) as
+PREHOOK: Output: default@t1_n107
+POSTHOOK: query: create view t1_n107 partitioned on (ds) as
 select * from
 (
 select key, value, ds from t1_new
@@ -90,18 +90,18 @@ select key, value, ds from t1_new
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1_new
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key EXPRESSION [(t1_new)t1_new.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.value EXPRESSION [(t1_new)t1_new.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from t1 where ds = '2011-10-15'
+POSTHOOK: Output: default@t1_n107
+POSTHOOK: Lineage: t1_n107.key EXPRESSION [(t1_new)t1_new.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n107.value EXPRESSION [(t1_new)t1_new.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from t1_n107 where ds = '2011-10-15'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n107
 PREHOOK: Input: default@t1_new
 PREHOOK: Input: default@t1_new@ds=2011-10-15
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 where ds = '2011-10-15'
+POSTHOOK: query: select * from t1_n107 where ds = '2011-10-15'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n107
 POSTHOOK: Input: default@t1_new
 POSTHOOK: Input: default@t1_new@ds=2011-10-15
 #### A masked pattern was here ####
@@ -133,6 +133,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -156,9 +157,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) = 4.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 4.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 4.0D) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -171,6 +173,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -233,9 +236,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: y
+            filterExpr: (UDFToDouble(key) = 3.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 3.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 3.0D) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -249,9 +253,10 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: x
+            filterExpr: ((UDFToDouble(key) = 3.0D) and value is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) = 3.0) and value is not null) (type: boolean)
+              predicate: ((UDFToDouble(key) = 3.0D) and value is not null) (type: boolean)
               Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -291,9 +296,10 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
             alias: z
+            filterExpr: ((ds = '2008-04-08') and (UDFToDouble(hr) = 14.0D) and value is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(hr) = 14.0) and (ds = '2008-04-08') and value is not null) (type: boolean)
+              predicate: ((UDFToDouble(hr) = 14.0D) and (ds = '2008-04-08') and value is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)

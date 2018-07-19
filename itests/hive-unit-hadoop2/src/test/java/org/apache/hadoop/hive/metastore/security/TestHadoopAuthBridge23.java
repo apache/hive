@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.security;
 
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -140,17 +139,12 @@ public class TestHadoopAuthBridge23 {
   @Before
   public void setup() throws Exception {
     isMetastoreTokenManagerInited = false;
-    int port = findFreePort();
     System.setProperty(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
         "true");
-    System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname,
-        "thrift://localhost:" + port);
-    System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, new Path(
-        System.getProperty("test.build.data", "/tmp")).toString());
     System.setProperty(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS.varname,
         MyTokenStore.class.getName());
     conf = new HiveConf(TestHadoopAuthBridge23.class);
-    MetaStoreTestUtils.startMetaStore(port, new MyHadoopThriftAuthBridge23());
+    MetaStoreTestUtils.startMetaStoreWithRetry(new MyHadoopThriftAuthBridge23(), conf);
   }
 
   /**

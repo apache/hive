@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -346,9 +346,9 @@ public final class PrimitiveObjectInspectorFactory {
       return new WritableConstantHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo,
           (HiveVarcharWritable)value);
     case DATE:
-      return new WritableConstantDateObjectInspector((DateWritable)value);
+      return new WritableConstantDateObjectInspector((DateWritableV2)value);
     case TIMESTAMP:
-      return new WritableConstantTimestampObjectInspector((TimestampWritable)value);
+      return new WritableConstantTimestampObjectInspector((TimestampWritableV2)value);
     case TIMESTAMPLOCALTZ:
       return new WritableConstantTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo)typeInfo, (TimestampLocalTZWritable) value);
     case INTERVAL_YEAR_MONTH:

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,7 +38,7 @@ public class TestVectorLogicalExpressions {
   private static final int BOOLEAN_COLUMN_TEST_SIZE = 9;
 
   @Test
-  public void testLongColOrLongCol() {
+  public void testLongColOrLongCol() throws HiveException {
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
     ColOrCol expr = new ColOrCol(0, 1, 2);
     LongColumnVector outCol = (LongColumnVector) batch.cols[2];
@@ -67,7 +68,6 @@ public class TestVectorLogicalExpressions {
     expr.evaluate(batch);
 
     // spot check
-    Assert.assertTrue(outCol.noNulls);
     Assert.assertEquals(0, outCol.vector[0]);
     Assert.assertEquals(1, outCol.vector[1]);
     Assert.assertEquals(1, outCol.vector[2]);
@@ -93,7 +93,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testLongColAndLongCol() {
+  public void testLongColAndLongCol() throws HiveException {
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
     ColAndCol expr = new ColAndCol(0, 1, 2);
     LongColumnVector outCol = (LongColumnVector) batch.cols[2];
@@ -125,7 +125,6 @@ public class TestVectorLogicalExpressions {
     expr.evaluate(batch);
 
     // spot check
-    Assert.assertTrue(outCol.noNulls);
     Assert.assertEquals(0, outCol.vector[0]);
     Assert.assertEquals(0, outCol.vector[1]);
     Assert.assertEquals(0, outCol.vector[2]);
@@ -189,7 +188,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testBooleanNot() {
+  public void testBooleanNot() throws HiveException {
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
     NotCol expr = new NotCol(0, 2);
     LongColumnVector outCol = (LongColumnVector) batch.cols[2];
@@ -207,7 +206,6 @@ public class TestVectorLogicalExpressions {
     batch.cols[0].noNulls = true;
     expr.evaluate(batch);
     Assert.assertFalse(outCol.isRepeating);
-    Assert.assertTrue(outCol.noNulls);
     Assert.assertEquals(1, outCol.vector[0]);
     Assert.assertEquals(0, outCol.vector[2]);
 
@@ -232,7 +230,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testIsNullExpr() {
+  public void testIsNullExpr() throws HiveException {
     // has nulls, not repeating
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
     IsNull expr = new IsNull(0, 2);
@@ -272,7 +270,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testIsNotNullExpr() {
+  public void testIsNotNullExpr() throws HiveException {
     // has nulls, not repeating
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
     IsNotNull expr = new IsNotNull(0, 2);
@@ -312,7 +310,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testBooleanFiltersOnColumns() {
+  public void testBooleanFiltersOnColumns() throws HiveException {
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
 
     SelectColumnIsTrue expr = new SelectColumnIsTrue(0);
@@ -332,7 +330,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testSelectColumnIsNull() {
+  public void testSelectColumnIsNull() throws HiveException {
     // has nulls, not repeating
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
     SelectColumnIsNull expr = new SelectColumnIsNull(0);
@@ -365,7 +363,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testSelectColumnIsNotNull() {
+  public void testSelectColumnIsNotNull() throws HiveException {
     // has nulls, not repeating
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
     SelectColumnIsNotNull expr = new SelectColumnIsNotNull(0);
@@ -416,7 +414,7 @@ public class TestVectorLogicalExpressions {
     }
 
     @Override
-    public void evaluate(VectorizedRowBatch batch) {
+    public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
       if (childExpressions != null) {
         super.evaluateChildren(batch);
@@ -453,7 +451,7 @@ public class TestVectorLogicalExpressions {
     }
 
     @Override
-    public void evaluate(VectorizedRowBatch batch) {
+    public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
       if (childExpressions != null) {
         super.evaluateChildren(batch);
@@ -490,7 +488,7 @@ public class TestVectorLogicalExpressions {
     }
 
     @Override
-    public void evaluate(VectorizedRowBatch batch) {
+    public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
       if (childExpressions != null) {
         super.evaluateChildren(batch);
@@ -529,7 +527,7 @@ public class TestVectorLogicalExpressions {
     }
 
     @Override
-    public void evaluate(VectorizedRowBatch batch) {
+    public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
       if (childExpressions != null) {
         super.evaluateChildren(batch);
@@ -553,7 +551,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testFilterExprOrExpr() {
+  public void testFilterExprOrExpr() throws HiveException {
     VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
     VectorizedRowBatch batch2 = getBatchThreeBooleanCols();
 
@@ -594,7 +592,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testFilterExprMultiOrExpr() {
+  public void testFilterExprMultiOrExpr() throws HiveException {
 
     // Select all with the first expression and expect the other 2 children to not be invoked.
 
@@ -722,7 +720,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testFilterExprOrExprWithBatchReuse() {
+  public void testFilterExprOrExprWithBatchReuse() throws HiveException {
     VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
 
     SelectColumnIsTrue expr1 = new SelectColumnIsTrue(0);
@@ -756,7 +754,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testFilterExprOrExprWithSelectInUse() {
+  public void testFilterExprOrExprWithSelectInUse() throws HiveException {
     VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
 
     SelectColumnIsTrue expr1 = new SelectColumnIsTrue(0);
@@ -786,7 +784,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testFilterExprAndExpr() {
+  public void testFilterExprAndExpr() throws HiveException {
     VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
 
     SelectColumnIsTrue expr1 = new SelectColumnIsTrue(0);
@@ -803,7 +801,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testLongInExpr() {
+  public void testLongInExpr() throws HiveException {
 
     // check basic operation
     VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchLongInLongOut();
@@ -834,7 +832,7 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testDoubleInExpr() {
+  public void testDoubleInExpr() throws HiveException {
 
     // check basic operation
     VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchDoubleInLongOut();

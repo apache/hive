@@ -1,8 +1,8 @@
 -- Test value based windowing spec
 
-drop table if exists emp;
+drop table if exists emp_n0;
 
-create table emp(empno smallint,
+create table emp_n0(empno smallint,
            ename varchar(10),
            job varchar(10),
            manager smallint,
@@ -15,10 +15,10 @@ create table emp(empno smallint,
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../../data/files/emp2.txt' into table emp;
+load data local inpath '../../data/files/emp2.txt' into table emp_n0;
 
 -- No order by
-select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp;
+select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp_n0;
 
 
 -- Support date datatype
@@ -29,7 +29,7 @@ select deptno, empno, hiredate, salary,
     sum(salary) over (partition by deptno order by hiredate range between 10 following and 90 following),
     sum(salary) over (partition by deptno order by hiredate range between 10 following and unbounded following),
     sum(salary) over (partition by deptno order by hiredate range between unbounded preceding and 10 following)
-from emp;
+from emp_n0;
 
 -- Support timestamp datatype. Value in seconds (90days = 90 * 24 * 3600 seconds)
 select deptno, empno, hirets, salary,
@@ -39,7 +39,7 @@ select deptno, empno, hirets, salary,
     sum(salary) over (partition by deptno order by hirets range between 864000 following and 7776000 following),
     sum(salary) over (partition by deptno order by hirets range between 864000 following and unbounded following),
     sum(salary) over (partition by deptno order by hirets range between unbounded preceding and 864000 following)
-from emp;
+from emp_n0;
 
 -- Support double datatype
 select deptno, empno, bonus,
@@ -49,7 +49,7 @@ select deptno, empno, bonus,
     avg(bonus) over (partition by deptno order by bonus range between 100 following and 200 following),
     avg(bonus) over (partition by deptno order by bonus range between 200 following and unbounded following),
     avg(bonus) over (partition by deptno order by bonus range between unbounded preceding and 200 following)
-from emp;
+from emp_n0;
 
 -- Support Decimal datatype
 select deptno, empno, stock, salary,
@@ -59,4 +59,4 @@ select deptno, empno, stock, salary,
     avg(salary) over (partition by deptno order by stock range between 100 following and 200 following),
     avg(salary) over (partition by deptno order by stock range between 200 following and unbounded following),
     avg(salary) over (partition by deptno order by stock range between unbounded preceding and 200 following)
-from emp;
+from emp_n0;

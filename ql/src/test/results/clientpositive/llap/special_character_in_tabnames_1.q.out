@@ -159,14 +159,14 @@ POSTHOOK: Input: default@c/b/o_t1@dt=2014
 POSTHOOK: Output: default@c/b/o_t1
 POSTHOOK: Output: default@c/b/o_t1@dt=2014
 PREHOOK: query: analyze table `c/b/o_t1` compute statistics for columns key, value, c_int, c_float, c_boolean
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 PREHOOK: Output: default@c/b/o_t1
 PREHOOK: Output: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table `c/b/o_t1` compute statistics for columns key, value, c_int, c_float, c_boolean
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014
 POSTHOOK: Output: default@c/b/o_t1
@@ -185,14 +185,14 @@ POSTHOOK: Input: default@//cbo_t2@dt=2014
 POSTHOOK: Output: default@//cbo_t2
 POSTHOOK: Output: default@//cbo_t2@dt=2014
 PREHOOK: query: analyze table `//cbo_t2` compute statistics for columns key, value, c_int, c_float, c_boolean
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@//cbo_t2
 PREHOOK: Input: default@//cbo_t2@dt=2014
 PREHOOK: Output: default@//cbo_t2
 PREHOOK: Output: default@//cbo_t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table `//cbo_t2` compute statistics for columns key, value, c_int, c_float, c_boolean
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@//cbo_t2
 POSTHOOK: Input: default@//cbo_t2@dt=2014
 POSTHOOK: Output: default@//cbo_t2
@@ -207,12 +207,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_/t3////
 POSTHOOK: Output: default@cbo_/t3////
 PREHOOK: query: analyze table `cbo_/t3////` compute statistics for columns key, value, c_int, c_float, c_boolean
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@cbo_/t3////
 PREHOOK: Output: default@cbo_/t3////
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table `cbo_/t3////` compute statistics for columns key, value, c_int, c_float, c_boolean
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cbo_/t3////
 POSTHOOK: Output: default@cbo_/t3////
 #### A masked pattern was here ####
@@ -225,12 +225,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src/_/cbo
 POSTHOOK: Output: default@src/_/cbo
 PREHOOK: query: analyze table `src/_/cbo` compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src/_/cbo
 PREHOOK: Output: default@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table `src/_/cbo` compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src/_/cbo
 POSTHOOK: Output: default@src/_/cbo
 #### A masked pattern was here ####
@@ -243,12 +243,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@p/a/r/t
 POSTHOOK: Output: default@p/a/r/t
 PREHOOK: query: analyze table `p/a/r/t` compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@p/a/r/t
 PREHOOK: Output: default@p/a/r/t
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table `p/a/r/t` compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@p/a/r/t
 POSTHOOK: Output: default@p/a/r/t
 #### A masked pattern was here ####
@@ -261,12 +261,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@line/item
 POSTHOOK: Output: default@line/item
 PREHOOK: query: analyze table `line/item` compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@line/item
 PREHOOK: Output: default@line/item
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table `line/item` compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@line/item
 POSTHOOK: Output: default@line/item
 #### A masked pattern was here ####

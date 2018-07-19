@@ -1,6 +1,6 @@
-PREHOOK: query: drop table ss
+PREHOOK: query: drop table ss_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ss
+POSTHOOK: query: drop table ss_n0
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table ss_orc
 PREHOOK: type: DROPTABLE
@@ -14,20 +14,20 @@ PREHOOK: query: drop table ss_part_orc
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table ss_part_orc
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table ss (
+PREHOOK: query: create table ss_n0 (
 ss_sold_date_sk int,
 ss_net_paid_inc_tax float,
 ss_net_profit float)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@ss
-POSTHOOK: query: create table ss (
+PREHOOK: Output: default@ss_n0
+POSTHOOK: query: create table ss_n0 (
 ss_sold_date_sk int,
 ss_net_paid_inc_tax float,
 ss_net_profit float)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ss
+POSTHOOK: Output: default@ss_n0
 PREHOOK: query: create table ss_part (
 ss_net_paid_inc_tax float,
 ss_net_profit float)
@@ -42,19 +42,19 @@ partitioned by (ss_sold_date_sk int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ss_part
-PREHOOK: query: load data local inpath '../../data/files/dynpart_test.txt' overwrite into table ss
+PREHOOK: query: load data local inpath '../../data/files/dynpart_test.txt' overwrite into table ss_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@ss
-POSTHOOK: query: load data local inpath '../../data/files/dynpart_test.txt' overwrite into table ss
+PREHOOK: Output: default@ss_n0
+POSTHOOK: query: load data local inpath '../../data/files/dynpart_test.txt' overwrite into table ss_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@ss
+POSTHOOK: Output: default@ss_n0
 PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
@@ -65,7 +65,7 @@ POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
@@ -89,7 +89,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: ss
+                  alias: ss_n0
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -104,10 +105,10 @@ STAGE PLANS:
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: float), KEY._col2 (type: float)
@@ -155,33 +156,33 @@ PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss_n0
 PREHOOK: Output: default@ss_part
 POSTHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss_n0
 POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452617
 POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452638
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
 PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part
@@ -304,7 +305,7 @@ PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_s
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
 PREHOOK: type: QUERY
@@ -312,7 +313,7 @@ POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
 POSTHOOK: type: QUERY
@@ -333,7 +334,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: ss
+                  alias: ss_n0
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -348,10 +350,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col2 (type: int)
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: float), VALUE._col1 (type: float), VALUE._col2 (type: int)
@@ -394,27 +396,27 @@ PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss_n0
 PREHOOK: Output: default@ss_part
 POSTHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss_n0
 POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452617
 POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452638
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
 PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part
@@ -537,7 +539,7 @@ PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_s
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
@@ -548,7 +550,7 @@ POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
@@ -572,7 +574,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: ss
+                  alias: ss_n0
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -587,7 +590,7 @@ STAGE PLANS:
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -658,33 +661,33 @@ PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss_n0
 PREHOOK: Output: default@ss_part
 POSTHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss_n0
 POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452617
 POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452638
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
 PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part
@@ -807,7 +810,7 @@ PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_s
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
 PREHOOK: type: QUERY
@@ -815,7 +818,7 @@ POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
 POSTHOOK: type: QUERY
@@ -836,7 +839,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: ss
+                  alias: ss_n0
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -851,7 +855,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col2 (type: int)
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -917,27 +921,27 @@ PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss_n0
 PREHOOK: Output: default@ss_part
 POSTHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss_n0
 POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452617
 POSTHOOK: Output: default@ss_part@ss_sold_date_sk=2452638
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_paid_inc_tax SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452617).ss_net_profit SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_paid_inc_tax SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_part PARTITION(ss_sold_date_sk=2452638).ss_net_profit SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
 PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part
@@ -1084,25 +1088,25 @@ partitioned by (ss_sold_date_sk int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ss_part_orc
-PREHOOK: query: insert overwrite table ss_orc select * from ss
+PREHOOK: query: insert overwrite table ss_orc select * from ss_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss_n0
 PREHOOK: Output: default@ss_orc
-POSTHOOK: query: insert overwrite table ss_orc select * from ss
+POSTHOOK: query: insert overwrite table ss_orc select * from ss_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss_n0
 POSTHOOK: Output: default@ss_orc
-POSTHOOK: Lineage: ss_orc.ss_net_paid_inc_tax SIMPLE [(ss)ss.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_orc.ss_net_profit SIMPLE [(ss)ss.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
-POSTHOOK: Lineage: ss_orc.ss_sold_date_sk SIMPLE [(ss)ss.FieldSchema(name:ss_sold_date_sk, type:int, comment:null), ]
-PREHOOK: query: drop table ss
+POSTHOOK: Lineage: ss_orc.ss_net_paid_inc_tax SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_orc.ss_net_profit SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: ss_orc.ss_sold_date_sk SIMPLE [(ss_n0)ss_n0.FieldSchema(name:ss_sold_date_sk, type:int, comment:null), ]
+PREHOOK: query: drop table ss_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@ss
-PREHOOK: Output: default@ss
-POSTHOOK: query: drop table ss
+PREHOOK: Input: default@ss_n0
+PREHOOK: Output: default@ss_n0
+POSTHOOK: query: drop table ss_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@ss
-POSTHOOK: Output: default@ss
+POSTHOOK: Input: default@ss_n0
+POSTHOOK: Output: default@ss_n0
 PREHOOK: query: drop table ss_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ss_part
@@ -1151,6 +1155,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_orc
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -1287,7 +1292,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	88                  
-	totalSize           	454                 
+	totalSize           	464                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1345,7 +1350,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	104                 
-	totalSize           	477                 
+	totalSize           	487                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1415,6 +1420,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_orc
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -1540,7 +1546,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	88                  
-	totalSize           	454                 
+	totalSize           	464                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1598,7 +1604,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	104                 
-	totalSize           	477                 
+	totalSize           	487                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

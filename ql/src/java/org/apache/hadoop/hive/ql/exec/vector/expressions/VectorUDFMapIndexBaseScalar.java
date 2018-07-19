@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Superclass to support vectorized functions that take a scalar as key of Map
@@ -42,7 +43,7 @@ public abstract class VectorUDFMapIndexBaseScalar extends VectorUDFMapIndexBase 
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -50,7 +51,10 @@ public abstract class VectorUDFMapIndexBaseScalar extends VectorUDFMapIndexBase 
     ColumnVector outV = batch.cols[outputColumnNum];
     MapColumnVector mapV = (MapColumnVector) batch.cols[mapColumnNum];
 
-    outV.noNulls = true;
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
     int[] mapValueIndex;
     if (mapV.isRepeating) {
       if (mapV.isNull[0]) {
@@ -65,7 +69,6 @@ public abstract class VectorUDFMapIndexBaseScalar extends VectorUDFMapIndexBase 
         } else {
           // the key is found in MapColumnVector, set the value
           outV.setElement(0, (int) (mapV.offsets[0] + mapValueIndex[0]), mapV.values);
-          outV.noNulls = true;
         }
       }
       outV.isRepeating = true;
@@ -77,8 +80,8 @@ public abstract class VectorUDFMapIndexBaseScalar extends VectorUDFMapIndexBase 
           outV.isNull[j] = true;
           outV.noNulls = false;
         } else {
-          outV.setElement(j, (int) (mapV.offsets[j] + mapValueIndex[j]), mapV.values);
           outV.isNull[j] = false;
+          outV.setElement(j, (int) (mapV.offsets[j] + mapValueIndex[j]), mapV.values);
         }
       }
       outV.isRepeating = false;

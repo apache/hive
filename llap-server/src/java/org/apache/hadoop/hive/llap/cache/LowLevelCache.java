@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 
-public interface LowLevelCache extends LlapOomDebugDump {
+public interface LowLevelCache {
   public enum Priority {
     NORMAL,
     HIGH
@@ -58,7 +58,7 @@ public interface LowLevelCache extends LlapOomDebugDump {
    *         the replacement chunks from cache are updated directly in the array.
    */
   long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks,
-      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters);
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, String tag);
 
   /** Notifies the cache that a particular buffer should be removed due to eviction. */
   void notifyEvicted(MemoryBuffer buffer);

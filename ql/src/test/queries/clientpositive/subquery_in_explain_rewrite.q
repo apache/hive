@@ -1,3 +1,6 @@
+--! qt:dataset:src
+--! qt:dataset:part
+--! qt:dataset:lineitem
 set hive.cbo.enable=false;
 
 -- non agg, non corr

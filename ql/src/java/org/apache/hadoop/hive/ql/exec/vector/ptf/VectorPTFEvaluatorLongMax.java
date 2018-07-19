@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 import com.google.common.base.Preconditions;
@@ -32,10 +31,6 @@ import com.google.common.base.Preconditions;
  * This class evaluates long max() for a PTF group.
  */
 public class VectorPTFEvaluatorLongMax extends VectorPTFEvaluatorBase {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorLongMax.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected boolean isGroupResultNull;
   protected long max;
@@ -46,7 +41,9 @@ public class VectorPTFEvaluatorLongMax extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+      throws HiveException {
+
     evaluateInputExpr(batch);
 
     // Determine maximum of all non-null long column values; maintain isGroupResultNull.
@@ -60,7 +57,8 @@ public class VectorPTFEvaluatorLongMax extends VectorPTFEvaluatorBase {
     }
     LongColumnVector longColVector = ((LongColumnVector) batch.cols[inputColumnNum]);
     if (longColVector.isRepeating) {
-      if (longColVector.noNulls) {
+
+      if (longColVector.noNulls || !longColVector.isNull[0]) {
         if (isGroupResultNull) {
           max = longColVector.vector[0];
           isGroupResultNull = false;

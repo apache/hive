@@ -226,6 +226,11 @@ public class LegacyMetrics implements Metrics {
   }
 
   @Override
+  public void removeGauge(String name) {
+    //This implementation completely and exhaustively reverses the addGauge method above.
+  }
+
+  @Override
   public void addRatio(String name, MetricsVariable<Integer> numerator,
                        MetricsVariable<Integer> denominator) {
     //Not implemented

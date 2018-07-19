@@ -18,16 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
-
-import com.google.common.base.Preconditions;
 
 /**
  * This class evaluates count(*) for a PTF group.
@@ -35,10 +29,6 @@ import com.google.common.base.Preconditions;
  * Count all rows of the group.  No input column/expression.
  */
 public class VectorPTFEvaluatorCountStar extends VectorPTFEvaluatorBase {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorCountStar.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected long count;
 

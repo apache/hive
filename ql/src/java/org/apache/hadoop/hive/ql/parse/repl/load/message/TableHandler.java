@@ -29,25 +29,21 @@ import java.util.List;
 public class TableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
-    // Path being passed to us is a table dump location. We go ahead and load it in as needed.
-    // If tblName is null, then we default to the table name specified in _metadata, which is good.
-    // or are both specified, in which case, that's what we are intended to create the new table as.
-    if (context.isDbNameEmpty()) {
-      throw new SemanticException("Database name cannot be null for a table load");
-    }
     try {
       List<Task<? extends Serializable>> importTasks = new ArrayList<>();
 
+      context.nestedContext.setConf(context.hiveConf);
       EximUtil.SemanticAnalyzerWrapperContext x =
           new EximUtil.SemanticAnalyzerWrapperContext(
               context.hiveConf, context.db, readEntitySet, writeEntitySet, importTasks, context.log,
               context.nestedContext);
+      x.setEventType(context.dmd.getDumpType());
 
       // REPL LOAD is not partition level. It is always DB or table level. So, passing null for partition specs.
       // Also, REPL LOAD doesn't support external table and hence no location set as well.
       ImportSemanticAnalyzer.prepareImport(false, false, false, false,
           (context.precursor != null), null, context.tableName, context.dbName,
-          null, context.location, x, updatedMetadata);
+          null, context.location, x, updatedMetadata, context.getTxnMgr());
 
       return importTasks;
     } catch (Exception e) {

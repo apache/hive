@@ -31,6 +31,7 @@ array_contains
 ascii
 asin
 assert_true
+assert_true_oom
 atan
 avg
 base64
@@ -62,8 +63,12 @@ covar_samp
 crc32
 create_union
 cume_dist
+current_authorizer
+current_catalog
 current_database
 current_date
+current_groups
+current_schema
 current_timestamp
 current_user
 date_add
@@ -81,10 +86,7 @@ div
 e
 elt
 encode
-ewah_bitmap
-ewah_bitmap_and
-ewah_bitmap_empty
-ewah_bitmap_or
+enforce_constraint
 exp
 explode
 extract_union
@@ -128,6 +130,7 @@ isnottrue
 isnull
 istrue
 java_method
+json_read
 json_tuple
 lag
 last_day
@@ -166,6 +169,7 @@ minute
 mod
 month
 months_between
+murmur_hash
 named_struct
 negative
 next_day
@@ -213,6 +217,7 @@ regr_syy
 repeat
 replace
 replicate_rows
+restrict_information_schema
 reverse
 rlike
 round
@@ -257,6 +262,14 @@ translate
 trim
 trunc
 ucase
+udftoboolean
+udftobyte
+udftodouble
+udftofloat
+udftointeger
+udftolong
+udftoshort
+udftostring
 unbase64
 unhex
 unix_timestamp
@@ -310,8 +323,12 @@ covar_samp
 crc32
 create_union
 cume_dist
+current_authorizer
+current_catalog
 current_database
 current_date
+current_groups
+current_schema
 current_timestamp
 current_user
 PREHOOK: query: SHOW FUNCTIONS '.*e$'
@@ -358,6 +375,8 @@ space
 to_date
 translate
 ucase
+udftobyte
+udftodouble
 variance
 xpath_double
 PREHOOK: query: SHOW FUNCTIONS 'log.*'
@@ -414,6 +433,7 @@ minute
 mod
 month
 months_between
+murmur_hash
 xpath
 xpath_boolean
 xpath_double

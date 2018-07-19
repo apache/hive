@@ -19,8 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,10 +32,12 @@ import java.util.Stack;
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -79,9 +80,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -634,6 +639,10 @@ public class TypeCheckProcFactory {
       ASTNode expr = (ASTNode) nd;
       ASTNode parent = stack.size() > 1 ? (ASTNode) stack.get(stack.size() - 2) : null;
       RowResolver input = ctx.getInputRR();
+      if(input == null) {
+        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr), expr);
+        return null;
+      }
 
       if (expr.getType() != HiveParser.TOK_TABLE_OR_COL) {
         ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr), expr);
@@ -701,20 +710,91 @@ public class TypeCheckProcFactory {
 
   }
 
-  private static ExprNodeDesc toExprNodeDesc(ColumnInfo colInfo) {
+  static ExprNodeDesc toExprNodeDesc(ColumnInfo colInfo) {
     ObjectInspector inspector = colInfo.getObjectInspector();
-    if (inspector instanceof ConstantObjectInspector &&
-        inspector instanceof PrimitiveObjectInspector) {
-      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) inspector;
-      Object constant = ((ConstantObjectInspector) inspector).getWritableConstantValue();
-      ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), poi.getPrimitiveJavaObject(constant));
-      constantExpr.setFoldedFromCol(colInfo.getInternalName());
-      return constantExpr;
+    if (inspector instanceof ConstantObjectInspector && inspector instanceof PrimitiveObjectInspector) {
+      return toPrimitiveConstDesc(colInfo, inspector);
+    }
+    if (inspector instanceof ConstantObjectInspector && inspector instanceof ListObjectInspector) {
+      ObjectInspector listElementOI = ((ListObjectInspector)inspector).getListElementObjectInspector();
+      if (listElementOI instanceof PrimitiveObjectInspector) {
+        return toListConstDesc(colInfo, inspector, listElementOI);
+      }
+    }
+    if (inspector instanceof ConstantObjectInspector && inspector instanceof MapObjectInspector) {
+      ObjectInspector keyOI = ((MapObjectInspector)inspector).getMapKeyObjectInspector();
+      ObjectInspector valueOI = ((MapObjectInspector)inspector).getMapValueObjectInspector();
+      if (keyOI instanceof PrimitiveObjectInspector && valueOI instanceof PrimitiveObjectInspector) {
+        return toMapConstDesc(colInfo, inspector, keyOI, valueOI);
+      }
+    }
+    if (inspector instanceof ConstantObjectInspector && inspector instanceof StructObjectInspector) {
+      boolean allPrimitive = true;
+      List<? extends StructField> fields = ((StructObjectInspector)inspector).getAllStructFieldRefs();
+      for (StructField field : fields) {
+        allPrimitive &= field.getFieldObjectInspector() instanceof PrimitiveObjectInspector;
+      }
+      if (allPrimitive) {
+        return toStructConstDesc(colInfo, inspector, fields);
+      }
     }
     // non-constant or non-primitive constants
     ExprNodeColumnDesc column = new ExprNodeColumnDesc(colInfo);
     column.setSkewedCol(colInfo.isSkewedCol());
     return column;
+  }
+
+  private static ExprNodeConstantDesc toPrimitiveConstDesc(ColumnInfo colInfo, ObjectInspector inspector) {
+    PrimitiveObjectInspector poi = (PrimitiveObjectInspector) inspector;
+    Object constant = ((ConstantObjectInspector) inspector).getWritableConstantValue();
+    ExprNodeConstantDesc constantExpr =
+        new ExprNodeConstantDesc(colInfo.getType(), poi.getPrimitiveJavaObject(constant));
+    constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    return constantExpr;
+  }
+  
+  private static ExprNodeConstantDesc toListConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
+      ObjectInspector listElementOI) {
+    PrimitiveObjectInspector poi = (PrimitiveObjectInspector)listElementOI;
+    List<?> values = (List<?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
+    List<Object> constant = new ArrayList<Object>();
+    for (Object o : values) {
+      constant.add(poi.getPrimitiveJavaObject(o));
+    }
+    
+    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
+    constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    return constantExpr;
+  }
+  
+  private static ExprNodeConstantDesc toMapConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
+      ObjectInspector keyOI, ObjectInspector valueOI) {
+    PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector)keyOI;
+    PrimitiveObjectInspector valuePoi = (PrimitiveObjectInspector)valueOI;
+    Map<?,?> values = (Map<?,?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
+    Map<Object, Object> constant = new LinkedHashMap<Object, Object>();
+    for (Map.Entry<?, ?> e : values.entrySet()) {
+      constant.put(keyPoi.getPrimitiveJavaObject(e.getKey()), valuePoi.getPrimitiveJavaObject(e.getValue()));
+    }
+    
+    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
+    constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    return constantExpr;
+  }
+
+  private static ExprNodeConstantDesc toStructConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
+      List<? extends StructField> fields) {
+    List<?> values = (List<?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
+    List<Object> constant =  new ArrayList<Object>();
+    for (int i = 0; i < values.size(); i++) {
+      Object value = values.get(i);
+      PrimitiveObjectInspector fieldPoi = (PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector();
+      constant.add(fieldPoi.getPrimitiveJavaObject(value));
+    }
+    
+    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
+    constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    return constantExpr;
   }
 
   /**
@@ -1075,6 +1155,8 @@ public class TypeCheckProcFactory {
               children.set(constIdx, new ExprNodeConstantDesc(new Byte(constVal.toString())));
             } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
               children.set(constIdx, new ExprNodeConstantDesc(new Short(constVal.toString())));
+            } else if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
+              children.set(constIdx, NumExprProcessor.createDecimal(constVal.toString(),false));
             }
           } catch (NumberFormatException nfe) {
             LOG.trace("Failed to narrow type of constant", nfe);

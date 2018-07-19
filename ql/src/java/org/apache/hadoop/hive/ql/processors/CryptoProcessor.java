@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 
@@ -82,7 +81,7 @@ public class CryptoProcessor implements CommandProcessor {
   }
 
   @Override
-  public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
+  public CommandProcessorResponse run(String command) {
     String[] args = command.split("\\s+");
 
     if (args.length < 1) {
@@ -176,5 +175,9 @@ public class CryptoProcessor implements CommandProcessor {
     }
 
     writeTestOutput("Encryption key deleted: '" + keyName + "'");
+  }
+
+  @Override
+  public void close() throws Exception {
   }
 }

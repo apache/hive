@@ -84,9 +84,8 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
   }
 
   @Override
-  public long[] putFileData(Object fileKey, DiskRange[] ranges,
-      MemoryBuffer[] chunks, long baseOffset, Priority priority,
-      LowLevelCacheCounters qfCounters) {
+  public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks,
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, String tag) {
     for (int i = 0; i < chunks.length; ++i) {
       LlapAllocatorBuffer buffer = (LlapAllocatorBuffer)chunks[i];
       if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
@@ -101,15 +100,5 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
   @Override
   public void notifyEvicted(MemoryBuffer buffer) {
     throw new UnsupportedOperationException("Buffer manager doesn't have cache");
-  }
-
-  @Override
-  public String debugDumpForOom() {
-    return "";
-  }
-
-  @Override
-  public void debugDumpShort(StringBuilder sb) {
-    // TODO Auto-generated method stub
   }
 }

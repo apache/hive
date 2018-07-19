@@ -967,6 +967,44 @@ public class HiveCalciteUtil {
     return AggregateCall.create(aggFunction, false, argList, -1, aggFnRetType, null);
   }
 
+  /**
+   * Is the expression usable for query materialization.
+   */
+  public static boolean isMaterializable(RexNode expr) {
+    return (checkMaterializable(expr) == null);
+  }
+
+  /**
+   * Check if the expression is usable for query materialization, returning the first failing expression.
+   */
+  public static RexCall checkMaterializable(RexNode expr) {
+    boolean deterministic = true;
+    RexCall failingCall = null;
+
+    if (expr == null) {
+      return null;
+    }
+
+    RexVisitor<Void> visitor = new RexVisitorImpl<Void>(true) {
+      @Override
+      public Void visitCall(org.apache.calcite.rex.RexCall call) {
+        // non-deterministic functions as well as runtime constants are not materializable.
+        if (!call.getOperator().isDeterministic() || call.getOperator().isDynamicFunction()) {
+          throw new Util.FoundOne(call);
+        }
+        return super.visitCall(call);
+      }
+    };
+
+    try {
+      expr.accept(visitor);
+    } catch (Util.FoundOne e) {
+      failingCall = (RexCall) e.getNode();
+    }
+
+    return failingCall;
+  }
+
   public static HiveTableFunctionScan createUDTFForSetOp(RelOptCluster cluster, RelNode input)
       throws SemanticException {
     RelTraitSet traitSet = TraitsUtil.getDefaultTraitSet(cluster);

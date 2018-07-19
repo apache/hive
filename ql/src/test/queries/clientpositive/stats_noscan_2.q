@@ -1,3 +1,4 @@
+--! qt:dataset:src
 dfs -cp ${system:hive.root}/data/files/ext_test ${system:test.tmp.dir}/analyze_external;
 
 -- test analyze table compute statistiscs [noscan] on external table 

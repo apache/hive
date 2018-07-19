@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -84,7 +85,7 @@ public class RpcServer implements Closeable {
     this.group = new NioEventLoopGroup(
         this.config.getRpcThreadCount(),
         new ThreadFactoryBuilder()
-            .setNameFormat("RPC-Handler-%d")
+            .setNameFormat("Spark-Driver-RPC-Handler-%d")
             .setDaemon(true)
             .build());
      ServerBootstrap serverBootstrap = new ServerBootstrap()
@@ -100,7 +101,8 @@ public class RpcServer implements Closeable {
             Runnable cancelTask = new Runnable() {
                 @Override
                 public void run() {
-                  LOG.warn("Timed out waiting for hello from client.");
+                  LOG.warn("Timed out waiting for the completion of SASL negotiation "
+                          + "between HiveServer2 and the Remote Spark Driver.");
                   newRpc.close();
                 }
             };
@@ -117,6 +119,8 @@ public class RpcServer implements Closeable {
     this.port = ((InetSocketAddress) channel.localAddress()).getPort();
     this.pendingClients = Maps.newConcurrentMap();
     this.address = this.config.getServerAddress();
+
+    LOG.info("Successfully created Remote Spark Driver RPC Server with address {}:{}", this.address, this.port);
   }
 
   /**
@@ -143,7 +147,8 @@ public class RpcServer implements Closeable {
           // Retry the next port
         }
       }
-      throw new IOException("No available ports from configured RPC Server ports for HiveServer2");
+      throw new IOException("Remote Spark Driver RPC Server cannot bind to any of the configured ports: "
+              + Arrays.toString(config.getServerPorts().toArray()));
     }
   }
 
@@ -169,7 +174,9 @@ public class RpcServer implements Closeable {
     Runnable timeout = new Runnable() {
       @Override
       public void run() {
-        promise.setFailure(new TimeoutException("Timed out waiting for client connection."));
+        promise.setFailure(new TimeoutException(
+                String.format("Client '%s' timed out waiting for connection from the Remote Spark" +
+                        " Driver", clientId)));
       }
     };
     ScheduledFuture<?> timeoutFuture = group.schedule(timeout,
@@ -179,7 +186,7 @@ public class RpcServer implements Closeable {
         timeoutFuture);
     if (pendingClients.putIfAbsent(clientId, client) != null) {
       throw new IllegalStateException(
-          String.format("Client '%s' already registered.", clientId));
+          String.format("Remote Spark Driver with client ID '%s' already registered", clientId));
     }
 
     promise.addListener(new GenericFutureListener<Promise<Rpc>>() {
@@ -195,11 +202,12 @@ public class RpcServer implements Closeable {
   }
 
   /**
-   * Tells the RPC server to cancel the connection from an existing pending client
+   * Tells the RPC server to cancel the connection from an existing pending client.
+   *
    * @param clientId The identifier for the client
-   * @param msg The error message about why the connection should be canceled
+   * @param failure The error about why the connection should be canceled
    */
-  public void cancelClient(final String clientId, final String msg) {
+  public void cancelClient(final String clientId, final Throwable failure) {
     final ClientInfo cinfo = pendingClients.remove(clientId);
     if (cinfo == null) {
       // Nothing to be done here.
@@ -207,9 +215,19 @@ public class RpcServer implements Closeable {
     }
     cinfo.timeoutFuture.cancel(true);
     if (!cinfo.promise.isDone()) {
-      cinfo.promise.setFailure(new RuntimeException(
-          String.format("Cancel client '%s'. Error: " + msg, clientId)));
+      cinfo.promise.setFailure(failure);
     }
+  }
+
+  /**
+   * Tells the RPC server to cancel the connection from an existing pending client.
+   *
+   * @param clientId The identifier for the client
+   * @param msg The error message about why the connection should be canceled
+   */
+  public void cancelClient(final String clientId, final String msg) {
+    cancelClient(clientId, new RuntimeException(String.format(
+            "Cancelling Remote Spark Driver client connection '%s' with error: " + msg, clientId)));
   }
 
   /**

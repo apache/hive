@@ -1,0 +1,13 @@
+PREHOOK: query: create external table strict_managed_tables2_tab1 (c1 string, c2 string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@strict_managed_tables2_tab1
+POSTHOOK: query: create external table strict_managed_tables2_tab1 (c1 string, c2 string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@strict_managed_tables2_tab1
+PREHOOK: query: alter table strict_managed_tables2_tab1 set tblproperties ('EXTERNAL'='FALSE')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@strict_managed_tables2_tab1
+PREHOOK: Output: default@strict_managed_tables2_tab1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Table default.strict_managed_tables2_tab1 failed strict managed table checks due to the following reason: Table is marked as a managed table but is not transactional.

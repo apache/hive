@@ -106,9 +106,9 @@ public class TestLlapSignerImpl {
   private FakeSecretManager rollKey(FakeSecretManager fsm, int idToPreserve) throws IOException {
     // Adding keys is PITA - there's no way to plug into timed rolling; just create a new fsm.
     DelegationKey dk = fsm.getDelegationKey(idToPreserve), curDk = fsm.getCurrentKey();
-    if (curDk.getKeyId() != idToPreserve) {
+    if (curDk == null || curDk.getKeyId() != idToPreserve) {
       LOG.warn("The current key is not the one we expect; key rolled in background? Signed with "
-          + idToPreserve + " but got " + curDk.getKeyId());
+          + idToPreserve + " but got " + (curDk == null ? "null" : curDk.getKeyId()));
     }
     // Regardless of the above, we should have the key we've signed with.
     assertNotNull(dk);

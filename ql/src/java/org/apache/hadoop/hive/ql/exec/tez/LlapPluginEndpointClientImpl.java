@@ -41,10 +41,13 @@ import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.tez.common.security.JobTokenIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LlapPluginEndpointClientImpl extends
     AsyncPbRpcProxy<LlapPluginProtocolPB, JobTokenIdentifier>
     implements LlapPluginEndpointClient {
+  private static final Logger LOG = LoggerFactory.getLogger(LlapPluginEndpointClientImpl.class);
 
   public LlapPluginEndpointClientImpl(
       Configuration conf, Token<JobTokenIdentifier> token, int expectedNodes) {
@@ -74,7 +77,16 @@ public class LlapPluginEndpointClientImpl extends
   @Override
   protected String getTokenUser(Token<JobTokenIdentifier> token) {
     try {
-      return token.decodeIdentifier().getJobId().toString();
+      JobTokenIdentifier id = token.decodeIdentifier();
+      if (id == null) {
+        LOG.warn("Token ID is null from " + token);
+        return null;
+      }
+      if (id.getJobId() == null) {
+        LOG.warn("Job ID is null from " + id);
+        return null;
+      }
+      return id.getJobId().toString();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

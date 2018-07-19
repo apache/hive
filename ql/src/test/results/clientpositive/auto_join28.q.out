@@ -36,6 +36,7 @@ STAGE PLANS:
         src2 
           TableScan
             alias: src2
+            filterExpr: (key > 10) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 10) (type: boolean)
@@ -78,6 +79,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
                   sort order: ++++++
                   Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -124,6 +126,7 @@ STAGE PLANS:
         src2 
           TableScan
             alias: src2
+            filterExpr: (key > 10) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 10) (type: boolean)
@@ -140,6 +143,7 @@ STAGE PLANS:
         src3 
           TableScan
             alias: src3
+            filterExpr: ((key > 10) and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 10) and (key > 10)) (type: boolean)
@@ -182,6 +186,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
                   sort order: ++++++
                   Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -228,6 +233,7 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
+            filterExpr: (key < 10) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 10) (type: boolean)
@@ -244,6 +250,7 @@ STAGE PLANS:
         src3 
           TableScan
             alias: src3
+            filterExpr: (key < 10) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 10) (type: boolean)
@@ -286,6 +293,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
                   sort order: ++++++
                   Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -332,6 +340,7 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
+            filterExpr: (key < 10) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 10) (type: boolean)
@@ -387,6 +396,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
                   sort order: ++++++
                   Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:

@@ -17,16 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.List;
-import java.util.Set;
-
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadWork;
-import org.apache.hadoop.hive.ql.index.IndexMetadataChangeWork;
+import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.GenTezProcContext;
 import org.apache.hadoop.hive.ql.parse.GenTezWork;
@@ -53,6 +49,9 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Finds Acid FileSinkDesc objects which can be created in the physical (disconnected) plan, e.g.
@@ -102,7 +101,6 @@ public class QueryPlanPostProcessor {
       }
       else if(work instanceof ReplLoadWork ||
         work instanceof ReplStateLogWork ||
-        work instanceof IndexMetadataChangeWork ||
         work instanceof GenTezWork ||
         work instanceof GenSparkWork ||
         work instanceof ArchiveWork ||

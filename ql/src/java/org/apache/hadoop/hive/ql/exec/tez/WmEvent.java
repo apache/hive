@@ -31,6 +31,7 @@ public class WmEvent {
   private static final Logger LOG = LoggerFactory.getLogger(WmEvent.class);
   enum EventType {
     GET, // get session
+    UPDATE, // update session allocation
     KILL, // kill query
     DESTROY, // destroy session
     RESTART, // restart session
@@ -51,7 +52,8 @@ public class WmEvent {
     WmTezSessionInfo(WmTezSession wmTezSession) {
       this.poolName = wmTezSession.getPoolName();
       this.sessionId = wmTezSession.getSessionId();
-      this.clusterPercent = wmTezSession.getClusterFraction() * 100.0;
+      this.clusterPercent = wmTezSession.hasClusterFraction()
+          ? wmTezSession.getClusterFraction() * 100.0 : 0;
     }
 
     public String getPoolName() {

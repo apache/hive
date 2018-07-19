@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.exec.vector.ptf;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -46,10 +44,6 @@ import com.google.common.base.Preconditions;
  * This class is encapsulates one or more VectorizedRowBatch of a PTF group.
  */
 public class VectorPTFGroupBatches {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFGroupBatches.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   private Configuration hconf;
 
@@ -163,7 +157,8 @@ public class VectorPTFGroupBatches {
     spillRowBytesContainer = null;
   }
 
-  public void evaluateStreamingGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateStreamingGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+      throws HiveException {
 
     // Streaming evaluators fill in their results during the evaluate call.
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
@@ -171,13 +166,20 @@ public class VectorPTFGroupBatches {
     }
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+      throws HiveException {
+
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
       evaluator.evaluateGroupBatch(batch, isLastGroupBatch);
     }
   }
 
   private void fillGroupResults(VectorizedRowBatch batch) {
+
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
       final int outputColumnNum = evaluator.getOutputColumnNum();
       if (evaluator.streamsResult()) {
@@ -190,7 +192,6 @@ public class VectorPTFGroupBatches {
       if (isGroupResultNull) {
         outputColVector.noNulls = false;
       } else {
-        outputColVector.noNulls = true;
         switch (evaluator.getResultColumnVectorType()) {
         case LONG:
           ((LongColumnVector) outputColVector).vector[0] = evaluator.getLongGroupResult();
@@ -199,7 +200,7 @@ public class VectorPTFGroupBatches {
           ((DoubleColumnVector) outputColVector).vector[0] = evaluator.getDoubleGroupResult();
           break;
         case DECIMAL:
-          ((DecimalColumnVector) outputColVector).vector[0].set(evaluator.getDecimalGroupResult());
+          ((DecimalColumnVector) outputColVector).set(0, evaluator.getDecimalGroupResult());
           break;
         default:
           throw new RuntimeException("Unexpected column vector type " + evaluator.getResultColumnVectorType());

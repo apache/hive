@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
@@ -34,10 +33,6 @@ import com.google.common.base.Preconditions;
  * This class evaluates HiveDecimal sum() for a PTF group.
  */
 public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorBase {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDecimalSum.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected boolean isGroupResultNull;
   protected HiveDecimalWritable sum;
@@ -51,7 +46,9 @@ public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+      throws HiveException {
+
     evaluateInputExpr(batch);
 
     // Sum all non-null decimal column values; maintain isGroupResultNull.
@@ -66,7 +63,7 @@ public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorBase {
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
     if (decimalColVector.isRepeating) {
 
-      if (decimalColVector.noNulls) {
+      if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
         temp.setFromLong(batch.size);
         if (isGroupResultNull) {
 

@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 import com.google.common.base.Preconditions;
@@ -36,10 +35,6 @@ import com.google.common.base.Preconditions;
  */
 public class VectorPTFEvaluatorLongLastValue extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorLongLastValue.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
   protected boolean isGroupResultNull;
   protected long lastValue;
 
@@ -49,7 +44,9 @@ public class VectorPTFEvaluatorLongLastValue extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+      throws HiveException {
+
     evaluateInputExpr(batch);
 
     // Last row of last batch determines isGroupResultNull and long lastValue.
@@ -66,7 +63,8 @@ public class VectorPTFEvaluatorLongLastValue extends VectorPTFEvaluatorBase {
     }
     LongColumnVector longColVector = ((LongColumnVector) batch.cols[inputColumnNum]);
     if (longColVector.isRepeating) {
-      if (longColVector.noNulls) {
+
+      if (longColVector.noNulls || !longColVector.isNull[0]) {
         lastValue = longColVector.vector[0];
         isGroupResultNull = false;
       } else {

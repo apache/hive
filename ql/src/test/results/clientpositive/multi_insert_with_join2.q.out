@@ -79,6 +79,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (id = 'Id_1') (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (id = 'Id_1') (type: boolean)
@@ -93,6 +94,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: ((id = 'Id_1') and (val = 'val_103')) (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((id = 'Id_1') and (val = 'val_103')) (type: boolean)
@@ -165,6 +167,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -204,6 +207,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((id = 'Id_2') and (val <> 'val_104')) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((id = 'Id_2') and (val <> 'val_104')) (type: boolean)
@@ -218,6 +222,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: ((val = 'val_104') and (id = 'Id_2')) (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((id = 'Id_2') and (val = 'val_104')) (type: boolean)
@@ -290,6 +295,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -449,6 +455,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -489,6 +496,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -648,6 +656,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -688,6 +697,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -735,6 +745,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -747,6 +758,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -853,6 +865,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -893,6 +906,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -940,6 +954,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -952,6 +967,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1058,6 +1074,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -1098,6 +1115,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -1145,6 +1163,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1161,6 +1180,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1275,6 +1295,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -1315,6 +1336,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -1362,6 +1384,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1378,6 +1401,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1492,6 +1516,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -1532,6 +1557,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)

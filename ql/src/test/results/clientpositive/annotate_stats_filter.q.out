@@ -87,6 +87,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (state = 'OH') (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (state = 'OH') (type: boolean)
@@ -102,6 +103,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -110,12 +112,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc
 PREHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc
 POSTHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
@@ -133,6 +135,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (state = 'OH') (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (state = 'OH') (type: boolean)
@@ -148,6 +151,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -169,6 +173,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (state <> 'OH') (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (state <> 'OH') (type: boolean)
@@ -184,6 +189,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -205,6 +211,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (state <> 'OH') (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (state <> 'OH') (type: boolean)
@@ -220,6 +227,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -241,6 +249,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: zip is null (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: zip is null (type: boolean)
@@ -256,6 +265,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -277,6 +287,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: zip is null (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: zip is null (type: boolean)
@@ -292,6 +303,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -313,6 +325,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: zip is not null (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: zip is not null (type: boolean)
@@ -328,6 +341,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -349,6 +363,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: zip is not null (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: zip is not null (type: boolean)
@@ -364,6 +379,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -421,6 +437,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -478,6 +495,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -535,6 +553,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -571,6 +590,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -607,6 +627,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -628,6 +649,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: ((state = 'OH') or (state = 'CA')) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((state = 'CA') or (state = 'OH')) (type: boolean)
@@ -643,6 +665,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -679,6 +702,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -715,6 +739,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -736,6 +761,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (((year = 2001) and year is null) or (state = 'CA')) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((year = 2001) and year is null) or (state = 'CA')) (type: boolean)
@@ -751,6 +777,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -772,6 +799,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (((year = 2001) or year is null) and (state = 'CA')) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((year = 2001) or year is null) and (state = 'CA')) (type: boolean)
@@ -787,6 +815,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -808,6 +837,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid < 30) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid < 30) (type: boolean)
@@ -823,6 +853,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -844,6 +875,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid > 30) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid > 30) (type: boolean)
@@ -859,6 +891,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -880,6 +913,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid <= 30) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid <= 30) (type: boolean)
@@ -895,6 +929,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -916,6 +951,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid >= 30) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid >= 30) (type: boolean)
@@ -931,6 +967,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -952,6 +989,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid < 3) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid < 3) (type: boolean)
@@ -967,6 +1005,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -988,6 +1027,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid > 3) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid > 3) (type: boolean)
@@ -1003,6 +1043,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -1024,6 +1065,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid <= 3) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid <= 3) (type: boolean)
@@ -1039,6 +1081,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -1060,6 +1103,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid >= 3) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid >= 3) (type: boolean)
@@ -1075,6 +1119,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

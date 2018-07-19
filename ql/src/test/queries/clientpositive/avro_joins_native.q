@@ -12,15 +12,15 @@ DESCRIBE doctors4;
 
 LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4;
 
-CREATE TABLE episodes (
+CREATE TABLE episodes_n1 (
   title string COMMENT "episode title",
   air_date string COMMENT "initial date",
   doctor int COMMENT "main actor playing the Doctor in episode")
 STORED AS AVRO;
 
-DESCRIBE episodes;
+DESCRIBE episodes_n1;
 
-LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes;
+LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes_n1;
 
 SELECT e.title, e.air_date, d.first_name, d.last_name, e.air_date
-FROM doctors4 d JOIN episodes e ON (d.number=e.doctor);
+FROM doctors4 d JOIN episodes_n1 e ON (d.number=e.doctor);

@@ -62,6 +62,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds <= '2000-04-09') and (key < 5)) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -80,6 +81,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -115,6 +117,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -162,6 +165,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -251,6 +255,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds <= '2000-04-09') or (key < 5)) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -269,6 +274,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -304,6 +310,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -351,6 +358,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -398,6 +406,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -525,6 +534,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((key < 5) and (value <> 'val_2')) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -543,6 +553,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -578,6 +589,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -625,6 +637,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -716,6 +729,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds < '2000-04-09') and (key < 5)) or ((ds > '2000-04-09') and (value = 'val_5'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -734,6 +748,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -769,6 +784,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -816,6 +832,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -909,6 +926,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds < '2000-04-10') and (key < 5)) or ((ds > '2000-04-08') and (value = 'val_5'))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -927,6 +945,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -962,6 +981,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1009,6 +1029,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1056,6 +1077,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1160,6 +1182,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds < '2000-04-10') or (key < 5)) and ((ds > '2000-04-08') or (value = 'val_5'))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1178,6 +1201,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1213,6 +1237,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1260,6 +1285,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1307,6 +1333,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1419,6 +1446,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds = '2000-04-08') or (ds = '2000-04-09')) and (key = 14)) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1436,6 +1464,7 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1471,6 +1500,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1518,6 +1548,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1597,6 +1628,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds = '2000-04-08') or (ds = '2000-04-09')) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -1610,6 +1642,7 @@ STAGE PLANS:
                 Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1645,6 +1678,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1692,6 +1726,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1811,6 +1846,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds >= '2000-04-08') or (ds < '2000-04-10')) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -1824,6 +1860,7 @@ STAGE PLANS:
                 Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1859,6 +1896,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1906,6 +1944,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1953,6 +1992,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2095,6 +2135,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds = '2000-04-08') and (key = 1)) or ((ds = '2000-04-09') and (key = 2))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2112,6 +2153,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2147,6 +2189,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2194,6 +2237,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2275,6 +2319,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2296,6 +2341,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
+            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2350,6 +2396,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2413,6 +2460,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2538,6 +2586,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2559,6 +2608,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
+            filterExpr: ((ds = '2000-04-09') and key is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2613,6 +2663,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2660,6 +2711,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2724,6 +2776,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2860,6 +2913,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds > '2000-04-08') and (ds < '2000-04-11')) or (key = 2)) (type: boolean)
             Statistics: Num rows: 80 Data size: 640 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2877,6 +2931,7 @@ STAGE PLANS:
                   Statistics: Num rows: 48 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2912,6 +2967,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2959,6 +3015,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3006,6 +3063,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3053,6 +3111,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3180,6 +3239,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds > '2000-04-08') or ((ds <= '2000-04-09') and (key = 2))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -3197,6 +3257,7 @@ STAGE PLANS:
                   Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3232,6 +3293,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3279,6 +3341,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3326,6 +3389,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3499,6 +3563,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -3551,6 +3616,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -3632,6 +3698,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3699,6 +3766,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3742,6 +3810,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -3772,6 +3841,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -3793,6 +3863,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3829,6 +3900,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -3859,6 +3931,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -3880,6 +3953,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3917,6 +3991,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -3956,6 +4031,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4085,6 +4161,7 @@ STAGE PLANS:
                       properties:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         bucket_count -1
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
@@ -4141,6 +4218,7 @@ STAGE PLANS:
                       properties:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         bucket_count -1
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
@@ -4222,6 +4300,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -4289,6 +4368,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -4332,6 +4412,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -4362,6 +4443,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -4383,6 +4465,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -4419,6 +4502,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -4449,6 +4533,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -4470,6 +4555,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -4507,6 +4593,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -4546,6 +4633,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4637,6 +4725,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -4653,6 +4742,7 @@ STAGE PLANS:
                 TopN Hash Memory Usage: 0.1
                 value expressions: _col1 (type: string)
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4689,6 +4779,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -4766,11 +4857,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ((ds = '2008-04-08') and ((hr = '11') or (hr = '12')) and (UDFToDouble(key) = 11.0D)) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (UDFToDouble(key) = 11.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 11.0D) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), hr (type: string)
@@ -4784,6 +4876,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4820,6 +4913,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -4868,6 +4962,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -4949,11 +5044,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ((hr = '11') and (UDFToDouble(key) = 11.0D)) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (UDFToDouble(key) = 11.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 11.0D) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string)
@@ -4967,6 +5063,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5003,6 +5100,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -5051,6 +5149,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -5360,6 +5459,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: (11.0D = 11.0D) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -5381,6 +5481,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: (11.0D = 11.0D) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -5402,6 +5503,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: (11.0D = 11.0D) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)

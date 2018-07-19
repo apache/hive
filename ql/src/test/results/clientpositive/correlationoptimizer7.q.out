@@ -32,6 +32,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -50,6 +51,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -78,6 +80,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -104,6 +107,7 @@ STAGE PLANS:
         $hdt$_1:yy 
           TableScan
             alias: yy
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -136,6 +140,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -212,6 +217,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -230,6 +236,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: yy
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -246,6 +253,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: x
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -395,6 +403,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -413,6 +422,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -441,6 +451,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -467,6 +478,7 @@ STAGE PLANS:
         $hdt$_1:yy 
           TableScan
             alias: yy
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -499,6 +511,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -575,6 +588,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -593,6 +607,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: yy
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -609,6 +624,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: x
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

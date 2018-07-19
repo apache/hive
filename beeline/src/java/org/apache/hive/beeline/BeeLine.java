@@ -35,7 +35,6 @@ import java.io.PrintStream;
 import java.io.SequenceInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -52,8 +51,8 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -61,6 +60,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -75,14 +75,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
-import jline.console.completer.FileNameCompleter;
-import jline.console.ConsoleReader;
-import jline.console.history.FileHistory;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -94,18 +86,26 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
-import org.apache.hive.common.util.ShutdownHookManager;
-import org.apache.hive.beeline.hs2connection.BeelineHS2ConnectionFileParseException;
-import org.apache.hive.beeline.hs2connection.HS2ConnectionFileUtils;
-import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
+import org.apache.hive.beeline.hs2connection.BeelineConfFileParseException;
+import org.apache.hive.beeline.hs2connection.BeelineSiteParseException;
+import org.apache.hive.beeline.hs2connection.BeelineSiteParser;
 import org.apache.hive.beeline.hs2connection.HS2ConnectionFileParser;
+import org.apache.hive.beeline.hs2connection.HS2ConnectionFileUtils;
 import org.apache.hive.beeline.hs2connection.HiveSiteHS2ConnectionFileParser;
+import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
+import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.jdbc.JdbcUriParseException;
+import org.apache.hive.jdbc.Utils;
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.thrift.transport.TTransportException;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.apache.hive.jdbc.Utils;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.completer.FileNameCompleter;
+import jline.console.completer.StringsCompleter;
+import jline.console.history.FileHistory;
 
 /**
  * A console SQL shell with command completion.
@@ -172,7 +172,7 @@ public class BeeLine implements Closeable {
   private static final String HIVE_VAR_PREFIX = "--hivevar";
   private static final String HIVE_CONF_PREFIX = "--hiveconf";
   private static final String PROP_FILE_PREFIX = "--property-file";
-  static final String PASSWD_MASK = "[passwd stripped]";
+  public static final String PASSWD_MASK = "[passwd stripped]";
 
   private final Map<Object, Object> formats = map(new Object[] {
       "vertical", new VerticalOutputFormat(this),
@@ -309,15 +309,23 @@ public class BeeLine implements Closeable {
     options.addOption(OptionBuilder
         .hasArg()
         .withArgName("driver class")
-        .withDescription("the driver class to use")
+        .withDescription("The driver class to use")
         .create('d'));
 
     // -u <database url>
     options.addOption(OptionBuilder
         .hasArg()
         .withArgName("database url")
-        .withDescription("the JDBC URL to connect to")
+        .withDescription("The JDBC URL to connect to")
         .create('u'));
+
+    // -c <named url in the beeline-hs2-connection.xml>
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("named JDBC URL in beeline-site.xml")
+        .withDescription("The named JDBC URL to connect to, which should be present in "
+            + "beeline-site.xml as the value of beeline.hs2.jdbc.url.<namedUrl>")
+        .create('c'));
 
     // -r
     options.addOption(OptionBuilder
@@ -329,14 +337,14 @@ public class BeeLine implements Closeable {
     options.addOption(OptionBuilder
         .hasArg()
         .withArgName("username")
-        .withDescription("the username to connect as")
+        .withDescription("The username to connect as")
         .create('n'));
 
     // -p <password>
     options.addOption(OptionBuilder
         .hasArg()
         .withArgName("password")
-        .withDescription("the password to connect as")
+        .withDescription("The password to connect as")
         .hasOptionalArg()
         .create('p'));
 
@@ -344,7 +352,7 @@ public class BeeLine implements Closeable {
     options.addOption(OptionBuilder
         .hasArg()
         .withArgName("password-file")
-        .withDescription("the password file to read password from")
+        .withDescription("The password file to read password from")
         .withLongOpt("password-file")
         .create('w'));
 
@@ -352,34 +360,34 @@ public class BeeLine implements Closeable {
     options.addOption(OptionBuilder
         .hasArg()
         .withArgName("authType")
-        .withDescription("the authentication type")
+        .withDescription("The authentication type")
         .create('a'));
 
     // -i <init file>
     options.addOption(OptionBuilder
-        .hasArg()
+        .hasArgs()
         .withArgName("init")
-        .withDescription("script file for initialization")
+        .withDescription("The script file for initialization")
         .create('i'));
 
     // -e <query>
     options.addOption(OptionBuilder
         .hasArgs()
         .withArgName("query")
-        .withDescription("query that should be executed")
+        .withDescription("The query that should be executed")
         .create('e'));
 
     // -f <script file>
     options.addOption(OptionBuilder
         .hasArg()
         .withArgName("file")
-        .withDescription("script file that should be executed")
+        .withDescription("The script file that should be executed")
         .create('f'));
 
     // -help
     options.addOption(OptionBuilder
         .withLongOpt("help")
-        .withDescription("display this message")
+        .withDescription("Display this message")
         .create('h'));
 
     // Substitution option --hivevar
@@ -388,7 +396,7 @@ public class BeeLine implements Closeable {
         .hasArgs(2)
         .withArgName("key=value")
         .withLongOpt("hivevar")
-        .withDescription("hive variable name and value")
+        .withDescription("Hive variable name and value")
         .create());
 
     //hive conf option --hiveconf
@@ -404,7 +412,7 @@ public class BeeLine implements Closeable {
     options.addOption(OptionBuilder
         .hasArg()
         .withLongOpt("property-file")
-        .withDescription("the file to read configuration properties from")
+        .withDescription("The file to read configuration properties from")
         .create());
   }
 
@@ -789,12 +797,17 @@ public class BeeLine implements Closeable {
     // and uses it to connect if found
     // no-op if the file is not present
     if(!connSuccessful && !exit) {
-      connSuccessful = defaultBeelineConnect();
+      connSuccessful = defaultBeelineConnect(cl);
+    }
+    if (exit) {
+      return 1;
     }
 
     int code = 0;
     if (cl.getOptionValues('e') != null) {
       commands = Arrays.asList(cl.getOptionValues('e'));
+      opts.setAllowMultiLineCommand(false); //When using -e, command is always a single line
+
     }
 
     if (!commands.isEmpty() && getOpts().getScriptFile() != null) {
@@ -887,7 +900,11 @@ public class BeeLine implements Closeable {
         comForDebug = constructCmdUrl(url, user, driver, true);
       }
       debug(comForDebug);
-      return dispatch(com);
+      if (!dispatch(com)) {
+        exit = true;
+        return false;
+      }
+      return true;
     }
     // load property file
     String propertyFile = cl.getOptionValue("property-file");
@@ -1062,50 +1079,106 @@ public class BeeLine implements Closeable {
    * if there connection is not made return false
    *
    */
-  private boolean defaultBeelineConnect() {
+  private boolean defaultBeelineConnect(CommandLine cl) {
     String url;
     try {
-      url = getDefaultConnectionUrl();
+      url = getDefaultConnectionUrl(cl);
       if (url == null) {
         debug("Default hs2 connection config file not found");
         return false;
       }
-    } catch (BeelineHS2ConnectionFileParseException e) {
+    } catch (BeelineConfFileParseException e) {
       error(e);
       return false;
     }
     return dispatch("!connect " + url);
   }
 
+  private String getDefaultConnectionUrl(CommandLine cl) throws BeelineConfFileParseException {
+    Properties mergedConnectionProperties = new Properties();
+    JdbcConnectionParams jdbcConnectionParams = null;
+    BeelineSiteParser beelineSiteParser = getUserBeelineSiteParser();
+    UserHS2ConnectionFileParser userHS2ConnFileParser = getUserHS2ConnFileParser();
+    Properties userConnectionProperties = new Properties();
 
-  private String getDefaultConnectionUrl() throws BeelineHS2ConnectionFileParseException {
-    HS2ConnectionFileParser userHS2ConnFileParser = getUserHS2ConnFileParser();
-    if (!userHS2ConnFileParser.configExists()) {
+    if (!userHS2ConnFileParser.configExists() && !beelineSiteParser.configExists()) {
       // nothing to do if there is no user HS2 connection configuration file
+      // or beeline-site.xml in the path
       return null;
     }
-    // get the connection properties from user specific config file
-    Properties userConnectionProperties = userHS2ConnFileParser.getConnectionProperties();
+
+    if (beelineSiteParser.configExists()) {
+      String urlFromCommandLineOption = cl.getOptionValue("u");
+      if (urlFromCommandLineOption != null) {
+        throw new BeelineSiteParseException(
+            "Not using beeline-site.xml since the user provided the url: " + urlFromCommandLineOption);
+      }
+      // Get the named url from user specific config file if present
+      Properties userNamedConnectionURLs = beelineSiteParser.getConnectionProperties();
+      if (!userNamedConnectionURLs.isEmpty()) {
+        String urlName = cl.getOptionValue("c");
+        String jdbcURL = HS2ConnectionFileUtils.getNamedUrl(userNamedConnectionURLs, urlName);
+        if (jdbcURL != null) {
+          try {
+            jdbcConnectionParams = Utils.extractURLComponents(jdbcURL, new Properties());
+          } catch (JdbcUriParseException e) {
+            throw new BeelineSiteParseException(
+                "Error in parsing jdbc url: " + jdbcURL + " from beeline-site.xml", e);
+          }
+        }
+      }
+    }
+
+    if (userHS2ConnFileParser.configExists()) {
+      // get the connection properties from user specific config file
+      userConnectionProperties = userHS2ConnFileParser.getConnectionProperties();
+    }
+
+    if (jdbcConnectionParams != null) {
+      String userName = cl.getOptionValue("n");
+      if (userName != null) {
+        jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_USER, userName);
+      }
+      String password = cl.getOptionValue("p");
+      if (password != null) {
+        jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD, password);
+      }
+      mergedConnectionProperties =
+          HS2ConnectionFileUtils.mergeUserConnectionPropertiesAndBeelineSite(
+              userConnectionProperties, jdbcConnectionParams);
+    } else {
+      mergedConnectionProperties = userConnectionProperties;
+    }
+
     // load the HS2 connection url properties from hive-site.xml if it is present in the classpath
     HS2ConnectionFileParser hiveSiteParser = getHiveSiteHS2ConnectionFileParser();
     Properties hiveSiteConnectionProperties = hiveSiteParser.getConnectionProperties();
     // add/override properties found from hive-site with user-specific properties
-    for (String key : userConnectionProperties.stringPropertyNames()) {
+    for (String key : mergedConnectionProperties.stringPropertyNames()) {
       if (hiveSiteConnectionProperties.containsKey(key)) {
         debug("Overriding connection url property " + key
             + " from user connection configuration file");
       }
-      hiveSiteConnectionProperties.setProperty(key, userConnectionProperties.getProperty(key));
+      hiveSiteConnectionProperties.setProperty(key, mergedConnectionProperties.getProperty(key));
     }
     // return the url based on the aggregated connection properties
     return HS2ConnectionFileUtils.getUrl(hiveSiteConnectionProperties);
+  }
+
+
+  /*
+   * Increased visibility of this method is only for providing better test coverage
+   */
+  @VisibleForTesting
+  public BeelineSiteParser getUserBeelineSiteParser() {
+    return new BeelineSiteParser();
   }
 
   /*
    * Increased visibility of this method is only for providing better test coverage
    */
   @VisibleForTesting
-  public HS2ConnectionFileParser getUserHS2ConnFileParser() {
+  public UserHS2ConnectionFileParser getUserHS2ConnFileParser() {
     return new UserHS2ConnectionFileParser();
   }
 
@@ -1118,18 +1191,31 @@ public class BeeLine implements Closeable {
   }
 
   int runInit() {
-    String initFiles[] = getOpts().getInitFiles();
+    String[] initFiles = getOpts().getInitFiles();
+
+    //executionResult will be ERRNO_OK only if all initFiles execute successfully
+    int executionResult = ERRNO_OK;
+    boolean exitOnError = !getOpts().getForce();
+
     if (initFiles != null && initFiles.length != 0) {
       for (String initFile : initFiles) {
         info("Running init script " + initFile);
         try {
-          return executeFile(initFile);
+          int currentResult = executeFile(initFile);
+          if (currentResult != ERRNO_OK) {
+            executionResult = currentResult;
+
+            if (exitOnError) {
+              return executionResult;
+            }
+          }
         } finally {
-          exit = false;
+          //exit beeline if there is initScript failure and --force is not set
+          exit = exitOnError && executionResult != ERRNO_OK;
         }
       }
     }
-    return ERRNO_OK;
+    return executionResult;
   }
 
   private int embeddedConnect() {
@@ -1187,12 +1273,15 @@ public class BeeLine implements Closeable {
 
   private int execute(ConsoleReader reader, boolean exitOnError) {
     int lastExecutionResult = ERRNO_OK;
+    Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
+                       : ConsoleReader.NULL_MASK;
+
     while (!exit) {
       try {
         // Execute one instruction; terminate on executing a script if there is an error
         // in silent mode, prevent the query and prompt being echoed back to terminal
         String line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
-            .readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
+            .readLine(null, mask) : reader.readLine(getPrompt());
 
         // trim line
         if (line != null) {
@@ -1201,7 +1290,9 @@ public class BeeLine implements Closeable {
 
         if (!dispatch(line)) {
           lastExecutionResult = ERRNO_OTHER;
-          if (exitOnError) break;
+          if (exitOnError) {
+            break;
+          }
         } else if (line != null) {
           lastExecutionResult = ERRNO_OK;
         }
@@ -1824,7 +1915,7 @@ public class BeeLine implements Closeable {
 
 
   static Map<Object, Object> map(Object[] obs) {
-    Map<Object, Object> m = new HashMap<Object, Object>();
+    Map<Object, Object> m = new LinkedHashMap<Object, Object>();
     for (int i = 0; i < obs.length - 1; i += 2) {
       m.put(obs[i], obs[i + 1]);
     }
@@ -2137,7 +2228,7 @@ public class BeeLine implements Closeable {
     }
     info("scan complete in "
         + (System.currentTimeMillis() - start) + "ms");
-    return (Driver[]) driverClasses.toArray(new Driver[0]);
+    return driverClasses.toArray(new Driver[0]);
   }
 
   // /////////////////////////////////////

@@ -167,6 +167,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: contact_event_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 3212 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -198,6 +199,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes
                     columns.comments 
@@ -222,6 +224,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes
                       columns.comments 
@@ -249,6 +252,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: cnctevn_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4944 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -308,6 +312,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns cnctevn_id,svcrqst_id,svcrqst_crt_dts,subject_seq_no,plan_component,cust_segment,cnctyp_cd,cnctmd_cd,cnctevs_cd,svcrtyp_cd,svrstyp_cd,cmpltyp_cd,catsrsn_cd,apealvl_cd,cnstnty_cd,svcrqst_asrqst_ind,svcrqst_rtnorig_in,svcrqst_vwasof_dt,sum_reason_cd,sum_reason,crsr_master_claim_index,svcrqct_cds,svcrqst_lupdt,crsr_lupdt,cntevsds_lupdt,ignore_me,notes
                     columns.comments 
@@ -332,6 +337,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns cnctevn_id,svcrqst_id,svcrqst_crt_dts,subject_seq_no,plan_component,cust_segment,cnctyp_cd,cnctmd_cd,cnctevs_cd,svcrtyp_cd,svrstyp_cd,cmpltyp_cd,catsrsn_cd,apealvl_cd,cnstnty_cd,svcrqst_asrqst_ind,svcrqst_rtnorig_in,svcrqst_vwasof_dt,sum_reason_cd,sum_reason,crsr_master_claim_index,svcrqct_cds,svcrqst_lupdt,crsr_lupdt,cntevsds_lupdt,ignore_me,notes
                       columns.comments 
@@ -1152,6 +1158,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: contact_event_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 3212 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1183,6 +1190,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes
                     columns.comments 
@@ -1207,6 +1215,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes
                       columns.comments 
@@ -1234,6 +1243,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: cnctevn_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4944 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1293,6 +1303,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns cnctevn_id,svcrqst_id,svcrqst_crt_dts,subject_seq_no,plan_component,cust_segment,cnctyp_cd,cnctmd_cd,cnctevs_cd,svcrtyp_cd,svrstyp_cd,cmpltyp_cd,catsrsn_cd,apealvl_cd,cnstnty_cd,svcrqst_asrqst_ind,svcrqst_rtnorig_in,svcrqst_vwasof_dt,sum_reason_cd,sum_reason,crsr_master_claim_index,svcrqct_cds,svcrqst_lupdt,crsr_lupdt,cntevsds_lupdt,ignore_me,notes
                     columns.comments 
@@ -1317,6 +1328,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns cnctevn_id,svcrqst_id,svcrqst_crt_dts,subject_seq_no,plan_component,cust_segment,cnctyp_cd,cnctmd_cd,cnctevs_cd,svcrtyp_cd,svrstyp_cd,cmpltyp_cd,catsrsn_cd,apealvl_cd,cnstnty_cd,svcrqst_asrqst_ind,svcrqst_rtnorig_in,svcrqst_vwasof_dt,sum_reason_cd,sum_reason,crsr_master_claim_index,svcrqct_cds,svcrqst_lupdt,crsr_lupdt,cntevsds_lupdt,ignore_me,notes
                       columns.comments 

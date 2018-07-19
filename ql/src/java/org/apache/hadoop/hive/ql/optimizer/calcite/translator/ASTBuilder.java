@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.rel.RelNode;
@@ -32,13 +33,19 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ASTBuilder {
+  public static final Logger LOGGER  = LoggerFactory.getLogger(ASTBuilder.class);
 
   public static ASTBuilder construct(int tokenType, String text) {
     ASTBuilder b = new ASTBuilder();
@@ -58,14 +65,20 @@ public class ASTBuilder {
                 "TOK_TMP_FILE")).node();
   }
 
-  public static ASTNode table(RelNode scan) {
-    HiveTableScan hts;
-    if (scan instanceof DruidQuery) {
-      hts = (HiveTableScan) ((DruidQuery)scan).getTableScan();
+  public static ASTNode table(final RelNode scan) {
+    HiveTableScan hts = null;
+    if (scan instanceof HiveJdbcConverter) {
+      HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
+      JdbcHiveTableScan jdbcHiveTableScan = jdbcConverter.getTableScan();
+
+      hts = jdbcHiveTableScan.getHiveTableScan();
+    } else if (scan instanceof DruidQuery) {
+      hts = (HiveTableScan) ((DruidQuery) scan).getTableScan();
     } else {
       hts = (HiveTableScan) scan;
     }
 
+    assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
         ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
@@ -74,22 +87,51 @@ public class ASTBuilder {
 
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
     if (scan instanceof DruidQuery) {
-      // Pass possible query to Druid
+      //Passing query spec, column names and column types to be used as part of Hive Physical execution
       DruidQuery dq = (DruidQuery) scan;
+      //Adding Query specs to be used by org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_JSON + "\"")
               .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(
                       dq.getQueryString()) + "\""));
+      // Adding column names used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_FIELD_NAMES + "\"")
+          .add(HiveParser.StringLiteral,
+              "\"" + dq.getRowType().getFieldNames().stream().map(Object::toString)
+                  .collect(Collectors.joining(",")) + "\""
+          ));
+      // Adding column types used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_FIELD_TYPES + "\"")
+          .add(HiveParser.StringLiteral,
+              "\"" + dq.getRowType().getFieldList().stream()
+                  .map(e -> TypeConverter.convert(e.getType()).getTypeName())
+                  .collect(Collectors.joining(",")) + "\""
+          ));
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_TYPE + "\"")
               .add(HiveParser.StringLiteral, "\"" + dq.getQueryType().getQueryName() + "\""));
+    } else if (scan instanceof HiveJdbcConverter) {
+      HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
+      final String query = jdbcConverter.generateSql();
+      LOGGER.info("The HiveJdbcConverter generated sql message is: " + System.lineSeparator() + query);
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY + "\"")
+          .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
+
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.HIVE_JDBC_QUERY + "\"")
+          .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
     }
+
     if (hts.isInsideView()) {
       // We need to carry the insideView information from calcite into the ast.
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"insideView\"")
               .add(HiveParser.StringLiteral, "\"TRUE\""));
     }
+
     b.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTIES, "TOK_TABLEPROPERTIES").add(propList));
 
     // NOTE: Calcite considers tbls to be equal if their names are the same. Hence

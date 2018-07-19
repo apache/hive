@@ -24,6 +24,7 @@ POSTHOOK: Lineage: vector_interval_1.dt SIMPLE []
 POSTHOOK: Lineage: vector_interval_1.str1 SIMPLE []
 POSTHOOK: Lineage: vector_interval_1.str2 SIMPLE []
 POSTHOOK: Lineage: vector_interval_1.ts SIMPLE []
+_c0	_c1	_c2	_c3
 PREHOOK: query: insert into vector_interval_1
   select null, null, null, null from src limit 1
 PREHOOK: type: QUERY
@@ -38,6 +39,18 @@ POSTHOOK: Lineage: vector_interval_1.dt EXPRESSION []
 POSTHOOK: Lineage: vector_interval_1.str1 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_1.str2 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_1.ts EXPRESSION []
+_col0	_col1	_col2	_col3
+PREHOOK: query: select * from vector_interval_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from vector_interval_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
+vector_interval_1.ts	vector_interval_1.dt	vector_interval_1.str1	vector_interval_1.str2
+2001-01-01 01:02:03	2001-01-01	1-2	1 2:3:4
+NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   str1,
@@ -52,6 +65,7 @@ select
   interval '1 2:3:4' day to second, interval_day_time(str2)
 from vector_interval_1 order by str1
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -98,8 +112,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -114,7 +128,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), 1-2 (type: interval_year_month), VALUE._col0 (type: interval_year_month), 1 02:03:04.000000000 (type: interval_day_time), VALUE._col1 (type: interval_day_time)
+                expressions: KEY.reducesinkkey0 (type: string), INTERVAL'1-2' (type: interval_year_month), VALUE._col0 (type: interval_year_month), INTERVAL'1 02:03:04.000000000' (type: interval_day_time), VALUE._col1 (type: interval_day_time)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Select Vectorization:
                     className: VectorSelectOperator
@@ -155,8 +169,9 @@ from vector_interval_1 order by str1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
-NULL	1-2	NULL	1 02:03:04.000000000	NULL
+str1	_c1	_c2	_c3	_c4
 1-2	1-2	1-2	1 02:03:04.000000000	1 02:03:04.000000000
+NULL	1-2	NULL	1 02:03:04.000000000	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -179,6 +194,7 @@ select
   interval '1-2' year to month - interval_year_month(str1)
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -203,7 +219,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: dt (type: date), (CAST( str1 AS INTERVAL YEAR TO MONTH) + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month), (1-2 + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month), (CAST( str1 AS INTERVAL YEAR TO MONTH) - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month), (1-2 - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month)
+                    expressions: dt (type: date), (CAST( str1 AS INTERVAL YEAR TO MONTH) + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month), (INTERVAL'1-2' + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month), (CAST( str1 AS INTERVAL YEAR TO MONTH) - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month), (INTERVAL'1-2' - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: interval_year_month)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -225,8 +241,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -241,7 +257,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: date), 2-4 (type: interval_year_month), VALUE._col0 (type: interval_year_month), VALUE._col1 (type: interval_year_month), 0-0 (type: interval_year_month), VALUE._col2 (type: interval_year_month), VALUE._col3 (type: interval_year_month)
+                expressions: KEY.reducesinkkey0 (type: date), INTERVAL'2-4' (type: interval_year_month), VALUE._col0 (type: interval_year_month), VALUE._col1 (type: interval_year_month), INTERVAL'0-0' (type: interval_year_month), VALUE._col2 (type: interval_year_month), VALUE._col3 (type: interval_year_month)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                 Select Vectorization:
                     className: VectorSelectOperator
@@ -290,8 +306,9 @@ from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
-NULL	2-4	NULL	NULL	0-0	NULL	NULL
+dt	_c1	_c2	_c3	_c4	_c5	_c6
 2001-01-01	2-4	2-4	2-4	0-0	0-0	0-0
+NULL	2-4	NULL	NULL	0-0	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -314,6 +331,7 @@ select
   interval '1 2:3:4' day to second - interval_day_time(str2)
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -338,7 +356,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: dt (type: date), (CAST( str2 AS INTERVAL DAY TO SECOND) + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time), (1 02:03:04.000000000 + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time), (CAST( str2 AS INTERVAL DAY TO SECOND) - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time), (1 02:03:04.000000000 - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time)
+                    expressions: dt (type: date), (CAST( str2 AS INTERVAL DAY TO SECOND) + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time), (INTERVAL'1 02:03:04.000000000' + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time), (CAST( str2 AS INTERVAL DAY TO SECOND) - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time), (INTERVAL'1 02:03:04.000000000' - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: interval_day_time)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -360,8 +378,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -376,7 +394,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: date), 2 04:06:08.000000000 (type: interval_day_time), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), 0 00:00:00.000000000 (type: interval_day_time), VALUE._col2 (type: interval_day_time), VALUE._col3 (type: interval_day_time)
+                expressions: KEY.reducesinkkey0 (type: date), INTERVAL'2 04:06:08.000000000' (type: interval_day_time), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), INTERVAL'0 00:00:00.000000000' (type: interval_day_time), VALUE._col2 (type: interval_day_time), VALUE._col3 (type: interval_day_time)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                 Select Vectorization:
                     className: VectorSelectOperator
@@ -425,8 +443,9 @@ from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
-NULL	2 04:06:08.000000000	NULL	NULL	0 00:00:00.000000000	NULL	NULL
+dt	_c1	_c2	_c3	_c4	_c5	_c6
 2001-01-01	2 04:06:08.000000000	2 04:06:08.000000000	2 04:06:08.000000000	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
+NULL	2 04:06:08.000000000	NULL	NULL	0 00:00:00.000000000	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -461,6 +480,7 @@ select
   dt - interval_day_time(str2)
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -485,7 +505,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: dt (type: date), (dt + 1-2) (type: date), (dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: date), (1-2 + dt) (type: date), (CAST( str1 AS INTERVAL YEAR TO MONTH) + dt) (type: date), (dt - 1-2) (type: date), (dt - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: date), (dt + 1 02:03:04.000000000) (type: timestamp), (dt + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp), (1 02:03:04.000000000 + dt) (type: timestamp), (CAST( str2 AS INTERVAL DAY TO SECOND) + dt) (type: timestamp), (dt - 1 02:03:04.000000000) (type: timestamp), (dt - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp)
+                    expressions: dt (type: date), (dt + INTERVAL'1-2') (type: date), (dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: date), (INTERVAL'1-2' + dt) (type: date), (CAST( str1 AS INTERVAL YEAR TO MONTH) + dt) (type: date), (dt - INTERVAL'1-2') (type: date), (dt - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: date), (dt + INTERVAL'1 02:03:04.000000000') (type: timestamp), (dt + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp), (INTERVAL'1 02:03:04.000000000' + dt) (type: timestamp), (CAST( str2 AS INTERVAL DAY TO SECOND) + dt) (type: timestamp), (dt - INTERVAL'1 02:03:04.000000000') (type: timestamp), (dt - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -507,8 +527,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -583,8 +603,9 @@ from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+dt	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9	_c10	_c11	_c12
 2001-01-01	2002-03-01	2002-03-01	2002-03-01	2002-03-01	1999-11-01	1999-11-01	2001-01-02 02:03:04	2001-01-02 02:03:04	2001-01-02 02:03:04	2001-01-02 02:03:04	2000-12-30 21:56:56	2000-12-30 21:56:56
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   ts,
@@ -619,6 +640,7 @@ select
   ts - interval_day_time(str2)
 from vector_interval_1 order by ts
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -643,7 +665,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: ts (type: timestamp), (ts + 1-2) (type: timestamp), (ts + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: timestamp), (1-2 + ts) (type: timestamp), (CAST( str1 AS INTERVAL YEAR TO MONTH) + ts) (type: timestamp), (ts - 1-2) (type: timestamp), (ts - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: timestamp), (ts + 1 02:03:04.000000000) (type: timestamp), (ts + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp), (1 02:03:04.000000000 + ts) (type: timestamp), (CAST( str2 AS INTERVAL DAY TO SECOND) + ts) (type: timestamp), (ts - 1 02:03:04.000000000) (type: timestamp), (ts - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp)
+                    expressions: ts (type: timestamp), (ts + INTERVAL'1-2') (type: timestamp), (ts + CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: timestamp), (INTERVAL'1-2' + ts) (type: timestamp), (CAST( str1 AS INTERVAL YEAR TO MONTH) + ts) (type: timestamp), (ts - INTERVAL'1-2') (type: timestamp), (ts - CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: timestamp), (ts + INTERVAL'1 02:03:04.000000000') (type: timestamp), (ts + CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp), (INTERVAL'1 02:03:04.000000000' + ts) (type: timestamp), (CAST( str2 AS INTERVAL DAY TO SECOND) + ts) (type: timestamp), (ts - INTERVAL'1 02:03:04.000000000') (type: timestamp), (ts - CAST( str2 AS INTERVAL DAY TO SECOND)) (type: timestamp)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -665,8 +687,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -741,8 +763,9 @@ from vector_interval_1 order by ts
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+ts	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9	_c10	_c11	_c12
 2001-01-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	1999-11-01 01:02:03	1999-11-01 01:02:03	2001-01-02 03:05:07	2001-01-02 03:05:07	2001-01-02 03:05:07	2001-01-02 03:05:07	2000-12-30 22:58:59	2000-12-30 22:58:59
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   ts,
@@ -759,6 +782,7 @@ select
   ts - timestamp '2001-01-01 01:02:03'
 from vector_interval_1 order by ts
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -783,13 +807,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: ts (type: timestamp), (ts - ts) (type: interval_day_time), (2001-01-01 01:02:03.0 - ts) (type: interval_day_time), (ts - 2001-01-01 01:02:03.0) (type: interval_day_time)
+                    expressions: ts (type: timestamp), (ts - ts) (type: interval_day_time), (TIMESTAMP'2001-01-01 01:02:03' - ts) (type: interval_day_time), (ts - TIMESTAMP'2001-01-01 01:02:03') (type: interval_day_time)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 5, 6, 7]
-                        selectExpressions: TimestampColSubtractTimestampColumn(col 0:timestamp, col 0:timestamp) -> 5:interval_day_time, TimestampScalarSubtractTimestampColumn(val 2001-01-01 01:02:03.0, col 0:timestamp) -> 6:interval_day_time, TimestampColSubtractTimestampScalar(col 0:timestamp, val 2001-01-01 01:02:03.0) -> 7:interval_day_time
+                        selectExpressions: TimestampColSubtractTimestampColumn(col 0:timestamp, col 0:timestamp) -> 5:interval_day_time, TimestampScalarSubtractTimestampColumn(val 2001-01-01 01:02:03, col 0:timestamp) -> 6:interval_day_time, TimestampColSubtractTimestampScalar(col 0:timestamp, val 2001-01-01 01:02:03) -> 7:interval_day_time
                     Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp)
@@ -805,8 +829,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -863,8 +887,9 @@ from vector_interval_1 order by ts
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
+ts	_c1	_c2	_c3
 2001-01-01 01:02:03	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
+NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -881,6 +906,7 @@ select
   dt - date '2001-01-01'
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -905,13 +931,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: dt (type: date), (dt - dt) (type: interval_day_time), (2001-01-01 - dt) (type: interval_day_time), (dt - 2001-01-01) (type: interval_day_time)
+                    expressions: dt (type: date), (dt - dt) (type: interval_day_time), (DATE'2001-01-01' - dt) (type: interval_day_time), (dt - DATE'2001-01-01') (type: interval_day_time)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [1, 5, 6, 7]
-                        selectExpressions: DateColSubtractDateColumn(col 1:date, col 1:date) -> 5:interval_day_time, DateScalarSubtractDateColumn(val 2001-01-01 00:00:00.0, col 1:date) -> 6:interval_day_time, DateColSubtractDateScalar(col 1:date, val 2001-01-01 00:00:00.0) -> 7:interval_day_time
+                        selectExpressions: DateColSubtractDateColumn(col 1:date, col 1:date) -> 5:interval_day_time, DateScalarSubtractDateColumn(val 2001-01-01, col 1:date) -> 6:interval_day_time, DateColSubtractDateScalar(col 1:date, val 2001-01-01) -> 7:interval_day_time
                     Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: date)
@@ -927,8 +953,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -985,8 +1011,9 @@ from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL
+dt	_c1	_c2	_c3
 2001-01-01	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
+NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -1009,6 +1036,7 @@ select
   date '2001-01-01' - ts
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1033,13 +1061,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: dt (type: date), (ts - dt) (type: interval_day_time), (2001-01-01 01:02:03.0 - dt) (type: interval_day_time), (ts - 2001-01-01) (type: interval_day_time), (dt - ts) (type: interval_day_time), (dt - 2001-01-01 01:02:03.0) (type: interval_day_time), (2001-01-01 - ts) (type: interval_day_time)
+                    expressions: dt (type: date), (ts - dt) (type: interval_day_time), (TIMESTAMP'2001-01-01 01:02:03' - dt) (type: interval_day_time), (ts - DATE'2001-01-01') (type: interval_day_time), (dt - ts) (type: interval_day_time), (dt - TIMESTAMP'2001-01-01 01:02:03') (type: interval_day_time), (DATE'2001-01-01' - ts) (type: interval_day_time)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [1, 5, 6, 7, 8, 9, 10]
-                        selectExpressions: TimestampColSubtractDateColumn(col 0:timestamp, col 1:date) -> 5:interval_day_time, TimestampScalarSubtractDateColumn(val 2001-01-01 01:02:03.0, col 1:date) -> 6:interval_day_time, TimestampColSubtractDateScalar(col 0:timestamp, val 2001-01-01 00:00:00.0) -> 7:interval_day_time, DateColSubtractTimestampColumn(col 1:date, col 0:timestamp) -> 8:interval_day_time, DateColSubtractTimestampScalar(col 1:date, val 2001-01-01 01:02:03.0) -> 9:interval_day_time, DateScalarSubtractTimestampColumn(val 2001-01-01 00:00:00.0, col 0:timestamp) -> 10:interval_day_time
+                        selectExpressions: TimestampColSubtractDateColumn(col 0:timestamp, col 1:date) -> 5:interval_day_time, TimestampScalarSubtractDateColumn(val 2001-01-01 01:02:03, col 1:date) -> 6:interval_day_time, TimestampColSubtractDateScalar(col 0:timestamp, val 2001-01-01) -> 7:interval_day_time, DateColSubtractTimestampColumn(col 1:date, col 0:timestamp) -> 8:interval_day_time, DateColSubtractTimestampScalar(col 1:date, val 2001-01-01 01:02:03) -> 9:interval_day_time, DateScalarSubtractTimestampColumn(val 2001-01-01, col 0:timestamp) -> 10:interval_day_time
                     Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: date)
@@ -1055,8 +1083,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1119,5 +1147,6 @@ from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL
+dt	_c1	_c2	_c3	_c4	_c5	_c6
 2001-01-01	0 01:02:03.000000000	0 01:02:03.000000000	0 01:02:03.000000000	-0 01:02:03.000000000	-0 01:02:03.000000000	-0 01:02:03.000000000
+NULL	NULL	NULL	NULL	NULL	NULL	NULL

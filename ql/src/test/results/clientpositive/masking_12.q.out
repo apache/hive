@@ -1,27 +1,27 @@
-PREHOOK: query: create table `masking_test` as select cast(key as int) as key, value from src
+PREHOOK: query: create table `masking_test_n5` as select cast(key as int) as key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create table `masking_test` as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_n5
+POSTHOOK: query: create table `masking_test_n5` as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create view `v0` as select * from `masking_test`
+POSTHOOK: Output: default@masking_test_n5
+POSTHOOK: Lineage: masking_test_n5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view `v0` as select * from `masking_test_n5`
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@v0
-POSTHOOK: query: create view `v0` as select * from `masking_test`
+POSTHOOK: query: create view `v0` as select * from `masking_test_n5`
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n5
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v0
-POSTHOOK: Lineage: v0.key SIMPLE [(masking_test)masking_test.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: v0.value SIMPLE [(masking_test)masking_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: v0.key SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: v0.value SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select * from `v0`
 PREHOOK: type: QUERY
@@ -37,7 +37,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test
+            alias: masking_test_n5
+            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -55,6 +56,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -64,12 +66,12 @@ STAGE PLANS:
 
 PREHOOK: query: select * from `v0`
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n5
 PREHOOK: Input: default@v0
 #### A masked pattern was here ####
 POSTHOOK: query: select * from `v0`
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n5
 POSTHOOK: Input: default@v0
 #### A masked pattern was here ####
 0	0_lav
@@ -78,36 +80,36 @@ POSTHOOK: Input: default@v0
 0	0_lav
 0	0_lav
 2	2_lav
-PREHOOK: query: create table `masking_test_subq` as select cast(key as int) as key, value from src
+PREHOOK: query: create table `masking_test_subq_n1` as select cast(key as int) as key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test_subq
-POSTHOOK: query: create table `masking_test_subq` as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_subq_n1
+POSTHOOK: query: create table `masking_test_subq_n1` as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test_subq
-POSTHOOK: Lineage: masking_test_subq.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test_subq.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create view `v1` as select * from `masking_test_subq`
+POSTHOOK: Output: default@masking_test_subq_n1
+POSTHOOK: Lineage: masking_test_subq_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_subq_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view `v1_n9` as select * from `masking_test_subq_n1`
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@masking_test_subq
+PREHOOK: Input: default@masking_test_subq_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v1
-POSTHOOK: query: create view `v1` as select * from `masking_test_subq`
+PREHOOK: Output: default@v1_n9
+POSTHOOK: query: create view `v1_n9` as select * from `masking_test_subq_n1`
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@masking_test_subq
+POSTHOOK: Input: default@masking_test_subq_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v1
-POSTHOOK: Lineage: v1.key SIMPLE [(masking_test_subq)masking_test_subq.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: v1.value SIMPLE [(masking_test_subq)masking_test_subq.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Output: default@v1_n9
+POSTHOOK: Lineage: v1_n9.key SIMPLE [(masking_test_subq_n1)masking_test_subq_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: v1_n9.value SIMPLE [(masking_test_subq_n1)masking_test_subq_n1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
-select * from `v1`
+select * from `v1_n9`
 limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from `v1`
+select * from `v1_n9`
 limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -121,7 +123,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n1
+            filterExpr: key is not null (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -138,6 +141,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -156,6 +160,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -202,7 +207,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n1
+            filterExpr: key is not null (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -251,19 +257,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from `v1`
+PREHOOK: query: select * from `v1_n9`
 limit 20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test_subq
+PREHOOK: Input: default@masking_test_subq_n1
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: select * from `v1`
+POSTHOOK: query: select * from `v1_n9`
 limit 20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test_subq
+POSTHOOK: Input: default@masking_test_subq_n1
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n9
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -287,17 +293,17 @@ POSTHOOK: Input: default@v1
 19	val_19
 PREHOOK: query: create view `masking_test_view` as select key from `v0`
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n5
 PREHOOK: Input: default@v0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_view
 POSTHOOK: query: create view `masking_test_view` as select key from `v0`
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n5
 POSTHOOK: Input: default@v0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view
-POSTHOOK: Lineage: masking_test_view.key SIMPLE [(masking_test)masking_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: masking_test_view.key SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: explain
 select key from `masking_test_view`
 PREHOOK: type: QUERY
@@ -313,7 +319,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test
+            alias: masking_test_n5
+            filterExpr: (((key % 2) = 0) and (key < 10) and (key > 6)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -321,7 +328,7 @@ STAGE PLANS:
               predicate: (((key % 2) = 0) and (key < 10) and (key > 6)) (type: boolean)
               Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: UDFToInteger((UDFToDouble(key) / 2.0)) (type: int)
+                expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -331,6 +338,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -340,13 +348,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key from `masking_test_view`
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n5
 PREHOOK: Input: default@masking_test_view
 PREHOOK: Input: default@v0
 #### A masked pattern was here ####
 POSTHOOK: query: select key from `masking_test_view`
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n5
 POSTHOOK: Input: default@masking_test_view
 POSTHOOK: Input: default@v0
 #### A masked pattern was here ####
@@ -366,7 +374,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test
+            alias: masking_test_n5
+            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -384,15 +393,16 @@ STAGE PLANS:
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
           TableScan
-            alias: masking_test
+            alias: masking_test_n5
+            filterExpr: (((key % 2) = 0) and (key < 10) and (key > 6) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToInteger((UDFToDouble(key) / 2.0)) % 2) = 0) and ((key % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0)) < 10) and (key < 10) and (key > 6)) (type: boolean)
+              predicate: (((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and ((key % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10) and (key < 10) and (key > 6)) (type: boolean)
               Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: UDFToInteger((UDFToDouble(key) / 2.0)) (type: int)
+                expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 4 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -429,13 +439,13 @@ STAGE PLANS:
 
 PREHOOK: query: select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n5
 PREHOOK: Input: default@masking_test_view
 PREHOOK: Input: default@v0
 #### A masked pattern was here ####
 POSTHOOK: query: select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n5
 POSTHOOK: Input: default@masking_test_view
 POSTHOOK: Input: default@v0
 #### A masked pattern was here ####

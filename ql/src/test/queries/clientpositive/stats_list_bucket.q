@@ -1,5 +1,5 @@
+--! qt:dataset:src
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
 drop table stats_list_bucket;
 drop table stats_list_bucket_1;

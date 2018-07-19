@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf.ptf;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -559,7 +558,7 @@ class DateValueBoundaryScanner extends SingleValueBoundaryScanner {
     Date l2 = PrimitiveObjectInspectorUtils.getDate(v2,
         (PrimitiveObjectInspector) expressionDef.getOI());
     if (l1 != null && l2 != null) {
-        return (double)(l1.getTime() - l2.getTime())/1000 > (long)amt * 24 * 3600; // Converts amt days to milliseconds
+        return (double)(l1.toEpochMilli() - l2.toEpochMilli())/1000 > (long)amt * 24 * 3600; // Converts amt days to milliseconds
     }
     return l1 != l2; // True if only one date is null
   }
@@ -583,9 +582,9 @@ class TimestampValueBoundaryScanner extends SingleValueBoundaryScanner {
   public boolean isDistanceGreater(Object v1, Object v2, int amt) {
     if (v1 != null && v2 != null) {
       long l1 = PrimitiveObjectInspectorUtils.getTimestamp(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI()).getTime();
+          (PrimitiveObjectInspector) expressionDef.getOI()).toEpochMilli();
       long l2 = PrimitiveObjectInspectorUtils.getTimestamp(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI()).getTime();
+          (PrimitiveObjectInspector) expressionDef.getOI()).toEpochMilli();
       return (double)(l1-l2)/1000 > amt; // TODO: lossy conversion, distance is considered in seconds
     }
     return v1 != null || v2 != null; // True if only one value is null

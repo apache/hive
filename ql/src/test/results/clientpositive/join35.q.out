@@ -1,13 +1,13 @@
-PREHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_j1_n24(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_j1_n24
+POSTHOOK: query: CREATE TABLE dest_j1_n24(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
+POSTHOOK: Output: default@dest_j1_n24
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest_j1
+INSERT OVERWRITE TABLE dest_j1_n24
 SELECT x.key, x.value, subq1.cnt
 FROM 
 ( SELECT x.key as key, count(1) as cnt from src x where x.key < 20 group by x.key
@@ -17,7 +17,7 @@ FROM
 JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest_j1
+INSERT OVERWRITE TABLE dest_j1_n24
 SELECT x.key, x.value, subq1.cnt
 FROM 
 ( SELECT x.key as key, count(1) as cnt from src x where x.key < 20 group by x.key
@@ -41,11 +41,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (UDFToDouble(key) < 20.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -62,6 +63,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -73,6 +75,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
@@ -94,6 +97,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -112,7 +116,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0-subquery1:$hdt$_0-subquery1:x]
+        /src [$hdt$_0:$hdt$_0-subquery1:x]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -150,11 +154,12 @@ STAGE PLANS:
         $hdt$_1:x 
           TableScan
             alias: x
+            filterExpr: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((UDFToDouble(key) < 20.0) or (UDFToDouble(key) > 100.0)) and key is not null) (type: boolean)
+              predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
               Statistics: Num rows: 16 Data size: 122 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -199,22 +204,23 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,value,val2
                           columns.comments 
                           columns.types string:string:int
 #### A masked pattern was here ####
-                          name default.dest_j1
+                          name default.dest_j1_n24
                           numFiles 0
                           numRows 0
                           rawDataSize 0
-                          serialization.ddl struct dest_j1 { string key, string value, i32 val2}
+                          serialization.ddl struct dest_j1_n24 { string key, string value, i32 val2}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 0
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest_j1
+                        name: default.dest_j1_n24
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -275,22 +281,23 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,value,val2
                           columns.comments 
                           columns.types string:string:int
 #### A masked pattern was here ####
-                          name default.dest_j1
+                          name default.dest_j1_n24
                           numFiles 0
                           numRows 0
                           rawDataSize 0
-                          serialization.ddl struct dest_j1 { string key, string value, i32 val2}
+                          serialization.ddl struct dest_j1_n24 { string key, string value, i32 val2}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 0
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest_j1
+                        name: default.dest_j1_n24
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -378,6 +385,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
@@ -399,6 +407,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -430,22 +439,23 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value,val2
                 columns.comments 
                 columns.types string:string:int
 #### A masked pattern was here ####
-                name default.dest_j1
+                name default.dest_j1_n24
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest_j1 { string key, string value, i32 val2}
+                serialization.ddl struct dest_j1_n24 { string key, string value, i32 val2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_j1
+              name: default.dest_j1_n24
 
   Stage: Stage-3
     Stats Work
@@ -454,7 +464,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value, val2
           Column Types: string, string, int
-          Table: default.dest_j1
+          Table: default.dest_j1_n24
           Is Table Level Stats: true
 
   Stage: Stage-4
@@ -469,6 +479,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -531,11 +542,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (UDFToDouble(key) > 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -552,6 +564,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -563,6 +576,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
@@ -584,6 +598,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -602,7 +617,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0-subquery2:$hdt$_0-subquery2:x1]
+        /src [$hdt$_0:$hdt$_0-subquery2:x1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -630,7 +645,7 @@ STAGE PLANS:
             GatherStats: false
             MultiFileSpray: false
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
+PREHOOK: query: INSERT OVERWRITE TABLE dest_j1_n24
 SELECT x.key, x.value, subq1.cnt
 FROM 
 ( SELECT x.key as key, count(1) as cnt from src x where x.key < 20 group by x.key
@@ -641,8 +656,8 @@ JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1
+PREHOOK: Output: default@dest_j1_n24
+POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1_n24
 SELECT x.key, x.value, subq1.cnt
 FROM 
 ( SELECT x.key as key, count(1) as cnt from src x where x.key < 20 group by x.key
@@ -653,17 +668,17 @@ JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.val2 EXPRESSION [(src)x.null, (src)x1.null, ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j1
+POSTHOOK: Output: default@dest_j1_n24
+POSTHOOK: Lineage: dest_j1_n24.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1_n24.val2 EXPRESSION [(src)x.null, (src)x1.null, ]
+POSTHOOK: Lineage: dest_j1_n24.value SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from dest_j1_n24
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_j1
+PREHOOK: Input: default@dest_j1_n24
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j1
+POSTHOOK: query: select * from dest_j1_n24
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_j1
+POSTHOOK: Input: default@dest_j1_n24
 #### A masked pattern was here ####
 128		3
 146	val_146	2

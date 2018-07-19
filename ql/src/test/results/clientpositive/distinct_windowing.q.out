@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n15
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n15
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n15(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n15
+POSTHOOK: query: create table over10k_n15(
            t tinyint,
            si smallint,
            i int,
@@ -35,20 +35,20 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n15
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n15
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n15
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n15
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n15
 PREHOOK: query: explain
-select distinct first_value(t) over ( partition by si order by i ) from over10k limit 10
+select distinct first_value(t) over ( partition by si order by i ) from over10k_n15 limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select distinct first_value(t) over ( partition by si order by i ) from over10k limit 10
+select distinct first_value(t) over ( partition by si order by i ) from over10k_n15 limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -60,7 +60,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: over10k
+            alias: over10k_n15
             Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: si (type: smallint), i (type: int)
@@ -68,6 +68,7 @@ STAGE PLANS:
               Map-reduce partition columns: si (type: smallint)
               Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               value expressions: t (type: tinyint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: tinyint), KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
@@ -119,6 +120,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: tinyint)
               Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: tinyint)
@@ -142,13 +144,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select distinct first_value(t) over ( partition by si order by i ) from over10k limit 10
+PREHOOK: query: select distinct first_value(t) over ( partition by si order by i ) from over10k_n15 limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct first_value(t) over ( partition by si order by i ) from over10k limit 10
+POSTHOOK: query: select distinct first_value(t) over ( partition by si order by i ) from over10k_n15 limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 -2
 -1
@@ -162,11 +164,11 @@ POSTHOOK: Input: default@over10k
 8
 PREHOOK: query: explain
 select distinct last_value(i) over ( partition by si order by i )
-from over10k limit 10
+from over10k_n15 limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select distinct last_value(i) over ( partition by si order by i )
-from over10k limit 10
+from over10k_n15 limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -178,13 +180,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: over10k
+            alias: over10k_n15
             Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: si (type: smallint), i (type: int)
               sort order: ++
               Map-reduce partition columns: si (type: smallint)
               Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
@@ -236,6 +239,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: int)
               Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -260,14 +264,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select distinct last_value(i) over ( partition by si order by i )
-from over10k limit 10
+from over10k_n15 limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 POSTHOOK: query: select distinct last_value(i) over ( partition by si order by i )
-from over10k limit 10
+from over10k_n15 limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 65536
 65537
@@ -282,12 +286,12 @@ POSTHOOK: Input: default@over10k
 PREHOOK: query: explain
 select distinct last_value(i) over ( partition by si order by i ),
                 first_value(t)  over ( partition by si order by i )
-from over10k limit 50
+from over10k_n15 limit 50
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select distinct last_value(i) over ( partition by si order by i ),
                 first_value(t)  over ( partition by si order by i )
-from over10k limit 50
+from over10k_n15 limit 50
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -299,7 +303,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: over10k
+            alias: over10k_n15
             Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: si (type: smallint), i (type: int)
@@ -307,6 +311,7 @@ STAGE PLANS:
               Map-reduce partition columns: si (type: smallint)
               Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               value expressions: t (type: tinyint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: tinyint), KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
@@ -364,6 +369,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: int), _col1 (type: tinyint)
               Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int), KEY._col1 (type: tinyint)
@@ -389,15 +395,15 @@ STAGE PLANS:
 
 PREHOOK: query: select distinct last_value(i) over ( partition by si order by i ),
                 first_value(t)  over ( partition by si order by i )
-from over10k limit 50
+from over10k_n15 limit 50
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 POSTHOOK: query: select distinct last_value(i) over ( partition by si order by i ),
                 first_value(t)  over ( partition by si order by i )
-from over10k limit 50
+from over10k_n15 limit 50
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 65536	-2
 65536	2

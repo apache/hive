@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BooleanWritable;
@@ -193,11 +193,16 @@ public class UDFToInteger extends UDF {
    *          The Timestamp value to convert
    * @return IntWritable
    */
-  public IntWritable evaluate(TimestampWritable i) {
+  public IntWritable evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {
-      intWritable.set((int) i.getSeconds());
+      final long longValue = i.getSeconds();
+      final int intValue = (int) longValue;
+      if (intValue != longValue) {
+        return null;
+      }
+      intWritable.set(intValue);
       return intWritable;
     }
   }

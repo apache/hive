@@ -18,38 +18,34 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 import com.google.common.base.Preconditions;
 
 /**
  * This class evaluates double first_value() for a PTF group.
- *
  * We capture the last value from the last batch.  It can be NULL.
  * It becomes the group value.
  */
 public class VectorPTFEvaluatorDoubleLastValue extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDoubleLastValue.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
   protected boolean isGroupResultNull;
   protected double lastValue;
 
   public VectorPTFEvaluatorDoubleLastValue(WindowFrameDef windowFrameDef,
-      VectorExpression inputVecExpr, int outputColumnNum) {
+    VectorExpression inputVecExpr, int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+    throws HiveException {
+
     evaluateInputExpr(batch);
 
     // Last row of last batch determines isGroupResultNull and double lastValue.
@@ -66,7 +62,8 @@ public class VectorPTFEvaluatorDoubleLastValue extends VectorPTFEvaluatorBase {
     }
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
     if (doubleColVector.isRepeating) {
-      if (doubleColVector.noNulls) {
+
+      if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
         lastValue = doubleColVector.vector[0];
         isGroupResultNull = false;
       } else {

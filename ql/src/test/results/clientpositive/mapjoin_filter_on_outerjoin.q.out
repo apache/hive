@@ -67,6 +67,7 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
+            filterExpr: ((key < 300) and (key < 10)) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 10) and (key < 300)) (type: boolean)
@@ -83,6 +84,7 @@ STAGE PLANS:
         src2 
           TableScan
             alias: src2
+            filterExpr: (key < 300) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 300) (type: boolean)
@@ -102,6 +104,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src3
+            filterExpr: (key < 300) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 300) (type: boolean)
@@ -129,6 +132,7 @@ STAGE PLANS:
                     sort order: +++
                     Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: string), _col3 (type: string), _col5 (type: string)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -219,6 +223,7 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
+            filterExpr: ((key < 300) and (key < 10)) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 10) and (key < 300)) (type: boolean)
@@ -235,6 +240,7 @@ STAGE PLANS:
         src2 
           TableScan
             alias: src2
+            filterExpr: (key < 300) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 300) (type: boolean)
@@ -254,6 +260,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src3
+            filterExpr: (key < 300) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 300) (type: boolean)
@@ -281,6 +288,7 @@ STAGE PLANS:
                     sort order: +++
                     Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: string), _col3 (type: string), _col5 (type: string)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:

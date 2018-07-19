@@ -57,6 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: invites
+                  filterExpr: (ds = '2011-09-01') (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -71,10 +72,12 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: string)
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: invites2
+                  filterExpr: (ds = '2011-09-01') (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -89,6 +92,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: int)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator

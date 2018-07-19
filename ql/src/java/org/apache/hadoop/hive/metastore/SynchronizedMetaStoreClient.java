@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.thrift.TException;
 
 
@@ -108,7 +110,19 @@ public final class SynchronizedMetaStoreClient {
     return client.fireListenerEvent(rqst);
   }
 
+  public synchronized void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
+    client.addWriteNotificationLog(rqst);
+  }
+
   public synchronized void close() {
     client.close();
+  }
+
+  public boolean isSameConfObj(Configuration c) {
+    return client.isSameConfObj(c);
+  }
+
+  public boolean isCompatibleWith(Configuration c) {
+    return client.isCompatibleWith(c);
   }
 }

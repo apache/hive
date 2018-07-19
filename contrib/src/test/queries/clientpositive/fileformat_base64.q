@@ -1,3 +1,4 @@
+--! qt:dataset:src
 add jar ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:hive.version}/hive-contrib-${system:hive.version}.jar;
 
 DROP TABLE base64_test;

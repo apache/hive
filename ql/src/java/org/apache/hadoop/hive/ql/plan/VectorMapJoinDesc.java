@@ -205,6 +205,7 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   private boolean supportsKeyTypes;
   private List<String> notSupportedKeyTypes;
   private boolean smallTableExprVectorizes;
+  private boolean outerJoinHasNoKeys;
 
   public void setUseOptimizedTable(boolean useOptimizedTable) {
     this.useOptimizedTable = useOptimizedTable;
@@ -253,6 +254,12 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   }
   public boolean getSmallTableExprVectorizes() {
     return smallTableExprVectorizes;
+  }
+  public void setOuterJoinHasNoKeys(boolean outerJoinHasNoKeys) {
+    this.outerJoinHasNoKeys = outerJoinHasNoKeys;
+  }
+  public boolean getOuterJoinHasNoKeys() {
+    return outerJoinHasNoKeys;
   }
 
   public void setIsFastHashTableEnabled(boolean isFastHashTableEnabled) {

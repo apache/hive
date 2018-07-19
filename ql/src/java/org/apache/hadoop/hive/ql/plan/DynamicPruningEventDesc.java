@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -67,6 +68,7 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
     return targetColumnName + " (" + targetColumnType + ")";
   }
 
+  @Signature
   public String getTargetColumnName() {
     return targetColumnName;
   }
@@ -75,6 +77,7 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
     this.targetColumnName = columnName;
   }
 
+  @Signature
   public String getTargetColumnType() {
     return targetColumnType;
   }
@@ -94,6 +97,7 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
   }
 
   @Explain(displayName = "Partition key expr")
+  @Signature
   public String getPartKeyString() {
     return this.partKey.getExprString();
   }
@@ -112,4 +116,5 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
     }
     return false;
   }
+
 }

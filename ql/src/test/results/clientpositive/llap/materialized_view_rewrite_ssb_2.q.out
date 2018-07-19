@@ -36,7 +36,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into ta
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@customer_ext
-PREHOOK: query: CREATE TABLE `customer`(
+PREHOOK: query: CREATE TABLE `customer_n0`(
   `c_custkey` bigint, 
   `c_name` string, 
   `c_address` string, 
@@ -50,8 +50,8 @@ STORED AS ORC
 TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@customer
-POSTHOOK: query: CREATE TABLE `customer`(
+PREHOOK: Output: default@customer_n0
+POSTHOOK: query: CREATE TABLE `customer_n0`(
   `c_custkey` bigint, 
   `c_name` string, 
   `c_address` string, 
@@ -65,25 +65,25 @@ STORED AS ORC
 TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@customer
-PREHOOK: query: INSERT INTO `customer`
+POSTHOOK: Output: default@customer_n0
+PREHOOK: query: INSERT INTO `customer_n0`
 SELECT * FROM `customer_ext`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer_ext
-PREHOOK: Output: default@customer
-POSTHOOK: query: INSERT INTO `customer`
+PREHOOK: Output: default@customer_n0
+POSTHOOK: query: INSERT INTO `customer_n0`
 SELECT * FROM `customer_ext`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer_ext
-POSTHOOK: Output: default@customer
-POSTHOOK: Lineage: customer.c_address SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_address, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_city SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_city, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_custkey SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_custkey, type:bigint, comment:null), ]
-POSTHOOK: Lineage: customer.c_mktsegment SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_mktsegment, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_name SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_name, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_nation SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_nation, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_phone SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_phone, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_region SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_region, type:string, comment:null), ]
+POSTHOOK: Output: default@customer_n0
+POSTHOOK: Lineage: customer_n0.c_address SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_address, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_city SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_city, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_custkey SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_custkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_mktsegment SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_mktsegment, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_name SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_name, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_nation SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_phone SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_phone, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_region SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_region, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE `dates_ext`(
   `d_datekey` bigint, 
   `d_date` string, 
@@ -464,7 +464,7 @@ PREHOOK: query: CREATE TABLE `lineorder`(
   `lo_commitdate` bigint, 
   `lo_shipmode` string,
   primary key (`lo_orderkey`) disable rely,
-  constraint fk1 foreign key (`lo_custkey`) references `customer`(`c_custkey`) disable rely,
+  constraint fk1 foreign key (`lo_custkey`) references `customer_n0`(`c_custkey`) disable rely,
   constraint fk2 foreign key (`lo_orderdate`) references `dates`(`d_datekey`) disable rely,
   constraint fk3 foreign key (`lo_partkey`) references `ssb_part`(`p_partkey`) disable rely,
   constraint fk4 foreign key (`lo_suppkey`) references `supplier`(`s_suppkey`) disable rely)
@@ -492,7 +492,7 @@ POSTHOOK: query: CREATE TABLE `lineorder`(
   `lo_commitdate` bigint, 
   `lo_shipmode` string,
   primary key (`lo_orderkey`) disable rely,
-  constraint fk1 foreign key (`lo_custkey`) references `customer`(`c_custkey`) disable rely,
+  constraint fk1 foreign key (`lo_custkey`) references `customer_n0`(`c_custkey`) disable rely,
   constraint fk2 foreign key (`lo_orderdate`) references `dates`(`d_datekey`) disable rely,
   constraint fk3 foreign key (`lo_partkey`) references `ssb_part`(`p_partkey`) disable rely,
   constraint fk4 foreign key (`lo_suppkey`) references `supplier`(`s_suppkey`) disable rely)
@@ -528,57 +528,57 @@ POSTHOOK: Lineage: lineorder.lo_shippriority SIMPLE [(lineorder_ext)lineorder_ex
 POSTHOOK: Lineage: lineorder.lo_suppkey SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_suppkey, type:bigint, comment:null), ]
 POSTHOOK: Lineage: lineorder.lo_supplycost SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
 POSTHOOK: Lineage: lineorder.lo_tax SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_tax, type:double, comment:null), ]
-PREHOOK: query: analyze table customer compute statistics for columns
-PREHOOK: type: QUERY
-PREHOOK: Input: default@customer
-PREHOOK: Output: default@customer
+PREHOOK: query: analyze table customer_n0 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@customer_n0
+PREHOOK: Output: default@customer_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table customer compute statistics for columns
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@customer
-POSTHOOK: Output: default@customer
+POSTHOOK: query: analyze table customer_n0 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@customer_n0
+POSTHOOK: Output: default@customer_n0
 #### A masked pattern was here ####
 PREHOOK: query: analyze table dates compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@dates
 PREHOOK: Output: default@dates
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table dates compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@dates
 POSTHOOK: Output: default@dates
 #### A masked pattern was here ####
 PREHOOK: query: analyze table ssb_part compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@ssb_part
 PREHOOK: Output: default@ssb_part
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table ssb_part compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@ssb_part
 POSTHOOK: Output: default@ssb_part
 #### A masked pattern was here ####
 PREHOOK: query: analyze table supplier compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@supplier
 PREHOOK: Output: default@supplier
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table supplier compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@supplier
 POSTHOOK: Output: default@supplier
 #### A masked pattern was here ####
 PREHOOK: query: analyze table lineorder compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@lineorder
 PREHOOK: Output: default@lineorder
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table lineorder compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Output: default@lineorder
 #### A masked pattern was here ####
-PREHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv` ENABLE REWRITE
+PREHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv`
 AS
 SELECT
   cast(d_year || '-' || d_monthnuminyear || '-' || d_daynuminmonth as timestamp) as `__time`,
@@ -601,21 +601,21 @@ SELECT
   lo_extendedprice * lo_discount discounted_price,
   lo_revenue - lo_supplycost net_revenue
 FROM
-  customer, dates, lineorder, ssb_part, supplier
+  customer_n0, dates, lineorder, ssb_part, supplier
 where
   lo_orderdate = d_datekey
   and lo_partkey = p_partkey
   and lo_suppkey = s_suppkey
   and lo_custkey = c_custkey
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_n0
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
 PREHOOK: Input: default@ssb_part
 PREHOOK: Input: default@supplier
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ssb_mv
-POSTHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv` ENABLE REWRITE
+POSTHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv`
 AS
 SELECT
   cast(d_year || '-' || d_monthnuminyear || '-' || d_daynuminmonth as timestamp) as `__time`,
@@ -638,14 +638,14 @@ SELECT
   lo_extendedprice * lo_discount discounted_price,
   lo_revenue - lo_supplycost net_revenue
 FROM
-  customer, dates, lineorder, ssb_part, supplier
+  customer_n0, dates, lineorder, ssb_part, supplier
 where
   lo_orderdate = d_datekey
   and lo_partkey = p_partkey
   and lo_suppkey = s_suppkey
   and lo_custkey = c_custkey
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_n0
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Input: default@ssb_part
@@ -690,9 +690,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((UDFToInteger(d_year) = 1993) and (UDFToDouble(lo_quantity) < 25.0D) and UDFToDouble(lo_discount) BETWEEN 1.0D AND 3.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(lo_quantity) < 25.0) and (UDFToInteger(d_year) = 1993) and UDFToDouble(lo_discount) BETWEEN 1.0 AND 3.0) (type: boolean)
+                    predicate: ((UDFToDouble(lo_quantity) < 25.0D) and (UDFToInteger(d_year) = 1993) and UDFToDouble(lo_discount) BETWEEN 1.0D AND 3.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -769,9 +770,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_discount) BETWEEN 4.0D AND 6.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_discount) BETWEEN 4.0 AND 6.0 and UDFToDouble(lo_quantity) BETWEEN 26.0 AND 35.0) (type: boolean)
+                    predicate: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_discount) BETWEEN 4.0D AND 6.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -850,9 +852,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((UDFToInteger(d_year) = 1994) and (UDFToInteger(d_weeknuminyear) = 6) and UDFToDouble(lo_discount) BETWEEN 5.0D AND 7.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToInteger(d_weeknuminyear) = 6) and (UDFToInteger(d_year) = 1994) and UDFToDouble(lo_discount) BETWEEN 5.0 AND 7.0 and UDFToDouble(lo_quantity) BETWEEN 26.0 AND 35.0) (type: boolean)
+                    predicate: ((UDFToInteger(d_weeknuminyear) = 6) and (UDFToInteger(d_year) = 1994) and UDFToDouble(lo_discount) BETWEEN 5.0D AND 7.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -940,6 +943,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((p_category = 'MFGR#12') and (s_region = 'AMERICA')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((p_category = 'MFGR#12') and (s_region = 'AMERICA')) (type: boolean)
@@ -1050,6 +1054,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((s_region = 'ASIA') and p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228') (type: boolean)
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_region = 'ASIA') and p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228') (type: boolean)
@@ -1160,6 +1165,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((p_brand1 = 'MFGR#2239') and (s_region = 'EUROPE')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((p_brand1 = 'MFGR#2239') and (s_region = 'EUROPE')) (type: boolean)
@@ -1226,7 +1232,7 @@ select
     c_nation, s_nation, d_year,
     sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1244,7 +1250,7 @@ select
     c_nation, s_nation, d_year,
     sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1274,6 +1280,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((UDFToInteger(d_year) >= 1992) and (c_region = 'ASIA') and (s_region = 'ASIA') and (UDFToInteger(d_year) <= 1997)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992) and (c_region = 'ASIA') and (s_region = 'ASIA')) (type: boolean)
@@ -1339,7 +1346,7 @@ PREHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1356,7 +1363,7 @@ POSTHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1386,6 +1393,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((UDFToInteger(d_year) >= 1992) and (c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES') and (UDFToInteger(d_year) <= 1997)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992) and (c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES')) (type: boolean)
@@ -1451,7 +1459,7 @@ PREHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1468,7 +1476,7 @@ POSTHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1498,6 +1506,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((UDFToInteger(d_year) >= 1992) and (UDFToInteger(d_year) <= 1997) and ((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5'))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5')) and (UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992)) (type: boolean)
@@ -1563,7 +1572,7 @@ PREHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1580,7 +1589,7 @@ POSTHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1610,6 +1619,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((d_yearmonth = 'Dec1997') and ((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5'))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5')) and (d_yearmonth = 'Dec1997')) (type: boolean)
@@ -1676,7 +1686,7 @@ select
     d_year, c_nation,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1695,7 +1705,7 @@ select
     d_year, c_nation,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1726,6 +1736,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2'))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2')) and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
@@ -1788,7 +1799,7 @@ select
     d_year, s_nation, p_category,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1808,7 +1819,7 @@ select
     d_year, s_nation, p_category,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1840,6 +1851,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and ((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998)) and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2'))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998)) and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2')) and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
@@ -1902,7 +1914,7 @@ select
     d_year, s_city, p_brand1,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1922,7 +1934,7 @@ select
     d_year, s_city, p_brand1,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1954,6 +1966,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
+                  filterExpr: ((c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES') and ((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998)) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)

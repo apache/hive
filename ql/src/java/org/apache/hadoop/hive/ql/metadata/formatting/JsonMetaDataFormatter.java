@@ -43,12 +43,15 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
+import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.codehaus.jackson.JsonGenerator;
@@ -114,7 +117,8 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
+      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo,
+      CheckConstraint cInfo, StorageHandlerInfo storageHandlerInfo) throws HiveException {
     MapBuilder builder = MapBuilder.create();
     builder.put("columns", makeColsUnformatted(cols));
 
@@ -136,6 +140,15 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       }
       if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
         builder.put("notNullConstraintInfo", nnInfo);
+      }
+      if (dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
+        builder.put("defaultConstraintInfo", dInfo);
+      }
+      if (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) {
+        builder.put("checkConstraintInfo", cInfo);
+      }
+      if(storageHandlerInfo != null) {
+        builder.put("storageHandlerInfo", storageHandlerInfo.toString());
       }
     }
 
@@ -191,20 +204,21 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
         if (par.getLocation() != null) {
           tblLoc = par.getDataLocation().toString();
         }
-        inputFormattCls = par.getInputFormatClass().getName();
-        outputFormattCls = par.getOutputFormatClass().getName();
+        inputFormattCls = par.getInputFormatClass() == null ? null : par.getInputFormatClass().getName();
+        outputFormattCls = par.getOutputFormatClass() == null ? null : par.getOutputFormatClass().getName();
       }
     } else {
       if (tbl.getPath() != null) {
         tblLoc = tbl.getDataLocation().toString();
       }
-      inputFormattCls = tbl.getInputFormatClass().getName();
-      outputFormattCls = tbl.getOutputFormatClass().getName();
+      inputFormattCls = tbl.getInputFormatClass() == null ? null : tbl.getInputFormatClass().getName();
+      outputFormattCls = tbl.getOutputFormatClass() == null ? null : tbl.getOutputFormatClass().getName();
     }
 
     MapBuilder builder = MapBuilder.create();
 
     builder.put("tableName", tbl.getTableName());
+    builder.put("ownerType", (tbl.getOwnerType() != null) ? tbl.getOwnerType().name() : "null");
     builder.put("owner", tbl.getOwner());
     builder.put("location", tblLoc);
     builder.put("inputFormat", inputFormattCls);

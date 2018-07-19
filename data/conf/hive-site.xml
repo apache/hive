@@ -25,6 +25,12 @@
   <description>Internal marker for test. Used for masking env-dependent values</description>
 </property>
 
+<!-- Properties for test folders -->
+<property>
+  <name>mapreduce.jobtracker.staging.root.dir</name>
+  <value>${test.tmp.dir}/cli/mapred/staging</value>
+</property>
+
 <!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
 <!-- that are implied by Hadoop setup variables.                                                -->
 <!-- Aside from Hadoop setup variables - this file is provided as a convenience so that Hive    -->
@@ -326,6 +332,11 @@
 <property>
   <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
   <value>99</value>
+</property>
+
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
 </property>
 
 </configuration>

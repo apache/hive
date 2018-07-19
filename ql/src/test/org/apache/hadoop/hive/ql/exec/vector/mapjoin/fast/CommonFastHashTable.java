@@ -47,6 +47,7 @@ public class CommonFastHashTable {
         break;
       case 2:
         count = 3;
+        break;
       case 3:
         count = 4 + random.nextInt(7);
         break;

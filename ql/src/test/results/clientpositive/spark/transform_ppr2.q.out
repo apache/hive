@@ -33,6 +33,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
@@ -101,6 +102,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -149,6 +151,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -168,6 +171,7 @@ STAGE PLANS:
               /srcpart/ds=2008-04-08/hr=11 [tmap:src]
               /srcpart/ds=2008-04-08/hr=12 [tmap:src]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

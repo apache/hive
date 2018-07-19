@@ -23,6 +23,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (ctinyint > 0Y) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 935842 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -31,7 +32,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:tinyint, val 0)
-                    predicate: (ctinyint > 0) (type: boolean)
+                    predicate: (ctinyint > 0Y) (type: boolean)
                     Statistics: Num rows: 4096 Data size: 312018 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ((UDFToInteger(ctinyint) % 2) + 1) (type: int), cstring1 (type: string), cint (type: int), elt(((UDFToInteger(ctinyint) % 2) + 1), cstring1, cint) (type: string)
@@ -63,8 +64,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -141,7 +142,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -174,8 +175,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

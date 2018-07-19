@@ -69,10 +69,9 @@ import com.google.common.base.Preconditions;
  * completion.
  */
 public class TezJobMonitor {
+  private static final Logger LOG = LoggerFactory.getLogger(TezJobMonitor.class);
 
   static final String CLASS_NAME = TezJobMonitor.class.getName();
-  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  private static final int MIN_CHECK_INTERVAL = 200;
   private static final int MAX_CHECK_INTERVAL = 1000;
   private static final int MAX_RETRY_INTERVAL = 2500;
   private static final int MAX_RETRY_FAILURES = (MAX_RETRY_INTERVAL / MAX_CHECK_INTERVAL) + 1;
@@ -157,7 +156,8 @@ public class TezJobMonitor {
     DAGStatus.State lastState = null;
     boolean running = false;
 
-    long checkInterval = MIN_CHECK_INTERVAL;
+    long checkInterval = HiveConf.getTimeVar(hiveConf, HiveConf.ConfVars.TEZ_DAG_STATUS_CHECK_INTERVAL,
+      TimeUnit.MILLISECONDS);
     WmContext wmContext = null;
     while (true) {
 
@@ -166,19 +166,31 @@ public class TezJobMonitor {
           context.checkHeartbeaterLockException();
         }
 
-        status = dagClient.getDAGStatus(EnumSet.of(StatusGetOpts.GET_COUNTERS), checkInterval);
-        TezCounters dagCounters = status.getDAGCounters();
-        vertexProgressMap = status.getVertexProgress();
         wmContext = context.getWmContext();
+        EnumSet<StatusGetOpts> opts = null;
+        if (wmContext != null) {
+          Set<String> desiredCounters = wmContext.getSubscribedCounters();
+          if (desiredCounters != null && !desiredCounters.isEmpty()) {
+            opts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
+          }
+        }
+
+        status = dagClient.getDAGStatus(opts, checkInterval);
+
+        vertexProgressMap = status.getVertexProgress();
         List<String> vertexNames = vertexProgressMap.keySet()
           .stream()
           .map(k -> k.replaceAll(" ", "_"))
           .collect(Collectors.toList());
-        if (dagCounters != null && wmContext != null) {
+        if (wmContext != null) {
           Set<String> desiredCounters = wmContext.getSubscribedCounters();
-          if (desiredCounters != null && !desiredCounters.isEmpty()) {
+          TezCounters dagCounters = status.getDAGCounters();
+          if (dagCounters != null && desiredCounters != null && !desiredCounters.isEmpty()) {
             Map<String, Long> currentCounters = getCounterValues(dagCounters, vertexNames, vertexProgressMap,
               desiredCounters, done);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
+            }
             wmContext.setCurrentCounters(currentCounters);
           }
         }
@@ -204,8 +216,6 @@ public class TezJobMonitor {
                 console.printInfo("Status: Running (" + dagClient.getExecutionContext() + ")\n");
                 this.executionStartTime = System.currentTimeMillis();
                 running = true;
-                // from running -> failed/succeeded, the AM breaks out of timeouts
-                checkInterval = MAX_CHECK_INTERVAL;
               }
               updateFunction.update(status, vertexProgressMap);
               break;
@@ -359,11 +369,6 @@ public class TezJobMonitor {
 
     // Time based counters. If DAG is done already don't update these counters.
     if (!done) {
-      counterName = TimeCounterLimit.TimeCounter.ELAPSED_TIME.name();
-      if (desiredCounters.contains(counterName)) {
-        updatedCounters.put(counterName, context.getWmContext().getElapsedTime());
-      }
-
       counterName = TimeCounterLimit.TimeCounter.EXECUTION_TIME.name();
       if (desiredCounters.contains(counterName) && executionStartTime > 0) {
         updatedCounters.put(counterName, System.currentTimeMillis() - executionStartTime);

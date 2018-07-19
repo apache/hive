@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 -- Tests truncating a partition column
 
 CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE;

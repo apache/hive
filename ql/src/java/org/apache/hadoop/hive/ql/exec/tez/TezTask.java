@@ -84,6 +84,9 @@ import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -96,6 +99,7 @@ import com.google.common.annotations.VisibleForTesting;
 public class TezTask extends Task<TezWork> {
 
   private static final String CLASS_NAME = TezTask.class.getName();
+  private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
 
@@ -155,12 +159,16 @@ public class TezTask extends Task<TezWork> {
       // We only need a username for UGI to use for groups; getGroups will fetch the groups
       // based on Hadoop configuration, as documented at
       // https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html
-      String userName = ss.getUserName();
+      String userName = getUserNameForGroups(ss);
       List<String> groups = null;
       if (userName == null) {
         userName = "anonymous";
       } else {
-        groups = UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups();
+        try {
+          groups = UserGroupInformation.createRemoteUser(userName).getGroups();
+        } catch (Exception ex) {
+          LOG.warn("Cannot obtain groups for " + userName, ex);
+        }
       }
       MappingInput mi = new MappingInput(userName, groups,
           ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
@@ -313,6 +321,15 @@ public class TezTask extends Task<TezWork> {
       }
     }
     return rc;
+  }
+
+  private String getUserNameForGroups(SessionState ss) {
+    // This should be removed when authenticator and the 2-username mess is cleaned up.
+    if (ss.getAuthenticator() != null) {
+      String userName = ss.getAuthenticator().getUserName();
+      if (userName != null) return userName;
+    }
+    return ss.getUserName();
   }
 
   private void closeDagClientOnCancellation(DAGClient dagClient) {

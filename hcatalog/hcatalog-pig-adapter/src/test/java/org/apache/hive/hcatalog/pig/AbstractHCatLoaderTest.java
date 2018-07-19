@@ -29,8 +29,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,7 +40,8 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -53,7 +52,6 @@ import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.Pair;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigRunner;
 import org.apache.pig.PigServer;
 import org.apache.pig.ResourceStatistics;
@@ -92,20 +90,20 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     this.storageFormat = getStorageFormat();
   }
 
-  private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
+  private void dropTable(String tablename) throws Exception {
     dropTable(tablename, driver);
   }
 
-  static void dropTable(String tablename, IDriver driver) throws IOException, CommandNeedRetryException {
+  static void dropTable(String tablename, IDriver driver) throws Exception {
     driver.run("drop table if exists " + tablename);
   }
 
-  private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema, String partitionedBy) throws Exception {
     createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
   static void createTable(String tablename, String schema, String partitionedBy, IDriver driver, String storageFormat)
-      throws IOException, CommandNeedRetryException {
+      throws Exception {
     String createTable;
     createTable = "create table " + tablename + "(" + schema + ") ";
     if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
@@ -117,7 +115,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     executeStatementOnDriver(createTable, driver);
   }
 
-  private void createTable(String tablename, String schema) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema) throws Exception {
     createTable(tablename, schema, null);
   }
 
@@ -125,7 +123,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
    * Execute Hive CLI statement
    * @param cmd arbitrary statement to execute
    */
-  static void executeStatementOnDriver(String cmd, IDriver driver) throws IOException, CommandNeedRetryException {
+  static void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
     LOG.debug("Executing: " + cmd);
     CommandProcessorResponse cpr = driver.run(cmd);
     if(cpr.getResponseCode() != 0) {
@@ -332,7 +330,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
   }
 
   @Test
-  public void testReadPartitionedBasic() throws IOException, CommandNeedRetryException {
+  public void testReadPartitionedBasic() throws Exception {
     PigServer server = createPigServer(false);
 
     driver.run("select * from " + PARTITIONED_TABLE);
@@ -399,7 +397,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
   }
 
   @Test
-  public void testReadMissingPartitionBasicNeg() throws IOException, CommandNeedRetryException {
+  public void testReadMissingPartitionBasicNeg() throws Exception {
     PigServer server = createPigServer(false);
 
     File removedPartitionDir = new File(TEST_WAREHOUSE_DIR + "/" + PARTITIONED_TABLE + "/bkt=0");
@@ -585,7 +583,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     Properties properties = new Properties();
     properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "true");
     properties.put("stop.on.failure", Boolean.TRUE.toString());
-    PigServer server = new PigServer(ExecType.LOCAL, properties);
+    PigServer server = createPigServer(true, properties);
     server.registerQuery(
       "data = load 'test_convert_boolean_to_int' using org.apache.hive.hcatalog.pig.HCatLoader();");
     Schema schema = server.dumpSchema("data");
@@ -654,7 +652,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
      * All the values are within range of target data type (column)
      */
     private static final Object[][] primitiveRows = new Object[][] {
-        {Boolean.TRUE,Byte.MAX_VALUE,Short.MAX_VALUE, Integer.MAX_VALUE,Long.MAX_VALUE,Float.MAX_VALUE,Double.MAX_VALUE,555.22,"Kyiv","char(10)xx","varchar(20)","blah".getBytes(),Date.valueOf("2014-01-13"),Timestamp.valueOf("2014-01-13 19:26:25.0123")},
+        {Boolean.TRUE,Byte.MAX_VALUE,Short.MAX_VALUE, Integer.MAX_VALUE,Long.MAX_VALUE,Float.MAX_VALUE,Double.MAX_VALUE,555.22,"Kyiv","char(10)xx","varchar(20)","blah".getBytes(), Date.valueOf("2014-01-13"), Timestamp.valueOf("2014-01-13 19:26:25.0123")},
         {Boolean.FALSE,Byte.MIN_VALUE,Short.MIN_VALUE, Integer.MIN_VALUE,Long.MIN_VALUE,Float.MIN_VALUE,Double.MIN_VALUE,-555.22,"Saint Petersburg","char(xx)00","varchar(yy)","doh".getBytes(),Date.valueOf("2014-01-14"), Timestamp.valueOf("2014-01-14 19:26:25.0123")}
     };
     /**
@@ -690,7 +688,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
       // might be the last one to call HCatContext.INSTANCE.setConf(). Make sure setting is false.
       Properties properties = new Properties();
       properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "false");
-      PigServer server = new PigServer(ExecType.LOCAL, properties);
+      PigServer server = createPigServer(false, properties);
       server.registerQuery("X = load '" + ALL_PRIMITIVE_TYPES_TABLE + "' using " + HCatLoader.class.getName() + "();");
       Iterator<Tuple> XIter = server.openIterator("X");
       int numTuplesRead = 0;
@@ -703,14 +701,22 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
             assertTrue("rowNum=" + numTuplesRead + " colNum=" + colPos
                 + " Reference data is null; actual "
                 + t.get(colPos), t.get(colPos) == null);
-          } else if (referenceData instanceof java.util.Date) {
+          } else if (referenceData instanceof Date) {
             // Note that here we ignore nanos part of Hive Timestamp since nanos are dropped when
             // reading Hive from Pig by design.
             assertTrue("rowNum=" + numTuplesRead + " colNum=" + colPos
-                + " Reference data=" + ((java.util.Date)referenceData).getTime()
+                    + " Reference data=" + ((Date)referenceData).toEpochMilli()
+                    + " actual=" + ((DateTime)t.get(colPos)).getMillis()
+                    + "; types=(" + referenceData.getClass() + "," + t.get(colPos).getClass() + ")",
+                ((Date)referenceData).toEpochMilli() == ((DateTime)t.get(colPos)).getMillis());
+          } else if (referenceData instanceof Timestamp) {
+            // Note that here we ignore nanos part of Hive Timestamp since nanos are dropped when
+            // reading Hive from Pig by design.
+            assertTrue("rowNum=" + numTuplesRead + " colNum=" + colPos
+                + " Reference data=" + ((Timestamp)referenceData).toEpochMilli()
                 + " actual=" + ((DateTime)t.get(colPos)).getMillis()
                 + "; types=(" + referenceData.getClass() + "," + t.get(colPos).getClass() + ")",
-                ((java.util.Date)referenceData).getTime()== ((DateTime)t.get(colPos)).getMillis());
+                ((Timestamp)referenceData).toEpochMilli()== ((DateTime)t.get(colPos)).getMillis());
           } else {
             // Doing String comps here as value objects in Hive in Pig are different so equals()
             // doesn't work.

@@ -19,15 +19,13 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -115,7 +113,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
       Dispatcher disp = null;
       final Set<TableScanOperator> tableScans = new LinkedHashSet<TableScanOperator>();
 
-      Map<Rule, NodeProcessor> rules = new HashMap<Rule, NodeProcessor>();
+      LinkedHashMap<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
       rules.put(new RuleRegExp("TS finder",
               TableScanOperator.getOperatorName() + "%"), new NodeProcessor() {
           @Override

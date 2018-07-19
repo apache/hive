@@ -26,7 +26,7 @@ CREATE TEMPORARY FUNCTION runWorker AS 'org.apache.hadoop.hive.ql.udf.UDFRunWork
 create table mydual(a int);
 insert into mydual values(1);
 
-CREATE TABLE over10k(t tinyint,
+CREATE TABLE over10k_n2(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -41,7 +41,7 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
 --oddly this has 9999 rows not > 10K
-LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k;
+LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k_n2;
 
 CREATE TABLE over10k_orc_bucketed(t tinyint,
            si smallint,
@@ -56,14 +56,14 @@ CREATE TABLE over10k_orc_bucketed(t tinyint,
            bin binary) CLUSTERED BY(si) INTO 4 BUCKETS STORED AS ORC;
 
 -- this produces about 250 distinct values across all 4 equivalence classes
-select distinct si, si%4 from over10k order by si;
+select distinct si, si%4 from over10k_n2 order by si;
 
--- explain insert into over10k_orc_bucketed select * from over10k;
-insert into over10k_orc_bucketed select * from over10k;
+-- explain insert into over10k_orc_bucketed select * from over10k_n2;
+insert into over10k_orc_bucketed select * from over10k_n2;
 
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/over10k_orc_bucketed;
 -- create copy_N files
-insert into over10k_orc_bucketed select * from over10k;
+insert into over10k_orc_bucketed select * from over10k_n2;
 
 -- this output of this is masked in .out - it is visible in .orig
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/over10k_orc_bucketed;

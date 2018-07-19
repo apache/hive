@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -383,8 +382,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       return (0);
     }
     catch (Exception e) {
-      console.printError("Failed with exception " + e.getMessage(),
-          "\n" + StringUtils.stringifyException(e));
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      setException(e);
       return (1);
     }
     finally {
@@ -427,6 +426,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       Class itface = SessionState.get().getAuthorizerInterface();
       Object authorizer = AuthorizationFactory.create(delegate, itface,
           new AuthorizationFactory.AuthorizationExceptionHandler() {
+            @Override
             public void exception(Exception exception) {
               exceptions.add(exception.getMessage());
             }
@@ -609,7 +609,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   private JSONArray outputList(List<?> l, PrintStream out, boolean hasHeader,
-      boolean extended, boolean jsonOutput, int indent) throws Exception {
+      boolean extended, boolean jsonOutput, int indent, boolean inTest) throws Exception {
 
     boolean first_el = true;
     boolean nl = false;
@@ -633,7 +633,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           out.println();
         }
         JSONObject jsonOut = outputPlan(o, out, extended,
-            jsonOutput, jsonOutput ? 0 : (hasHeader ? indent + 2 : indent));
+            jsonOutput, jsonOutput ? 0 : (hasHeader ? indent + 2 : indent), "", inTest);
         if (jsonOutput) {
           outputArray.put(jsonOut);
         }
@@ -671,10 +671,13 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   @VisibleForTesting
   JSONObject outputPlan(Object work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
+    return outputPlan(work, out, extended, jsonOutput, indent, appendToHeader,
+            queryState.getConf().getBoolVar(ConfVars.HIVE_IN_TEST));
+  }
 
-    // Are we running tests?
-    final boolean inTest = queryState.getConf().getBoolVar(ConfVars.HIVE_IN_TEST);
-
+  public JSONObject outputPlan(Object work, PrintStream out,
+                               boolean extended, boolean jsonOutput, int indent,
+                               String appendToHeader, boolean inTest) throws Exception {
     // Check if work has an explain annotation
     Annotation note = AnnotationUtils.getAnnotation(work.getClass(), Explain.class);
 
@@ -772,7 +775,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       if (operator.getConf() != null) {
         String appender = isLogical ? " (" + operator.getOperatorId() + ")" : "";
         JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
-            jsonOutput, jsonOutput ? 0 : indent, appender);
+            jsonOutput, jsonOutput ? 0 : indent, appender, inTest);
         if (this.work != null && (this.work.isUserLevelExplain() || this.work.isFormatted())) {
           if (jsonOut != null && jsonOut.length() > 0) {
             ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("OperatorId:",
@@ -794,7 +797,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         if (operator.getChildOperators() != null) {
           int cindent = jsonOutput ? 0 : indent + 2;
           for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {
-            JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, cindent);
+            JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, cindent, "", inTest);
             if (jsonOutput) {
               ((JSONObject)json.get(JSONObject.getNames(json)[0])).accumulate("children", jsonOut);
             }
@@ -970,7 +973,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               out.print(header);
             }
 
-            JSONArray jsonOut = outputList(l, out, !skipHeader && !emptyHeader, extended, jsonOutput, ind);
+            JSONArray jsonOut = outputList(l, out, !skipHeader && !emptyHeader, extended,
+                    jsonOutput, ind, inTest);
 
             if (jsonOutput && !l.isEmpty()) {
               json.put(header, jsonOut);
@@ -984,7 +988,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             if (!skipHeader && out != null) {
               out.println(header);
             }
-            JSONObject jsonOut = outputPlan(val, out, extended, jsonOutput, ind);
+            JSONObject jsonOut = outputPlan(val, out, extended, jsonOutput, ind, "", inTest);
             if (jsonOutput && jsonOut != null && jsonOut.length() != 0) {
               if (!skipHeader) {
                 json.put(header, jsonOut);
@@ -1225,7 +1229,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return "EXPLAIN";
   }
 
-  public List<FieldSchema> getResultSchema() {
+  public static List<FieldSchema> getResultSchema() {
     FieldSchema tmpFieldSchema = new FieldSchema();
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
 

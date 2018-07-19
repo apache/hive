@@ -95,9 +95,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   Map<String, ColumnStatsList>                    colStatsCache;
   AtomicInteger                                   noColsMissingStats;
 
-  protected static final Logger                      LOG             = LoggerFactory
-                                                                      .getLogger(RelOptHiveTable.class
-                                                                          .getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(RelOptHiveTable.class.getName());
 
   public RelOptHiveTable(RelOptSchema calciteSchema, String qualifiedTblName,
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
@@ -401,7 +399,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     }
   }
 
-  private void updateColStats(Set<Integer> projIndxLst, boolean allowNullColumnForMissingStats) {
+  private void updateColStats(Set<Integer> projIndxLst, boolean allowMissingStats) {
     List<String> nonPartColNamesThatRqrStats = new ArrayList<String>();
     List<Integer> nonPartColIndxsThatRqrStats = new ArrayList<Integer>();
     List<String> partColNamesThatRqrStats = new ArrayList<String>();
@@ -574,7 +572,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       String logMsg = "No Stats for " + hiveTblMetadata.getCompleteName() + ", Columns: "
           + getColNamesForLogging(colNamesFailedStats);
       noColsMissingStats.getAndAdd(colNamesFailedStats.size());
-      if (allowNullColumnForMissingStats) {
+      if (allowMissingStats) {
         LOG.warn(logMsg);
         HiveConf conf = SessionState.getSessionConf();
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_SHOW_WARNINGS)) {
@@ -589,10 +587,13 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   }
 
   public List<ColStatistics> getColStat(List<Integer> projIndxLst) {
-    return getColStat(projIndxLst, false);
+    // If we allow estimated stats for the columns, then we shall set the boolean to true,
+    // since otherwise we will throw an exception because columns with estimated stats are
+    // actually added to the list of columns that do not contain stats.
+    return getColStat(projIndxLst, HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS));
   }
 
-  public List<ColStatistics> getColStat(List<Integer> projIndxLst, boolean allowNullColumnForMissingStats) {
+  public List<ColStatistics> getColStat(List<Integer> projIndxLst, boolean allowMissingStats) {
     List<ColStatistics> colStatsBldr = Lists.newArrayList();
     Set<Integer> projIndxSet = new HashSet<Integer>(projIndxLst);
     if (projIndxLst != null) {
@@ -603,7 +604,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
         }
       }
       if (!projIndxSet.isEmpty()) {
-        updateColStats(projIndxSet, allowNullColumnForMissingStats);
+        updateColStats(projIndxSet, allowMissingStats);
         for (Integer i : projIndxSet) {
           colStatsBldr.add(hiveColStatsMap.get(i));
         }
@@ -616,7 +617,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
         }
       }
       if (!pILst.isEmpty()) {
-        updateColStats(new HashSet<Integer>(pILst), allowNullColumnForMissingStats);
+        updateColStats(new HashSet<Integer>(pILst), allowMissingStats);
         for (Integer pi : pILst) {
           colStatsBldr.add(hiveColStatsMap.get(pi));
         }

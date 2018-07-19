@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,9 +30,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -129,6 +129,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       String query = ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(),
           input.getTokenStopIndex());
       LOG.info("Explain analyze (running phase) for query " + query);
+      conf.unset(ValidTxnList.VALID_TXNS_KEY);
+      conf.unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
       Context runCtx = null;
       try {
         runCtx = new Context(conf);
@@ -147,8 +149,6 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setOpIdToRuntimeNumRows(aggregateStats(config.getExplainRootPath()));
       } catch (IOException e1) {
         throw new SemanticException(e1);
-      } catch (CommandNeedRetryException e) {
-        throw new SemanticException(e);
       }
       ctx.resetOpContext();
       ctx.resetStream();
@@ -164,7 +164,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     sem.validate();
 
     ctx.setResFile(ctx.getLocalTmpPath());
-    List<Task<? extends Serializable>> tasks = sem.getAllRootTasks();
+    List<Task<?>> tasks = sem.getAllRootTasks();
     if (tasks == null) {
       tasks = Collections.emptyList();
     }
@@ -211,7 +211,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     work.setAppendTaskType(
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));
 
-    ExplainTask explTask = (ExplainTask) TaskFactory.get(work, conf);
+    ExplainTask explTask = (ExplainTask) TaskFactory.get(work);
 
     fieldList = explTask.getResultSchema();
     rootTasks.add(explTask);
@@ -261,7 +261,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public boolean skipAuthorization() {
-    List<Task<? extends Serializable>> rootTasks = getRootTasks();
+    List<Task<?>> rootTasks = getRootTasks();
     assert rootTasks != null && rootTasks.size() == 1;
     Task task = rootTasks.get(0);
     return task instanceof ExplainTask && ((ExplainTask)task).getWork().isAuthorize();

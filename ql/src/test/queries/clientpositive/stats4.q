@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set datanucleus.cache.collections=false;
 set hive.stats.autogather=true;
 

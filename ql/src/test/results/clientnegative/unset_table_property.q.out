@@ -20,9 +20,11 @@ POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
+bucketing_version	2
 c	3
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0

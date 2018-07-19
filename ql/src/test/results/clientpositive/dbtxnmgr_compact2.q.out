@@ -1,38 +1,38 @@
-PREHOOK: query: create table T1(key string, val string) partitioned by (ds string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: create table T1_n105(key string, val string) partitioned by (ds string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: create table T1(key string, val string) partitioned by (ds string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: Output: default@T1_n105
+POSTHOOK: query: create table T1_n105(key string, val string) partitioned by (ds string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: alter table T1 add partition (ds = 'today')
+POSTHOOK: Output: default@T1_n105
+PREHOOK: query: alter table T1_n105 add partition (ds = 'today')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table T1 add partition (ds = 'today')
+PREHOOK: Output: default@t1_n105
+POSTHOOK: query: alter table T1_n105 add partition (ds = 'today')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@t1
-POSTHOOK: Output: default@t1@ds=today
-PREHOOK: query: alter table T1 add partition (ds = 'yesterday')
+POSTHOOK: Output: default@t1_n105
+POSTHOOK: Output: default@t1_n105@ds=today
+PREHOOK: query: alter table T1_n105 add partition (ds = 'yesterday')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table T1 add partition (ds = 'yesterday')
+PREHOOK: Output: default@t1_n105
+POSTHOOK: query: alter table T1_n105 add partition (ds = 'yesterday')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@t1
-POSTHOOK: Output: default@t1@ds=yesterday
-PREHOOK: query: alter table T1 partition (ds = 'today') compact 'major'
+POSTHOOK: Output: default@t1_n105
+POSTHOOK: Output: default@t1_n105@ds=yesterday
+PREHOOK: query: alter table T1_n105 partition (ds = 'today') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
-POSTHOOK: query: alter table T1 partition (ds = 'today') compact 'major'
+POSTHOOK: query: alter table T1_n105 partition (ds = 'today') compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
-PREHOOK: query: alter table T1 partition (ds = 'yesterday') compact 'minor'
+PREHOOK: query: alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
-POSTHOOK: query: alter table T1 partition (ds = 'yesterday') compact 'minor'
+POSTHOOK: query: alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
-PREHOOK: query: drop table T1
+PREHOOK: query: drop table T1_n105
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table T1
+PREHOOK: Input: default@t1_n105
+PREHOOK: Output: default@t1_n105
+POSTHOOK: query: drop table T1_n105
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n105
+POSTHOOK: Output: default@t1_n105

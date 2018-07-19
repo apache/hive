@@ -44,6 +44,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -75,9 +76,10 @@ STAGE PLANS:
                 value expressions: _col1 (type: string)
           TableScan
             alias: s2
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -102,9 +104,10 @@ STAGE PLANS:
                 value expressions: _col1 (type: string)
           TableScan
             alias: s4
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -152,6 +155,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

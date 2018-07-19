@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n7
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n7
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n7(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n7
+POSTHOOK: query: create table over10k_n7(
            t tinyint,
            si smallint,
            i int,
@@ -35,15 +35,15 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n7
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n7
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n7
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n7
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n7
 PREHOOK: query: explain vectorization detail
 select row_number() over()  from src where key = '238'
 PREHOOK: type: QUERY
@@ -71,10 +71,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (key = '238') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -100,8 +101,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -197,10 +197,10 @@ row_number_window_0
 1
 2
 PREHOOK: query: explain vectorization detail
-select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -222,11 +222,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: d (type: double), dec (type: decimal(4,2))
                     sort order: ++
@@ -246,8 +246,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -255,7 +254,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [5, 7, 9]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -346,13 +345,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+PREHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+POSTHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 s	row_number_window_0
 calvin miller	1
@@ -456,10 +455,10 @@ holly hernandez	2
 tom white	3
 rachel ellison	1
 PREHOOK: query: explain vectorization detail
-select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -481,11 +480,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: bin (type: binary), d (type: double), i (type: int)
                     sort order: ++-
@@ -505,8 +504,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -514,7 +512,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [2, 5, 7, 10]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -571,13 +569,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+PREHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+POSTHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 i	lead_window_0
 65773	gabriella van buren
@@ -681,10 +679,10 @@ i	lead_window_0
 65545	tom zipper
 65789	ulysses hernandez
 PREHOOK: query: explain vectorization detail
-select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -706,11 +704,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: i (type: int), s (type: string), dec (type: decimal(4,2))
                     sort order: +++
@@ -729,8 +727,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -738,7 +735,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [2, 7, 9]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -795,13 +792,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+PREHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+POSTHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 i	lag_window_0
 65536	NULL
@@ -905,10 +902,10 @@ i	lag_window_0
 65538	48.61
 65538	2.03
 PREHOOK: query: explain vectorization detail
-select s, last_value(t) over (partition by d order by f) from over10k limit 100
+select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, last_value(t) over (partition by d order by f) from over10k limit 100
+select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -930,11 +927,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: d (type: double), f (type: float)
                     sort order: ++
@@ -954,8 +951,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -963,7 +959,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [0, 4, 5, 7]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -1054,13 +1050,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k limit 100
+PREHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k limit 100
+POSTHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 s	last_value_window_0
 calvin miller	99
@@ -1164,10 +1160,10 @@ holly hernandez	4
 david garcia	101
 rachel ellison	51
 PREHOOK: query: explain vectorization detail
-select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1189,11 +1185,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: bo (type: boolean), s (type: string)
                     sort order: ++
@@ -1212,8 +1208,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1221,7 +1216,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [6, 7]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -1277,13 +1272,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+PREHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+POSTHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 s	first_value_window_0
 alice allen	alice allen
@@ -1388,11 +1383,11 @@ alice nixon	alice allen
 alice nixon	alice allen
 PREHOOK: query: explain vectorization detail
 select t, s, i, last_value(i) over (partition by t order by s) 
-from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+from over10k_n7 where (s = 'oscar allen' or s = 'oscar carson') and t = 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select t, s, i, last_value(i) over (partition by t order by s) 
-from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+from over10k_n7 where (s = 'oscar allen' or s = 'oscar carson') and t = 10
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1414,17 +1409,18 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
+                  filterExpr: (((s = 'oscar allen') or (s = 'oscar carson')) and (t = 10Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val oscar allen), FilterStringGroupColEqualStringScalar(col 7:string, val oscar carson)), FilterLongColEqualLongScalar(col 0:tinyint, val 10))
-                    predicate: (((s = 'oscar allen') or (s = 'oscar carson')) and (t = 10)) (type: boolean)
+                    predicate: (((s = 'oscar allen') or (s = 'oscar carson')) and (t = 10Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToByte(10) (type: tinyint), s (type: string)
@@ -1446,8 +1442,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1455,7 +1450,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [0, 2, 7]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint, bigint]
         Reducer 2 
@@ -1516,7 +1511,7 @@ STAGE PLANS:
                       streamingColumns: []
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 10 (type: tinyint), _col7 (type: string), _col2 (type: int), last_value_window_0 (type: int)
+                    expressions: 10Y (type: tinyint), _col7 (type: string), _col2 (type: int), last_value_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -1620,7 +1615,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
                     sort order: ++
@@ -1639,8 +1634,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1793,7 +1787,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
                     sort order: +-
@@ -1812,8 +1806,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1966,7 +1959,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
                     sort order: ++
@@ -1985,8 +1978,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -2139,7 +2131,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: a (type: int), b (type: int)
                     sort order: +-
@@ -2158,8 +2150,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false

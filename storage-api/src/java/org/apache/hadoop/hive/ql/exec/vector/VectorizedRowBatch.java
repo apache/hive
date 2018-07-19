@@ -136,12 +136,120 @@ public class VectorizedRowBatch implements Writable {
     return o.toString();
   }
 
-  @Override
-  public String toString() {
+  public String stringifyColumn(int columnNum) {
     if (size == 0) {
       return "";
     }
     StringBuilder b = new StringBuilder();
+    b.append("columnNum ");
+    b.append(columnNum);
+    b.append(", size ");
+    b.append(size);
+    b.append(", selectedInUse ");
+    b.append(selectedInUse);
+    ColumnVector colVector = cols[columnNum];
+    b.append(", noNulls ");
+    b.append(colVector.noNulls);
+    b.append(", isRepeating ");
+    b.append(colVector.isRepeating);
+    b.append('\n');
+
+    final boolean noNulls = colVector.noNulls;
+    final boolean[] isNull = colVector.isNull;
+    if (colVector.isRepeating) {
+      final boolean hasRepeatedValue = (noNulls || !isNull[0]);
+      for (int i = 0; i < size; i++) {
+        if (hasRepeatedValue) {
+          colVector.stringifyValue(b, 0);
+        } else {
+          b.append("NULL");
+        }
+        b.append('\n');
+      }
+    } else {
+      for (int i = 0; i < size; i++) {
+        final int batchIndex = (selectedInUse ? selected[i] : i);
+        if (noNulls || !isNull[batchIndex]) {
+          colVector.stringifyValue(b, batchIndex);
+        } else {
+          b.append("NULL");
+        }
+        b.append('\n');
+      }
+    }
+    return b.toString();
+  }
+
+  private void appendVectorType(StringBuilder b, ColumnVector cv) {
+    String colVectorType = null;
+    if (cv instanceof LongColumnVector) {
+      colVectorType = "LONG";
+    } else if (cv instanceof DoubleColumnVector) {
+      colVectorType = "DOUBLE";
+    } else if (cv instanceof BytesColumnVector) {
+      colVectorType = "BYTES";
+    } else if (cv instanceof DecimalColumnVector) {
+      colVectorType = "DECIMAL";
+    } else if (cv instanceof TimestampColumnVector) {
+      colVectorType = "TIMESTAMP";
+    } else if (cv instanceof IntervalDayTimeColumnVector) {
+      colVectorType = "INTERVAL_DAY_TIME";
+    } else if (cv instanceof ListColumnVector) {
+      colVectorType = "LIST";
+    } else if (cv instanceof MapColumnVector) {
+      colVectorType = "MAP";
+    } else if (cv instanceof StructColumnVector) {
+      colVectorType = "STRUCT";
+    } else if (cv instanceof UnionColumnVector) {
+      colVectorType = "UNION";
+    } else {
+      colVectorType = "Unknown";
+    }
+    b.append(colVectorType);
+
+    if (cv instanceof ListColumnVector) {
+      ListColumnVector listColumnVector = (ListColumnVector) cv;
+      b.append("<");
+      appendVectorType(b, listColumnVector.child);
+      b.append(">");
+    } else if (cv instanceof MapColumnVector) {
+      MapColumnVector mapColumnVector = (MapColumnVector) cv;
+      b.append("<");
+      appendVectorType(b, mapColumnVector.keys);
+      b.append(", ");
+      appendVectorType(b, mapColumnVector.values);
+      b.append(">");
+    } else if (cv instanceof StructColumnVector) {
+      StructColumnVector structColumnVector = (StructColumnVector) cv;
+      b.append("<");
+      final int fieldCount = structColumnVector.fields.length;
+      for (int i = 0; i < fieldCount; i++) {
+        if (i > 0) {
+          b.append(", ");
+        }
+        appendVectorType(b, structColumnVector.fields[i]);
+      }
+      b.append(">");
+    } else if (cv instanceof UnionColumnVector) {
+      UnionColumnVector unionColumnVector = (UnionColumnVector) cv;
+      b.append("<");
+      final int fieldCount = unionColumnVector.fields.length;
+      for (int i = 0; i < fieldCount; i++) {
+        if (i > 0) {
+          b.append(", ");
+        }
+        appendVectorType(b, unionColumnVector.fields[i]);
+      }
+      b.append(">");
+    }
+  }
+
+  public String stringify(String prefix) {
+    if (size == 0) {
+      return "";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append(prefix);
     b.append("Column vector types: ");
     for (int k = 0; k < projectionSize; k++) {
       int projIndex = projectedColumns[k];
@@ -151,33 +259,10 @@ public class VectorizedRowBatch implements Writable {
       }
       b.append(projIndex);
       b.append(":");
-      String colVectorType = null;
-      if (cv instanceof LongColumnVector) {
-        colVectorType = "LONG";
-      } else if (cv instanceof DoubleColumnVector) {
-        colVectorType = "DOUBLE";
-      } else if (cv instanceof BytesColumnVector) {
-        colVectorType = "BYTES";
-      } else if (cv instanceof DecimalColumnVector) {
-        colVectorType = "DECIMAL";
-      } else if (cv instanceof TimestampColumnVector) {
-        colVectorType = "TIMESTAMP";
-      } else if (cv instanceof IntervalDayTimeColumnVector) {
-        colVectorType = "INTERVAL_DAY_TIME";
-      } else if (cv instanceof ListColumnVector) {
-        colVectorType = "LIST";
-      } else if (cv instanceof MapColumnVector) {
-        colVectorType = "MAP";
-      } else if (cv instanceof StructColumnVector) {
-        colVectorType = "STRUCT";
-      } else if (cv instanceof UnionColumnVector) {
-        colVectorType = "UNION";
-      } else {
-        colVectorType = "Unknown";
-      }
-      b.append(colVectorType);
+      appendVectorType(b, cv);
     }
     b.append('\n');
+    b.append(prefix);
 
     if (this.selectedInUse) {
       for (int j = 0; j < size; j++) {
@@ -189,11 +274,18 @@ public class VectorizedRowBatch implements Writable {
           if (k > 0) {
             b.append(", ");
           }
-          cv.stringifyValue(b, i);
+          if (cv != null) {
+            try {
+              cv.stringifyValue(b, i);
+            } catch (Exception ex) {
+              b.append("<invalid>");
+            }
+          }
         }
         b.append(']');
         if (j < size - 1) {
           b.append('\n');
+          b.append(prefix);
         }
       }
     } else {
@@ -216,10 +308,16 @@ public class VectorizedRowBatch implements Writable {
         b.append(']');
         if (i < size - 1) {
           b.append('\n');
+          b.append(prefix);
         }
       }
     }
     return b.toString();
+  }
+
+  @Override
+  public String toString() {
+    return stringify("");
   }
 
   @Override

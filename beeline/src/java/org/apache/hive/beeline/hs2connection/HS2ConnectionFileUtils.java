@@ -21,7 +21,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
+
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 
 public class HS2ConnectionFileUtils {
 
@@ -57,6 +62,7 @@ public class HS2ConnectionFileUtils {
       hiveVarProperties = extractHiveVariables(
           (String) props.remove(HS2ConnectionFileParser.HIVE_VAR_PROPERTY_KEY), false);
     }
+
     StringBuilder urlSb = new StringBuilder();
     urlSb.append(urlPrefix.trim());
     urlSb.append(hosts.trim());
@@ -115,5 +121,130 @@ public class HS2ConnectionFileUtils {
       hivePropertiesList.append("=");
       hivePropertiesList.append(keyValue[1].trim());
     }
+  }
+
+  public static String getNamedUrl(Properties userNamedConnectionURLs, String urlName)
+      throws BeelineSiteParseException {
+    String jdbcURL = null;
+    if ((urlName != null) && !urlName.isEmpty()) {
+      // Try to read the given named url from the connection configuration file
+      jdbcURL = userNamedConnectionURLs.getProperty(urlName);
+      if (jdbcURL == null) {
+        throw new BeelineSiteParseException(
+            "The named url: " + urlName + " is not specified in the connection configuration file: "
+                + BeelineSiteParser.DEFAULT_BEELINE_SITE_FILE_NAME);
+      }
+      return jdbcURL;
+    } else {
+      // Try to read the default named url from the connection configuration file
+      String defaultURLName = userNamedConnectionURLs
+          .getProperty(BeelineSiteParser.DEFAULT_NAMED_JDBC_URL_PROPERTY_KEY);
+      jdbcURL = userNamedConnectionURLs.getProperty(defaultURLName);
+      if (jdbcURL != null) {
+        return jdbcURL;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Merge the connection properties read from beeline-hs2-connection.xml with the
+   * JdbcConnectionParams extracted from the jdbc url specified in beeline.xml
+   *
+   * @param userConnectionProperties
+   * @param jdbcConnectionParams
+   * @return
+   * @throws BeelineHS2ConnectionFileParseException
+   */
+  public static Properties mergeUserConnectionPropertiesAndBeelineSite(
+      Properties userConnectionProperties, JdbcConnectionParams jdbcConnectionParams)
+      throws BeelineHS2ConnectionFileParseException {
+    Properties mergedConnectionProperties = new Properties();
+
+    userConnectionProperties.setProperty(HS2ConnectionFileParser.URL_PREFIX_PROPERTY_KEY,
+        "jdbc:hive2://");
+
+    // Host
+    String host =
+        getMergedProperty(userConnectionProperties, jdbcConnectionParams.getSuppliedURLAuthority(),
+            HS2ConnectionFileParser.HOST_PROPERTY_KEY, null);
+    if (host != null) {
+      mergedConnectionProperties.setProperty(HS2ConnectionFileParser.HOST_PROPERTY_KEY, host);
+    }
+
+    // Database
+    String defaultDB = getMergedProperty(userConnectionProperties, jdbcConnectionParams.getDbName(),
+        HS2ConnectionFileParser.DEFAULT_DB_PROPERTY_KEY, "default");
+    mergedConnectionProperties.setProperty(HS2ConnectionFileParser.DEFAULT_DB_PROPERTY_KEY,
+        defaultDB);
+
+    // hive conf
+    String hiveConfProperties = getMergedPropertiesString(userConnectionProperties,
+        HS2ConnectionFileParser.HIVE_CONF_PROPERTY_KEY, jdbcConnectionParams.getHiveConfs());
+    if (!hiveConfProperties.isEmpty()) {
+      mergedConnectionProperties.setProperty(HS2ConnectionFileParser.HIVE_CONF_PROPERTY_KEY,
+          hiveConfProperties);
+    }
+
+    // hive vars
+    String hiveVarProperties = getMergedPropertiesString(userConnectionProperties,
+        HS2ConnectionFileParser.HIVE_VAR_PROPERTY_KEY, jdbcConnectionParams.getHiveVars());
+    if (!hiveVarProperties.isEmpty()) {
+      mergedConnectionProperties.setProperty(HS2ConnectionFileParser.HIVE_VAR_PROPERTY_KEY,
+          hiveVarProperties);
+    }
+
+    // session vars
+    for (Map.Entry<String, String> entry : jdbcConnectionParams.getSessionVars().entrySet()) {
+      mergedConnectionProperties.setProperty(entry.getKey(), entry.getValue());
+    }
+    if (userConnectionProperties != null) {
+      for (String propName : userConnectionProperties.stringPropertyNames()) {
+        mergedConnectionProperties.setProperty(propName,
+            userConnectionProperties.getProperty(propName));
+      }
+    }
+    return mergedConnectionProperties;
+  }
+
+  private static String getMergedProperty(Properties userConnectionProperties,
+      String valueFromJdbcUri, String propertyKey, String defaultValue) {
+    String value = null;
+    if (userConnectionProperties != null) {
+      value = (String) userConnectionProperties.remove(propertyKey);
+    }
+    if (value == null || value.isEmpty()) {
+      value = valueFromJdbcUri;
+    }
+    if (value == null || value.isEmpty()) {
+      value = defaultValue;
+    }
+    return value;
+  }
+
+  private static String getMergedPropertiesString(Properties userConnectionProperties,
+      String propertyKey, Map<String, String> propertiesFromJdbcConnParams)
+      throws BeelineHS2ConnectionFileParseException {
+    String properties = "";
+    if ((userConnectionProperties != null) && (userConnectionProperties.containsKey(propertyKey))) {
+      properties =
+          extractHiveVariables((String) userConnectionProperties.remove(propertyKey), true);
+    }
+    String propertiesFromJdbcUri = "";
+    for (Map.Entry<String, String> entry : propertiesFromJdbcConnParams.entrySet()) {
+      if (!properties.contains(entry.getKey())) {
+        if (!propertiesFromJdbcUri.isEmpty()) {
+          propertiesFromJdbcUri = propertiesFromJdbcUri + ",";
+        }
+        propertiesFromJdbcUri = propertiesFromJdbcUri + entry.getKey() + "=" + entry.getValue();
+      }
+    }
+    if (!propertiesFromJdbcUri.isEmpty()) {
+      if (!properties.isEmpty()) {
+        properties = properties + ",";
+      }
+      properties = properties + propertiesFromJdbcUri;
+    }
+    return properties;
   }
 }

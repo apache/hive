@@ -205,12 +205,25 @@ public class AvroSerdeUtils {
   }
 
   /**
-   * In a nullable type, get the schema for the non-nullable type.  This method
-   * does no checking that the provides Schema is nullable.
+   * If the union schema is a nullable union, get the schema for the non-nullable type.
+   * This method does no checking that the provided Schema is nullable. If the provided
+   * union schema is non-nullable, it simply returns the union schema
    */
-  public static Schema getOtherTypeFromNullableType(Schema schema) {
-    List<Schema> itemSchemas = new ArrayList<>();
-    for (Schema itemSchema : schema.getTypes()) {
+  public static Schema getOtherTypeFromNullableType(Schema unionSchema) {
+    final List<Schema> types = unionSchema.getTypes();
+    if (types.size() == 2) { // most common scenario
+      if (types.get(0).getType() == Schema.Type.NULL) {
+        return types.get(1);
+      }
+      if (types.get(1).getType() == Schema.Type.NULL) {
+        return types.get(0);
+      }
+      // not a nullable union
+      return unionSchema;
+    }
+
+    final List<Schema> itemSchemas = new ArrayList<>();
+    for (Schema itemSchema : types) {
       if (!Schema.Type.NULL.equals(itemSchema.getType())) {
         itemSchemas.add(itemSchema);
       }

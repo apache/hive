@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -200,32 +201,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
       Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
     }
 
-    // 2. Perform a major compaction.
-    runStatementOnDriver("alter table "+ TableExtended.MMTBL + " compact 'MAJOR'");
-    runWorker(hiveConf);
-    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-        (TableExtended.MMTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    // There should be 2 delta dirs.
-    Assert.assertEquals(2, status.length);
-    boolean sawBase = false;
-    int deltaCount = 0;
-    for (int i = 0; i < status.length; i++) {
-      String dirName = status[i].getPath().getName();
-      if (dirName.matches("delta_.*")) {
-        deltaCount++;
-      } else {
-        sawBase = true;
-        Assert.assertTrue(dirName.matches("base_.*"));
-      }
-    }
-    Assert.assertEquals(2, deltaCount);
-    Assert.assertFalse(sawBase);
-    // Verify query result
-    int [][] resultData = new int[][] {{1,2},{3,4}};
-    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
-    Assert.assertEquals(stringifyValues(resultData), rs);
-
-    // 3. INSERT OVERWRITE
+    // 2. INSERT OVERWRITE
     // Prepare data for the source table
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(5,6),(7,8)");
     // Insert overwrite MM table from source table
@@ -235,7 +211,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     // There should be 2 delta dirs, plus 1 base dir in the location
     Assert.assertEquals(3, status.length);
     int baseCount = 0;
-    deltaCount = 0;
+    int deltaCount = 0;
     for (int i = 0; i < status.length; i++) {
       String dirName = status[i].getPath().getName();
       if (dirName.matches("delta_.*")) {
@@ -248,47 +224,8 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, baseCount);
 
     // Verify query result
-    resultData = new int[][] {{5,6},{7,8}};
-    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
-    Assert.assertEquals(stringifyValues(resultData), rs);
-
-    // 4. Perform a minor compaction. Nothing should change.
-    // Both deltas and the base dir should have the same name.
-    // Re-verify directory layout and query result by using the same logic as above
-    runStatementOnDriver("alter table "+ TableExtended.MMTBL + " compact 'MINOR'");
-    runWorker(hiveConf);
-    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-        (TableExtended.MMTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    // There should be 2 delta dirs, plus 1 base dir in the location
-    Assert.assertEquals(3, status.length);
-    baseCount = 0;
-    deltaCount = 0;
-    for (int i = 0; i < status.length; i++) {
-      String dirName = status[i].getPath().getName();
-      if (dirName.matches("delta_.*")) {
-        deltaCount++;
-      } else {
-        Assert.assertTrue(dirName.matches("base_.*"));
-        baseCount++;
-      }
-    }
-    Assert.assertEquals(2, deltaCount);
-    Assert.assertEquals(1, baseCount);
-
-    // Verify query result
-    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
-    Assert.assertEquals(stringifyValues(resultData), rs);
-
-    // 5. Run Cleaner. It should remove the 2 delta dirs.
-    runCleaner(hiveConf);
-    // There should be only 1 directory left: base_xxxxxxx.
-    // The delta dirs should have been cleaned up.
-    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-        (TableExtended.MMTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    Assert.assertEquals(1, status.length);
-    Assert.assertTrue(status[0].getPath().getName().matches("base_.*"));
-    // Verify query result
-    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    int[][] resultData = new int[][] {{5,6},{7,8}};
+    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
     Assert.assertEquals(stringifyValues(resultData), rs);
   }
 
@@ -347,6 +284,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     for(int h=0; h < pStrings.length; h++) {
       status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
           (TableExtended.MMTBLPART).toString().toLowerCase() + pStrings[h]), FileUtils.STAGING_DIR_PATH_FILTER);
+      Arrays.sort(status);
       // There should be 1 delta dir, plus a base dir in the location
       Assert.assertEquals(2, status.length);
       for (int i = 0; i < status.length; i++) {
@@ -591,16 +529,133 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     Assert.assertEquals(stringifyValues(rExpected), rs);
   }
 
+  @Test
+  public void testOperationsOnCompletedTxnComponentsForMmTable() throws Exception {
+
+    // Insert two rows into the table.
+    runStatementOnDriver("insert into " + TableExtended.MMTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + TableExtended.MMTBL + "(a,b) values(3,4)");
+    // There should be 2 delta directories
+    verifyDirAndResult(2);
+
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPLETED_TXN_COMPONENTS"),
+            2, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPLETED_TXN_COMPONENTS"));
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
+            0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
+
+    // Initiate a minor compaction request on the table.
+    runStatementOnDriver("alter table " + TableExtended.MMTBL  + " compact 'MAJOR'");
+
+    // Run worker.
+    runWorker(hiveConf);
+
+    // Run Cleaner.
+    runCleaner(hiveConf);
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPLETED_TXN_COMPONENTS"),
+            0,
+            TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPLETED_TXN_COMPONENTS"));
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
+            0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
+  }
+
+  @Test
+  public void testSnapshotIsolationWithAbortedTxnOnMmTable() throws Exception {
+
+    // Insert two rows into the table.
+    runStatementOnDriver("insert into " + TableExtended.MMTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + TableExtended.MMTBL + "(a,b) values(3,4)");
+    // There should be 2 delta directories
+    verifyDirAndResult(2);
+
+    // Initiate a minor compaction request on the table.
+    runStatementOnDriver("alter table " + TableExtended.MMTBL  + " compact 'MINOR'");
+
+    // Run Compaction Worker to do compaction.
+    // But we do not compact a MM table but only transit the compaction request to
+    // "ready for cleaning" state in this case.
+    runWorker(hiveConf);
+    verifyDirAndResult(2);
+
+    // Start an INSERT statement transaction and roll back this transaction.
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + TableExtended.MMTBL  + " values (5, 6)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    // There should be 3 delta directories. The new one is the aborted one.
+    verifyDirAndResult(3);
+
+    // Execute SELECT statement and verify the result set (should be two rows).
+    int[][] expected = new int[][] {{1, 2}, {3, 4}};
+    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(expected), rs);
+
+    // Run Cleaner.
+    // This run doesn't do anything for the above aborted transaction since
+    // the current compaction request entry in the compaction queue is updated
+    // to have highest_write_id when the worker is run before the aborted
+    // transaction. Specifically the id is 2 for the entry but the aborted
+    // transaction has 3 as writeId. This run does transition the entry
+    // "successful".
+    runCleaner(hiveConf);
+    verifyDirAndResult(3);
+
+    // Execute SELECT and verify that aborted operation is not counted for MM table.
+    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(expected), rs);
+
+    // Run initiator to execute CompactionTxnHandler.cleanEmptyAbortedTxns()
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
+            1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
+    Initiator i = new Initiator();
+    i.setThreadId((int)i.getId());
+    i.setConf(hiveConf);
+    AtomicBoolean stop = new AtomicBoolean(true);
+    i.init(stop, new AtomicBoolean());
+    i.run();
+    // This run of Initiator doesn't add any compaction_queue entry
+    // since we only have one MM table with data - we don't compact MM tables.
+    verifyDirAndResult(3);
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
+            1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
+
+    // Execute SELECT statement and verify that aborted INSERT statement is not counted.
+    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(expected), rs);
+
+    // Initiate a minor compaction request on the table.
+    runStatementOnDriver("alter table " + TableExtended.MMTBL  + " compact 'MINOR'");
+
+    // Run worker to delete aborted transaction's delta directory.
+    runWorker(hiveConf);
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
+            1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"),
+            1,
+            TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"));
+    verifyDirAndResult(2);
+
+    // Run Cleaner to delete rows for the aborted transaction
+    // from TXN_COMPONENTS.
+    runCleaner(hiveConf);
+
+    // Run initiator to clean the row fro the aborted transaction from TXNS.
+    i.run();
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
+            0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"),
+            0,
+            TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"));
+  }
+
   private void verifyDirAndResult(int expectedDeltas) throws Exception {
     FileSystem fs = FileSystem.get(hiveConf);
     // Verify the content of subdirs
     FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-        (TableExtended.MMTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+        (TableExtended.MMTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
     int sawDeltaTimes = 0;
     for (int i = 0; i < status.length; i++) {
       Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
       sawDeltaTimes++;
-      FileStatus[] files = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
+      FileStatus[] files = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
       Assert.assertEquals(1, files.length);
       Assert.assertTrue(files[0].getPath().getName().equals("000000_0"));
     }

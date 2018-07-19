@@ -123,6 +123,9 @@ public class ReduceRecordSource implements RecordSource {
   private long vectorizedVertexNum;
   private int vectorizedTestingReducerBatchSize;
 
+  // Flush the last record when reader is out of records
+  private boolean flushLastRecord = false;
+
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
       TableDesc valueTableDesc, Reader reader, boolean handleGroupKey, byte tag,
       VectorizedRowBatchCtx batchContext, long vectorizedVertexNum,
@@ -254,6 +257,9 @@ public class ReduceRecordSource implements RecordSource {
 
     try {
       if (!reader.next()) {
+        if (flushLastRecord) {
+          reducer.flushRecursive();
+        }
         return false;
       }
 
@@ -507,5 +513,9 @@ public class ReduceRecordSource implements RecordSource {
 
   public ObjectInspector getObjectInspector() {
     return rowObjectInspector;
+  }
+
+  public void setFlushLastRecord(boolean flushLastRecord) {
+    this.flushLastRecord = flushLastRecord;
   }
 }

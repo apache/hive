@@ -58,6 +58,7 @@ STAGE PLANS:
                       tag: -1
                       value expressions: _col0 (type: string), _col1 (type: string)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src]
             Path -> Partition:
@@ -69,6 +70,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -91,6 +93,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -130,6 +133,7 @@ STAGE PLANS:
                       tag: -1
                       value expressions: _col1 (type: string)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src]
             Path -> Partition:
@@ -141,6 +145,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -163,6 +168,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -184,6 +190,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /src [src]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -205,6 +212,7 @@ STAGE PLANS:
                         SORTBUCKETCOLSPREFIX TRUE
                         bucket_count 2
                         bucket_field_name key
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
@@ -226,6 +234,7 @@ STAGE PLANS:
                   GatherStats: true
                   MultiFileSpray: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -245,6 +254,7 @@ STAGE PLANS:
                       properties:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         bucket_count -1
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
@@ -279,6 +289,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -313,6 +324,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -373,6 +385,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	SORTBUCKETCOLSPREFIX	TRUE                
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -397,16 +410,16 @@ POSTHOOK: query: SELECT * FROM bucketed_table TABLESAMPLE (BUCKET 1 OUT OF 2) s 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketed_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	val_0
-0	val_0
-0	val_0
 2	val_2
-4	val_4
-8	val_8
 10	val_10
-12	val_12
-12	val_12
-18	val_18
+17	val_17
+19	val_19
+20	val_20
+27	val_27
+30	val_30
+41	val_41
+43	val_43
+51	val_51
 PREHOOK: query: SELECT * FROM bucketed_table TABLESAMPLE (BUCKET 2 OUT OF 2) s LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketed_table
@@ -415,16 +428,16 @@ POSTHOOK: query: SELECT * FROM bucketed_table TABLESAMPLE (BUCKET 2 OUT OF 2) s 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketed_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	val_0
+0	val_0
+0	val_0
+4	val_4
 5	val_5
 5	val_5
 5	val_5
+8	val_8
 9	val_9
 11	val_11
-15	val_15
-15	val_15
-17	val_17
-19	val_19
-27	val_27
 PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM bucketed_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketed_table

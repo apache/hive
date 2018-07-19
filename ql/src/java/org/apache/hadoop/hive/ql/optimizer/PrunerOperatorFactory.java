@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.serde2.SerDeException;
 
 /**
  * Operator factory for pruning processing of operator graph We find
@@ -101,7 +102,7 @@ public abstract class PrunerOperatorFactory {
      * @throws UDFArgumentException
      */
     protected abstract void generatePredicate(NodeProcessorCtx procCtx, FilterOperator fop,
-        TableScanOperator top) throws SemanticException, UDFArgumentException;
+        TableScanOperator top) throws SemanticException;
     /**
      * Add pruning predicate.
      *

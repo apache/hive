@@ -161,15 +161,14 @@ public class MergeFileWork extends MapWork {
       Path dirPath = inputPaths.get(0);
       try {
         FileSystem inpFs = dirPath.getFileSystem(conf);
-        FileStatus[] status =
-            HiveStatsUtils.getFileStatusRecurse(dirPath, listBucketingCtx
-                .getSkewedColNames().size(), inpFs);
+        List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(
+            dirPath, listBucketingCtx.getSkewedColNames().size(), inpFs);
         List<Path> newInputPath = new ArrayList<Path>();
         boolean succeed = true;
-        for (int i = 0; i < status.length; ++i) {
-          if (status[i].isDir()) {
+        for (FileStatus s : status) {
+          if (s.isDir()) {
             // Add the lb path to the list of input paths
-            newInputPath.add(status[i].getPath());
+            newInputPath.add(s.getPath());
           } else {
             // find file instead of dir. dont change inputpath
             succeed = false;

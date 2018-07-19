@@ -19,15 +19,13 @@
 
 package org.apache.hive.hcatalog.messaging.json;
 
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hive.hcatalog.messaging.AlterIndexMessage;
-import org.apache.hive.hcatalog.messaging.CreateFunctionMessage;
-import org.apache.hive.hcatalog.messaging.CreateIndexMessage;
-import org.apache.hive.hcatalog.messaging.DropFunctionMessage;
-import org.apache.hive.hcatalog.messaging.DropIndexMessage;
+import javax.annotation.Nullable;
+
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -36,8 +34,10 @@ import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
 import org.apache.hive.hcatalog.messaging.AlterPartitionMessage;
 import org.apache.hive.hcatalog.messaging.AlterTableMessage;
 import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.CreateFunctionMessage;
 import org.apache.hive.hcatalog.messaging.CreateTableMessage;
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.DropFunctionMessage;
 import org.apache.hive.hcatalog.messaging.DropPartitionMessage;
 import org.apache.hive.hcatalog.messaging.DropTableMessage;
 import org.apache.hive.hcatalog.messaging.InsertMessage;
@@ -49,11 +49,8 @@ import org.apache.thrift.protocol.TJSONProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 /**
  * The JSON implementation of the MessageFactory. Constructs JSON implementations of
@@ -144,24 +141,6 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public CreateIndexMessage buildCreateIndexMessage(Index idx) {
-    return new JSONCreateIndexMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, idx,
-        now());
-  }
-
-  @Override
-  public DropIndexMessage buildDropIndexMessage(Index idx) {
-    return new JSONDropIndexMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, idx,
-        now());
-  }
-
-  @Override
-  public AlterIndexMessage buildAlterIndexMessage(Index before, Index after) {
-    return new JSONAlterIndexMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, before, after,
-        now());
-  }
-
-  @Override
   public InsertMessage buildInsertMessage(String db, String table, Map<String,String> partKeyVals,
                                           List<String> files) {
     return new JSONInsertMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db, table, null,
@@ -181,9 +160,10 @@ public class JSONMessageFactory extends MessageFactory {
 
   private static Map<String, String> getPartitionKeyValues(Table table, Partition partition) {
     Map<String, String> partitionKeys = new LinkedHashMap<String, String>();
-    for (int i=0; i<table.getPartitionKeysSize(); ++i)
+    for (int i=0; i<table.getPartitionKeysSize(); ++i) {
       partitionKeys.put(table.getPartitionKeys().get(i).getName(),
           partition.getValues().get(i));
+    }
     return partitionKeys;
   }
 
@@ -201,8 +181,4 @@ public class JSONMessageFactory extends MessageFactory {
     return serializer.toString(functionObj, "UTF-8");
   }
 
-  static String createIndexObjJson(Index indexObj) throws TException {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(indexObj, "UTF-8");
-  }
 }

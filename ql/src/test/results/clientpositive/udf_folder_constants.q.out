@@ -57,6 +57,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: udf_tb1
+            filterExpr: ((year = 2001) and month is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((year = 2001) and month is not null) (type: boolean)
@@ -72,6 +73,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
+            filterExpr: month is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: month is not null (type: boolean)
@@ -94,7 +96,7 @@ STAGE PLANS:
             1 _col0 (type: int)
           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: 978336000 (type: bigint)
+            expressions: 978307200L (type: bigint)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -121,4 +123,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@udf_tb1
 POSTHOOK: Input: default@udf_tb2
 #### A masked pattern was here ####
-978336000
+978307200

@@ -18,14 +18,18 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -40,13 +44,13 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hive.common.util.ReflectionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * Optimizer that updates TableScanOperators' Table-references with properties that might be
@@ -55,7 +59,7 @@ import java.util.Stack;
  */
 class TablePropertyEnrichmentOptimizer extends Transform {
 
-  private static Log LOG = LogFactory.getLog(TablePropertyEnrichmentOptimizer.class);
+  private static Logger LOG = LoggerFactory.getLogger(TablePropertyEnrichmentOptimizer.class);
 
   private static class WalkerCtx implements NodeProcessorCtx {
 
@@ -78,29 +82,51 @@ class TablePropertyEnrichmentOptimizer extends Transform {
     }
   }
 
+  /**
+   * Retrieves the table properties as well as the properties from Serde.
+   */
+  private static Map<String, String> getTableParameters(Table table) {
+    Map<String, String> originalTableParameters = new HashMap<>(table.getParameters());
+    Properties tableMetadata = MetaStoreUtils.getTableMetadata(table);
+    for (String property : tableMetadata.stringPropertyNames()) {
+      if (!originalTableParameters.containsKey(property)) {
+        originalTableParameters.put(property, tableMetadata.getProperty(property));
+      }
+    }
+    return originalTableParameters;
+  }
+
   private static class Processor implements NodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
       TableScanOperator tsOp = (TableScanOperator) nd;
       WalkerCtx context = (WalkerCtx)procCtx;
-
       TableScanDesc tableScanDesc = tsOp.getConf();
       Table table = tsOp.getConf().getTableMetadata().getTTable();
-      Map<String, String> tableParameters = table.getParameters();
-      Properties tableProperties = new Properties();
-      tableProperties.putAll(tableParameters);
 
-      Deserializer deserializer = tableScanDesc.getTableMetadata().getDeserializer();
-      String deserializerClassName = deserializer.getClass().getName();
+      Map<String, String> originalTableParameters = getTableParameters(table);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Original Table parameters: " + originalTableParameters);
+      }
+      Properties clonedTableParameters = new Properties();
+      clonedTableParameters.putAll(originalTableParameters);
+
+      String deserializerClassName = null;
       try {
+        deserializerClassName = tableScanDesc.getTableMetadata().getSd().getSerdeInfo().getSerializationLib();
+        Deserializer deserializer = ReflectionUtil.newInstance(
+            context.conf.getClassByName(deserializerClassName)
+                .asSubclass(Deserializer.class),
+            context.conf);
+
         if (context.serdeClassesUnderConsideration.contains(deserializerClassName)) {
-          deserializer.initialize(context.conf, tableProperties);
+          deserializer.initialize(context.conf, clonedTableParameters);
           LOG.debug("SerDe init succeeded for class: " + deserializerClassName);
-          for (Map.Entry property : tableProperties.entrySet()) {
-            if (!property.getValue().equals(tableParameters.get(property.getKey()))) {
+          for (Map.Entry property : clonedTableParameters.entrySet()) {
+            if (!property.getValue().equals(originalTableParameters.get(property.getKey()))) {
               LOG.debug("Resolving changed parameters! key=" + property.getKey() + ", value=" + property.getValue());
-              tableParameters.put((String) property.getKey(), (String) property.getValue());
+              table.getParameters().put((String) property.getKey(), (String) property.getValue());
             }
           }
         }

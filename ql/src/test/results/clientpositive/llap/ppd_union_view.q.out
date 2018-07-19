@@ -2,38 +2,38 @@ PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view v
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create table t1_new (key string, value string) partitioned by (ds string)
+PREHOOK: query: create table t1_new_n0 (key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1_new
-POSTHOOK: query: create table t1_new (key string, value string) partitioned by (ds string)
+PREHOOK: Output: default@t1_new_n0
+POSTHOOK: query: create table t1_new_n0 (key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1_new
-PREHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-15')
+POSTHOOK: Output: default@t1_new_n0
+PREHOOK: query: insert overwrite table t1_new_n0 partition (ds = '2011-10-15')
 select 'key1', 'value1' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t1_new@ds=2011-10-15
-POSTHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-15')
+PREHOOK: Output: default@t1_new_n0@ds=2011-10-15
+POSTHOOK: query: insert overwrite table t1_new_n0 partition (ds = '2011-10-15')
 select 'key1', 'value1' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t1_new@ds=2011-10-15
-POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).key SIMPLE []
-POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).value SIMPLE []
-PREHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-16')
+POSTHOOK: Output: default@t1_new_n0@ds=2011-10-15
+POSTHOOK: Lineage: t1_new_n0 PARTITION(ds=2011-10-15).key SIMPLE []
+POSTHOOK: Lineage: t1_new_n0 PARTITION(ds=2011-10-15).value SIMPLE []
+PREHOOK: query: insert overwrite table t1_new_n0 partition (ds = '2011-10-16')
 select 'key2', 'value2' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t1_new@ds=2011-10-16
-POSTHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-16')
+PREHOOK: Output: default@t1_new_n0@ds=2011-10-16
+POSTHOOK: query: insert overwrite table t1_new_n0 partition (ds = '2011-10-16')
 select 'key2', 'value2' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t1_new@ds=2011-10-16
-POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).key SIMPLE []
-POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).value SIMPLE []
+POSTHOOK: Output: default@t1_new_n0@ds=2011-10-16
+POSTHOOK: Lineage: t1_new_n0 PARTITION(ds=2011-10-16).key SIMPLE []
+POSTHOOK: Lineage: t1_new_n0 PARTITION(ds=2011-10-16).value SIMPLE []
 PREHOOK: query: create table t1_old (keymap string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -98,10 +98,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_mapping@ds=2011-10-14
 POSTHOOK: Lineage: t1_mapping PARTITION(ds=2011-10-14).key SIMPLE []
 POSTHOOK: Lineage: t1_mapping PARTITION(ds=2011-10-14).keymap SIMPLE []
-PREHOOK: query: create view t1 partitioned on (ds) as
+PREHOOK: query: create view t1_n113 partitioned on (ds) as
 select * from
 (
-select key, value, ds from t1_new
+select key, value, ds from t1_new_n0
 union all
 select key, value, t1_old.ds from t1_old join t1_mapping
 on t1_old.keymap = t1_mapping.keymap and
@@ -109,14 +109,14 @@ on t1_old.keymap = t1_mapping.keymap and
 ) subq
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1_mapping
-PREHOOK: Input: default@t1_new
+PREHOOK: Input: default@t1_new_n0
 PREHOOK: Input: default@t1_old
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create view t1 partitioned on (ds) as
+PREHOOK: Output: default@t1_n113
+POSTHOOK: query: create view t1_n113 partitioned on (ds) as
 select * from
 (
-select key, value, ds from t1_new
+select key, value, ds from t1_new_n0
 union all
 select key, value, t1_old.ds from t1_old join t1_mapping
 on t1_old.keymap = t1_mapping.keymap and
@@ -124,17 +124,17 @@ on t1_old.keymap = t1_mapping.keymap and
 ) subq
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1_mapping
-POSTHOOK: Input: default@t1_new
+POSTHOOK: Input: default@t1_new_n0
 POSTHOOK: Input: default@t1_old
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key EXPRESSION [(t1_new)t1_new.FieldSchema(name:key, type:string, comment:null), (t1_mapping)t1_mapping.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.value EXPRESSION [(t1_new)t1_new.FieldSchema(name:value, type:string, comment:null), (t1_old)t1_old.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Output: default@t1_n113
+POSTHOOK: Lineage: t1_n113.key EXPRESSION [(t1_new_n0)t1_new_n0.FieldSchema(name:key, type:string, comment:null), (t1_mapping)t1_mapping.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n113.value EXPRESSION [(t1_new_n0)t1_new_n0.FieldSchema(name:value, type:string, comment:null), (t1_old)t1_old.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain extended
-select * from t1 where ds = '2011-10-13'
+select * from t1_n113 where ds = '2011-10-13'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select * from t1 where ds = '2011-10-13'
+select * from t1_n113 where ds = '2011-10-13'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -152,7 +152,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1_new
+                  alias: t1_new_n0
+                  filterExpr: (ds = '2011-10-13') (type: boolean)
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -189,12 +190,13 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: t1_old
+                  filterExpr: keymap is not null (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: COMPLETE
@@ -216,7 +218,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -253,6 +255,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns keymap,value
                       columns.comments 
@@ -276,6 +279,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_mapping
+                  filterExpr: keymap is not null (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 179 Basic stats: COMPLETE Column stats: COMPLETE
@@ -297,7 +301,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col0 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -334,6 +338,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,keymap
                       columns.comments 
@@ -405,49 +410,49 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from t1 where ds = '2011-10-13'
+PREHOOK: query: select * from t1_n113 where ds = '2011-10-13'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1_mapping
 PREHOOK: Input: default@t1_mapping@ds=2011-10-13
-PREHOOK: Input: default@t1_new
+PREHOOK: Input: default@t1_n113
+PREHOOK: Input: default@t1_new_n0
 PREHOOK: Input: default@t1_old
 PREHOOK: Input: default@t1_old@ds=2011-10-13
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 where ds = '2011-10-13'
+POSTHOOK: query: select * from t1_n113 where ds = '2011-10-13'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1_mapping
 POSTHOOK: Input: default@t1_mapping@ds=2011-10-13
-POSTHOOK: Input: default@t1_new
+POSTHOOK: Input: default@t1_n113
+POSTHOOK: Input: default@t1_new_n0
 POSTHOOK: Input: default@t1_old
 POSTHOOK: Input: default@t1_old@ds=2011-10-13
 #### A masked pattern was here ####
 key3	value3	2011-10-13
-PREHOOK: query: select * from t1 where ds = '2011-10-14'
+PREHOOK: query: select * from t1_n113 where ds = '2011-10-14'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1_mapping
 PREHOOK: Input: default@t1_mapping@ds=2011-10-14
-PREHOOK: Input: default@t1_new
+PREHOOK: Input: default@t1_n113
+PREHOOK: Input: default@t1_new_n0
 PREHOOK: Input: default@t1_old
 PREHOOK: Input: default@t1_old@ds=2011-10-14
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 where ds = '2011-10-14'
+POSTHOOK: query: select * from t1_n113 where ds = '2011-10-14'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1_mapping
 POSTHOOK: Input: default@t1_mapping@ds=2011-10-14
-POSTHOOK: Input: default@t1_new
+POSTHOOK: Input: default@t1_n113
+POSTHOOK: Input: default@t1_new_n0
 POSTHOOK: Input: default@t1_old
 POSTHOOK: Input: default@t1_old@ds=2011-10-14
 #### A masked pattern was here ####
 key4	value4	2011-10-14
 PREHOOK: query: explain extended
-select * from t1 where ds = '2011-10-15'
+select * from t1_n113 where ds = '2011-10-15'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select * from t1 where ds = '2011-10-15'
+select * from t1_n113 where ds = '2011-10-15'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -465,7 +470,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1_new
+                  alias: t1_new_n0
+                  filterExpr: (ds = '2011-10-15') (type: boolean)
                   Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -498,7 +504,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -518,13 +524,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.t1_new
+                    name default.t1_new_n0
                     numFiles 1
                     numRows 1
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 11
-                    serialization.ddl struct t1_new { string key, string value}
+                    serialization.ddl struct t1_new_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 12
@@ -535,6 +541,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -542,22 +549,23 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       insideView TRUE
 #### A masked pattern was here ####
-                      name default.t1_new
+                      name default.t1_new_n0
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct t1_new { string key, string value}
+                      serialization.ddl struct t1_new_n0 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.t1_new
-                  name: default.t1_new
+                    name: default.t1_new_n0
+                  name: default.t1_new_n0
             Truncated Path -> Alias:
-              /t1_new/ds=2011-10-15 [t1_new]
+              /t1_new_n0/ds=2011-10-15 [t1_new_n0]
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: t1_old
+                  filterExpr: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -579,19 +587,20 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: t1_mapping
+                  filterExpr: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (('2011-10-15' = ds) and keymap is not null) (type: boolean)
+                    predicate: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key (type: string), keymap (type: string)
@@ -606,7 +615,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col0 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
         Reducer 4 
             Execution mode: llap
@@ -660,37 +669,37 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from t1 where ds = '2011-10-15'
+PREHOOK: query: select * from t1_n113 where ds = '2011-10-15'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1_mapping
-PREHOOK: Input: default@t1_new
-PREHOOK: Input: default@t1_new@ds=2011-10-15
+PREHOOK: Input: default@t1_n113
+PREHOOK: Input: default@t1_new_n0
+PREHOOK: Input: default@t1_new_n0@ds=2011-10-15
 PREHOOK: Input: default@t1_old
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 where ds = '2011-10-15'
+POSTHOOK: query: select * from t1_n113 where ds = '2011-10-15'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1_mapping
-POSTHOOK: Input: default@t1_new
-POSTHOOK: Input: default@t1_new@ds=2011-10-15
+POSTHOOK: Input: default@t1_n113
+POSTHOOK: Input: default@t1_new_n0
+POSTHOOK: Input: default@t1_new_n0@ds=2011-10-15
 POSTHOOK: Input: default@t1_old
 #### A masked pattern was here ####
 key1	value1	2011-10-15
-PREHOOK: query: select * from t1 where ds = '2011-10-16'
+PREHOOK: query: select * from t1_n113 where ds = '2011-10-16'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1_mapping
-PREHOOK: Input: default@t1_new
-PREHOOK: Input: default@t1_new@ds=2011-10-16
+PREHOOK: Input: default@t1_n113
+PREHOOK: Input: default@t1_new_n0
+PREHOOK: Input: default@t1_new_n0@ds=2011-10-16
 PREHOOK: Input: default@t1_old
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 where ds = '2011-10-16'
+POSTHOOK: query: select * from t1_n113 where ds = '2011-10-16'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1_mapping
-POSTHOOK: Input: default@t1_new
-POSTHOOK: Input: default@t1_new@ds=2011-10-16
+POSTHOOK: Input: default@t1_n113
+POSTHOOK: Input: default@t1_new_n0
+POSTHOOK: Input: default@t1_new_n0@ds=2011-10-16
 POSTHOOK: Input: default@t1_old
 #### A masked pattern was here ####
 key2	value2	2011-10-16

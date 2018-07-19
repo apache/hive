@@ -16,6 +16,7 @@ package org.apache.hive.storage.jdbc.dao;
 
 import org.apache.commons.dbcp.BasicDataSourceFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -64,8 +65,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
     try {
       initializeDatabaseConnection(conf);
-      String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
-      String metadataQuery = addLimitToQuery(sql, 1);
+      String metadataQuery = getMetaDataQuery(conf);
       LOGGER.debug("Query to execute is [{}]", metadataQuery);
 
       conn = dbcpDataSource.getConnection();
@@ -91,6 +91,12 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
   }
 
+
+  protected String getMetaDataQuery(Configuration conf) {
+    String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
+    String metadataQuery = addLimitToQuery(sql, 1);
+    return metadataQuery;
+  }
 
   @Override
   public int getTotalNumberOfRecords(Configuration conf) throws HiveJdbcDatabaseAccessException {
@@ -147,7 +153,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       ps.setFetchSize(getFetchSize(conf));
       rs = ps.executeQuery();
 
-      return new JdbcRecordIterator(conn, ps, rs);
+      return new JdbcRecordIterator(conn, ps, rs, conf.get(serdeConstants.LIST_COLUMN_TYPES));
     }
     catch (Exception e) {
       LOGGER.error("Caught exception while trying to execute query", e);

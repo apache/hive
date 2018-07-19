@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -109,21 +109,6 @@
       <version>${commons-codec.version}</version>
     </dependency>
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>${commons-httpclient.version}</version>
-       <exclusions>
-             <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commmons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-   </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
@@ -205,7 +190,7 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
 	<exclusion>
@@ -244,7 +229,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
@@ -335,19 +320,24 @@
       <version>${groovy.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-core-asl</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.jodd</groupId>
       <artifactId>jodd-core</artifactId>
       <version>${jodd.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-mapper-asl</artifactId>
-      <version>${jackson.version}</version>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
@@ -468,7 +458,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore</artifactId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
@@ -563,7 +553,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
      </exclusions>
@@ -579,7 +569,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
        <exclusion>
@@ -611,7 +601,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
      </exclusions>
@@ -655,12 +645,20 @@
       <optional>true</optional>
       <scope>test</scope>
       <exclusions>
+           <exclusion>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty-util</artifactId>
+        </exclusion>
         <exclusion>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty</artifactId>
+        </exclusion>
+       <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
         <exclusion>
@@ -692,7 +690,7 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
@@ -712,7 +710,7 @@
          <artifactId>slf4j-log4j12</artifactId>
        </exclusion>
        <exclusion>
-         <groupId>commmons-logging</groupId>
+         <groupId>commons-logging</groupId>
          <artifactId>commons-logging</artifactId>
        </exclusion>
        <exclusion>
@@ -781,6 +779,39 @@
             </plugin>
           </plugins>
        </build>
+    </profile>
+    <profile>
+      <id>protobuf</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-protobuf-sources</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <target>
+                    <property name="protobuf.src.dir"  location="${basedir}/src/protobuf"/>
+                    <property name="protobuf.build.dir"  location="${basedir}/src/gen/protobuf/gen-java"/>
+                    <echo>Building ql Protobuf</echo>
+                    <mkdir dir="${protobuf.build.dir}"/>
+                    <exec executable="protoc" failonerror="true">
+                      <arg value="--java_out=${protobuf.build.dir}"/>
+                      <arg value="-I=${protobuf.src.dir}"/>
+                      <arg value="${protobuf.src.dir}/HiveEvents.proto"/>
+                    </exec>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 
@@ -884,7 +915,7 @@
                   <include>org.apache.hive:hive-llap-common</include>
                   <include>org.apache.hive:hive-llap-client</include>
                   <include>org.apache.hive:hive-metastore</include>
-                  <include>org.apache.hive:hive-standalone-metastore</include>
+                  <include>org.apache.hive:hive-standalone-metastore-common</include>
                   <include>org.apache.hive:hive-service-rpc</include>
                   <include>com.esotericsoftware:kryo-shaded</include>
                   <include>com.esotericsoftware:minlog</include>
@@ -912,6 +943,7 @@
                   <include>org.apache.hive:hive-spark-client</include>
                   <include>org.apache.hive:hive-storage-api</include>
                   <include>org.apache.orc:orc-core</include>
+                  <include>org.apache.orc:orc-shims</include>
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
                 </includes>
@@ -944,6 +976,7 @@
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
                 <source>${project.build.directory}/generated-sources/java</source>
+                <source>src/gen/protobuf/gen-java</source>
               </sources>
             </configuration>
           </execution>

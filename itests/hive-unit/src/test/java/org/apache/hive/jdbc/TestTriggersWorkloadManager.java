@@ -35,10 +35,21 @@ import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 import com.google.common.collect.Lists;
 
+@Ignore("Disabled in HIVE-20074 temporary as it is unstable, Will re-enable in HIVE-20075.")
 public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManager {
+  @Rule
+  public TestName testName = new TestName();
+
+  @Override
+  public String getTestName() {
+    return getClass().getSimpleName() + "#" + testName.getMethodName();
+  }
 
   @BeforeClass
   public static void beforeTest() throws Exception {
@@ -51,7 +62,7 @@ public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManag
     conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
-    conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, 100, TimeUnit.MILLISECONDS);
+    conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL, 100, TimeUnit.MILLISECONDS);
     conf.setVar(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE, "default");
     conf.setBoolean("hive.test.workload.management", true);
     conf.setBoolVar(ConfVars.TEZ_EXEC_SUMMARY, true);

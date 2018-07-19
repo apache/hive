@@ -1,0 +1,542 @@
+PREHOOK: query: DROP TABLE orc_llap_n2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_llap_n2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE orc_llap_n2 (
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cint0 INT,
+    cbigint0 BIGINT,
+    cfloat0 FLOAT,
+    cdouble0 DOUBLE,
+    cint1 INT,
+    cbigint1 BIGINT,
+    cfloat1 FLOAT,
+    cdouble1 DOUBLE,
+    cstring1 string,
+    cfloat2 float,
+    cdecimal1 decimal(10,3),
+    cdecimal2 decimal(38,10)
+)  stored as orc TBLPROPERTIES ('transactional'='true','orc.write.format'='UNSTABLE-PRE-2.0')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_llap_n2
+POSTHOOK: query: CREATE TABLE orc_llap_n2 (
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cint0 INT,
+    cbigint0 BIGINT,
+    cfloat0 FLOAT,
+    cdouble0 DOUBLE,
+    cint1 INT,
+    cbigint1 BIGINT,
+    cfloat1 FLOAT,
+    cdouble1 DOUBLE,
+    cstring1 string,
+    cfloat2 float,
+    cdecimal1 decimal(10,3),
+    cdecimal2 decimal(38,10)
+)  stored as orc TBLPROPERTIES ('transactional'='true','orc.write.format'='UNSTABLE-PRE-2.0')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_llap_n2
+PREHOOK: query: insert into table orc_llap_n2
+select cint, cbigint, cfloat, cdouble,
+ cint as c1, cbigint as c2, cfloat as c3, cdouble as c4,
+ cint as c8, cbigint as c7, cfloat as c6, cdouble as c5,
+ cstring1, cfloat as c9, cast("1.123" as decimal(10,3))as c10,
+ cast("1.123456789" as decimal(38,18)) as c11 from alltypesorc order by cdouble asc  limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_llap_n2
+POSTHOOK: query: insert into table orc_llap_n2
+select cint, cbigint, cfloat, cdouble,
+ cint as c1, cbigint as c2, cfloat as c3, cdouble as c4,
+ cint as c8, cbigint as c7, cfloat as c6, cdouble as c5,
+ cstring1, cfloat as c9, cast("1.123" as decimal(10,3))as c10,
+ cast("1.123456789" as decimal(38,18)) as c11 from alltypesorc order by cdouble asc  limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_llap_n2
+POSTHOOK: Lineage: orc_llap_n2.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cbigint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cbigint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cdecimal1 SIMPLE []
+POSTHOOK: Lineage: orc_llap_n2.cdecimal2 EXPRESSION []
+POSTHOOK: Lineage: orc_llap_n2.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cdouble0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cdouble1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: alter table orc_llap_n2 set TBLPROPERTIES ('transactional'='true','orc.write.format'='0.12')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@orc_llap_n2
+PREHOOK: Output: default@orc_llap_n2
+POSTHOOK: query: alter table orc_llap_n2 set TBLPROPERTIES ('transactional'='true','orc.write.format'='0.12')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@orc_llap_n2
+POSTHOOK: Output: default@orc_llap_n2
+PREHOOK: query: insert into table orc_llap_n2
+select cint, cbigint, cfloat, cdouble,
+ cint as c1, cbigint as c2, cfloat as c3, cdouble as c4,
+ cint as c8, cbigint as c7, cfloat as c6, cdouble as c5,
+ cstring1, cfloat as c9, cast("3.321" as decimal(10,3))as c10,
+ cast("9.987654321" as decimal(38,18)) as c11 from alltypesorc order by cdouble asc  limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_llap_n2
+POSTHOOK: query: insert into table orc_llap_n2
+select cint, cbigint, cfloat, cdouble,
+ cint as c1, cbigint as c2, cfloat as c3, cdouble as c4,
+ cint as c8, cbigint as c7, cfloat as c6, cdouble as c5,
+ cstring1, cfloat as c9, cast("3.321" as decimal(10,3))as c10,
+ cast("9.987654321" as decimal(38,18)) as c11 from alltypesorc order by cdouble asc  limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_llap_n2
+POSTHOOK: Lineage: orc_llap_n2.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cbigint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cbigint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cdecimal1 SIMPLE []
+POSTHOOK: Lineage: orc_llap_n2.cdecimal2 EXPRESSION []
+POSTHOOK: Lineage: orc_llap_n2.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cdouble0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cdouble1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE orc_llap2 (
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cint0 INT,
+    cbigint0 BIGINT,
+    cfloat0 FLOAT,
+    cdouble0 DOUBLE,
+    cint1 INT,
+    cbigint1 BIGINT,
+    cfloat1 FLOAT,
+    cdouble1 DOUBLE,
+    cstring1 string,
+    cfloat2 float,
+    cdecimal1 decimal(10,3),
+    cdecimal2 decimal(38,10)
+)  stored as orc TBLPROPERTIES ('transactional'='false', 'orc.write.format'='UNSTABLE-PRE-2.0')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_llap2
+POSTHOOK: query: CREATE TABLE orc_llap2 (
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cint0 INT,
+    cbigint0 BIGINT,
+    cfloat0 FLOAT,
+    cdouble0 DOUBLE,
+    cint1 INT,
+    cbigint1 BIGINT,
+    cfloat1 FLOAT,
+    cdouble1 DOUBLE,
+    cstring1 string,
+    cfloat2 float,
+    cdecimal1 decimal(10,3),
+    cdecimal2 decimal(38,10)
+)  stored as orc TBLPROPERTIES ('transactional'='false', 'orc.write.format'='UNSTABLE-PRE-2.0')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_llap2
+PREHOOK: query: insert into table orc_llap2
+select cint, cbigint, cfloat, cdouble,
+ cint as c1, cbigint as c2, cfloat as c3, cdouble as c4,
+ cint as c8, cbigint as c7, cfloat as c6, cdouble as c5,
+ cstring1, cfloat as c9, cast("1.123" as decimal(10,3))as c10,
+ cast("1.123456789" as decimal(38,18)) as c11 from alltypesorc order by cdouble asc  limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_llap2
+POSTHOOK: query: insert into table orc_llap2
+select cint, cbigint, cfloat, cdouble,
+ cint as c1, cbigint as c2, cfloat as c3, cdouble as c4,
+ cint as c8, cbigint as c7, cfloat as c6, cdouble as c5,
+ cstring1, cfloat as c9, cast("1.123" as decimal(10,3))as c10,
+ cast("1.123456789" as decimal(38,18)) as c11 from alltypesorc order by cdouble asc  limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_llap2
+POSTHOOK: Lineage: orc_llap2.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cbigint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cbigint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cdecimal1 SIMPLE []
+POSTHOOK: Lineage: orc_llap2.cdecimal2 EXPRESSION []
+POSTHOOK: Lineage: orc_llap2.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cdouble0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cdouble1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cfloat0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cfloat1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cfloat2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: alter table orc_llap2 set TBLPROPERTIES ('transactional'='true','orc.write.format'='0.12')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@orc_llap2
+PREHOOK: Output: default@orc_llap2
+POSTHOOK: query: alter table orc_llap2 set TBLPROPERTIES ('transactional'='true','orc.write.format'='0.12')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@orc_llap2
+POSTHOOK: Output: default@orc_llap2
+PREHOOK: query: update orc_llap2 set cstring1 = 'testvalue', cdecimal1 = cast("3.321" as decimal(10,3)),
+cdecimal2 = cast("9.987654321" as decimal(38,18))  where cstring1 = 'N016jPED08o'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap2
+PREHOOK: Output: default@orc_llap2
+POSTHOOK: query: update orc_llap2 set cstring1 = 'testvalue', cdecimal1 = cast("3.321" as decimal(10,3)),
+cdecimal2 = cast("9.987654321" as decimal(38,18))  where cstring1 = 'N016jPED08o'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap2
+POSTHOOK: Output: default@orc_llap2
+PREHOOK: query: select cstring1 from orc_llap_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select cstring1 from orc_llap_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_n2
+#### A masked pattern was here ####
+N016jPED08o
+Q1JAdUlCVORmR0Q5X5Vf5u6
+eNsh5tYa
+5j7GJ8OCXgMVIcK7
+uJGHsW3cd073NGFITyQ
+G1u0pUmU6ehCm
+mk6lShdOa8kXT8i7mLd3fK
+u5C7glqT5XqtO0JE2686lk1
+h4omSc1jcLLwW
+tFY2ng51v
+vmAT10eeE47fgH20pLi
+uN803aW
+qqbDw46IgGds4
+32v414p63Jv1B4tO1xy
+73xdw4X
+d3o1712a03n20qvi62U7
+eQ80MW0h728I204P87YXc
+KHtD2A2hp6OjFgS73gdgE
+nI30tm7U55O0gI
+LSJtFA66
+mby00c
+meGb5
+pM6Gt05s1YJeii
+LR2AKy0dPt8vFdIV5760jriw
+1B3WMD5LSk65B2Moa
+xTlDv24JYv4s
+28Oe6r21yux7Lk47
+7wH3hBKdO55Xq3gEEe0
+5QLs0LVK1g
+ET3d4F2I4lV
+N016jPED08o
+Q1JAdUlCVORmR0Q5X5Vf5u6
+eNsh5tYa
+5j7GJ8OCXgMVIcK7
+uJGHsW3cd073NGFITyQ
+G1u0pUmU6ehCm
+mk6lShdOa8kXT8i7mLd3fK
+u5C7glqT5XqtO0JE2686lk1
+h4omSc1jcLLwW
+tFY2ng51v
+vmAT10eeE47fgH20pLi
+uN803aW
+qqbDw46IgGds4
+32v414p63Jv1B4tO1xy
+73xdw4X
+d3o1712a03n20qvi62U7
+eQ80MW0h728I204P87YXc
+KHtD2A2hp6OjFgS73gdgE
+nI30tm7U55O0gI
+LSJtFA66
+mby00c
+meGb5
+pM6Gt05s1YJeii
+LR2AKy0dPt8vFdIV5760jriw
+1B3WMD5LSk65B2Moa
+xTlDv24JYv4s
+28Oe6r21yux7Lk47
+7wH3hBKdO55Xq3gEEe0
+5QLs0LVK1g
+ET3d4F2I4lV
+PREHOOK: query: select cfloat2, cint from orc_llap_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select cfloat2, cint from orc_llap_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_n2
+#### A masked pattern was here ####
+NULL	-838810013
+NULL	246423894
+NULL	708885482
+NULL	186967185
+NULL	-595277064
+NULL	584923170
+NULL	518213127
+NULL	-334595454
+NULL	241008004
+NULL	185212032
+NULL	-738747840
+NULL	-971543377
+NULL	940448896
+NULL	-324030556
+NULL	-899422227
+11.0	835111400
+11.0	-775326158
+11.0	653630202
+11.0	779427499
+11.0	797003983
+11.0	31832752
+11.0	783790031
+11.0	-898241885
+11.0	NULL
+11.0	-646295381
+11.0	130912195
+11.0	-391573084
+11.0	385623629
+11.0	681126962
+11.0	25892751
+NULL	-838810013
+NULL	246423894
+NULL	708885482
+NULL	186967185
+NULL	-595277064
+NULL	584923170
+NULL	518213127
+NULL	-334595454
+NULL	241008004
+NULL	185212032
+NULL	-738747840
+NULL	-971543377
+NULL	940448896
+NULL	-324030556
+NULL	-899422227
+11.0	835111400
+11.0	-775326158
+11.0	653630202
+11.0	779427499
+11.0	797003983
+11.0	31832752
+11.0	783790031
+11.0	-898241885
+11.0	NULL
+11.0	-646295381
+11.0	130912195
+11.0	-391573084
+11.0	385623629
+11.0	681126962
+11.0	25892751
+PREHOOK: query: select * from orc_llap_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_llap_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_n2
+#### A masked pattern was here ####
+-838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	N016jPED08o	NULL	3.321	9.9876543210
+246423894	-1645852809	NULL	NULL	246423894	-1645852809	NULL	NULL	246423894	-1645852809	NULL	NULL	Q1JAdUlCVORmR0Q5X5Vf5u6	NULL	3.321	9.9876543210
+708885482	-1645852809	NULL	NULL	708885482	-1645852809	NULL	NULL	708885482	-1645852809	NULL	NULL	eNsh5tYa	NULL	3.321	9.9876543210
+186967185	-1645852809	NULL	NULL	186967185	-1645852809	NULL	NULL	186967185	-1645852809	NULL	NULL	5j7GJ8OCXgMVIcK7	NULL	3.321	9.9876543210
+-595277064	-1645852809	NULL	NULL	-595277064	-1645852809	NULL	NULL	-595277064	-1645852809	NULL	NULL	uJGHsW3cd073NGFITyQ	NULL	3.321	9.9876543210
+584923170	-1645852809	NULL	NULL	584923170	-1645852809	NULL	NULL	584923170	-1645852809	NULL	NULL	G1u0pUmU6ehCm	NULL	3.321	9.9876543210
+518213127	-1645852809	NULL	NULL	518213127	-1645852809	NULL	NULL	518213127	-1645852809	NULL	NULL	mk6lShdOa8kXT8i7mLd3fK	NULL	3.321	9.9876543210
+-334595454	-1645852809	NULL	NULL	-334595454	-1645852809	NULL	NULL	-334595454	-1645852809	NULL	NULL	u5C7glqT5XqtO0JE2686lk1	NULL	3.321	9.9876543210
+241008004	-1645852809	NULL	NULL	241008004	-1645852809	NULL	NULL	241008004	-1645852809	NULL	NULL	h4omSc1jcLLwW	NULL	3.321	9.9876543210
+185212032	-1645852809	NULL	NULL	185212032	-1645852809	NULL	NULL	185212032	-1645852809	NULL	NULL	tFY2ng51v	NULL	3.321	9.9876543210
+-738747840	-1645852809	NULL	NULL	-738747840	-1645852809	NULL	NULL	-738747840	-1645852809	NULL	NULL	vmAT10eeE47fgH20pLi	NULL	3.321	9.9876543210
+-971543377	-1645852809	NULL	NULL	-971543377	-1645852809	NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	NULL	3.321	9.9876543210
+940448896	-1645852809	NULL	NULL	940448896	-1645852809	NULL	NULL	940448896	-1645852809	NULL	NULL	qqbDw46IgGds4	NULL	3.321	9.9876543210
+-324030556	-1645852809	NULL	NULL	-324030556	-1645852809	NULL	NULL	-324030556	-1645852809	NULL	NULL	32v414p63Jv1B4tO1xy	NULL	3.321	9.9876543210
+-899422227	-1645852809	NULL	NULL	-899422227	-1645852809	NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	NULL	3.321	9.9876543210
+835111400	1964238982	11.0	NULL	835111400	1964238982	11.0	NULL	835111400	1964238982	11.0	NULL	d3o1712a03n20qvi62U7	11.0	3.321	9.9876543210
+-775326158	-1289793978	11.0	NULL	-775326158	-1289793978	11.0	NULL	-775326158	-1289793978	11.0	NULL	eQ80MW0h728I204P87YXc	11.0	3.321	9.9876543210
+653630202	1281184487	11.0	NULL	653630202	1281184487	11.0	NULL	653630202	1281184487	11.0	NULL	KHtD2A2hp6OjFgS73gdgE	11.0	3.321	9.9876543210
+779427499	1326393090	11.0	NULL	779427499	1326393090	11.0	NULL	779427499	1326393090	11.0	NULL	nI30tm7U55O0gI	11.0	3.321	9.9876543210
+797003983	1186689849	11.0	NULL	797003983	1186689849	11.0	NULL	797003983	1186689849	11.0	NULL	LSJtFA66	11.0	3.321	9.9876543210
+31832752	1854212271	11.0	NULL	31832752	1854212271	11.0	NULL	31832752	1854212271	11.0	NULL	mby00c	11.0	3.321	9.9876543210
+783790031	-1482854823	11.0	NULL	783790031	-1482854823	11.0	NULL	783790031	-1482854823	11.0	NULL	meGb5	11.0	3.321	9.9876543210
+-898241885	-1785664982	11.0	NULL	-898241885	-1785664982	11.0	NULL	-898241885	-1785664982	11.0	NULL	pM6Gt05s1YJeii	11.0	3.321	9.9876543210
+NULL	-1083386085	11.0	NULL	NULL	-1083386085	11.0	NULL	NULL	-1083386085	11.0	NULL	LR2AKy0dPt8vFdIV5760jriw	11.0	3.321	9.9876543210
+-646295381	-1654635859	11.0	NULL	-646295381	-1654635859	11.0	NULL	-646295381	-1654635859	11.0	NULL	1B3WMD5LSk65B2Moa	11.0	3.321	9.9876543210
+130912195	-1286145901	11.0	NULL	130912195	-1286145901	11.0	NULL	130912195	-1286145901	11.0	NULL	xTlDv24JYv4s	11.0	3.321	9.9876543210
+-391573084	-236100834	11.0	NULL	-391573084	-236100834	11.0	NULL	-391573084	-236100834	11.0	NULL	28Oe6r21yux7Lk47	11.0	3.321	9.9876543210
+385623629	236101682	11.0	NULL	385623629	236101682	11.0	NULL	385623629	236101682	11.0	NULL	7wH3hBKdO55Xq3gEEe0	11.0	3.321	9.9876543210
+681126962	993392163	11.0	NULL	681126962	993392163	11.0	NULL	681126962	993392163	11.0	NULL	5QLs0LVK1g	11.0	3.321	9.9876543210
+25892751	-1978674520	11.0	NULL	25892751	-1978674520	11.0	NULL	25892751	-1978674520	11.0	NULL	ET3d4F2I4lV	11.0	3.321	9.9876543210
+-838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	N016jPED08o	NULL	1.123	1.1234567890
+246423894	-1645852809	NULL	NULL	246423894	-1645852809	NULL	NULL	246423894	-1645852809	NULL	NULL	Q1JAdUlCVORmR0Q5X5Vf5u6	NULL	1.123	1.1234567890
+708885482	-1645852809	NULL	NULL	708885482	-1645852809	NULL	NULL	708885482	-1645852809	NULL	NULL	eNsh5tYa	NULL	1.123	1.1234567890
+186967185	-1645852809	NULL	NULL	186967185	-1645852809	NULL	NULL	186967185	-1645852809	NULL	NULL	5j7GJ8OCXgMVIcK7	NULL	1.123	1.1234567890
+-595277064	-1645852809	NULL	NULL	-595277064	-1645852809	NULL	NULL	-595277064	-1645852809	NULL	NULL	uJGHsW3cd073NGFITyQ	NULL	1.123	1.1234567890
+584923170	-1645852809	NULL	NULL	584923170	-1645852809	NULL	NULL	584923170	-1645852809	NULL	NULL	G1u0pUmU6ehCm	NULL	1.123	1.1234567890
+518213127	-1645852809	NULL	NULL	518213127	-1645852809	NULL	NULL	518213127	-1645852809	NULL	NULL	mk6lShdOa8kXT8i7mLd3fK	NULL	1.123	1.1234567890
+-334595454	-1645852809	NULL	NULL	-334595454	-1645852809	NULL	NULL	-334595454	-1645852809	NULL	NULL	u5C7glqT5XqtO0JE2686lk1	NULL	1.123	1.1234567890
+241008004	-1645852809	NULL	NULL	241008004	-1645852809	NULL	NULL	241008004	-1645852809	NULL	NULL	h4omSc1jcLLwW	NULL	1.123	1.1234567890
+185212032	-1645852809	NULL	NULL	185212032	-1645852809	NULL	NULL	185212032	-1645852809	NULL	NULL	tFY2ng51v	NULL	1.123	1.1234567890
+-738747840	-1645852809	NULL	NULL	-738747840	-1645852809	NULL	NULL	-738747840	-1645852809	NULL	NULL	vmAT10eeE47fgH20pLi	NULL	1.123	1.1234567890
+-971543377	-1645852809	NULL	NULL	-971543377	-1645852809	NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	NULL	1.123	1.1234567890
+940448896	-1645852809	NULL	NULL	940448896	-1645852809	NULL	NULL	940448896	-1645852809	NULL	NULL	qqbDw46IgGds4	NULL	1.123	1.1234567890
+-324030556	-1645852809	NULL	NULL	-324030556	-1645852809	NULL	NULL	-324030556	-1645852809	NULL	NULL	32v414p63Jv1B4tO1xy	NULL	1.123	1.1234567890
+-899422227	-1645852809	NULL	NULL	-899422227	-1645852809	NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	NULL	1.123	1.1234567890
+835111400	1964238982	11.0	NULL	835111400	1964238982	11.0	NULL	835111400	1964238982	11.0	NULL	d3o1712a03n20qvi62U7	11.0	1.123	1.1234567890
+-775326158	-1289793978	11.0	NULL	-775326158	-1289793978	11.0	NULL	-775326158	-1289793978	11.0	NULL	eQ80MW0h728I204P87YXc	11.0	1.123	1.1234567890
+653630202	1281184487	11.0	NULL	653630202	1281184487	11.0	NULL	653630202	1281184487	11.0	NULL	KHtD2A2hp6OjFgS73gdgE	11.0	1.123	1.1234567890
+779427499	1326393090	11.0	NULL	779427499	1326393090	11.0	NULL	779427499	1326393090	11.0	NULL	nI30tm7U55O0gI	11.0	1.123	1.1234567890
+797003983	1186689849	11.0	NULL	797003983	1186689849	11.0	NULL	797003983	1186689849	11.0	NULL	LSJtFA66	11.0	1.123	1.1234567890
+31832752	1854212271	11.0	NULL	31832752	1854212271	11.0	NULL	31832752	1854212271	11.0	NULL	mby00c	11.0	1.123	1.1234567890
+783790031	-1482854823	11.0	NULL	783790031	-1482854823	11.0	NULL	783790031	-1482854823	11.0	NULL	meGb5	11.0	1.123	1.1234567890
+-898241885	-1785664982	11.0	NULL	-898241885	-1785664982	11.0	NULL	-898241885	-1785664982	11.0	NULL	pM6Gt05s1YJeii	11.0	1.123	1.1234567890
+NULL	-1083386085	11.0	NULL	NULL	-1083386085	11.0	NULL	NULL	-1083386085	11.0	NULL	LR2AKy0dPt8vFdIV5760jriw	11.0	1.123	1.1234567890
+-646295381	-1654635859	11.0	NULL	-646295381	-1654635859	11.0	NULL	-646295381	-1654635859	11.0	NULL	1B3WMD5LSk65B2Moa	11.0	1.123	1.1234567890
+130912195	-1286145901	11.0	NULL	130912195	-1286145901	11.0	NULL	130912195	-1286145901	11.0	NULL	xTlDv24JYv4s	11.0	1.123	1.1234567890
+-391573084	-236100834	11.0	NULL	-391573084	-236100834	11.0	NULL	-391573084	-236100834	11.0	NULL	28Oe6r21yux7Lk47	11.0	1.123	1.1234567890
+385623629	236101682	11.0	NULL	385623629	236101682	11.0	NULL	385623629	236101682	11.0	NULL	7wH3hBKdO55Xq3gEEe0	11.0	1.123	1.1234567890
+681126962	993392163	11.0	NULL	681126962	993392163	11.0	NULL	681126962	993392163	11.0	NULL	5QLs0LVK1g	11.0	1.123	1.1234567890
+25892751	-1978674520	11.0	NULL	25892751	-1978674520	11.0	NULL	25892751	-1978674520	11.0	NULL	ET3d4F2I4lV	11.0	1.123	1.1234567890
+PREHOOK: query: select cstring1 from orc_llap2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap2
+#### A masked pattern was here ####
+POSTHOOK: query: select cstring1 from orc_llap2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap2
+#### A masked pattern was here ####
+Q1JAdUlCVORmR0Q5X5Vf5u6
+eNsh5tYa
+5j7GJ8OCXgMVIcK7
+uJGHsW3cd073NGFITyQ
+G1u0pUmU6ehCm
+mk6lShdOa8kXT8i7mLd3fK
+u5C7glqT5XqtO0JE2686lk1
+h4omSc1jcLLwW
+tFY2ng51v
+vmAT10eeE47fgH20pLi
+uN803aW
+qqbDw46IgGds4
+32v414p63Jv1B4tO1xy
+73xdw4X
+d3o1712a03n20qvi62U7
+eQ80MW0h728I204P87YXc
+KHtD2A2hp6OjFgS73gdgE
+nI30tm7U55O0gI
+LSJtFA66
+mby00c
+meGb5
+pM6Gt05s1YJeii
+LR2AKy0dPt8vFdIV5760jriw
+1B3WMD5LSk65B2Moa
+xTlDv24JYv4s
+28Oe6r21yux7Lk47
+7wH3hBKdO55Xq3gEEe0
+5QLs0LVK1g
+ET3d4F2I4lV
+testvalue
+PREHOOK: query: select cfloat2, cint from orc_llap2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap2
+#### A masked pattern was here ####
+POSTHOOK: query: select cfloat2, cint from orc_llap2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap2
+#### A masked pattern was here ####
+NULL	246423894
+NULL	708885482
+NULL	186967185
+NULL	-595277064
+NULL	584923170
+NULL	518213127
+NULL	-334595454
+NULL	241008004
+NULL	185212032
+NULL	-738747840
+NULL	-971543377
+NULL	940448896
+NULL	-324030556
+NULL	-899422227
+11.0	835111400
+11.0	-775326158
+11.0	653630202
+11.0	779427499
+11.0	797003983
+11.0	31832752
+11.0	783790031
+11.0	-898241885
+11.0	NULL
+11.0	-646295381
+11.0	130912195
+11.0	-391573084
+11.0	385623629
+11.0	681126962
+11.0	25892751
+NULL	-838810013
+PREHOOK: query: select * from orc_llap2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_llap2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap2
+#### A masked pattern was here ####
+246423894	-1645852809	NULL	NULL	246423894	-1645852809	NULL	NULL	246423894	-1645852809	NULL	NULL	Q1JAdUlCVORmR0Q5X5Vf5u6	NULL	1.123	1.1234567890
+708885482	-1645852809	NULL	NULL	708885482	-1645852809	NULL	NULL	708885482	-1645852809	NULL	NULL	eNsh5tYa	NULL	1.123	1.1234567890
+186967185	-1645852809	NULL	NULL	186967185	-1645852809	NULL	NULL	186967185	-1645852809	NULL	NULL	5j7GJ8OCXgMVIcK7	NULL	1.123	1.1234567890
+-595277064	-1645852809	NULL	NULL	-595277064	-1645852809	NULL	NULL	-595277064	-1645852809	NULL	NULL	uJGHsW3cd073NGFITyQ	NULL	1.123	1.1234567890
+584923170	-1645852809	NULL	NULL	584923170	-1645852809	NULL	NULL	584923170	-1645852809	NULL	NULL	G1u0pUmU6ehCm	NULL	1.123	1.1234567890
+518213127	-1645852809	NULL	NULL	518213127	-1645852809	NULL	NULL	518213127	-1645852809	NULL	NULL	mk6lShdOa8kXT8i7mLd3fK	NULL	1.123	1.1234567890
+-334595454	-1645852809	NULL	NULL	-334595454	-1645852809	NULL	NULL	-334595454	-1645852809	NULL	NULL	u5C7glqT5XqtO0JE2686lk1	NULL	1.123	1.1234567890
+241008004	-1645852809	NULL	NULL	241008004	-1645852809	NULL	NULL	241008004	-1645852809	NULL	NULL	h4omSc1jcLLwW	NULL	1.123	1.1234567890
+185212032	-1645852809	NULL	NULL	185212032	-1645852809	NULL	NULL	185212032	-1645852809	NULL	NULL	tFY2ng51v	NULL	1.123	1.1234567890
+-738747840	-1645852809	NULL	NULL	-738747840	-1645852809	NULL	NULL	-738747840	-1645852809	NULL	NULL	vmAT10eeE47fgH20pLi	NULL	1.123	1.1234567890
+-971543377	-1645852809	NULL	NULL	-971543377	-1645852809	NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	NULL	1.123	1.1234567890
+940448896	-1645852809	NULL	NULL	940448896	-1645852809	NULL	NULL	940448896	-1645852809	NULL	NULL	qqbDw46IgGds4	NULL	1.123	1.1234567890
+-324030556	-1645852809	NULL	NULL	-324030556	-1645852809	NULL	NULL	-324030556	-1645852809	NULL	NULL	32v414p63Jv1B4tO1xy	NULL	1.123	1.1234567890
+-899422227	-1645852809	NULL	NULL	-899422227	-1645852809	NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	NULL	1.123	1.1234567890
+835111400	1964238982	11.0	NULL	835111400	1964238982	11.0	NULL	835111400	1964238982	11.0	NULL	d3o1712a03n20qvi62U7	11.0	1.123	1.1234567890
+-775326158	-1289793978	11.0	NULL	-775326158	-1289793978	11.0	NULL	-775326158	-1289793978	11.0	NULL	eQ80MW0h728I204P87YXc	11.0	1.123	1.1234567890
+653630202	1281184487	11.0	NULL	653630202	1281184487	11.0	NULL	653630202	1281184487	11.0	NULL	KHtD2A2hp6OjFgS73gdgE	11.0	1.123	1.1234567890
+779427499	1326393090	11.0	NULL	779427499	1326393090	11.0	NULL	779427499	1326393090	11.0	NULL	nI30tm7U55O0gI	11.0	1.123	1.1234567890
+797003983	1186689849	11.0	NULL	797003983	1186689849	11.0	NULL	797003983	1186689849	11.0	NULL	LSJtFA66	11.0	1.123	1.1234567890
+31832752	1854212271	11.0	NULL	31832752	1854212271	11.0	NULL	31832752	1854212271	11.0	NULL	mby00c	11.0	1.123	1.1234567890
+783790031	-1482854823	11.0	NULL	783790031	-1482854823	11.0	NULL	783790031	-1482854823	11.0	NULL	meGb5	11.0	1.123	1.1234567890
+-898241885	-1785664982	11.0	NULL	-898241885	-1785664982	11.0	NULL	-898241885	-1785664982	11.0	NULL	pM6Gt05s1YJeii	11.0	1.123	1.1234567890
+NULL	-1083386085	11.0	NULL	NULL	-1083386085	11.0	NULL	NULL	-1083386085	11.0	NULL	LR2AKy0dPt8vFdIV5760jriw	11.0	1.123	1.1234567890
+-646295381	-1654635859	11.0	NULL	-646295381	-1654635859	11.0	NULL	-646295381	-1654635859	11.0	NULL	1B3WMD5LSk65B2Moa	11.0	1.123	1.1234567890
+130912195	-1286145901	11.0	NULL	130912195	-1286145901	11.0	NULL	130912195	-1286145901	11.0	NULL	xTlDv24JYv4s	11.0	1.123	1.1234567890
+-391573084	-236100834	11.0	NULL	-391573084	-236100834	11.0	NULL	-391573084	-236100834	11.0	NULL	28Oe6r21yux7Lk47	11.0	1.123	1.1234567890
+385623629	236101682	11.0	NULL	385623629	236101682	11.0	NULL	385623629	236101682	11.0	NULL	7wH3hBKdO55Xq3gEEe0	11.0	1.123	1.1234567890
+681126962	993392163	11.0	NULL	681126962	993392163	11.0	NULL	681126962	993392163	11.0	NULL	5QLs0LVK1g	11.0	1.123	1.1234567890
+25892751	-1978674520	11.0	NULL	25892751	-1978674520	11.0	NULL	25892751	-1978674520	11.0	NULL	ET3d4F2I4lV	11.0	1.123	1.1234567890
+-838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	testvalue	NULL	3.321	9.9876543210
+PREHOOK: query: DROP TABLE orc_llap_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_llap_n2
+PREHOOK: Output: default@orc_llap_n2
+POSTHOOK: query: DROP TABLE orc_llap_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_llap_n2
+POSTHOOK: Output: default@orc_llap_n2

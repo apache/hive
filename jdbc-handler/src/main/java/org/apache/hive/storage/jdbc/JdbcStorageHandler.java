@@ -15,9 +15,11 @@
 package org.apache.hive.storage.jdbc;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.JarUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -29,7 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 
+import java.io.IOException;
 import java.lang.IllegalArgumentException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -122,6 +127,38 @@ public class JdbcStorageHandler implements HiveStorageHandler {
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
 
+    List<Class<?>> classesToLoad = new ArrayList<>();
+    classesToLoad.add(org.apache.hive.storage.jdbc.JdbcInputSplit.class);
+    classesToLoad.add(org.apache.commons.dbcp.BasicDataSourceFactory.class);
+    classesToLoad.add(org.apache.commons.pool.impl.GenericObjectPool.class);
+    // Adding mysql jdbc driver if exists
+    try {
+      classesToLoad.add(Class.forName("com.mysql.jdbc.Driver"));
+    } catch (Exception e) {
+    }
+    // Adding postgres jdbc driver if exists
+    try {
+      classesToLoad.add(Class.forName("org.postgresql.Driver"));
+    } catch (Exception e) {
+    } // Adding oracle jdbc driver if exists
+    try {
+      classesToLoad.add(Class.forName("oracle.jdbc.OracleDriver"));
+    } catch (Exception e) {
+    } // Adding mssql jdbc driver if exists
+    try {
+      classesToLoad.add(Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver"));
+    } catch (Exception e) {
+    }
+    try {
+      JarUtils.addDependencyJars(conf, classesToLoad);
+    } catch (IOException e) {
+      LOGGER.error("Could not add necessary JDBC storage handler dependencies to classpath", e);
+    }
+  }
+
+  @Override
+  public String toString() {
+    return Constants.JDBC_HIVE_STORAGE_HANDLER_ID;
   }
 
 }

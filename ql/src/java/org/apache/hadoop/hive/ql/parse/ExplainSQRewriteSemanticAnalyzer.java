@@ -53,7 +53,7 @@ public class ExplainSQRewriteSemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx
         );
 
-    ExplainSQRewriteTask explTask = (ExplainSQRewriteTask) TaskFactory.get(work, conf);
+    ExplainSQRewriteTask explTask = (ExplainSQRewriteTask) TaskFactory.get(work);
 
     fieldList = explTask.getResultSchema();
     rootTasks.add(explTask);

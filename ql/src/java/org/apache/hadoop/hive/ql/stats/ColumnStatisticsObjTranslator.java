@@ -28,13 +28,14 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -130,7 +131,7 @@ public class ColumnStatisticsObjTranslator {
   }
 
   private static Decimal convertToThriftDecimal(HiveDecimal d) {
-    return new Decimal(ByteBuffer.wrap(d.unscaledValue().toByteArray()), (short) d.scale());
+    return DecimalUtils.getDecimal(ByteBuffer.wrap(d.unscaledValue().toByteArray()), (short) d.scale());
   }
 
   private static void unpackLongStats(ObjectInspector oi, Object o, String fName, ColumnStatisticsObj statsObj) {
@@ -196,10 +197,10 @@ public class ColumnStatisticsObjTranslator {
       long v = ((LongObjectInspector) oi).get(o);
       statsObj.getStatsData().getDateStats().setNumDVs(v);
     } else if (fName.equals("max")) {
-      DateWritable v = ((DateObjectInspector) oi).getPrimitiveWritableObject(o);
+      DateWritableV2 v = ((DateObjectInspector) oi).getPrimitiveWritableObject(o);
       statsObj.getStatsData().getDateStats().setHighValue(new Date(v.getDays()));
     } else if (fName.equals("min")) {
-      DateWritable v = ((DateObjectInspector) oi).getPrimitiveWritableObject(o);
+      DateWritableV2 v = ((DateObjectInspector) oi).getPrimitiveWritableObject(o);
       statsObj.getStatsData().getDateStats().setLowValue(new Date(v.getDays()));
     } else if (fName.equals("ndvbitvector")) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;

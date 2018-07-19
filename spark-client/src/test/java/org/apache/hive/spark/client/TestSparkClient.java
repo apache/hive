@@ -36,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +53,7 @@ import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.spark.counter.SparkCounters;
-import org.apache.spark.SparkException;
+import org.apache.spark.SparkContext$;
 import org.apache.spark.SparkFiles;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaRDD;
@@ -68,6 +69,11 @@ public class TestSparkClient {
   private static final long TIMEOUT = 20;
   private static final HiveConf HIVECONF = new HiveConf();
 
+  static {
+    HIVECONF.set("hive.spark.client.connect.timeout", "30000ms");
+    HIVECONF.setVar(HiveConf.ConfVars.SPARK_CLIENT_TYPE, HiveConf.HIVE_SPARK_LAUNCHER_CLIENT);
+  }
+
   private Map<String, String> createConf() {
     Map<String, String> conf = new HashMap<String, String>();
 
@@ -76,10 +82,14 @@ public class TestSparkClient {
     conf.put("spark.app.name", "SparkClientSuite Remote App");
     conf.put("spark.driver.extraClassPath", classpath);
     conf.put("spark.executor.extraClassPath", classpath);
+    conf.put("spark.testing", "true");
 
     if (!Strings.isNullOrEmpty(System.getProperty("spark.home"))) {
       conf.put("spark.home", System.getProperty("spark.home"));
     }
+
+    conf.put("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
+            "TestSparkClient-local-dir").toString());
 
     return conf;
   }
@@ -128,8 +138,36 @@ public class TestSparkClient {
           handle.get(TIMEOUT, TimeUnit.SECONDS);
           fail("Should have thrown an exception.");
         } catch (ExecutionException ee) {
-          assertTrue(ee.getCause() instanceof SparkException);
-          assertTrue(ee.getCause().getMessage().contains("IllegalStateException: Hello"));
+          assertTrue(ee.getCause() instanceof IllegalStateException);
+          assertTrue(ee.getCause().getMessage().contains("Hello"));
+        }
+
+        // Try an invalid state transition on the handle. This ensures that the actual state
+        // change we're interested in actually happened, since internally the handle serializes
+        // state changes.
+        assertFalse(((JobHandleImpl<String>)handle).changeState(JobHandle.State.SENT));
+
+        verify(listener).onJobQueued(handle);
+        verify(listener).onJobStarted(handle);
+        verify(listener).onJobFailed(same(handle), any(Throwable.class));
+      }
+    });
+  }
+
+  @Test
+  public void testErrorJobNotSerializable() throws Exception {
+    runTest(new TestFunction() {
+      @Override
+      public void call(SparkClient client) throws Exception {
+        JobHandle.Listener<String> listener = newListener();
+        List<JobHandle.Listener<String>> listeners = Lists.newArrayList(listener);
+        JobHandle<String> handle = client.submit(new ErrorJobNotSerializable(), listeners);
+        try {
+          handle.get(TIMEOUT, TimeUnit.SECONDS);
+          fail("Should have thrown an exception.");
+        } catch (ExecutionException ee) {
+          assertTrue(ee.getCause() instanceof RuntimeException);
+          assertTrue(ee.getCause().getMessage().contains("Hello"));
         }
 
         // Try an invalid state transition on the handle. This ensures that the actual state
@@ -305,6 +343,26 @@ public class TestSparkClient {
         client.stop();
       }
       SparkClientFactory.stop();
+      waitForSparkContextShutdown();
+    }
+  }
+
+  /**
+   * This was added to avoid a race condition where we try to create multiple SparkContexts in
+   * the same process. Since spark.master = local everything is run in the same JVM. Since we
+   * don't wait for the RemoteDriver to shutdown it's SparkContext, its possible that we finish a
+   * test before the SparkContext has been shutdown. In order to avoid the multiple SparkContexts
+   * in a single JVM exception, we wait for the SparkContext to shutdown after each test.
+   */
+  private void waitForSparkContextShutdown() throws InterruptedException {
+    for (int i = 0; i < 100; i++) {
+      if (SparkContext$.MODULE$.getActive().isEmpty()) {
+        break;
+      }
+      Thread.sleep(100);
+    }
+    if (!SparkContext$.MODULE$.getActive().isEmpty()) {
+      throw new IllegalStateException("SparkContext did not shutdown in time");
     }
   }
 
@@ -324,6 +382,35 @@ public class TestSparkClient {
       throw new IllegalStateException("Hello");
     }
 
+  }
+
+  private static class ErrorJobNotSerializable implements Job<String> {
+
+    private static final class NonSerializableException extends Exception {
+
+      private static final long serialVersionUID = 2548414562750016219L;
+
+      private final NonSerializableObject nonSerializableObject;
+
+      private NonSerializableException(String content) {
+        super("Hello");
+        this.nonSerializableObject = new NonSerializableObject(content);
+      }
+    }
+
+    private static final class NonSerializableObject {
+
+      String content;
+
+      private NonSerializableObject(String content) {
+        this.content = content;
+      }
+    }
+
+    @Override
+    public String call(JobContext jc) throws NonSerializableException {
+      throw new NonSerializableException("Hello");
+    }
   }
 
   private static class SparkJob implements Job<Long> {

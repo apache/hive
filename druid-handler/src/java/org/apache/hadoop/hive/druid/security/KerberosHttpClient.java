@@ -19,15 +19,12 @@
 package org.apache.hadoop.hive.druid.security;
 
 import com.google.common.base.Throwables;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.metamx.http.client.AbstractHttpClient;
 import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.Request;
 import com.metamx.http.client.response.HttpResponseHandler;
-import io.druid.concurrent.Execs;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.joda.time.Duration;
@@ -39,7 +36,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 
 /**
  * This is a slightly modified version of kerberos module borrowed from druid project
@@ -52,7 +48,6 @@ public class KerberosHttpClient extends AbstractHttpClient
   protected static final org.slf4j.Logger log = LoggerFactory.getLogger(KerberosHttpClient.class);
   private final HttpClient delegate;
   private final CookieManager cookieManager;
-  private final Executor exec = Execs.singleThreaded("KerberosHttpClient-%s");
 
   public KerberosHttpClient(HttpClient delegate)
   {
@@ -93,20 +88,15 @@ public class KerberosHttpClient extends AbstractHttpClient
 
       if (DruidKerberosUtil.needToSendCredentials(cookieManager.getCookieStore(), uri)) {
         // No Cookies for requested URI, authenticate user and add authentication header
-        log.info(
-                "No Auth Cookie found for URI{}. Existing Cookies{} Authenticating... ",
-                uri,
-                cookieManager.getCookieStore().getCookies()
+        log.debug("No Auth Cookie found for URI{}. Existing Cookies{} Authenticating... ", uri,
+            cookieManager.getCookieStore().getCookies()
         );
         // Assuming that a valid UGI with kerberos cred is created by HS2 or LLAP
         UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
         currentUser.checkTGTAndReloginFromKeytab();
         log.debug("The user credential is {}", currentUser);
-        String challenge = currentUser.doAs(new PrivilegedExceptionAction<String>()
-        {
-          @Override
-          public String run() throws Exception
-          {
+        String challenge = currentUser.doAs(new PrivilegedExceptionAction<String>() {
+          @Override public String run() throws Exception {
             return DruidKerberosUtil.kerberosChallenge(host);
           }
         });
@@ -116,44 +106,32 @@ public class KerberosHttpClient extends AbstractHttpClient
       } else {
         /* In this branch we had already a cookie that did expire
         therefore we need to resend a valid Kerberos challenge*/
+        log.debug("Found Auth Cookie found for URI {} cookie {}", uri,
+            DruidKerberosUtil.getAuthCookie(cookieManager.getCookieStore(), uri).toString()
+        );
         should_retry_on_unauthorized_response = true;
       }
 
-      ListenableFuture<RetryResponseHolder<Final>> internalFuture = delegate.go(
-              request,
-              new RetryIfUnauthorizedResponseHandler<Intermediate, Final>(new ResponseCookieHandler(
-                      request.getUrl().toURI(),
-                      cookieManager,
-                      httpResponseHandler
-              )),
-              duration
+      ListenableFuture<RetryResponseHolder<Final>> internalFuture = delegate.go(request, new RetryIfUnauthorizedResponseHandler<Intermediate, Final>(
+          new ResponseCookieHandler(request.getUrl().toURI(), cookieManager, httpResponseHandler
+              )), duration
       );
 
-      /* Handle response as Futures instead of inline code to avoid boiler plate repeated code. */
-      Futures.addCallback(internalFuture, new FutureCallback<RetryResponseHolder<Final>>()
-      {
-        @Override
-        public void onSuccess(RetryResponseHolder<Final> result)
-        {
-          if (should_retry_on_unauthorized_response && result.shouldRetry()) {
-            log.info("Preparing for Retry");
-            // remove Auth cookie
-            DruidKerberosUtil.removeAuthCookie(cookieManager.getCookieStore(), uri);
-            // clear existing cookie
-            request.setHeader("Cookie", "");
-            inner_go(request.copy(), httpResponseHandler, duration, future);
-          } else {
-            log.debug("Not retrying and returning future response");
-            future.set(result.getObj());
-          }
-        }
+      RetryResponseHolder<Final> responseHolder = internalFuture.get();
 
-        @Override
-        public void onFailure(Throwable t)
-        {
-          future.setException(t);
-        }
-      }, exec);
+      if (should_retry_on_unauthorized_response && responseHolder.shouldRetry()) {
+        log.debug("Preparing for Retry boolean {} and result {}, object{} ",
+            should_retry_on_unauthorized_response, responseHolder.shouldRetry(), responseHolder.getObj()
+        );
+        // remove Auth cookie
+        DruidKerberosUtil.removeAuthCookie(cookieManager.getCookieStore(), uri);
+        // clear existing cookie
+        request.setHeader("Cookie", "");
+        inner_go(request.copy(), httpResponseHandler, duration, future);
+
+      } else {
+        future.set(responseHolder.getObj());
+      }
     }
     catch (Throwable e) {
       throw Throwables.propagate(e);

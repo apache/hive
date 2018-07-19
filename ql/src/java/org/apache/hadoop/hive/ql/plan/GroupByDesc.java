@@ -25,16 +25,12 @@ import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hive.common.util.AnnotationUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 
 /**
@@ -70,7 +66,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   private boolean bucketGroup;
 
   private ArrayList<ExprNodeDesc> keys;
-  private List<Integer> listGroupingSets;
+  private List<Long> listGroupingSets;
   private boolean groupingSetsPresent;
   private int groupingSetPosition = -1; //  /* in case of grouping sets; groupby1 will output values for every setgroup; this is the index of the column that information will be sent */
   private ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
@@ -90,7 +86,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
       final float groupByMemoryUsage,
       final float memoryThreshold,
-      final List<Integer> listGroupingSets,
+      final List<Long> listGroupingSets,
       final boolean groupingSetsPresent,
       final int groupingSetsPosition,
       final boolean isDistinct) {
@@ -107,7 +103,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final boolean bucketGroup,
       final float groupByMemoryUsage,
       final float memoryThreshold,
-      final List<Integer> listGroupingSets,
+      final List<Long> listGroupingSets,
       final boolean groupingSetsPresent,
       final int groupingSetsPosition,
       final boolean isDistinct) {
@@ -129,6 +125,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "mode")
+  @Signature
   public String getModeString() {
     switch (mode) {
     case COMPLETE:
@@ -155,6 +152,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "keys")
+  @Signature
   public String getKeyString() {
     return PlanUtils.getExprListString(keys);
   }
@@ -173,6 +171,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outputColumnNames")
+  @Signature
   public ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }
@@ -183,6 +182,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "pruneGroupingSetId", displayOnlyOnTrue = true)
+  @Signature
   public boolean pruneGroupingSetId() {
     return groupingSetPosition >= 0 &&
         outputColumnNames.size() != keys.size() + aggregators.size();
@@ -210,6 +210,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "aggregations", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public List<String> getAggregatorStrings() {
     List<String> res = new ArrayList<String>();
     for (AggregationDesc agg: aggregators) {
@@ -235,6 +236,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "bucketGroup", displayOnlyOnTrue = true)
+  @Signature
   public boolean getBucketGroup() {
     return bucketGroup;
   }
@@ -267,11 +269,11 @@ public class GroupByDesc extends AbstractOperatorDesc {
   // in which case the group by would execute as a single map-reduce job.
   // For the group-by, the group by keys should be: a,b,groupingSet(for rollup), c
   // So, the starting position of grouping set need to be known
-  public List<Integer> getListGroupingSets() {
+  public List<Long> getListGroupingSets() {
     return listGroupingSets;
   }
 
-  public void setListGroupingSets(final List<Integer> listGroupingSets) {
+  public void setListGroupingSets(final List<Long> listGroupingSets) {
     this.listGroupingSets = listGroupingSets;
   }
 
@@ -315,7 +317,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
     keys.addAll(this.keys);
     ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators = new ArrayList<>();
     aggregators.addAll(this.aggregators);
-    List<Integer> listGroupingSets = new ArrayList<>();
+    List<Long> listGroupingSets = new ArrayList<>();
     listGroupingSets.addAll(this.listGroupingSets);
     return new GroupByDesc(this.mode, outputColumnNames, keys, aggregators,
         this.groupByMemoryUsage, this.memoryThreshold, listGroupingSets, this.groupingSetsPresent,
@@ -423,5 +425,6 @@ public class GroupByDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 
 }

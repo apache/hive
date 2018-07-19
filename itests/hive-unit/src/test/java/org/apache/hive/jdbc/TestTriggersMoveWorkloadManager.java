@@ -39,14 +39,26 @@ import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.ql.wm.Expression;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
 import org.apache.hadoop.hive.ql.wm.Trigger;
+import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
 
 import com.google.common.collect.Lists;
 
+@RunWith(RetryTestRunner.class)
 public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
+  @Rule
+  public TestName testName = new TestName();
+
+  @Override
+  public String getTestName() {
+    return getClass().getSimpleName() + "#" + testName.getMethodName();
+  }
 
   @BeforeClass
   public static void beforeTest() throws Exception {
@@ -57,9 +69,11 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
     conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
-    conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, 100, TimeUnit.MILLISECONDS);
+    conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL, 50, TimeUnit.MILLISECONDS);
+    conf.setTimeVar(ConfVars.TEZ_DAG_STATUS_CHECK_INTERVAL, 50, TimeUnit.MILLISECONDS);
     conf.setVar(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE, "default");
     conf.setBoolean("hive.test.workload.management", true);
     conf.setBoolVar(ConfVars.TEZ_EXEC_SUMMARY, true);
@@ -81,8 +95,8 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
 
   @Test(timeout = 60000)
   public void testTriggerMoveAndKill() throws Exception {
-    Expression moveExpression = ExpressionFactory.fromString("EXECUTION_TIME > 1000");
-    Expression killExpression = ExpressionFactory.fromString("EXECUTION_TIME > 5000");
+    Expression moveExpression = ExpressionFactory.fromString("EXECUTION_TIME > '1sec'");
+    Expression killExpression = ExpressionFactory.fromString("EXECUTION_TIME > '5000ms'");
     Trigger moveTrigger = new ExecutionTrigger("slow_query_move", moveExpression,
       new Action(Action.Type.MOVE_TO_POOL, "ETL"));
     Trigger killTrigger = new ExecutionTrigger("slow_query_kill", killExpression,
@@ -96,10 +110,6 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     List<String> errCaptureExpect = new ArrayList<>();
     errCaptureExpect.add("Workload Manager Events Summary");
-    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
-    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
-    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
-    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     errCaptureExpect.add("\"eventType\" : \"GET\"");
     errCaptureExpect.add("\"eventType\" : \"MOVE\"");
     errCaptureExpect.add("\"eventType\" : \"KILL\"");
@@ -110,6 +120,12 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger + " violated");
     // violation in ETL queue
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+    errCaptureExpect.add("\"subscribedCounters\" : [ \"EXECUTION_TIME\" ]");
+    errCaptureExpect.add("Event: GET Pool: BI");
+    // HIVE-19061 introduces UPDATE event which will capture changes to allocation % after GET
+    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
+    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
   }
 
@@ -130,9 +146,6 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     List<String> errCaptureExpect = new ArrayList<>();
     errCaptureExpect.add("Workload Manager Events Summary");
-    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
-    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
-    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     errCaptureExpect.add("\"eventType\" : \"GET\"");
     errCaptureExpect.add("\"eventType\" : \"MOVE\"");
     errCaptureExpect.add("\"eventType\" : \"RETURN\"");
@@ -140,6 +153,11 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     errCaptureExpect.add("\"name\" : \"slow_query_kill\"");
     // violation in BI queue
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger + " violated");
+    errCaptureExpect.add("\"subscribedCounters\" : [ \"HDFS_BYTES_READ\", \"EXECUTION_TIME\" ]");
+    errCaptureExpect.add("Event: GET Pool: BI");
+    // HIVE-19061 introduces UPDATE event which will capture changes to allocation % after GET
+    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
+    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     runQueryWithTrigger(query, setCmds, null, errCaptureExpect);
   }
 
@@ -163,11 +181,6 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     List<String> errCaptureExpect = new ArrayList<>();
     errCaptureExpect.add("Workload Manager Events Summary");
-    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
-    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
-    errCaptureExpect.add("Event: MOVE Pool: BI Cluster %: 80.00");
-    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
-    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     errCaptureExpect.add("\"eventType\" : \"GET\"");
     errCaptureExpect.add("\"eventType\" : \"MOVE\"");
     errCaptureExpect.add("\"eventType\" : \"MOVE\"");
@@ -182,8 +195,52 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger2 + " violated");
     // violation in BI queue
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+    errCaptureExpect.add("\"subscribedCounters\" : [ \"HDFS_BYTES_READ\", \"EXECUTION_TIME\", \"SHUFFLE_BYTES\" ]");
+    errCaptureExpect.add("Event: GET Pool: BI");
+    // HIVE-19061 introduces UPDATE event which will capture changes to allocation % after GET
+    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
+    errCaptureExpect.add("Event: MOVE Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
   }
+
+  // TODO: disabling this test as tez publishes counters only after task completion which will cause write side counters
+  // to be not validated correctly (DAG will be completed before validation)
+//  @Test(timeout = 60000)
+//  public void testTriggerMoveKill() throws Exception {
+//    Expression moveExpression1 = ExpressionFactory.fromString("HDFS_BYTES_READ > 100");
+//    Expression moveExpression2 = ExpressionFactory.fromString("HDFS_BYTES_WRITTEN > 200");
+//    Trigger moveTrigger1 = new ExecutionTrigger("move_big_read", moveExpression1,
+//      new Action(Action.Type.MOVE_TO_POOL, "ETL"));
+//    Trigger killTrigger = new ExecutionTrigger("big_write_kill", moveExpression2,
+//      new Action(Action.Type.KILL_QUERY));
+//    setupTriggers(Lists.newArrayList(moveTrigger1), Lists.newArrayList(killTrigger));
+//    String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
+//      " t2 on t1.under_col>=t2.under_col order by t1.under_col, t1.value";
+//    List<String> setCmds = new ArrayList<>();
+//    setCmds.add("set hive.tez.session.events.print.summary=json");
+//    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+//    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+//    List<String> errCaptureExpect = new ArrayList<>();
+//    errCaptureExpect.add("Workload Manager Events Summary");
+//    errCaptureExpect.add("\"eventType\" : \"GET\"");
+//    errCaptureExpect.add("\"eventType\" : \"MOVE\"");
+//    errCaptureExpect.add("\"eventType\" : \"KILL\"");
+//    errCaptureExpect.add("\"eventType\" : \"RETURN\"");
+//    errCaptureExpect.add("\"name\" : \"move_big_read\"");
+//    errCaptureExpect.add("\"name\" : \"big_write_kill\"");
+//    // violation in BI queue
+//    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger1 + " violated");
+//    // violation in ETL queue
+//    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+//    errCaptureExpect.add("\"subscribedCounters\" : [ \"HDFS_BYTES_READ\", \"HDFS_BYTES_WRITTEN\" ]");
+//    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
+//    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
+//    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
+//    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
+//    runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
+//  }
 
   @Test(timeout = 60000)
   public void testTriggerMoveConflictKill() throws Exception {
@@ -202,9 +259,6 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     List<String> errCaptureExpect = new ArrayList<>();
     errCaptureExpect.add("Workload Manager Events Summary");
-    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
-    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
-    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     errCaptureExpect.add("\"eventType\" : \"GET\"");
     errCaptureExpect.add("\"eventType\" : \"KILL\"");
     errCaptureExpect.add("\"eventType\" : \"RETURN\"");
@@ -212,6 +266,11 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     errCaptureExpect.add("\"name\" : \"kill_big_read\"");
     // violation in BI queue
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+    errCaptureExpect.add("\"subscribedCounters\" : [ \"HDFS_BYTES_READ\" ]");
+    errCaptureExpect.add("Event: GET Pool: BI");
+    // HIVE-19061 introduces UPDATE event which will capture changes to allocation % after GET
+    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
   }
 

@@ -1,3 +1,6 @@
+--! qt:dataset:part
+
+set hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
@@ -19,7 +22,7 @@ STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into table `customer_ext`;
 
-CREATE TABLE `customer`(
+CREATE TABLE `customer_n0`(
   `c_custkey` bigint, 
   `c_name` string, 
   `c_address` string, 
@@ -32,7 +35,7 @@ CREATE TABLE `customer`(
 STORED AS ORC
 TBLPROPERTIES ('transactional'='true');
 
-INSERT INTO `customer`
+INSERT INTO `customer_n0`
 SELECT * FROM `customer_ext`;
 
 CREATE TABLE `dates_ext`(
@@ -190,7 +193,7 @@ CREATE TABLE `lineorder`(
   `lo_commitdate` bigint, 
   `lo_shipmode` string,
   primary key (`lo_orderkey`) disable rely,
-  constraint fk1 foreign key (`lo_custkey`) references `customer`(`c_custkey`) disable rely,
+  constraint fk1 foreign key (`lo_custkey`) references `customer_n0`(`c_custkey`) disable rely,
   constraint fk2 foreign key (`lo_orderdate`) references `dates`(`d_datekey`) disable rely,
   constraint fk3 foreign key (`lo_partkey`) references `ssb_part`(`p_partkey`) disable rely,
   constraint fk4 foreign key (`lo_suppkey`) references `supplier`(`s_suppkey`) disable rely)
@@ -200,13 +203,13 @@ TBLPROPERTIES ('transactional'='true');
 INSERT INTO `lineorder`
 SELECT * FROM `lineorder_ext`;
 
-analyze table customer compute statistics for columns;
+analyze table customer_n0 compute statistics for columns;
 analyze table dates compute statistics for columns;
 analyze table ssb_part compute statistics for columns;
 analyze table supplier compute statistics for columns;
 analyze table lineorder compute statistics for columns;
 
-CREATE MATERIALIZED VIEW `ssb_mv` ENABLE REWRITE
+CREATE MATERIALIZED VIEW `ssb_mv`
 AS
 SELECT
   cast(d_year || '-' || d_monthnuminyear || '-' || d_daynuminmonth as timestamp) as `__time`,
@@ -229,7 +232,7 @@ SELECT
   lo_extendedprice * lo_discount discounted_price,
   lo_revenue - lo_supplycost net_revenue
 FROM
-  customer, dates, lineorder, ssb_part, supplier
+  customer_n0, dates, lineorder, ssb_part, supplier
 where
   lo_orderdate = d_datekey
   and lo_partkey = p_partkey
@@ -330,7 +333,7 @@ select
     c_nation, s_nation, d_year,
     sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -348,7 +351,7 @@ explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -366,7 +369,7 @@ explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -384,7 +387,7 @@ explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -403,7 +406,7 @@ select
     d_year, c_nation,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -423,7 +426,7 @@ select
     d_year, s_nation, p_category,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -444,7 +447,7 @@ select
     d_year, s_city, p_brand1,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey

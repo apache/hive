@@ -86,7 +86,7 @@ public class TestHiveReduceExpressionsWithStatsRule {
     Mockito.doReturn(rowTypeMock).when(tableMock).getRowType();
     Mockito.doReturn(tableMock).when(schemaMock).getTableForMember(Matchers.any());
     statObj = new ColStatistics("_int", "int");
-    Mockito.doReturn(Lists.newArrayList(statObj)).when(tableMock).getColStat(Matchers.anyListOf(Integer.class));
+    Mockito.doReturn(Lists.newArrayList(statObj)).when(tableMock).getColStat(Matchers.anyListOf(Integer.class), Matchers.eq(false));
     Mockito.doReturn(hiveTableMDMock).when(tableMock).getHiveTableMD();
     Mockito.doReturn(tableParams).when(hiveTableMDMock).getParameters();
 

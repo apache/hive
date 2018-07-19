@@ -25,7 +25,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -36,6 +35,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class TxnCommandsBaseForTests {
+  private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
   //bucket count for test tables; set it to 1 for easier debugging
   final static int BUCKET_COUNT = 2;
   @Rule
@@ -72,8 +73,21 @@ public abstract class TxnCommandsBaseForTests {
   public void setUp() throws Exception {
     setUpInternal();
   }
-  void setUpInternal() throws Exception {
+  void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
+  }
+  void setUpInternal() throws Exception {
+    initHiveConf();
+    Path workDir = new Path(System.getProperty("test.tmp.dir",
+        "target" + File.separator + "test" + File.separator + "tmp"));
+    hiveConf.set("mapred.local.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "local");
+    hiveConf.set("mapred.system.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "system");
+    hiveConf.set("mapreduce.jobtracker.staging.root.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "staging");
+    hiveConf.set("mapred.temp.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "temp");
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getWarehouseDir());
@@ -83,6 +97,7 @@ public abstract class TxnCommandsBaseForTests {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolean("mapred.input.dir.recursive", true);
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.prepDb(hiveConf);
     File f = new File(getWarehouseDir());
@@ -92,8 +107,9 @@ public abstract class TxnCommandsBaseForTests {
     if (!(new File(getWarehouseDir()).mkdirs())) {
       throw new RuntimeException("Could not create " + getWarehouseDir());
     }
-    SessionState.start(new SessionState(hiveConf));
-    d = new Driver(hiveConf);
+    SessionState ss = SessionState.start(hiveConf);
+    ss.applyAuthorizationPolicy();
+    d = new Driver(new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build(), null);
     d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -136,7 +152,7 @@ public abstract class TxnCommandsBaseForTests {
   String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
   }
-  
+
   void runWorker(HiveConf hiveConf) throws MetaException {
     TestTxnCommands2.runWorker(hiveConf);
   }
@@ -146,6 +162,7 @@ public abstract class TxnCommandsBaseForTests {
   }
 
   List<String> runStatementOnDriver(String stmt) throws Exception {
+    LOG.info("Running the query: " + stmt);
     CommandProcessorResponse cpr = d.run(stmt);
     if(cpr.getResponseCode() != 0) {
       throw new RuntimeException(stmt + " failed: " + cpr);
@@ -203,10 +220,9 @@ public abstract class TxnCommandsBaseForTests {
   }
   void checkExpected(List<String> rs, String[][] expected, String msg, Logger LOG, boolean checkFileName) {
     LOG.warn(testName.getMethodName() + ": read data(" + msg + "): ");
-    for(String s : rs) {
-      LOG.warn(s);
-    }
-    Assert.assertEquals( testName.getMethodName() + ": " + msg, expected.length, rs.size());
+    logResult(LOG, rs);
+    Assert.assertEquals(testName.getMethodName() + ": " + msg + "; " + rs,
+        expected.length, rs.size());
     //verify data and layout
     for(int i = 0; i < expected.length; i++) {
       Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
@@ -214,5 +230,23 @@ public abstract class TxnCommandsBaseForTests {
         Assert.assertTrue("Actual line(file) " + i + " file: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
       }
     }
+  }
+  void logResult(Logger LOG, List<String> rs) {
+    StringBuilder sb = new StringBuilder();
+    for(String s : rs) {
+      sb.append(s).append('\n');
+    }
+    LOG.info(sb.toString());
+  }
+  /**
+   * We have to use a different query to check results for Vectorized tests because to get the
+   * file name info we need to use {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#FILENAME}
+   * which will currently make the query non-vectorizable.  This means we can't check the file name
+   * for vectorized version of the test.
+   */
+  void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
+    List<String> rs = runStatementOnDriver(query);
+    checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
+    assertVectorized(isVectorized, query);
   }
 }

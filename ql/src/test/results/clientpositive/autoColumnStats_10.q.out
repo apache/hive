@@ -1,21 +1,21 @@
-PREHOOK: query: drop table p
+PREHOOK: query: drop table p_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table p
+POSTHOOK: query: drop table p_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: query: CREATE TABLE p_n1(insert_num int, c1 tinyint, c2 smallint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@p
-POSTHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: Output: default@p_n1
+POSTHOOK: query: CREATE TABLE p_n1(insert_num int, c1 tinyint, c2 smallint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@p
-PREHOOK: query: desc formatted p
+POSTHOOK: Output: default@p_n1
+PREHOOK: query: desc formatted p_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
@@ -29,6 +29,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -45,23 +46,23 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert into p values (1,22,333)
+PREHOOK: query: insert into p_n1 values (1,22,333)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@p
-POSTHOOK: query: insert into p values (1,22,333)
+PREHOOK: Output: default@p_n1
+POSTHOOK: query: insert into p_n1 values (1,22,333)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@p
-POSTHOOK: Lineage: p.c1 SCRIPT []
-POSTHOOK: Lineage: p.c2 SCRIPT []
-POSTHOOK: Lineage: p.insert_num SCRIPT []
-PREHOOK: query: desc formatted p
+POSTHOOK: Output: default@p_n1
+POSTHOOK: Lineage: p_n1.c1 SCRIPT []
+POSTHOOK: Lineage: p_n1.c2 SCRIPT []
+POSTHOOK: Lineage: p_n1.insert_num SCRIPT []
+PREHOOK: query: desc formatted p_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
@@ -75,6 +76,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	8                   
@@ -91,20 +93,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: query: alter table p_n1 replace columns (insert_num int, c1 STRING, c2 STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@p
-PREHOOK: Output: default@p
-POSTHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: Input: default@p_n1
+PREHOOK: Output: default@p_n1
+POSTHOOK: query: alter table p_n1 replace columns (insert_num int, c1 STRING, c2 STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@p
-POSTHOOK: Output: default@p
-PREHOOK: query: desc formatted p
+POSTHOOK: Input: default@p_n1
+POSTHOOK: Output: default@p_n1
+PREHOOK: query: desc formatted p_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	string              	                    
@@ -118,6 +120,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	1                   
@@ -135,12 +138,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted p insert_num
+PREHOOK: query: desc formatted p_n1 insert_num
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p insert_num
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1 insert_num
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 col_name            	insert_num          	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	1                   	 	 	 	 	 	 	 	 	 	 
@@ -154,12 +157,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted p c1
+PREHOOK: query: desc formatted p_n1 c1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p c1
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1 c1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 col_name            	c1                  	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -173,23 +176,23 @@ num_falses
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: insert into p values (2,11,111)
+PREHOOK: query: insert into p_n1 values (2,11,111)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@p
-POSTHOOK: query: insert into p values (2,11,111)
+PREHOOK: Output: default@p_n1
+POSTHOOK: query: insert into p_n1 values (2,11,111)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@p
-POSTHOOK: Lineage: p.c1 SCRIPT []
-POSTHOOK: Lineage: p.c2 SCRIPT []
-POSTHOOK: Lineage: p.insert_num SCRIPT []
-PREHOOK: query: desc formatted p
+POSTHOOK: Output: default@p_n1
+POSTHOOK: Lineage: p_n1.c1 SCRIPT []
+POSTHOOK: Lineage: p_n1.c2 SCRIPT []
+POSTHOOK: Lineage: p_n1.insert_num SCRIPT []
+PREHOOK: query: desc formatted p_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	string              	                    
@@ -203,6 +206,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
 	numRows             	2                   
@@ -220,12 +224,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted p insert_num
+PREHOOK: query: desc formatted p_n1 insert_num
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p insert_num
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1 insert_num
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 col_name            	insert_num          	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	1                   	 	 	 	 	 	 	 	 	 	 
@@ -239,12 +243,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted p c1
+PREHOOK: query: desc formatted p_n1 c1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p c1
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1 c1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 col_name            	c1                  	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -258,28 +262,28 @@ num_falses
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: drop table p
+PREHOOK: query: drop table p_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@p
-PREHOOK: Output: default@p
-POSTHOOK: query: drop table p
+PREHOOK: Input: default@p_n1
+PREHOOK: Output: default@p_n1
+POSTHOOK: query: drop table p_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@p
-POSTHOOK: Output: default@p
-PREHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+POSTHOOK: Input: default@p_n1
+POSTHOOK: Output: default@p_n1
+PREHOOK: query: CREATE TABLE p_n1(insert_num int, c1 tinyint, c2 smallint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@p
-POSTHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: Output: default@p_n1
+POSTHOOK: query: CREATE TABLE p_n1(insert_num int, c1 tinyint, c2 smallint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@p
-PREHOOK: query: desc formatted p
+POSTHOOK: Output: default@p_n1
+PREHOOK: query: desc formatted p_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
@@ -293,6 +297,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -309,23 +314,23 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert into p values (1,22,333)
+PREHOOK: query: insert into p_n1 values (1,22,333)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@p
-POSTHOOK: query: insert into p values (1,22,333)
+PREHOOK: Output: default@p_n1
+POSTHOOK: query: insert into p_n1 values (1,22,333)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@p
-POSTHOOK: Lineage: p.c1 SCRIPT []
-POSTHOOK: Lineage: p.c2 SCRIPT []
-POSTHOOK: Lineage: p.insert_num SCRIPT []
-PREHOOK: query: desc formatted p
+POSTHOOK: Output: default@p_n1
+POSTHOOK: Lineage: p_n1.c1 SCRIPT []
+POSTHOOK: Lineage: p_n1.c2 SCRIPT []
+POSTHOOK: Lineage: p_n1.insert_num SCRIPT []
+PREHOOK: query: desc formatted p_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
@@ -339,6 +344,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	8                   
@@ -355,20 +361,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: query: alter table p_n1 replace columns (insert_num int, c1 STRING, c2 STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@p
-PREHOOK: Output: default@p
-POSTHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: Input: default@p_n1
+PREHOOK: Output: default@p_n1
+POSTHOOK: query: alter table p_n1 replace columns (insert_num int, c1 STRING, c2 STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@p
-POSTHOOK: Output: default@p
-PREHOOK: query: desc formatted p
+POSTHOOK: Input: default@p_n1
+POSTHOOK: Output: default@p_n1
+PREHOOK: query: desc formatted p_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	string              	                    
@@ -382,6 +388,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	1                   
@@ -399,12 +406,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted p insert_num
+PREHOOK: query: desc formatted p_n1 insert_num
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p insert_num
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1 insert_num
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 col_name            	insert_num          	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -418,12 +425,12 @@ num_falses
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted p c1
+PREHOOK: query: desc formatted p_n1 c1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p c1
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1 c1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 col_name            	c1                  	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -437,23 +444,23 @@ num_falses
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: insert into p values (2,11,111)
+PREHOOK: query: insert into p_n1 values (2,11,111)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@p
-POSTHOOK: query: insert into p values (2,11,111)
+PREHOOK: Output: default@p_n1
+POSTHOOK: query: insert into p_n1 values (2,11,111)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@p
-POSTHOOK: Lineage: p.c1 SCRIPT []
-POSTHOOK: Lineage: p.c2 SCRIPT []
-POSTHOOK: Lineage: p.insert_num SCRIPT []
-PREHOOK: query: desc formatted p
+POSTHOOK: Output: default@p_n1
+POSTHOOK: Lineage: p_n1.c1 SCRIPT []
+POSTHOOK: Lineage: p_n1.c2 SCRIPT []
+POSTHOOK: Lineage: p_n1.insert_num SCRIPT []
+PREHOOK: query: desc formatted p_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	string              	                    
@@ -467,6 +474,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
 	numRows             	2                   
@@ -484,12 +492,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted p insert_num
+PREHOOK: query: desc formatted p_n1 insert_num
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p insert_num
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1 insert_num
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 col_name            	insert_num          	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -503,12 +511,12 @@ num_falses
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted p c1
+PREHOOK: query: desc formatted p_n1 c1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p c1
+PREHOOK: Input: default@p_n1
+POSTHOOK: query: desc formatted p_n1 c1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n1
 col_name            	c1                  	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 

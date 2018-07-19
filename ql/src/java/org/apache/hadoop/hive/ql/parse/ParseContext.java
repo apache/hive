@@ -18,16 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -38,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
@@ -59,6 +50,17 @@ import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Parse Context: The current parse context. This is passed to the optimizer
@@ -118,15 +120,16 @@ public class ParseContext {
   private AnalyzeRewriteContext analyzeRewrite;
   private CreateTableDesc createTableDesc;
   private CreateViewDesc createViewDesc;
+  private MaterializedViewDesc materializedViewUpdateDesc;
   private boolean reduceSinkAddedBySortedDynPartition;
 
-  private Map<SelectOperator, Table> viewProjectToViewSchema;  
+  private Map<SelectOperator, Table> viewProjectToViewSchema;
   private ColumnAccessInfo columnAccessInfo;
   private boolean needViewColumnAuthorization;
   private Set<FileSinkDesc> acidFileSinks = Collections.emptySet();
 
   private Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo =
-          new HashMap<ReduceSinkOperator, RuntimeValuesInfo>();
+          new LinkedHashMap<ReduceSinkOperator, RuntimeValuesInfo>();
   private Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo =
           new HashMap<>();
   private Map<ExprNodeDesc, GroupByOperator> colExprToGBMap =
@@ -139,7 +142,6 @@ public class ParseContext {
   }
 
   /**
-   * @param conf
    * @param opToPartPruner
    *          map from table scan operator to partition pruner
    * @param opToPartList
@@ -194,7 +196,7 @@ public class ParseContext {
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
-      CreateViewDesc createViewDesc, QueryProperties queryProperties,
+      CreateViewDesc createViewDesc, MaterializedViewDesc materializedViewUpdateDesc, QueryProperties queryProperties,
       Map<SelectOperator, Table> viewProjectToTableSchema, Set<FileSinkDesc> acidFileSinks) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
@@ -225,6 +227,7 @@ public class ParseContext {
     this.analyzeRewrite = analyzeRewrite;
     this.createTableDesc = createTableDesc;
     this.createViewDesc = createViewDesc;
+    this.materializedViewUpdateDesc = materializedViewUpdateDesc;
     this.queryProperties = queryProperties;
     this.viewProjectToViewSchema = viewProjectToTableSchema;
     this.needViewColumnAuthorization = viewProjectToTableSchema != null
@@ -603,6 +606,10 @@ public class ParseContext {
 
   public CreateViewDesc getCreateViewDesc() {
     return createViewDesc;
+  }
+
+  public MaterializedViewDesc getMaterializedViewUpdateDesc() {
+    return materializedViewUpdateDesc;
   }
 
   public void setReduceSinkAddedBySortedDynPartition(

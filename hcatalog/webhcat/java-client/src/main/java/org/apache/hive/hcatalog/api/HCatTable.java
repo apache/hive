@@ -176,6 +176,10 @@ public class HCatTable {
       newTable.putToParameters("comment", comment);
     }
 
+    if (newTable.getParameters().get("bucketing_version") == null) {
+      newTable.putToParameters("bucketing_version", "2");
+    }
+
     newTable.setSd(sd);
     if (partCols != null) {
       ArrayList<FieldSchema> hivePtnCols = new ArrayList<FieldSchema>();

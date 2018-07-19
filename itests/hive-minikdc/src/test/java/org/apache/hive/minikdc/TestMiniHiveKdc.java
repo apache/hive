@@ -47,8 +47,8 @@ public class TestMiniHiveKdc {
 
   @Before
   public void setUp() throws Exception {
+    miniHiveKdc = new MiniHiveKdc();
     hiveConf = new HiveConf();
-    miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
   }
 
   @After

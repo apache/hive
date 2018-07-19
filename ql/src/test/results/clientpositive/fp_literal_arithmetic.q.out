@@ -16,9 +16,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: q0
+            filterExpr: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: l_discount BETWEEN 0.05 AND 0.07 (type: boolean)
+              predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
               Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: l_extendedprice (type: double)
@@ -33,6 +34,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -82,9 +84,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: q1
+            filterExpr: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: l_discount BETWEEN 0.05 AND 0.07 (type: boolean)
+              predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
               Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: l_extendedprice (type: double)
@@ -99,6 +102,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -185,6 +189,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: q10
+            filterExpr: l_discount BETWEEN CAST( '0.05' AS decimal(3,2)) AND CAST( '0.07' AS decimal(3,2)) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: l_discount BETWEEN CAST( '0.05' AS decimal(3,2)) AND CAST( '0.07' AS decimal(3,2)) (type: boolean)
@@ -202,6 +207,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -251,6 +257,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: q11
+            filterExpr: l_discount BETWEEN (0.06 - 0.01) AND (0.06 + 0.01) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: l_discount BETWEEN (0.06 - 0.01) AND (0.06 + 0.01) (type: boolean)
@@ -268,6 +275,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)

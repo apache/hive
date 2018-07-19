@@ -17,18 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.RelOptCluster;
@@ -49,16 +41,19 @@ import org.apache.calcite.sql.fun.SqlCastFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ConversionUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
 import org.apache.calcite.util.TimestampString;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -104,9 +99,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RexNodeConverter {
 
@@ -257,6 +257,7 @@ public class RexNodeConverter {
             func.getChildren().size() != 0;
     boolean isBetween = !isNumeric && tgtUdf instanceof GenericUDFBetween;
     boolean isIN = !isNumeric && tgtUdf instanceof GenericUDFIn;
+    boolean isAllPrimitive = true;
 
     if (isNumeric) {
       tgtDT = func.getTypeInfo();
@@ -312,6 +313,8 @@ public class RexNodeConverter {
         }
       }
 
+      isAllPrimitive =
+          isAllPrimitive && tmpExprNode.getTypeInfo().getCategory() == Category.PRIMITIVE;
       argTypeBldr.add(TypeConverter.convert(tmpExprNode.getTypeInfo(), cluster.getTypeFactory()));
       tmpRN = convert(tmpExprNode);
       childRexNodeLst.add(tmpRN);
@@ -336,6 +339,13 @@ public class RexNodeConverter {
       } else if (HiveFloorDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a floor <date> operator, we need to rewrite it
         childRexNodeLst = rewriteFloorDateChildren(calciteOp, childRexNodeLst);
+      } else if (calciteOp.getKind() == SqlKind.IN && childRexNodeLst.size() == 2 && isAllPrimitive) {
+        // if it is a single item in an IN clause, transform A IN (B) to A = B
+        // from IN [A,B] => EQUALS [A,B]
+        // except complex types
+        calciteOp =
+            SqlFunctionConverter.getCalciteOperator("=", FunctionRegistry.getFunctionInfo("=")
+                .getGenericUDF(), argTypeBldr.build(), retType);
       }
       expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
     } else {
@@ -383,8 +393,6 @@ public class RexNodeConverter {
       GenericUDF udf = func.getGenericUDF();
       if ((udf instanceof GenericUDFToChar) || (udf instanceof GenericUDFToVarchar)
           || (udf instanceof GenericUDFToDecimal) || (udf instanceof GenericUDFToDate)
-          // Calcite can not specify the scale for timestamp. As a result, all
-          // the millisecond part will be lost
           || (udf instanceof GenericUDFTimestamp) || (udf instanceof GenericUDFToTimestampLocalTZ)
           || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)) {
         castExpr = cluster.getRexBuilder().makeAbstractCast(
@@ -445,26 +453,50 @@ public class RexNodeConverter {
 
   private List<RexNode> rewriteExtractDateChildren(SqlOperator op, List<RexNode> childRexNodeLst)
       throws SemanticException {
-    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
+    List<RexNode> newChildRexNodeLst = new ArrayList<>(2);
+    final boolean isTimestampLevel;
     if (op == HiveExtractDate.YEAR) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.YEAR));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.QUARTER) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.QUARTER));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.MONTH) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MONTH));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.WEEK) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.WEEK));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.DAY) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.DAY));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.HOUR) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.HOUR));
+      isTimestampLevel = true;
     } else if (op == HiveExtractDate.MINUTE) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MINUTE));
+      isTimestampLevel = true;
     } else if (op == HiveExtractDate.SECOND) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.SECOND));
+      isTimestampLevel = true;
+    } else {
+      isTimestampLevel = false;
     }
-    assert childRexNodeLst.size() == 1;
-    newChildRexNodeLst.add(childRexNodeLst.get(0));
+
+    final RexNode child = Iterables.getOnlyElement(childRexNodeLst);
+    if (SqlTypeUtil.isDatetime(child.getType()) || SqlTypeUtil.isInterval(child.getType())) {
+      newChildRexNodeLst.add(child);
+    } else {
+      // We need to add a cast to DATETIME Family
+      if (isTimestampLevel) {
+        newChildRexNodeLst.add(
+            cluster.getRexBuilder().makeCast(cluster.getTypeFactory().createSqlType(SqlTypeName.TIMESTAMP), child));
+      } else {
+        newChildRexNodeLst.add(
+            cluster.getRexBuilder().makeCast(cluster.getTypeFactory().createSqlType(SqlTypeName.DATE), child));
+      }
+    }
+
     return newChildRexNodeLst;
   }
 
@@ -666,9 +698,9 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
       break;
     case DATE:
-      final Calendar cal = Calendar.getInstance(Locale.getDefault());
-      cal.setTime((Date) value);
-      calciteLiteral = rexBuilder.makeDateLiteral(DateString.fromCalendarFields(cal));
+      final Date date = (Date) value;
+      calciteLiteral = rexBuilder.makeDateLiteral(
+          DateString.fromDaysSinceEpoch(date.toEpochDay()));
       break;
     case TIMESTAMP:
       final TimestampString tsString;
@@ -676,9 +708,7 @@ public class RexNodeConverter {
         tsString = TimestampString.fromCalendarFields((Calendar) value);
       } else {
         final Timestamp ts = (Timestamp) value;
-        final Calendar calt = Calendar.getInstance(Locale.getDefault());
-        calt.setTimeInMillis(ts.getTime());
-        tsString = TimestampString.fromCalendarFields(calt).withNanos(ts.getNanos());
+        tsString = TimestampString.fromMillisSinceEpoch(ts.toEpochMilli()).withNanos(ts.getNanos());
       }
       // Must call makeLiteral, not makeTimestampLiteral
       // to have the RexBuilder.roundTime logic kick in

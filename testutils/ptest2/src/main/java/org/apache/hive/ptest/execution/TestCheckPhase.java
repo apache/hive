@@ -18,6 +18,8 @@
  */
 package org.apache.hive.ptest.execution;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 
@@ -26,26 +28,40 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TestCheckPhase extends Phase {
   private final File mPatchFile;
+  private final String mPatchURL;
   private Set<String> modifiedTestFiles;
+  private static Cache<String, Boolean> patchUrls = CacheBuilder.newBuilder().expireAfterWrite
+          (7, TimeUnit.DAYS).maximumSize(10000).build();
 
   private static final Pattern fileNameFromDiff = Pattern.compile("[/][^\\s]*");
   private static final Pattern javaTest = Pattern.compile("Test.*java");
 
   public TestCheckPhase(List<HostExecutor> hostExecutors,
-    LocalCommandFactory localCommandFactory,
-    ImmutableMap<String, String> templateDefaults,
-    File patchFile, Logger logger, Set<String> modifiedTestFiles) {
+                        LocalCommandFactory localCommandFactory,
+                        ImmutableMap<String, String> templateDefaults,
+                        String patchUrl, File patchFile, Logger logger, Set<String> modifiedTestFiles) {
     super(hostExecutors, localCommandFactory, templateDefaults, logger);
     this.mPatchFile = patchFile;
+    this.mPatchURL = patchUrl;
     this.modifiedTestFiles = modifiedTestFiles;
   }
   @Override
   public void execute() throws Exception {
+    if (mPatchURL != null) {
+      boolean patchUrlWasSeen = patchUrls.asMap().containsKey(mPatchURL);
+      if (!patchUrlWasSeen) {
+        patchUrls.put(mPatchURL, true);
+      } else {
+        throw new Exception("Patch URL " + mPatchURL + " was found in seen patch url's cache and " +
+                "a test was probably run already on it. Aborting...");
+      }
+    }
     if(mPatchFile != null) {
       logger.info("Reading patchfile " + mPatchFile.getAbsolutePath());
       FileReader fr = null;

@@ -186,7 +186,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           }
         }
       } else {
-        Utilities.FILE_OP_LOGGER.info("Resolver returning movetask for " + dirPath);
+        Utilities.FILE_OP_LOGGER.info("Resolver returning movetask for " + dirPath, new Exception());
         resTsks.add(mvTask);
       }
     } catch (IOException e) {
@@ -231,7 +231,8 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       throws IOException {
     DynamicPartitionCtx dpCtx = ctx.getDPCtx();
     // get list of dynamic partitions
-    FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
+    List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
+    FileStatus[] status = statusList.toArray(new FileStatus[statusList.size()]);
 
     // cleanup pathToPartitionInfo
     Map<Path, PartitionDesc> ptpi = work.getPathToPartitionInfo();

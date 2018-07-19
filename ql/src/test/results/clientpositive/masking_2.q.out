@@ -1,18 +1,18 @@
-PREHOOK: query: create view masking_test as select cast(key as int) as key, value from src
+PREHOOK: query: create view masking_test_n1 as select cast(key as int) as key, value from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create view masking_test as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_n1
+POSTHOOK: query: create view masking_test_n1 as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select * from masking_test
+POSTHOOK: Output: default@masking_test_n1
+POSTHOOK: Lineage: masking_test_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select * from masking_test_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test
+POSTHOOK: query: explain select * from masking_test_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -24,6 +24,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -41,6 +42,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -48,14 +50,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test
+PREHOOK: query: select * from masking_test_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n1
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test
+POSTHOOK: query: select * from masking_test_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n1
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	0_lav
@@ -64,9 +66,9 @@ POSTHOOK: Input: default@src
 0	0_lav
 0	0_lav
 2	2_lav
-PREHOOK: query: explain select * from masking_test where key > 0
+PREHOOK: query: explain select * from masking_test_n1 where key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test where key > 0
+POSTHOOK: query: explain select * from masking_test_n1 where key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -78,6 +80,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -95,6 +98,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -102,22 +106,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test where key > 0
+PREHOOK: query: select * from masking_test_n1 where key > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n1
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test where key > 0
+POSTHOOK: query: select * from masking_test_n1 where key > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n1
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 4	4_lav
 8	8_lav
 2	2_lav
-PREHOOK: query: explain select * from src a join masking_test b on a.key = b.value where b.key > 0
+PREHOOK: query: explain select * from src a join masking_test_n1 b on a.key = b.value where b.key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src a join masking_test b on a.key = b.value where b.key > 0
+POSTHOOK: query: explain select * from src a join masking_test_n1 b on a.key = b.value where b.key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -129,6 +133,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -145,6 +150,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and reverse(value) is not null) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -184,9 +190,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select a.*, b.key from masking_test a join masking_test b on a.key = b.value where b.key > 0
+PREHOOK: query: explain select a.*, b.key from masking_test_n1 a join masking_test_n1 b on a.key = b.value where b.key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.*, b.key from masking_test a join masking_test b on a.key = b.value where b.key > 0
+POSTHOOK: query: explain select a.*, b.key from masking_test_n1 a join masking_test_n1 b on a.key = b.value where b.key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -198,6 +204,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -216,6 +223,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and reverse(value) is not null) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -255,9 +263,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from masking_test a union select b.* from masking_test b where b.key > 0
+PREHOOK: query: explain select * from masking_test_n1 a union select b.* from masking_test_n1 b where b.key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test a union select b.* from masking_test b where b.key > 0
+POSTHOOK: query: explain select * from masking_test_n1 a union select b.* from masking_test_n1 b where b.key > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -269,6 +277,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -293,6 +302,7 @@ STAGE PLANS:
                       Statistics: Num rows: 110 Data size: 1167 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

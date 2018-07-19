@@ -18,13 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
@@ -44,10 +42,6 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
  * the group batches.
  */
 public abstract class VectorPTFEvaluatorBase {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorBase.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected final WindowFrameDef windowFrameDef;
   private final VectorExpression inputVecExpr;
@@ -72,14 +66,14 @@ public abstract class VectorPTFEvaluatorBase {
   }
 
   // Evaluate the aggregation input argument expression.
-  public void evaluateInputExpr(VectorizedRowBatch batch) {
+  public void evaluateInputExpr(VectorizedRowBatch batch) throws HiveException {
     if (inputVecExpr != null) {
       inputVecExpr.evaluate(batch);
     }
   }
 
   // Evaluate the aggregation over one of the group's batches.
-  public abstract void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch);
+  public abstract void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) throws HiveException;
 
   // Returns true if the aggregation result will be streamed.
   public boolean streamsResult() {

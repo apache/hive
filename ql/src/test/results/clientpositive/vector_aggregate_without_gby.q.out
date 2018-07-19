@@ -53,10 +53,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: testvec
+            filterExpr: (id = 5) (type: boolean)
             Statistics: Num rows: 7 Data size: 714 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:id:int, 1:dt:int, 2:greg_dt:string, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:id:int, 1:dt:int, 2:greg_dt:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
@@ -97,8 +98,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * This operation is handled as a special case because Hive
@@ -49,7 +50,7 @@ public class LongColDivideLongColumn extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -69,9 +70,9 @@ public class LongColDivideLongColumn extends VectorExpression {
       return;
     }
 
-    outputColVector.isRepeating = inputColVector1.isRepeating && inputColVector2.isRepeating;
-
-    // Handle nulls first
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
     NullUtil.propagateNullsColCol(
       inputColVector1, inputColVector2, outputColVector, sel, n, batch.selectedInUse);
 

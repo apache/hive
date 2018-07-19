@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 /**
@@ -33,10 +32,6 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
  */
 public class VectorPTFEvaluatorRowNumber extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorRowNumber.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
   private int rowNumber;
 
   public VectorPTFEvaluatorRowNumber(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
@@ -45,7 +40,9 @@ public class VectorPTFEvaluatorRowNumber extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+      throws HiveException {
+
     evaluateInputExpr(batch);
 
     final int size = batch.size;

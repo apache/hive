@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 USE default;
 
@@ -13,9 +15,8 @@ set hive.merge.smallfiles.avgsize=0;
 
 -- SORT_QUERY_RESULTS
 
-create table combine2(key string) partitioned by (value string);
+create table combine2_n0(key string) partitioned by (value string);
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 -- This test sets mapred.max.split.size=256 and hive.merge.smallfiles.avgsize=0
 -- in an attempt to force the generation of multiple splits and multiple output files.
 -- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
@@ -23,7 +24,7 @@ create table combine2(key string) partitioned by (value string);
 -- significant impact on the results results of this test.
 -- This issue was fixed in MAPREDUCE-2046 which is included in 0.22.
 
-insert overwrite table combine2 partition(value) 
+insert overwrite table combine2_n0 partition(value) 
 select * from (
    select key, value from src where key < 10
    union all 
@@ -31,17 +32,17 @@ select * from (
    union all
    select key, '2010-04-21 09:45:00' value from src where key = 19) s;
 
-show partitions combine2;
+show partitions combine2_n0;
 
 explain
-select key, value from combine2 where value is not null;
+select key, value from combine2_n0 where value is not null;
 
-select key, value from combine2 where value is not null;
+select key, value from combine2_n0 where value is not null;
 
 explain extended
-select count(1) from combine2 where value is not null;
+select count(1) from combine2_n0 where value is not null;
 
-select count(1) from combine2 where value is not null;
+select count(1) from combine2_n0 where value is not null;
 
 explain
 select ds, count(1) from srcpart where ds is not null group by ds;

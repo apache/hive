@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.cbo.enable=false;
 set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.CheckQueryPropertiesHook;
 

@@ -803,10 +803,9 @@ public class VectorMapOperator extends AbstractMapOperator {
       VectorizedRowBatch batch = (VectorizedRowBatch) value;
       numRows += batch.size;
       if (hasRowIdentifier) {
-        if (batchContext.getRecordIdColumnVector() == null) {
+        final int idx = batchContext.findVirtualColumnNum(VirtualColumn.ROWID);
+        if (idx < 0) {
           setRowIdentiferToNull(batch);
-        } else {
-          batch.cols[rowIdentifierColumnNum] = batchContext.getRecordIdColumnVector();
         }
       }
     }
@@ -945,8 +944,15 @@ public class VectorMapOperator extends AbstractMapOperator {
 
               // Convert input row to standard objects.
               List<Object> standardObjects = new ArrayList<Object>();
-              ObjectInspectorUtils.copyToStandardObject(standardObjects, deserialized,
-                  currentPartRawRowObjectInspector, ObjectInspectorCopyOption.WRITABLE);
+              try {
+                ObjectInspectorUtils.copyToStandardObject(
+                    standardObjects,
+                    deserialized,
+                    currentPartRawRowObjectInspector,
+                    ObjectInspectorCopyOption.WRITABLE);
+              } catch (Exception e) {
+                throw new HiveException("copyToStandardObject failed: " + e);
+              }
               if (standardObjects.size() < currentDataColumnCount) {
                 throw new HiveException("Input File Format returned row with too few columns");
               }

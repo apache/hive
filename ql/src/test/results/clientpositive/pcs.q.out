@@ -65,7 +65,7 @@ POSTHOOK: Output: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Output: default@pcs_t1@ds=2000-04-09
 POSTHOOK: Output: default@pcs_t1@ds=2000-04-10
 PREHOOK: query: analyze table pcs_t1 partition(ds) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -76,7 +76,7 @@ PREHOOK: Output: default@pcs_t1@ds=2000-04-09
 PREHOOK: Output: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table pcs_t1 partition(ds) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -100,6 +100,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
+            filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -117,6 +118,7 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -152,6 +154,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -199,6 +202,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -279,6 +283,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
+            filterExpr: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -311,6 +316,7 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -346,6 +352,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -393,6 +400,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -445,6 +453,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
+            filterExpr: ((struct(ds,(key + 2))) IN (const struct('2000-04-08',3), const struct('2000-04-09',4)) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -477,6 +486,7 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -512,6 +522,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -559,6 +570,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -611,6 +623,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (struct(ds)) IN (const struct('2000-04-09'), const struct('2000-04-08'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Reduce Output Operator
@@ -624,6 +637,7 @@ STAGE PLANS:
               auto parallelism: false
           TableScan
             alias: b
+            filterExpr: ((struct(ds)) IN (const struct('2000-04-09'), const struct('2000-04-08')) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Reduce Output Operator
@@ -670,6 +684,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -717,6 +732,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -808,6 +824,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
+            filterExpr: ((struct(ds,(key + key))) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -840,6 +857,7 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -875,6 +893,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -922,6 +941,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -975,6 +995,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
+            filterExpr: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) (type: boolean)
@@ -984,6 +1005,7 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: int)
                 Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
@@ -1071,6 +1093,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1096,6 +1119,7 @@ STAGE PLANS:
                       auto parallelism: false
           TableScan
             alias: y
+            filterExpr: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1216,6 +1240,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1234,6 +1259,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
+          filterExpr: (const struct(10)) IN (const struct(10), const struct(11)) (type: boolean)
           Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -1357,6 +1383,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1404,6 +1431,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1443,6 +1471,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
+            filterExpr: (struct(((ds = '2000-04-08') or (key = 2)),key)) IN (const struct(true,2), const struct(false,3)) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1510,6 +1539,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1557,6 +1587,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1604,6 +1635,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1661,6 +1693,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
+            filterExpr: ((key = 3) or ((struct(((ds = '2000-04-08') or (key = 2)),key)) IN (const struct(true,2), const struct(false,3)) and ((key + 5) > 0))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1728,6 +1761,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1775,6 +1809,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -1822,6 +1857,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 

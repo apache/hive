@@ -20,6 +20,8 @@ package org.apache.hive.service.cli.thrift;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.SparkProgressMonitorStatusMapper;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
@@ -133,9 +135,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected int portNum;
   protected InetAddress serverIPAddress;
   protected String hiveHost;
-  protected TServer server;
-  protected org.eclipse.jetty.server.Server httpServer;
-
   private boolean isStarted = false;
   protected boolean isEmbedded = false;
 
@@ -144,6 +143,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected int minWorkerThreads;
   protected int maxWorkerThreads;
   protected long workerKeepAliveTime;
+  private Thread serverThread;
 
   protected ThreadLocal<ServerContext> currentServerContext;
 
@@ -209,30 +209,30 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     super.init(hiveConf);
   }
 
+  protected abstract void initServer();
+
   @Override
   public synchronized void start() {
     super.start();
     if (!isStarted && !isEmbedded) {
-      new Thread(this).start();
+      initServer();
+      serverThread = new Thread(this);
+      serverThread.setName("Thrift Server");
+      serverThread.start();
       isStarted = true;
     }
   }
 
+  protected abstract void stopServer();
+
   @Override
   public synchronized void stop() {
     if (isStarted && !isEmbedded) {
-      if(server != null) {
-        server.stop();
-        LOG.info("Thrift server has stopped");
+      if (serverThread != null) {
+        serverThread.interrupt();
+        serverThread = null;
       }
-      if((httpServer != null) && httpServer.isStarted()) {
-        try {
-          httpServer.stop();
-          LOG.info("Http server has stopped");
-        } catch (Exception e) {
-          LOG.error("Error stopping Http server: ", e);
-        }
-      }
+      stopServer();
       isStarted = false;
     }
     super.stop();
@@ -691,6 +691,11 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     try {
       OperationStatus operationStatus =
           cliService.getOperationStatus(operationHandle, req.isGetProgressUpdate());
+
+      if (operationStatus.getState().equals(OperationState.FINISHED)) {
+        long numModifiedRows = operationStatus.getNumModifiedRows();
+        resp.setNumModifiedRows(numModifiedRows);
+      }
       resp.setOperationState(operationStatus.getState().toTOperationState());
       resp.setErrorMessage(operationStatus.getState().getErrorMessage());
       HiveSQLException opException = operationStatus.getOperationException();
@@ -703,7 +708,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       if ("tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
         mapper = new TezProgressMonitorStatusMapper();
       }
-
+      if ("spark".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
+        mapper = new SparkProgressMonitorStatusMapper();
+      }
       TJobExecutionStatus executionStatus =
           mapper.forStatus(progressUpdate.status);
       resp.setProgressUpdateResponse(new TProgressUpdateResp(

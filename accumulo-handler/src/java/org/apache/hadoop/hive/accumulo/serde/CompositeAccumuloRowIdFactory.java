@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.accumulo.Utils;
+import org.apache.hadoop.hive.ql.metadata.JarUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -58,7 +58,7 @@ public class CompositeAccumuloRowIdFactory<T extends AccumuloCompositeRowId> ext
   public void addDependencyJars(Configuration jobConf) throws IOException {
     // Make sure the jar containing the custom CompositeRowId is included
     // in the mapreduce job's classpath (libjars)
-    Utils.addDependencyJars(jobConf, Collections.<Class<?>> singletonList(keyClass));
+    JarUtils.addDependencyJars(jobConf, Collections.<Class<?>> singletonList(keyClass));
   }
 
   @Override

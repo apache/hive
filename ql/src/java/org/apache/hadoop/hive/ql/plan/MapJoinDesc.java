@@ -213,10 +213,10 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
    */
   @Override
   @Explain(displayName = "keys")
-  public Map<Byte, String> getKeysString() {
-    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+  public Map<String, String> getKeysString() {
+    Map<String, String> keyMap = new LinkedHashMap<>();
     for (Map.Entry<Byte, List<ExprNodeDesc>> k: getKeys().entrySet()) {
-      keyMap.put(k.getKey(), PlanUtils.getExprListString(k.getValue()));
+      keyMap.put(String.valueOf(k.getKey()), PlanUtils.getExprListString(k.getValue()));
     }
     return keyMap;
   }
@@ -444,6 +444,12 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
           new VectorizationCondition(
               vectorMapJoinDesc.getSmallTableExprVectorizes(),
               "Small table vectorizes"));
+      if (!mapJoinDesc.isNoOuterJoin()) {
+        conditionList.add(
+            new VectorizationCondition(
+                !vectorMapJoinDesc.getOuterJoinHasNoKeys(),
+                "Outer Join has keys"));
+      }
 
       if (isFastHashTableEnabled) {
         conditionList.add(
@@ -601,4 +607,5 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     }
     return false;
   }
+
 }

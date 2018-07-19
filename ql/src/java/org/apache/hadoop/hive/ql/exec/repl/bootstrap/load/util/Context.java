@@ -24,10 +24,12 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.LineageState;
 
 public class Context {
+  public final String dumpDirectory;
   public final HiveConf hiveConf;
   public final Hive hiveDb;
   public final Warehouse warehouse;
   public final PathInfo pathInfo;
+  public final org.apache.hadoop.hive.ql.Context nestedContext;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -35,16 +37,17 @@ public class Context {
   taken care when using other methods.
  */
   public final LineageState sessionStateLineageState;
-  public final long currentTransactionId;
 
 
-  public Context(HiveConf hiveConf, Hive hiveDb,
-      LineageState lineageState, long currentTransactionId) throws MetaException {
+  public Context(String dumpDirectory, HiveConf hiveConf, Hive hiveDb,
+      LineageState lineageState,
+      org.apache.hadoop.hive.ql.Context nestedContext) throws MetaException {
+    this.dumpDirectory = dumpDirectory;
     this.hiveConf = hiveConf;
     this.hiveDb = hiveDb;
     this.warehouse = new Warehouse(hiveConf);
     this.pathInfo = new PathInfo(hiveConf);
     sessionStateLineageState = lineageState;
-    this.currentTransactionId = currentTransactionId;
+    this.nestedContext = nestedContext;
   }
 }

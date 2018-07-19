@@ -1,3 +1,7 @@
+--! qt:dataset:alltypesorc
+
+-- MASK_STATS
+
 set hive.mapred.mode=nonstrict;
 
 set hive.explain.user=false;
@@ -40,7 +44,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
-order by c1;
+order by a.csmallint;
 
 select
   a.csmallint, count(*) c1
@@ -48,7 +52,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
-order by c1;
+order by a.csmallint;
 
 set hive.auto.convert.join=true;
 set hive.optimize.dynamic.partition.hashjoin=true;

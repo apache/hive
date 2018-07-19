@@ -46,65 +46,65 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part1@p=2/q=2
 POSTHOOK: Lineage: part1 PARTITION(p=2,q=2).key SCRIPT []
 POSTHOOK: Lineage: part1 PARTITION(p=2,q=2).value SCRIPT []
-PREHOOK: query: create table part2(key string, value string) partitioned by (p string, q string)
+PREHOOK: query: create table part2_n1(key string, value string) partitioned by (p string, q string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part2
-POSTHOOK: query: create table part2(key string, value string) partitioned by (p string, q string)
+PREHOOK: Output: default@part2_n1
+POSTHOOK: query: create table part2_n1(key string, value string) partitioned by (p string, q string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part2
-PREHOOK: query: insert into table part2 partition (p='3', q='3') values ('a','a'), ('b','b')
+POSTHOOK: Output: default@part2_n1
+PREHOOK: query: insert into table part2_n1 partition (p='3', q='3') values ('a','a'), ('b','b')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part2@p=3/q=3
-POSTHOOK: query: insert into table part2 partition (p='3', q='3') values ('a','a'), ('b','b')
+PREHOOK: Output: default@part2_n1@p=3/q=3
+POSTHOOK: query: insert into table part2_n1 partition (p='3', q='3') values ('a','a'), ('b','b')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part2@p=3/q=3
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=3).key SCRIPT []
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=3).value SCRIPT []
-PREHOOK: query: insert into table part2 partition (p='3', q='4') values ('c','c'), ('d','d')
+POSTHOOK: Output: default@part2_n1@p=3/q=3
+POSTHOOK: Lineage: part2_n1 PARTITION(p=3,q=3).key SCRIPT []
+POSTHOOK: Lineage: part2_n1 PARTITION(p=3,q=3).value SCRIPT []
+PREHOOK: query: insert into table part2_n1 partition (p='3', q='4') values ('c','c'), ('d','d')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part2@p=3/q=4
-POSTHOOK: query: insert into table part2 partition (p='3', q='4') values ('c','c'), ('d','d')
+PREHOOK: Output: default@part2_n1@p=3/q=4
+POSTHOOK: query: insert into table part2_n1 partition (p='3', q='4') values ('c','c'), ('d','d')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part2@p=3/q=4
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=4).key SCRIPT []
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=4).value SCRIPT []
-PREHOOK: query: insert into table part2 partition (p='4', q='3') values ('e','e'), ('f','f')
+POSTHOOK: Output: default@part2_n1@p=3/q=4
+POSTHOOK: Lineage: part2_n1 PARTITION(p=3,q=4).key SCRIPT []
+POSTHOOK: Lineage: part2_n1 PARTITION(p=3,q=4).value SCRIPT []
+PREHOOK: query: insert into table part2_n1 partition (p='4', q='3') values ('e','e'), ('f','f')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part2@p=4/q=3
-POSTHOOK: query: insert into table part2 partition (p='4', q='3') values ('e','e'), ('f','f')
+PREHOOK: Output: default@part2_n1@p=4/q=3
+POSTHOOK: query: insert into table part2_n1 partition (p='4', q='3') values ('e','e'), ('f','f')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part2@p=4/q=3
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=3).key SCRIPT []
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=3).value SCRIPT []
-PREHOOK: query: insert into table part2 partition (p='4', q='4') values ('g','g'), ('h','h')
+POSTHOOK: Output: default@part2_n1@p=4/q=3
+POSTHOOK: Lineage: part2_n1 PARTITION(p=4,q=3).key SCRIPT []
+POSTHOOK: Lineage: part2_n1 PARTITION(p=4,q=3).value SCRIPT []
+PREHOOK: query: insert into table part2_n1 partition (p='4', q='4') values ('g','g'), ('h','h')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part2@p=4/q=4
-POSTHOOK: query: insert into table part2 partition (p='4', q='4') values ('g','g'), ('h','h')
+PREHOOK: Output: default@part2_n1@p=4/q=4
+POSTHOOK: query: insert into table part2_n1 partition (p='4', q='4') values ('g','g'), ('h','h')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part2@p=4/q=4
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=4).key SCRIPT []
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=4).value SCRIPT []
+POSTHOOK: Output: default@part2_n1@p=4/q=4
+POSTHOOK: Lineage: part2_n1 PARTITION(p=4,q=4).key SCRIPT []
+POSTHOOK: Lineage: part2_n1 PARTITION(p=4,q=4).value SCRIPT []
 PREHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -120,6 +120,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -138,10 +139,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:p (string), 6:p (string)]
-                            partition key expr: [p, p]
+                            Target Columns: [Map 3 -> [p:string (p)], Map 6 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3, Map 6]
 
   Stage: Stage-1
     Spark
@@ -154,6 +153,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -171,6 +171,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part1
+                  filterExpr: p is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -185,7 +186,8 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
+                  filterExpr: p is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -243,35 +245,35 @@ STAGE PLANS:
 PREHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
@@ -285,35 +287,35 @@ h	h
 PREHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
@@ -328,13 +330,13 @@ PREHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -350,6 +352,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -368,10 +371,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:p (string), 6:q (string)]
-                            partition key expr: [p, q]
+                            Target Columns: [Map 3 -> [p:string (p)], Map 6 -> [q:string (q)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3, Map 6]
 
   Stage: Stage-1
     Spark
@@ -384,6 +385,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -401,6 +403,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part1
+                  filterExpr: p is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -415,7 +418,8 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
+                  filterExpr: q is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), q (type: string)
@@ -473,35 +477,35 @@ STAGE PLANS:
 PREHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
@@ -515,35 +519,35 @@ h	h
 PREHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
@@ -580,6 +584,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -598,10 +603,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:q (string)]
-                            partition key expr: [q]
+                            Target Columns: [Map 3 -> [q:string (q)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3]
 
   Stage: Stage-1
     Spark
@@ -614,6 +617,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -631,6 +635,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part1
+                  filterExpr: q is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), q (type: string)
@@ -721,13 +726,13 @@ PREHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.value)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.value)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -743,6 +748,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -761,14 +767,13 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:p (string)]
-                            partition key expr: [p]
+                            Target Columns: [Map 3 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3]
         Map 8 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -787,10 +792,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [6:p (string)]
-                            partition key expr: [p]
+                            Target Columns: [Map 6 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 6]
 
   Stage: Stage-1
     Spark
@@ -803,6 +806,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -820,6 +824,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part1
+                  filterExpr: p is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -835,6 +840,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -851,7 +857,8 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
+                  filterExpr: p is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -910,13 +917,13 @@ PREHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=upper(src.key)) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=upper(src.key)) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -932,6 +939,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: upper(key) is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: upper(key) is not null (type: boolean)
@@ -950,14 +958,13 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:p (string)]
-                            partition key expr: [p]
+                            Target Columns: [Map 3 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3]
         Map 8 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -976,10 +983,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [6:p (string)]
-                            partition key expr: [p]
+                            Target Columns: [Map 6 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 6]
 
   Stage: Stage-1
     Spark
@@ -992,6 +997,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: upper(key) is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: upper(key) is not null (type: boolean)
@@ -1009,6 +1015,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part1
+                  filterExpr: p is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -1024,6 +1031,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1040,7 +1048,8 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
+                  filterExpr: p is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -1101,7 +1110,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 with top as
@@ -1109,7 +1118,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1159,10 +1168,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [4:q (string), 8:q (string)]
-                          partition key expr: [q, q]
+                          Target Columns: [Map 4 -> [q:string (q)], Map 8 -> [q:string (q)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4, Map 8]
 
   Stage: Stage-1
     Spark
@@ -1190,6 +1197,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part1
+                  filterExpr: q is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), q (type: string)
@@ -1204,7 +1212,8 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
+                  filterExpr: q is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), q (type: string)
@@ -1281,18 +1290,18 @@ PREHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
@@ -1300,18 +1309,18 @@ POSTHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	3
@@ -1323,18 +1332,18 @@ PREHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
@@ -1342,18 +1351,18 @@ POSTHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	3
@@ -1366,7 +1375,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 with top as
@@ -1374,7 +1383,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1424,24 +1433,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [4:q (string), 8:q (string)]
-                          partition key expr: [q, q]
+                          Target Columns: [Map 4 -> [q:string (q), p:string (p)], Map 8 -> [q:string (q), p:string (p)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4, Map 8]
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                        Spark Partition Pruning Sink Operator
-                          Target column: [4:p (string), 8:p (string)]
-                          partition key expr: [p, p]
-                          Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4, Map 8]
 
   Stage: Stage-1
     Spark
@@ -1483,7 +1476,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string), q (type: string)
@@ -1517,10 +1510,10 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                outputColumnNames: _col2, _col3
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 220 Data size: 2200 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col2 (type: string), _col3 (type: string)
+                  expressions: _col1 (type: string), _col2 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 220 Data size: 2200 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1535,10 +1528,10 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                outputColumnNames: _col2, _col3
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 220 Data size: 2200 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col2 (type: string), _col3 (type: string)
+                  expressions: _col1 (type: string), _col2 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 220 Data size: 2200 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1560,18 +1553,18 @@ PREHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
@@ -1579,18 +1572,18 @@ POSTHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	7
@@ -1600,18 +1593,18 @@ PREHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
@@ -1619,18 +1612,18 @@ POSTHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	7
@@ -1641,7 +1634,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.value)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 with top as
@@ -1649,7 +1642,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.value)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1700,24 +1693,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [4:q (string)]
-                          partition key expr: [q]
+                          Target Columns: [Map 4 -> [q:string (q), p:string (p)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4]
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                        Spark Partition Pruning Sink Operator
-                          Target column: [4:p (string)]
-                          partition key expr: [p]
-                          Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4]
         Reducer 12 
             Reduce Operator Tree:
               Select Operator
@@ -1740,10 +1717,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [8:p (string)]
-                          partition key expr: [p]
+                          Target Columns: [Map 8 -> [p:string (p)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 8]
                     Select Operator
                       expressions: _col1 (type: string)
                       outputColumnNames: _col0
@@ -1754,10 +1729,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [8:q (string)]
-                          partition key expr: [q]
+                          Target Columns: [Map 8 -> [q:string (q)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 8]
 
   Stage: Stage-1
     Spark
@@ -1800,7 +1773,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string), q (type: string)
@@ -1834,10 +1807,10 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                outputColumnNames: _col2, _col3
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 220 Data size: 2200 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col2 (type: string), _col3 (type: string)
+                  expressions: _col1 (type: string), _col2 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 220 Data size: 2200 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1889,32 +1862,32 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: create table foo(key string)
+PREHOOK: query: create table foo_n2(key string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@foo
-POSTHOOK: query: create table foo(key string)
+PREHOOK: Output: default@foo_n2
+POSTHOOK: query: create table foo_n2(key string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@foo
-PREHOOK: query: insert into table foo values ('1'),('2')
+POSTHOOK: Output: default@foo_n2
+PREHOOK: query: insert into table foo_n2 values ('1'),('2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@foo
-POSTHOOK: query: insert into table foo values ('1'),('2')
+PREHOOK: Output: default@foo_n2
+POSTHOOK: query: insert into table foo_n2 values ('1'),('2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@foo
-POSTHOOK: Lineage: foo.key SCRIPT []
+POSTHOOK: Output: default@foo_n2
+POSTHOOK: Lineage: foo_n2.key SCRIPT []
 PREHOOK: query: explain
-select p from part2 where p in (select max(key) from foo)
+select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
-select p from part1 where p in (select max(key) from foo union all select min(key) from foo)
+select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select p from part2 where p in (select max(key) from foo)
+select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
-select p from part1 where p in (select max(key) from foo union all select min(key) from foo)
+select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1932,7 +1905,7 @@ STAGE PLANS:
         Map 11 
             Map Operator Tree:
                 TableScan
-                  alias: foo
+                  alias: foo_n2
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -1950,7 +1923,7 @@ STAGE PLANS:
         Map 15 
             Map Operator Tree:
                 TableScan
-                  alias: foo
+                  alias: foo_n2
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -1990,10 +1963,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [1:p (string), 5:p (string)]
-                          partition key expr: [p, p]
+                          Target Columns: [Map 1 -> [p:string (p)], Map 5 -> [p:string (p)]]
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 1, Map 5]
         Reducer 16 
             Reduce Operator Tree:
               Group By Operator
@@ -2019,10 +1990,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [5:p (string)]
-                          partition key expr: [p]
+                          Target Columns: [Map 5 -> [p:string (p)]]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 5]
 
   Stage: Stage-1
     Spark
@@ -2036,7 +2005,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
+                  filterExpr: p is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: p (type: string)
@@ -2046,7 +2016,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: foo
+                  alias: foo_n2
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -2065,6 +2035,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part1
+                  filterExpr: p is not null (type: boolean)
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: p (type: string)
@@ -2074,7 +2045,7 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: foo
+                  alias: foo_n2
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -2172,37 +2143,37 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select p from part2 where p in (select max(key) from foo)
+PREHOOK: query: select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
-select p from part1 where p in (select max(key) from foo union all select min(key) from foo)
+select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@foo
+PREHOOK: Input: default@foo_n2
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select p from part2 where p in (select max(key) from foo)
+POSTHOOK: query: select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
-select p from part1 where p in (select max(key) from foo union all select min(key) from foo)
+select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@foo
+POSTHOOK: Input: default@foo_n2
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
@@ -2212,14 +2183,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
 2
 2
-PREHOOK: query: drop table foo
+PREHOOK: query: drop table foo_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@foo
-PREHOOK: Output: default@foo
-POSTHOOK: query: drop table foo
+PREHOOK: Input: default@foo_n2
+PREHOOK: Output: default@foo_n2
+POSTHOOK: query: drop table foo_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@foo
-POSTHOOK: Output: default@foo
+POSTHOOK: Input: default@foo_n2
+POSTHOOK: Output: default@foo_n2
 PREHOOK: query: drop table part1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part1
@@ -2228,11 +2199,11 @@ POSTHOOK: query: drop table part1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part1
 POSTHOOK: Output: default@part1
-PREHOOK: query: drop table part2
+PREHOOK: query: drop table part2_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part2
-PREHOOK: Output: default@part2
-POSTHOOK: query: drop table part2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Output: default@part2_n1
+POSTHOOK: query: drop table part2_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part2
-POSTHOOK: Output: default@part2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Output: default@part2_n1

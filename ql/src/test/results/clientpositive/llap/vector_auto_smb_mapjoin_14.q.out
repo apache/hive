@@ -1,51 +1,51 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
+PREHOOK: query: CREATE TABLE tbl1_n12(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
+PREHOOK: Output: default@tbl1_n12
+POSTHOOK: query: CREATE TABLE tbl1_n12(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
+POSTHOOK: Output: default@tbl1_n12
+PREHOOK: query: CREATE TABLE tbl2_n11(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
+PREHOOK: Output: default@tbl2_n11
+POSTHOOK: query: CREATE TABLE tbl2_n11(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
-PREHOOK: query: insert overwrite table tbl1
+POSTHOOK: Output: default@tbl2_n11
+PREHOOK: query: insert overwrite table tbl1_n12
 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert overwrite table tbl1
+PREHOOK: Output: default@tbl1_n12
+POSTHOOK: query: insert overwrite table tbl1_n12
 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table tbl2
+POSTHOOK: Output: default@tbl1_n12
+POSTHOOK: Lineage: tbl1_n12.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1_n12.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2_n11
 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: insert overwrite table tbl2
+PREHOOK: Output: default@tbl2_n11
+POSTHOOK: query: insert overwrite table tbl2_n11
 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@tbl2_n11
+POSTHOOK: Lineage: tbl2_n11.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2_n11.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain vectorization expression
 select count(*) from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select count(*) from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -68,6 +68,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -79,6 +80,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -143,18 +145,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 22
 PREHOOK: query: explain vectorization expression
@@ -162,7 +164,7 @@ select count(*) from
 (
   select key, count(*) from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq1
   group by key
 ) subq2
@@ -172,7 +174,7 @@ select count(*) from
 (
   select key, count(*) from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq1
   group by key
 ) subq2
@@ -198,6 +200,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -209,6 +212,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -325,25 +329,25 @@ PREHOOK: query: select count(*) from
 (
   select key, count(*) from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq1
   group by key
 ) subq2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from
 (
   select key, count(*) from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq1
   group by key
 ) subq2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 6
 PREHOOK: query: explain vectorization expression
@@ -351,14 +355,14 @@ select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
@@ -368,14 +372,14 @@ select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
@@ -402,6 +406,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -413,6 +418,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -446,6 +452,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -457,6 +464,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -585,39 +593,39 @@ PREHOOK: query: select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from 
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 0	9	9
 2	1	1
@@ -627,16 +635,16 @@ POSTHOOK: Input: default@tbl2
 9	1	1
 PREHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -659,6 +667,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -670,6 +679,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -734,22 +744,22 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain vectorization expression
@@ -757,11 +767,11 @@ select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
-  join tbl2 b
+  join tbl2_n11 b
   on subq2.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
@@ -769,11 +779,11 @@ select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
-  join tbl2 b
+  join tbl2_n11 b
   on subq2.key = b.key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -796,6 +806,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -807,6 +818,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -874,29 +886,29 @@ PREHOOK: query: select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
-  join tbl2 b
+  join tbl2_n11 b
   on subq2.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from 
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
-  join tbl2 b
+  join tbl2_n11 b
   on subq2.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain vectorization expression
@@ -904,7 +916,7 @@ select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
@@ -912,7 +924,7 @@ select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq3 
   where key < 6
   ) subq4
@@ -923,7 +935,7 @@ select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
@@ -931,7 +943,7 @@ select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq3 
   where key < 6
   ) subq4
@@ -957,6 +969,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -968,6 +981,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1035,7 +1049,7 @@ PREHOOK: query: select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
@@ -1043,19 +1057,19 @@ PREHOOK: query: select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq3 
   where key < 6
   ) subq4
   on subq2.key = subq4.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl1_n12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from 
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
@@ -1063,27 +1077,27 @@ POSTHOOK: query: select count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq3 
   where key < 6
   ) subq4
   on subq2.key = subq4.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl1_n12
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1_n12 a where key < 8) subq1 
     join
-  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  (select a.key as key, concat(a.value, a.value) as value from tbl2_n11 a where key < 8) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1_n12 a where key < 8) subq1 
     join
-  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  (select a.key as key, concat(a.value, a.value) as value from tbl2_n11 a where key < 8) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -1106,6 +1120,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 8) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 8) (type: boolean)
@@ -1117,6 +1132,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 8) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 8) (type: boolean)
@@ -1181,36 +1197,36 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from 
-  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1_n12 a where key < 8) subq1 
     join
-  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  (select a.key as key, concat(a.value, a.value) as value from tbl2_n11 a where key < 8) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from 
-  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1_n12 a where key < 8) subq1 
     join
-  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  (select a.key as key, concat(a.value, a.value) as value from tbl2_n11 a where key < 8) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1_n12 a) subq1 
     join
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n11 a) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1_n12 a) subq1 
     join
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n11 a) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -1234,6 +1250,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1267,8 +1284,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1277,6 +1294,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1310,8 +1328,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1374,33 +1392,33 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from 
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1_n12 a) subq1 
     join
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n11 a) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from 
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1_n12 a) subq1 
     join
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n11 a) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 22
 PREHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
+    join tbl2_n11 a on subq1.key = a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
+    join tbl2_n11 a on subq1.key = a.key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1422,6 +1440,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1433,6 +1452,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1497,38 +1517,38 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
+    join tbl2_n11 a on subq1.key = a.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
+    join tbl2_n11 a on subq1.key = a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq2
   on (subq1.key = subq2.key)
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq3
   on (subq1.key = subq3.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq2
   on (subq1.key = subq2.key)
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq3
   on (subq1.key = subq3.key)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -1551,6 +1571,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1562,6 +1583,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1573,6 +1595,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1639,28 +1662,28 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq2
   on subq1.key = subq2.key
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq3
   on (subq1.key = subq3.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n12 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq2
   on subq1.key = subq2.key
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  (select a.key as key, a.value as value from tbl2_n11 a where key < 6) subq3
   on (subq1.key = subq3.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 56
 PREHOOK: query: explain vectorization expression
@@ -1669,11 +1692,11 @@ select count(*) from (
   (
     select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1
     where key < 6
   ) subq2
-join tbl2 b
+join tbl2_n11 b
 on subq2.key = b.key) a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
@@ -1682,11 +1705,11 @@ select count(*) from (
   (
     select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1
     where key < 6
   ) subq2
-join tbl2 b
+join tbl2_n11 b
 on subq2.key = b.key) a
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -1709,6 +1732,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1720,6 +1744,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key < 6) (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1788,61 +1813,61 @@ PREHOOK: query: select count(*) from (
   (
     select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1
     where key < 6
   ) subq2
-join tbl2 b
+join tbl2_n11 b
 on subq2.key = b.key) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (
   select subq2.key as key, subq2.value as value1, b.value as value2 from
   (
     select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n12 a where key < 8
     ) subq1
     where key < 6
   ) subq2
-join tbl2 b
+join tbl2_n11 b
 on subq2.key = b.key) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
 #### A masked pattern was here ####
 20
-PREHOOK: query: CREATE TABLE dest1(key int, value string)
+PREHOOK: query: CREATE TABLE dest1_n157(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key int, value string)
+PREHOOK: Output: default@dest1_n157
+POSTHOOK: query: CREATE TABLE dest1_n157(key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest2(key int, val1 string, val2 string)
+POSTHOOK: Output: default@dest1_n157
+PREHOOK: query: CREATE TABLE dest2_n40(key int, val1 string, val2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(key int, val1 string, val2 string)
+PREHOOK: Output: default@dest2_n40
+POSTHOOK: query: CREATE TABLE dest2_n40(key int, val1 string, val2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest2_n40
 PREHOOK: query: explain vectorization expression
 from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, val1, val2
+insert overwrite table dest1_n157 select key, val1
+insert overwrite table dest2_n40 select key, val1, val2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, val1, val2
+insert overwrite table dest1_n157 select key, val1
+insert overwrite table dest2_n40 select key, val1, val2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1865,6 +1890,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1876,6 +1902,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1907,7 +1934,7 @@ STAGE PLANS:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                  name: default.dest1
+                                  name: default.dest1_n157
                           File Output Operator
                             compressed: false
                             Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
@@ -1915,7 +1942,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.dest2
+                                name: default.dest2_n40
             Execution mode: llap
 
   Stage: Stage-3
@@ -1929,7 +1956,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n157
 
   Stage: Stage-4
     Stats Work
@@ -1943,44 +1970,44 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n40
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, val1, val2
+insert overwrite table dest1_n157 select key, val1
+insert overwrite table dest2_n40 select key, val1, val2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
+PREHOOK: Output: default@dest1_n157
+PREHOOK: Output: default@dest2_n40
 POSTHOOK: query: from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, val1, val2
+insert overwrite table dest1_n157 select key, val1
+insert overwrite table dest2_n40 select key, val1, val2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.val1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from dest1
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
+POSTHOOK: Output: default@dest1_n157
+POSTHOOK: Output: default@dest2_n40
+POSTHOOK: Lineage: dest1_n157.key SIMPLE [(tbl1_n12)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n157.value SIMPLE [(tbl1_n12)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n40.key SIMPLE [(tbl1_n12)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2_n40.val1 SIMPLE [(tbl1_n12)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n40.val2 SIMPLE [(tbl2_n11)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from dest1_n157
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n157
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1
+POSTHOOK: query: select * from dest1_n157
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n157
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -2004,13 +2031,13 @@ POSTHOOK: Input: default@dest1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from dest2
+PREHOOK: query: select * from dest2_n40
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n40
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2
+POSTHOOK: query: select * from dest2_n40
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n40
 #### A masked pattern was here ####
 0	val_0	val_0
 0	val_0	val_0
@@ -2034,35 +2061,35 @@ POSTHOOK: Input: default@dest2
 5	val_5	val_5
 8	val_8	val_8
 9	val_9	val_9
-PREHOOK: query: DROP TABLE dest2
+PREHOOK: query: DROP TABLE dest2_n40
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest2
-PREHOOK: Output: default@dest2
-POSTHOOK: query: DROP TABLE dest2
+PREHOOK: Input: default@dest2_n40
+PREHOOK: Output: default@dest2_n40
+POSTHOOK: query: DROP TABLE dest2_n40
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest2
-POSTHOOK: Output: default@dest2
-PREHOOK: query: CREATE TABLE dest2(key int, cnt int)
+POSTHOOK: Input: default@dest2_n40
+POSTHOOK: Output: default@dest2_n40
+PREHOOK: query: CREATE TABLE dest2_n40(key int, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(key int, cnt int)
+PREHOOK: Output: default@dest2_n40
+POSTHOOK: query: CREATE TABLE dest2_n40(key int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest2_n40
 PREHOOK: query: explain vectorization expression
 from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, count(*) group by key
+insert overwrite table dest1_n157 select key, val1
+insert overwrite table dest2_n40 select key, count(*) group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, count(*) group by key
+insert overwrite table dest1_n157 select key, val1
+insert overwrite table dest2_n40 select key, count(*) group by key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2088,6 +2115,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2099,6 +2127,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2122,7 +2151,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.dest1
+                              name: default.dest1_n157
                         Select Operator
                           expressions: _col0 (type: int)
                           outputColumnNames: _col0
@@ -2181,7 +2210,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n40
 
   Stage: Stage-3
     Dependency Collection
@@ -2194,7 +2223,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n157
 
   Stage: Stage-4
     Stats Work
@@ -2208,43 +2237,43 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n40
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, count(*) group by key
+insert overwrite table dest1_n157 select key, val1
+insert overwrite table dest2_n40 select key, count(*) group by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Input: default@tbl1_n12
+PREHOOK: Input: default@tbl2_n11
+PREHOOK: Output: default@dest1_n157
+PREHOOK: Output: default@dest2_n40
 POSTHOOK: query: from (
-  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select a.key as key, a.value as val1, b.value as val2 from tbl1_n12 a join tbl2_n11 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, count(*) group by key
+insert overwrite table dest1_n157 select key, val1
+insert overwrite table dest2_n40 select key, count(*) group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.cnt EXPRESSION [(tbl1)a.null, (tbl2)b.null, ]
-POSTHOOK: Lineage: dest2.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: select * from dest1
+POSTHOOK: Input: default@tbl1_n12
+POSTHOOK: Input: default@tbl2_n11
+POSTHOOK: Output: default@dest1_n157
+POSTHOOK: Output: default@dest2_n40
+POSTHOOK: Lineage: dest1_n157.key SIMPLE [(tbl1_n12)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n157.value SIMPLE [(tbl1_n12)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n40.cnt EXPRESSION [(tbl1_n12)a.null, (tbl2_n11)b.null, ]
+POSTHOOK: Lineage: dest2_n40.key SIMPLE [(tbl1_n12)a.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from dest1_n157
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n157
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1
+POSTHOOK: query: select * from dest1_n157
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n157
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -2268,13 +2297,13 @@ POSTHOOK: Input: default@dest1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from dest2
+PREHOOK: query: select * from dest2_n40
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n40
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2
+POSTHOOK: query: select * from dest2_n40
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n40
 #### A masked pattern was here ####
 0	9
 2	1

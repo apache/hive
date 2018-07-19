@@ -164,15 +164,9 @@ public class VectorUDAFSumDecimal64 extends VectorAggregateExpression {
       }
     } else {
       if (inputVector.isRepeating) {
-        if (batch.selectedInUse) {
-          iterateHasNullsRepeatingSelectionWithAggregationSelection(
-            aggregationBufferSets, aggregateIndex,
-            vector[0], batchSize, batch.selected, inputVector.isNull);
-        } else {
-          iterateHasNullsRepeatingWithAggregationSelection(
-            aggregationBufferSets, aggregateIndex,
-            vector[0], batchSize, inputVector.isNull);
-        }
+        iterateHasNullsRepeatingWithAggregationSelection(
+          aggregationBufferSets, aggregateIndex,
+          vector[0], batchSize, inputVector.isNull);
       } else {
         if (batch.selectedInUse) {
           iterateHasNullsSelectionWithAggregationSelection(
@@ -230,28 +224,6 @@ public class VectorUDAFSumDecimal64 extends VectorAggregateExpression {
         i);
       myagg.sumValue(values[i]);
     }
-  }
-
-  private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
-    VectorAggregationBufferRow[] aggregationBufferSets,
-    int aggregateIndex,
-    long value,
-    int batchSize,
-    int[] selection,
-    boolean[] isNull) {
-
-    if (isNull[0]) {
-      return;
-    }
-
-    for (int i=0; i < batchSize; ++i) {
-      Aggregation myagg = getCurrentAggregationBuffer(
-        aggregationBufferSets,
-        aggregateIndex,
-        i);
-      myagg.sumValue(value);
-    }
-
   }
 
   private void iterateHasNullsRepeatingWithAggregationSelection(
@@ -333,7 +305,7 @@ public class VectorUDAFSumDecimal64 extends VectorAggregateExpression {
     long[] vector = inputVector.vector;
 
     if (inputVector.isRepeating) {
-      if (inputVector.noNulls) {
+      if (inputVector.noNulls || !inputVector.isNull[0]) {
       if (myagg.isNull) {
         myagg.isNull = false;
         myagg.sum = 0;

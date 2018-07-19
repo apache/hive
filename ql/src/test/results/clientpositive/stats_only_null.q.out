@@ -96,6 +96,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), count(VALUE._col1), count(VALUE._col2), count(VALUE._col3), count(VALUE._col4)
@@ -146,6 +147,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), count(VALUE._col1), count(VALUE._col2), count(VALUE._col3), count(VALUE._col4)
@@ -167,38 +169,38 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: analyze table stats_null compute statistics for columns a,b,c,d
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_null
 PREHOOK: Output: default@stats_null
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_null compute statistics for columns a,b,c,d
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_null
 POSTHOOK: Output: default@stats_null
 #### A masked pattern was here ####
 PREHOOK: query: analyze table stats_null_part partition(dt='2010') compute statistics for columns a,b,c,d
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_null_part
 PREHOOK: Input: default@stats_null_part@dt=2010
 PREHOOK: Output: default@stats_null_part
 PREHOOK: Output: default@stats_null_part@dt=2010
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_null_part partition(dt='2010') compute statistics for columns a,b,c,d
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Input: default@stats_null_part@dt=2010
 POSTHOOK: Output: default@stats_null_part
 POSTHOOK: Output: default@stats_null_part@dt=2010
 #### A masked pattern was here ####
 PREHOOK: query: analyze table stats_null_part partition(dt='2011') compute statistics for columns a,b,c,d
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_null_part
 PREHOOK: Input: default@stats_null_part@dt=2011
 PREHOOK: Output: default@stats_null_part
 PREHOOK: Output: default@stats_null_part@dt=2011
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_null_part partition(dt='2011') compute statistics for columns a,b,c,d
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Input: default@stats_null_part@dt=2011
 POSTHOOK: Output: default@stats_null_part
@@ -366,7 +368,7 @@ POSTHOOK: Lineage: stats_null_part PARTITION(dt=__HIVE_DEFAULT_PARTITION__).b SI
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=__HIVE_DEFAULT_PARTITION__).c SIMPLE [(temps_null)temps_null.FieldSchema(name:c, type:string, comment:null), ]
 POSTHOOK: Lineage: stats_null_part PARTITION(dt=__HIVE_DEFAULT_PARTITION__).d SIMPLE [(temps_null)temps_null.FieldSchema(name:d, type:smallint, comment:null), ]
 PREHOOK: query: analyze table stats_null_part compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_null_part
 PREHOOK: Input: default@stats_null_part@dt=1
 PREHOOK: Input: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
@@ -375,7 +377,7 @@ PREHOOK: Output: default@stats_null_part@dt=1
 PREHOOK: Output: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_null_part compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Input: default@stats_null_part@dt=1
 POSTHOOK: Input: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__

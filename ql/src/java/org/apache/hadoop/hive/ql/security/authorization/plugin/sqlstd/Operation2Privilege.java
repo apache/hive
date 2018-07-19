@@ -196,6 +196,8 @@ public class Operation2Privilege {
 (OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_PROPERTIES, PrivRequirement.newIOPrivRequirement
 (OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_OWNER, PrivRequirement.newIOPrivRequirement
+(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_SERIALIZER, PrivRequirement.newIOPrivRequirement
 (OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_PARTCOLTYPE, PrivRequirement.newIOPrivRequirement
@@ -233,6 +235,8 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTERTBLPART_SKEWED_LOCATION, PrivRequirement.newIOPrivRequirement
 (OWNER_PRIV_AR, INS_SEL_DEL_NOGRANT_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_COMPACT, PrivRequirement.newIOPrivRequirement
+(OWNER_PRIV_AR,  OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_UPDATECOLUMNS, PrivRequirement.newIOPrivRequirement
 (OWNER_PRIV_AR,  OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.TRUNCATETABLE, PrivRequirement.newIOPrivRequirement
 (OWNER_PRIV_AR, OWNER_PRIV_AR));
@@ -325,6 +329,8 @@ public class Operation2Privilege {
     adminPrivOps.add(HiveOperationType.CREATE_MAPPING);
     adminPrivOps.add(HiveOperationType.ALTER_MAPPING);
     adminPrivOps.add(HiveOperationType.DROP_MAPPING);
+    adminPrivOps.add(HiveOperationType.CREATEFUNCTION);
+    adminPrivOps.add(HiveOperationType.DROPFUNCTION);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement
@@ -484,6 +490,11 @@ public class Operation2Privilege {
 
     // Handled via adminPrivOps (see above).
     op2Priv.put(HiveOperationType.KILL_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
+    // llap cluster info does not need admin privilege, since it is read only assigning privilege same as
+    // describe/explain/show commands
+    op2Priv.put(HiveOperationType.LLAP_CLUSTER_INFO, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
+    // llap cache purge requires admin privilege as it mutates state (cache) on the cluster
+    op2Priv.put(HiveOperationType.LLAP_CACHE_PURGE, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.CREATE_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.ALTER_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.DROP_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));

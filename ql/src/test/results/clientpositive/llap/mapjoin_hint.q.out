@@ -1,128 +1,128 @@
-PREHOOK: query: create table srcpart_date (key string, value string) partitioned by (ds string ) stored as ORC
+PREHOOK: query: create table srcpart_date_n5 (key string, value string) partitioned by (ds string ) stored as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: create table srcpart_date (key string, value string) partitioned by (ds string ) stored as ORC
+PREHOOK: Output: default@srcpart_date_n5
+POSTHOOK: query: create table srcpart_date_n5 (key string, value string) partitioned by (ds string ) stored as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_date
-PREHOOK: query: CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
+POSTHOOK: Output: default@srcpart_date_n5
+PREHOOK: query: CREATE TABLE srcpart_small_n1(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
+PREHOOK: Output: default@srcpart_small_n1
+POSTHOOK: query: CREATE TABLE srcpart_small_n1(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_small
-PREHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
+POSTHOOK: Output: default@srcpart_small_n1
+PREHOOK: query: alter table srcpart_date_n5 add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
+PREHOOK: Output: default@srcpart_date_n5
+POSTHOOK: query: alter table srcpart_date_n5 add partition (ds = "2008-04-08")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-PREHOOK: query: alter table srcpart_date add partition (ds = "2008-04-09")
+POSTHOOK: Output: default@srcpart_date_n5
+POSTHOOK: Output: default@srcpart_date_n5@ds=2008-04-08
+PREHOOK: query: alter table srcpart_date_n5 add partition (ds = "2008-04-09")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: alter table srcpart_date add partition (ds = "2008-04-09")
+PREHOOK: Output: default@srcpart_date_n5
+POSTHOOK: query: alter table srcpart_date_n5 add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-PREHOOK: query: alter table srcpart_small add partition (ds = "2008-04-08")
+POSTHOOK: Output: default@srcpart_date_n5
+POSTHOOK: Output: default@srcpart_date_n5@ds=2008-04-09
+PREHOOK: query: alter table srcpart_small_n1 add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: alter table srcpart_small add partition (ds = "2008-04-08")
+PREHOOK: Output: default@srcpart_small_n1
+POSTHOOK: query: alter table srcpart_small_n1 add partition (ds = "2008-04-08")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-08
-PREHOOK: query: alter table srcpart_small add partition (ds = "2008-04-09")
+POSTHOOK: Output: default@srcpart_small_n1
+POSTHOOK: Output: default@srcpart_small_n1@ds=2008-04-08
+PREHOOK: query: alter table srcpart_small_n1 add partition (ds = "2008-04-09")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: alter table srcpart_small add partition (ds = "2008-04-09")
+PREHOOK: Output: default@srcpart_small_n1
+POSTHOOK: query: alter table srcpart_small_n1 add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-PREHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
+POSTHOOK: Output: default@srcpart_small_n1
+POSTHOOK: Output: default@srcpart_small_n1@ds=2008-04-09
+PREHOOK: query: insert overwrite table srcpart_date_n5 partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
+PREHOOK: Output: default@srcpart_date_n5@ds=2008-04-08
+POSTHOOK: query: insert overwrite table srcpart_date_n5 partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
+POSTHOOK: Output: default@srcpart_date_n5@ds=2008-04-08
+POSTHOOK: Lineage: srcpart_date_n5 PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_date_n5 PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table srcpart_date_n5 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_date@ds=2008-04-09
-POSTHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
+PREHOOK: Output: default@srcpart_date_n5@ds=2008-04-09
+POSTHOOK: query: insert overwrite table srcpart_date_n5 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
+POSTHOOK: Output: default@srcpart_date_n5@ds=2008-04-09
+POSTHOOK: Lineage: srcpart_date_n5 PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_date_n5 PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table srcpart_small_n1 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_small@ds=2008-04-09
-POSTHOOK: query: insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
+PREHOOK: Output: default@srcpart_small_n1@ds=2008-04-09
+POSTHOOK: query: insert overwrite table srcpart_small_n1 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: analyze table srcpart_date compute statistics for columns
+POSTHOOK: Output: default@srcpart_small_n1@ds=2008-04-09
+POSTHOOK: Lineage: srcpart_small_n1 PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_small_n1 PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table srcpart_date_n5 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@srcpart_date_n5
+PREHOOK: Input: default@srcpart_date_n5@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n5@ds=2008-04-09
+PREHOOK: Output: default@srcpart_date_n5
+PREHOOK: Output: default@srcpart_date_n5@ds=2008-04-08
+PREHOOK: Output: default@srcpart_date_n5@ds=2008-04-09
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table srcpart_date_n5 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@srcpart_date_n5
+POSTHOOK: Input: default@srcpart_date_n5@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n5@ds=2008-04-09
+POSTHOOK: Output: default@srcpart_date_n5
+POSTHOOK: Output: default@srcpart_date_n5@ds=2008-04-08
+POSTHOOK: Output: default@srcpart_date_n5@ds=2008-04-09
+#### A masked pattern was here ####
+PREHOOK: query: analyze table srcpart_small_n1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@srcpart_small_n1
+PREHOOK: Input: default@srcpart_small_n1@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n1@ds=2008-04-09
+PREHOOK: Output: default@srcpart_small_n1
+PREHOOK: Output: default@srcpart_small_n1@ds=2008-04-08
+PREHOOK: Output: default@srcpart_small_n1@ds=2008-04-09
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table srcpart_small_n1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@srcpart_small_n1
+POSTHOOK: Input: default@srcpart_small_n1@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n1@ds=2008-04-09
+POSTHOOK: Output: default@srcpart_small_n1
+POSTHOOK: Output: default@srcpart_small_n1@ds=2008-04-08
+POSTHOOK: Output: default@srcpart_small_n1@ds=2008-04-09
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN select /*+ mapjoin(None)*/ count(*) from srcpart_date_n5 join srcpart_small_n1 on (srcpart_date_n5.key = srcpart_small_n1.key1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Output: default@srcpart_date
-PREHOOK: Output: default@srcpart_date@ds=2008-04-08
-PREHOOK: Output: default@srcpart_date@ds=2008-04-09
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table srcpart_date compute statistics for columns
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-#### A masked pattern was here ####
-PREHOOK: query: analyze table srcpart_small compute statistics for columns
-PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-PREHOOK: Output: default@srcpart_small
-PREHOOK: Output: default@srcpart_small@ds=2008-04-08
-PREHOOK: Output: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table srcpart_small compute statistics for columns
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
-PREHOOK: query: EXPLAIN select /*+ mapjoin(None)*/ count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
-PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select /*+ mapjoin(None)*/ count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select /*+ mapjoin(None)*/ count(*) from srcpart_date_n5 join srcpart_small_n1 on (srcpart_date_n5.key = srcpart_small_n1.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -142,11 +142,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n5
+                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n1_key1_min) AND DynamicValue(RS_7_srcpart_small_n1_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n1_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n1_key1_min) AND DynamicValue(RS_7_srcpart_small_n1_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n1_key1_bloom_filter))) and key is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -157,12 +157,12 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n1
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -190,7 +190,7 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -212,7 +212,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -227,7 +227,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
@@ -245,9 +245,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n5 join srcpart_small_n1 on (srcpart_date_n5.key = srcpart_small_n1.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n5 join srcpart_small_n1 on (srcpart_date_n5.key = srcpart_small_n1.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -265,7 +265,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n5
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -293,12 +293,12 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n1
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -313,10 +313,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -337,33 +337,33 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: create table tnull(i int, c char(2))
+PREHOOK: query: create table tnull_n1(i int, c char(2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tnull
-POSTHOOK: query: create table tnull(i int, c char(2))
+PREHOOK: Output: default@tnull_n1
+POSTHOOK: query: create table tnull_n1(i int, c char(2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tnull
-PREHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
+POSTHOOK: Output: default@tnull_n1
+PREHOOK: query: insert into tnull_n1 values(NULL, NULL), (NULL, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tnull
-POSTHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
+PREHOOK: Output: default@tnull_n1
+POSTHOOK: query: insert into tnull_n1 values(NULL, NULL), (NULL, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tnull
-POSTHOOK: Lineage: tnull.c EXPRESSION []
-POSTHOOK: Lineage: tnull.i EXPRESSION []
-PREHOOK: query: create table tempty(c char(2))
+POSTHOOK: Output: default@tnull_n1
+POSTHOOK: Lineage: tnull_n1.c EXPRESSION []
+POSTHOOK: Lineage: tnull_n1.i EXPRESSION []
+PREHOOK: query: create table tempty_n1(c char(2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tempty
-POSTHOOK: query: create table tempty(c char(2))
+PREHOOK: Output: default@tempty_n1
+POSTHOOK: query: create table tempty_n1(c char(2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tempty
-PREHOOK: query: CREATE TABLE part_null(
+POSTHOOK: Output: default@tempty_n1
+PREHOOK: query: CREATE TABLE part_null_n1(
 p_partkey INT,
 p_name STRING,
 p_mfgr STRING,
@@ -377,8 +377,8 @@ p_comment STRING
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_null
-POSTHOOK: query: CREATE TABLE part_null(
+PREHOOK: Output: default@part_null_n1
+POSTHOOK: query: CREATE TABLE part_null_n1(
 p_partkey INT,
 p_name STRING,
 p_mfgr STRING,
@@ -392,36 +392,36 @@ p_comment STRING
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_null
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null
+POSTHOOK: Output: default@part_null_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@part_null
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null
+PREHOOK: Output: default@part_null_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@part_null
-PREHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
+POSTHOOK: Output: default@part_null_n1
+PREHOOK: query: insert into part_null_n1 values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_null
-POSTHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
+PREHOOK: Output: default@part_null_n1
+POSTHOOK: query: insert into part_null_n1 values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_null
-POSTHOOK: Lineage: part_null.p_brand SCRIPT []
-POSTHOOK: Lineage: part_null.p_comment SCRIPT []
-POSTHOOK: Lineage: part_null.p_container SCRIPT []
-POSTHOOK: Lineage: part_null.p_mfgr SCRIPT []
-POSTHOOK: Lineage: part_null.p_name EXPRESSION []
-POSTHOOK: Lineage: part_null.p_partkey SCRIPT []
-POSTHOOK: Lineage: part_null.p_retailprice SCRIPT []
-POSTHOOK: Lineage: part_null.p_size SCRIPT []
-POSTHOOK: Lineage: part_null.p_type SCRIPT []
+POSTHOOK: Output: default@part_null_n1
+POSTHOOK: Lineage: part_null_n1.p_brand SCRIPT []
+POSTHOOK: Lineage: part_null_n1.p_comment SCRIPT []
+POSTHOOK: Lineage: part_null_n1.p_container SCRIPT []
+POSTHOOK: Lineage: part_null_n1.p_mfgr SCRIPT []
+POSTHOOK: Lineage: part_null_n1.p_name EXPRESSION []
+POSTHOOK: Lineage: part_null_n1.p_partkey SCRIPT []
+POSTHOOK: Lineage: part_null_n1.p_retailprice SCRIPT []
+POSTHOOK: Lineage: part_null_n1.p_size SCRIPT []
+POSTHOOK: Lineage: part_null_n1.p_type SCRIPT []
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select /*+ mapjoin(None)*/ * from part where p_name = (select p_name from part_null where p_name is null)
+PREHOOK: query: explain select /*+ mapjoin(None)*/ * from part where p_name = (select p_name from part_null_n1 where p_name is null)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ mapjoin(None)*/ * from part where p_name = (select p_name from part_null where p_name is null)
+POSTHOOK: query: explain select /*+ mapjoin(None)*/ * from part where p_name = (select p_name from part_null_n1 where p_name is null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -453,12 +453,12 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 582 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n1
                   filterExpr: p_name is null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -478,7 +478,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -505,7 +505,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -528,9 +528,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part where p_name = (select p_name from part_null where p_name is null)
+PREHOOK: query: explain select * from part where p_name = (select p_name from part_null_n1 where p_name is null)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_name = (select p_name from part_null where p_name is null)
+POSTHOOK: query: explain select * from part where p_name = (select p_name from part_null_n1 where p_name is null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -562,12 +562,12 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 582 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n1
                   filterExpr: p_name is null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -587,7 +587,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -614,7 +614,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)

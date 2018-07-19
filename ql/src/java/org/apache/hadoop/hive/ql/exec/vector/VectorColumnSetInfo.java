@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * Class to keep information on a set of typed vector columns.  Used by
@@ -75,6 +77,7 @@ public class VectorColumnSetInfo {
   // Given the keyIndex these arrays return:
   //   The ColumnVector.Type,
   //   The type specific index into longIndices, doubleIndices, etc...
+  protected TypeInfo[] typeInfos;
   protected ColumnVector.Type[] columnVectorTypes;
   protected int[] columnTypeSpecificIndices;
 
@@ -96,13 +99,15 @@ public class VectorColumnSetInfo {
     intervalDayTimeIndices = new int[this.keyCount];
     addIntervalDayTimeIndex = 0;
 
+    typeInfos = new TypeInfo[this.keyCount];
     columnVectorTypes = new ColumnVector.Type[this.keyCount];
     columnTypeSpecificIndices = new int[this.keyCount];
   }
 
 
-  protected void addKey(ColumnVector.Type columnVectorType) throws HiveException {
+  protected void addKey(TypeInfo typeInfo) throws HiveException {
 
+    Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
     switch (columnVectorType) {
     case LONG:
     case DECIMAL_64:
@@ -133,6 +138,7 @@ public class VectorColumnSetInfo {
       throw new HiveException("Unexpected column vector type " + columnVectorType);
     }
 
+    typeInfos[addKeyIndex] = typeInfo;
     columnVectorTypes[addKeyIndex] = columnVectorType;
     addKeyIndex++;
   }

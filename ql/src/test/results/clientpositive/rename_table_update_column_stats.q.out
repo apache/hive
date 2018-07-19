@@ -44,12 +44,12 @@ POSTHOOK: query: use statsdb1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:statsdb1
 PREHOOK: query: analyze table testtable1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb1@testtable1
 #### A masked pattern was here ####
 PREHOOK: Output: statsdb1@testtable1
 POSTHOOK: query: analyze table testtable1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb1@testtable1
 #### A masked pattern was here ####
 POSTHOOK: Output: statsdb1@testtable1
@@ -246,12 +246,12 @@ POSTHOOK: query: use statsdb1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:statsdb1
 PREHOOK: query: analyze table testtable1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb1@testtable1
 #### A masked pattern was here ####
 PREHOOK: Output: statsdb1@testtable1
 POSTHOOK: query: analyze table testtable1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb1@testtable1
 #### A masked pattern was here ####
 POSTHOOK: Output: statsdb1@testtable1

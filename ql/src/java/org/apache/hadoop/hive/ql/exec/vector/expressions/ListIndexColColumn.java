@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Vectorized instruction to get an element from a list with the index from another column and put
@@ -45,7 +46,7 @@ public class ListIndexColColumn extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -56,7 +57,9 @@ public class ListIndexColColumn extends VectorExpression {
     LongColumnVector indexColumnVector = (LongColumnVector) batch.cols[indexColumnNum];
     long[] indexV = indexColumnVector.vector;
 
-    outV.noNulls = true;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
+
     if (listV.isRepeating) {
       if (listV.isNull[0]) {
         outV.isNull[0] = true;
@@ -68,8 +71,8 @@ public class ListIndexColColumn extends VectorExpression {
             outV.isNull[0] = true;
             outV.noNulls = false;
           } else {
-            outV.setElement(0, (int) (listV.offsets[0] + indexV[0]), childV);
             outV.isNull[0] = false;
+            outV.setElement(0, (int) (listV.offsets[0] + indexV[0]), childV);
           }
           outV.isRepeating = true;
         } else {
@@ -79,11 +82,11 @@ public class ListIndexColColumn extends VectorExpression {
               outV.isNull[j] = true;
               outV.noNulls = false;
             } else {
-              outV.setElement(j, (int) (listV.offsets[0] + indexV[j]), childV);
               outV.isNull[j] = false;
+              outV.setElement(j, (int) (listV.offsets[0] + indexV[j]), childV);
+
             }
           }
-          outV.isRepeating = false;
         }
       }
     } else {
@@ -93,11 +96,10 @@ public class ListIndexColColumn extends VectorExpression {
           outV.isNull[j] = true;
           outV.noNulls = false;
         } else {
-          outV.setElement(j, (int) (listV.offsets[j] + indexV[j]), childV);
           outV.isNull[j] = false;
+          outV.setElement(j, (int) (listV.offsets[j] + indexV[j]), childV);
         }
       }
-      outV.isRepeating = false;
     }
   }
 

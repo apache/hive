@@ -61,7 +61,18 @@ public class Murmur3 {
    * @return - hashcode
    */
   public static int hash32(byte[] data) {
-    return hash32(data, data.length, DEFAULT_SEED);
+    return hash32(data, 0, data.length, DEFAULT_SEED);
+  }
+
+  /**
+   * Murmur3 32-bit variant.
+   *
+   * @param data - input byte array
+   * @param length - length of array
+   * @return - hashcode
+   */
+  public static int hash32(byte[] data, int length) {
+    return hash32(data, 0, length, DEFAULT_SEED);
   }
 
   /**
@@ -73,16 +84,29 @@ public class Murmur3 {
    * @return - hashcode
    */
   public static int hash32(byte[] data, int length, int seed) {
+    return hash32(data, 0, length, seed);
+  }
+
+  /**
+   * Murmur3 32-bit variant.
+   *
+   * @param data   - input byte array
+   * @param offset - offset of data
+   * @param length - length of array
+   * @param seed   - seed. (default 0)
+   * @return - hashcode
+   */
+  public static int hash32(byte[] data, int offset, int length, int seed) {
     int hash = seed;
     final int nblocks = length >> 2;
 
     // body
     for (int i = 0; i < nblocks; i++) {
       int i_4 = i << 2;
-      int k = (data[i_4] & 0xff)
-          | ((data[i_4 + 1] & 0xff) << 8)
-          | ((data[i_4 + 2] & 0xff) << 16)
-          | ((data[i_4 + 3] & 0xff) << 24);
+      int k = (data[offset + i_4] & 0xff)
+          | ((data[offset + i_4 + 1] & 0xff) << 8)
+          | ((data[offset + i_4 + 2] & 0xff) << 16)
+          | ((data[offset + i_4 + 3] & 0xff) << 24);
 
       // mix functions
       k *= C1_32;
@@ -97,11 +121,11 @@ public class Murmur3 {
     int k1 = 0;
     switch (length - idx) {
       case 3:
-        k1 ^= data[idx + 2] << 16;
+        k1 ^= data[offset + idx + 2] << 16;
       case 2:
-        k1 ^= data[idx + 1] << 8;
+        k1 ^= data[offset + idx + 1] << 8;
       case 1:
-        k1 ^= data[idx];
+        k1 ^= data[offset + idx];
 
         // mix functions
         k1 *= C1_32;
@@ -129,6 +153,52 @@ public class Murmur3 {
    */
   public static long hash64(byte[] data) {
     return hash64(data, 0, data.length, DEFAULT_SEED);
+  }
+
+  public static long hash64(long data) {
+    long hash = DEFAULT_SEED;
+    long k = Long.reverseBytes(data);
+    int length = Long.BYTES;
+    // mix functions
+    k *= C1;
+    k = Long.rotateLeft(k, R1);
+    k *= C2;
+    hash ^= k;
+    hash = Long.rotateLeft(hash, R2) * M + N1;
+    // finalization
+    hash ^= length;
+    hash = fmix64(hash);
+    return hash;
+  }
+
+  public static long hash64(int data) {
+    long k1 = Integer.reverseBytes(data) & (-1L >>> 32);
+    int length = Integer.BYTES;
+    long hash = DEFAULT_SEED;
+    k1 *= C1;
+    k1 = Long.rotateLeft(k1, R1);
+    k1 *= C2;
+    hash ^= k1;
+    // finalization
+    hash ^= length;
+    hash = fmix64(hash);
+    return hash;
+  }
+
+  public static long hash64(short data) {
+    long hash = DEFAULT_SEED;
+    long k1 = 0;
+    k1 ^= ((long) data & 0xff) << 8;
+    k1 ^= ((long)((data & 0xFF00) >> 8) & 0xff);
+    k1 *= C1;
+    k1 = Long.rotateLeft(k1, R1);
+    k1 *= C2;
+    hash ^= k1;
+
+    // finalization
+    hash ^= Short.BYTES;
+    hash = fmix64(hash);
+    return hash;
   }
 
   public static long hash64(byte[] data, int offset, int length) {

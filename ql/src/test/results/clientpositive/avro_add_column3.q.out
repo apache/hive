@@ -1,67 +1,67 @@
-PREHOOK: query: CREATE TABLE doctors (
+PREHOOK: query: CREATE TABLE doctors_n3 (
   number int,
   first_name string,
   last_name string)
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@doctors
-POSTHOOK: query: CREATE TABLE doctors (
+PREHOOK: Output: default@doctors_n3
+POSTHOOK: query: CREATE TABLE doctors_n3 (
   number int,
   first_name string,
   last_name string)
 STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@doctors
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
+POSTHOOK: Output: default@doctors_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@doctors
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
+PREHOOK: Output: default@doctors_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@doctors
-PREHOOK: query: CREATE TABLE doctors_copy (
+POSTHOOK: Output: default@doctors_n3
+PREHOOK: query: CREATE TABLE doctors_copy_n0 (
   number int,
   first_name string)
 PARTITIONED BY (part int)
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@doctors_copy
-POSTHOOK: query: CREATE TABLE doctors_copy (
+PREHOOK: Output: default@doctors_copy_n0
+POSTHOOK: query: CREATE TABLE doctors_copy_n0 (
   number int,
   first_name string)
 PARTITIONED BY (part int)
 STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@doctors_copy
-PREHOOK: query: INSERT INTO TABLE doctors_copy PARTITION(part=1) SELECT number, first_name FROM doctors
+POSTHOOK: Output: default@doctors_copy_n0
+PREHOOK: query: INSERT INTO TABLE doctors_copy_n0 PARTITION(part=1) SELECT number, first_name FROM doctors_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@doctors
-PREHOOK: Output: default@doctors_copy@part=1
-POSTHOOK: query: INSERT INTO TABLE doctors_copy PARTITION(part=1) SELECT number, first_name FROM doctors
+PREHOOK: Input: default@doctors_n3
+PREHOOK: Output: default@doctors_copy_n0@part=1
+POSTHOOK: query: INSERT INTO TABLE doctors_copy_n0 PARTITION(part=1) SELECT number, first_name FROM doctors_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@doctors
-POSTHOOK: Output: default@doctors_copy@part=1
-POSTHOOK: Lineage: doctors_copy PARTITION(part=1).first_name SIMPLE [(doctors)doctors.FieldSchema(name:first_name, type:string, comment:), ]
-POSTHOOK: Lineage: doctors_copy PARTITION(part=1).number SIMPLE [(doctors)doctors.FieldSchema(name:number, type:int, comment:), ]
-PREHOOK: query: ALTER TABLE doctors_copy ADD COLUMNS (last_name string)
+POSTHOOK: Input: default@doctors_n3
+POSTHOOK: Output: default@doctors_copy_n0@part=1
+POSTHOOK: Lineage: doctors_copy_n0 PARTITION(part=1).first_name SIMPLE [(doctors_n3)doctors_n3.FieldSchema(name:first_name, type:string, comment:), ]
+POSTHOOK: Lineage: doctors_copy_n0 PARTITION(part=1).number SIMPLE [(doctors_n3)doctors_n3.FieldSchema(name:number, type:int, comment:), ]
+PREHOOK: query: ALTER TABLE doctors_copy_n0 ADD COLUMNS (last_name string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@doctors_copy
-PREHOOK: Output: default@doctors_copy
-POSTHOOK: query: ALTER TABLE doctors_copy ADD COLUMNS (last_name string)
+PREHOOK: Input: default@doctors_copy_n0
+PREHOOK: Output: default@doctors_copy_n0
+POSTHOOK: query: ALTER TABLE doctors_copy_n0 ADD COLUMNS (last_name string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@doctors_copy
-POSTHOOK: Output: default@doctors_copy
-PREHOOK: query: DESCRIBE doctors_copy
+POSTHOOK: Input: default@doctors_copy_n0
+POSTHOOK: Output: default@doctors_copy_n0
+PREHOOK: query: DESCRIBE doctors_copy_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@doctors_copy
-POSTHOOK: query: DESCRIBE doctors_copy
+PREHOOK: Input: default@doctors_copy_n0
+POSTHOOK: query: DESCRIBE doctors_copy_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@doctors_copy
+POSTHOOK: Input: default@doctors_copy_n0
 number              	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -70,15 +70,15 @@ part                	int
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 part                	int                 	                    
-PREHOOK: query: SELECT * FROM doctors_copy
+PREHOOK: query: SELECT * FROM doctors_copy_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@doctors_copy
-PREHOOK: Input: default@doctors_copy@part=1
+PREHOOK: Input: default@doctors_copy_n0
+PREHOOK: Input: default@doctors_copy_n0@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM doctors_copy
+POSTHOOK: query: SELECT * FROM doctors_copy_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@doctors_copy
-POSTHOOK: Input: default@doctors_copy@part=1
+POSTHOOK: Input: default@doctors_copy_n0
+POSTHOOK: Input: default@doctors_copy_n0@part=1
 #### A masked pattern was here ####
 1	William	NULL	1
 10	David	NULL	1

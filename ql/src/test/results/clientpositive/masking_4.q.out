@@ -1,27 +1,27 @@
-PREHOOK: query: create table masking_test as select cast(key as int) as key, value from src
+PREHOOK: query: create table masking_test_n11 as select cast(key as int) as key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create table masking_test as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_n11
+POSTHOOK: query: create table masking_test_n11 as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table masking_test_subq as select cast(key as int) as key, value from src
+POSTHOOK: Output: default@masking_test_n11
+POSTHOOK: Lineage: masking_test_n11.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n11.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table masking_test_subq_n2 as select cast(key as int) as key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test_subq
-POSTHOOK: query: create table masking_test_subq as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_subq_n2
+POSTHOOK: query: create table masking_test_subq_n2 as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test_subq
-POSTHOOK: Lineage: masking_test_subq.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test_subq.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@masking_test_subq_n2
+POSTHOOK: Lineage: masking_test_subq_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_subq_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')
@@ -42,6 +42,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (key = '5') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = '5') (type: boolean)
@@ -57,6 +58,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -65,11 +67,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-with q1 as ( select * from masking_test where key = '5')
+with q1 as ( select * from masking_test_n11 where key = '5')
 select * from q1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-with q1 as ( select * from masking_test where key = '5')
+with q1 as ( select * from masking_test_n11 where key = '5')
 select * from q1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -81,7 +83,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test
+            alias: masking_test_n11
+            filterExpr: (((key % 2) = 0) and (key = 5)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key % 2) = 0) and (key = 5)) (type: boolean)
@@ -97,6 +100,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -105,12 +109,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-with masking_test_subq as ( select * from masking_test where key = '5')
-select * from masking_test_subq
+with masking_test_subq_n2 as ( select * from masking_test_n11 where key = '5')
+select * from masking_test_subq_n2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-with masking_test_subq as ( select * from masking_test where key = '5')
-select * from masking_test_subq
+with masking_test_subq_n2 as ( select * from masking_test_n11 where key = '5')
+select * from masking_test_subq_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -121,7 +125,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test
+            alias: masking_test_n11
+            filterExpr: (((key % 2) = 0) and (key = 5)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key % 2) = 0) and (key = 5)) (type: boolean)
@@ -137,6 +142,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -145,12 +151,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-with q1 as ( select * from masking_test where key = '5')
-select * from masking_test_subq
+with q1 as ( select * from masking_test_n11 where key = '5')
+select * from masking_test_subq_n2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-with q1 as ( select * from masking_test where key = '5')
-select * from masking_test_subq
+with q1 as ( select * from masking_test_n11 where key = '5')
+select * from masking_test_subq_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -163,7 +169,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -178,6 +185,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -196,6 +204,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -242,7 +251,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test_subq
+            alias: masking_test_subq_n2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

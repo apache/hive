@@ -131,31 +131,31 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/string.txt' INTO TABLE
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@binay_udf
-PREHOOK: query: create table dest1 (key binary, value int)
+PREHOOK: query: create table dest1_n110 (key binary, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: create table dest1 (key binary, value int)
+PREHOOK: Output: default@dest1_n110
+POSTHOOK: query: create table dest1_n110 (key binary, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: insert overwrite table dest1 select transform(*) using 'cat' as key binary, value int from binay_udf
+POSTHOOK: Output: default@dest1_n110
+PREHOOK: query: insert overwrite table dest1_n110 select transform(*) using 'cat' as key binary, value int from binay_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@binay_udf
-PREHOOK: Output: default@dest1
-POSTHOOK: query: insert overwrite table dest1 select transform(*) using 'cat' as key binary, value int from binay_udf
+PREHOOK: Output: default@dest1_n110
+POSTHOOK: query: insert overwrite table dest1_n110 select transform(*) using 'cat' as key binary, value int from binay_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@binay_udf
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key SCRIPT [(binay_udf)binay_udf.FieldSchema(name:key, type:binary, comment:null), (binay_udf)binay_udf.FieldSchema(name:value, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.value SCRIPT [(binay_udf)binay_udf.FieldSchema(name:key, type:binary, comment:null), (binay_udf)binay_udf.FieldSchema(name:value, type:int, comment:null), ]
-PREHOOK: query: select value, printf("format key: %s", key) from dest1
+POSTHOOK: Output: default@dest1_n110
+POSTHOOK: Lineage: dest1_n110.key SCRIPT [(binay_udf)binay_udf.FieldSchema(name:key, type:binary, comment:null), (binay_udf)binay_udf.FieldSchema(name:value, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n110.value SCRIPT [(binay_udf)binay_udf.FieldSchema(name:key, type:binary, comment:null), (binay_udf)binay_udf.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: select value, printf("format key: %s", key) from dest1_n110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n110
 #### A masked pattern was here ####
-POSTHOOK: query: select value, printf("format key: %s", key) from dest1
+POSTHOOK: query: select value, printf("format key: %s", key) from dest1_n110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n110
 #### A masked pattern was here ####
 1	format key: 61 00 62 63 01 02 01 00
 2	format key: 00 74 65 73 74 00
@@ -167,14 +167,14 @@ POSTHOOK: Input: default@dest1
 8	format key: 01 01 01
 9	format key: 00 01 00
 10	format key: 01 00 01
-PREHOOK: query: drop table dest1
+PREHOOK: query: drop table dest1_n110
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest1
-PREHOOK: Output: default@dest1
-POSTHOOK: query: drop table dest1
+PREHOOK: Input: default@dest1_n110
+PREHOOK: Output: default@dest1_n110
+POSTHOOK: query: drop table dest1_n110
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest1
-POSTHOOK: Output: default@dest1
+POSTHOOK: Input: default@dest1_n110
+POSTHOOK: Output: default@dest1_n110
 PREHOOK: query: drop table binary_udf
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table binary_udf

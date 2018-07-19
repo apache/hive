@@ -19,16 +19,15 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 // A type date (LongColumnVector storing epoch days) minus a type date produces a
 // type interval_day_time (TimestampColumnVector storing nanosecond interval in 2 longs).
@@ -46,7 +45,7 @@ public class DateColSubtractDateScalar extends VectorExpression {
     super(outputColumnNum);
     this.colNum = colNum;
     this.value = new Timestamp(0);
-    this.value.setTime(DateWritable.daysToMillis((int) value));
+    this.value.setTime(DateWritableV2.daysToMillis((int) value));
   }
 
   public DateColSubtractDateScalar() {
@@ -58,7 +57,7 @@ public class DateColSubtractDateScalar extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -73,8 +72,6 @@ public class DateColSubtractDateScalar extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector1.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector1.noNulls;
-    outputColVector.isRepeating = inputColVector1.isRepeating;
     int n = batch.size;
     long[] vector1 = inputColVector1.vector;
 
@@ -83,43 +80,81 @@ public class DateColSubtractDateScalar extends VectorExpression {
       return;
     }
 
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     if (inputColVector1.isRepeating) {
-      scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[0]));
-      dtm.subtract(scratchTimestamp1, value, outputColVector.getScratchIntervalDayTime());
-      outputColVector.setFromScratchIntervalDayTime(0);
-      // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0];
-    } else if (inputColVector1.noNulls) {
+      if (inputColVector1.noNulls || !inputIsNull[0]) {
+        outputIsNull[0] = false;
+        scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[0]));
+        dtm.subtract(scratchTimestamp1, value, outputColVector.getScratchIntervalDayTime());
+        outputColVector.setFromScratchIntervalDayTime(0);
+
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
+      return;
+    }
+
+    if (inputColVector1.noNulls) {
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
-          dtm.subtract(scratchTimestamp1, value, outputColVector.getScratchIntervalDayTime());
-          outputColVector.setFromScratchIntervalDayTime(i);
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
+           dtm.subtract(scratchTimestamp1, value, outputColVector.getScratchIntervalDayTime());
+           outputColVector.setFromScratchIntervalDayTime(i);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
+            dtm.subtract(scratchTimestamp1, value, outputColVector.getScratchIntervalDayTime());
+            outputColVector.setFromScratchIntervalDayTime(i);
+          }
         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
-          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
           dtm.subtract(scratchTimestamp1, value, outputColVector.getScratchIntervalDayTime());
           outputColVector.setFromScratchIntervalDayTime(i);
         }
       }
-    } else /* there are nulls */ {
+    } else /* there are NULLs in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          outputIsNull[i] = inputIsNull[i];
+          scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
           dtm.subtract(scratchTimestamp1, value, outputColVector.getScratchIntervalDayTime());
           outputColVector.setFromScratchIntervalDayTime(i);
-          outputIsNull[i] = inputIsNull[i];
         }
       } else {
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
-          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
           dtm.subtract(scratchTimestamp1, value, outputColVector.getScratchIntervalDayTime());
           outputColVector.setFromScratchIntervalDayTime(i);
         }
-        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
     }
 
@@ -128,7 +163,7 @@ public class DateColSubtractDateScalar extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum) + ", val " + value;
+    return getColumnParamString(0, colNum) + ", val " + Date.ofEpochMilli(value.getTime());
   }
 
   @Override

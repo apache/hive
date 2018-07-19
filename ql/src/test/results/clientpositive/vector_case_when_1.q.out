@@ -1,0 +1,1068 @@
+PREHOOK: query: CREATE TABLE lineitem_test_txt (L_ORDERKEY      INT,
+                                L_PARTKEY       INT,
+                                L_SUPPKEY       INT,
+                                L_LINENUMBER    INT,
+                                L_QUANTITY      INT,
+                                L_EXTENDEDPRICE DOUBLE,
+                                L_DISCOUNT      DOUBLE,
+                                L_TAX           DECIMAL(10,2),
+                                L_RETURNFLAG    CHAR(1),
+                                L_LINESTATUS    CHAR(1),
+                                l_shipdate      DATE,
+                                L_COMMITDATE    DATE,
+                                L_RECEIPTDATE   DATE,
+                                L_SHIPINSTRUCT  VARCHAR(20),
+                                L_SHIPMODE      CHAR(10),
+                                L_COMMENT       STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineitem_test_txt
+POSTHOOK: query: CREATE TABLE lineitem_test_txt (L_ORDERKEY      INT,
+                                L_PARTKEY       INT,
+                                L_SUPPKEY       INT,
+                                L_LINENUMBER    INT,
+                                L_QUANTITY      INT,
+                                L_EXTENDEDPRICE DOUBLE,
+                                L_DISCOUNT      DOUBLE,
+                                L_TAX           DECIMAL(10,2),
+                                L_RETURNFLAG    CHAR(1),
+                                L_LINESTATUS    CHAR(1),
+                                l_shipdate      DATE,
+                                L_COMMITDATE    DATE,
+                                L_RECEIPTDATE   DATE,
+                                L_SHIPINSTRUCT  VARCHAR(20),
+                                L_SHIPMODE      CHAR(10),
+                                L_COMMENT       STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineitem_test_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem_test_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@lineitem_test_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem_test_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@lineitem_test_txt
+PREHOOK: query: CREATE TABLE lineitem_test STORED AS ORC AS SELECT * FROM lineitem_test_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@lineitem_test_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineitem_test
+POSTHOOK: query: CREATE TABLE lineitem_test STORED AS ORC AS SELECT * FROM lineitem_test_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@lineitem_test_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineitem_test
+POSTHOOK: Lineage: lineitem_test.l_comment SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_commitdate SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_commitdate, type:date, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_discount SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_extendedprice SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_extendedprice, type:double, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_linenumber SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_linenumber, type:int, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_linestatus SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_linestatus, type:char(1), comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_orderkey SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_orderkey, type:int, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_partkey SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_partkey, type:int, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_quantity SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_quantity, type:int, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_receiptdate SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_receiptdate, type:date, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_returnflag SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_returnflag, type:char(1), comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_shipdate SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_shipdate, type:date, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_shipinstruct SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_shipinstruct, type:varchar(20), comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_shipmode SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_shipmode, type:char(10), comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_suppkey SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_suppkey, type:int, comment:null), ]
+POSTHOOK: Lineage: lineitem_test.l_tax SIMPLE [(lineitem_test_txt)lineitem_test_txt.FieldSchema(name:l_tax, type:decimal(10,2), comment:null), ]
+lineitem_test_txt.l_orderkey	lineitem_test_txt.l_partkey	lineitem_test_txt.l_suppkey	lineitem_test_txt.l_linenumber	lineitem_test_txt.l_quantity	lineitem_test_txt.l_extendedprice	lineitem_test_txt.l_discount	lineitem_test_txt.l_tax	lineitem_test_txt.l_returnflag	lineitem_test_txt.l_linestatus	lineitem_test_txt.l_shipdate	lineitem_test_txt.l_commitdate	lineitem_test_txt.l_receiptdate	lineitem_test_txt.l_shipinstruct	lineitem_test_txt.l_shipmode	lineitem_test_txt.l_comment
+PREHOOK: query: INSERT INTO TABLE lineitem_test VALUES (NULL,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@lineitem_test
+POSTHOOK: query: INSERT INTO TABLE lineitem_test VALUES (NULL,NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@lineitem_test
+POSTHOOK: Lineage: lineitem_test.l_comment EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_commitdate EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_discount EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_extendedprice EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_linenumber EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_linestatus EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_orderkey EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_partkey EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_quantity EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_receiptdate EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_returnflag EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_shipdate EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_shipinstruct EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_shipmode EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_suppkey EXPRESSION []
+POSTHOOK: Lineage: lineitem_test.l_tax EXPRESSION []
+_col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_test
+            Statistics: Num rows: 101 Data size: 78500 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_quantity (type: int), CASE WHEN ((l_quantity = 1)) THEN ('Single') WHEN ((l_quantity = 2)) THEN ('Two') WHEN ((l_quantity < 10)) THEN ('Some') WHEN ((l_quantity < 100)) THEN ('Many') ELSE ('Huge number') END (type: string), CASE WHEN ((l_quantity = 1)) THEN ('Single') WHEN ((l_quantity = 2)) THEN ('Two') WHEN ((l_quantity < 10)) THEN ('Some') WHEN ((l_quantity < 100)) THEN ('Many') ELSE (null) END (type: string), CASE WHEN ((l_quantity = 1)) THEN ('Single') WHEN ((l_quantity = 2)) THEN ('Two') WHEN ((l_quantity < 10)) THEN ('Some') WHEN ((l_quantity < 100)) THEN (null) ELSE (null) END (type: string), if((l_shipmode = 'SHIP      '), date_add(l_shipdate, 10), date_add(l_shipdate, 5)) (type: date), CASE WHEN ((l_returnflag = 'N')) THEN ((l_extendedprice * (1.0D - l_discount))) ELSE (0) END (type: double), CASE WHEN ((l_returnflag = 'N')) THEN ((l_extendedprice * (1.0D - l_discount))) ELSE (0.0D) END (type: double), if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), null, l_tax) (type: decimal(10,2)), if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, null) (type: decimal(10,2)), if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax) (type: decimal(12,2)), if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0) (type: decimal(12,2)), if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax) (type: decimal(10,2)), if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0) (type: decimal(10,2)), if((l_partkey > 30), CAST( l_receiptdate AS TIMESTAMP), CAST( l_commitdate AS TIMESTAMP)) (type: timestamp), if((l_suppkey > 10000), datediff(l_receiptdate, l_commitdate), null) (type: int), if((l_suppkey > 10000), null, datediff(l_receiptdate, l_commitdate)) (type: int), if(((l_suppkey % 500) > 100), DATE'2009-01-01', DATE'2009-12-31') (type: date)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+              Statistics: Num rows: 101 Data size: 78500 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 101 Data size: 78500 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          notVectorizedReason: SELECT operator: Unexpected hive type name void
+          vectorized: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_test
+#### A masked pattern was here ####
+quantity	quantity_description	quantity_description_2	quantity_description_3	expected_date	field_1	field_2	field_3	field_4	field_5	field_6	field_7	field_8	field_9	field_10	field_11	field_12
+1	Single	Single	Single	1994-01-31	0.0	0.0	0.05	0.05	0.05	0.05	0.05	0.05	1994-01-28 00:00:00	NULL	-36	2009-01-01
+1	Single	Single	Single	1994-12-06	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-12-15 00:00:00	NULL	3	2009-01-01
+11	Many	Many	NULL	1994-03-22	0.0	0.0	0.05	NULL	0.05	0.00	0.05	0.00	1994-03-27 00:00:00	NULL	10	2009-01-01
+12	Many	Many	NULL	1996-05-12	12655.998	12655.998	0.03	0.03	0.03	0.03	0.03	0.03	1996-06-03 00:00:00	NULL	82	2009-01-01
+12	Many	Many	NULL	1997-02-01	12156.034800000001	12156.034800000001	0.05	NULL	0.05	0.00	0.05	0.00	1997-02-22 00:00:00	NULL	1	2009-01-01
+13	Many	Many	NULL	1993-04-06	0.0	0.0	0.02	NULL	0.02	0.00	0.02	0.00	1993-04-08 00:00:00	NULL	4	2009-01-01
+13	Many	Many	NULL	1994-03-08	0.0	0.0	0.06	NULL	0.06	0.00	0.06	0.00	1994-03-26 00:00:00	NULL	41	2009-01-01
+13	Many	Many	NULL	1998-10-28	17554.68	17554.68	0.07	NULL	0.07	0.00	0.07	0.00	1998-11-06 00:00:00	NULL	53	2009-01-01
+14	Many	Many	NULL	1995-01-04	0.0	0.0	0.02	NULL	0.02	0.00	0.02	0.00	1995-01-27 00:00:00	NULL	66	2009-01-01
+15	Many	Many	NULL	1994-11-05	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1994-11-20 00:00:00	NULL	81	2009-12-31
+17	Many	Many	NULL	1994-07-07	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1994-07-03 00:00:00	NULL	-4	2009-01-01
+17	Many	Many	NULL	1996-03-18	20321.500799999998	20321.500799999998	NULL	NULL	0.00	0.00	0.00	0.00	1996-03-22 00:00:00	NULL	39	2009-01-01
+19	Many	Many	NULL	1993-05-19	0.0	0.0	0.08	0.08	0.08	0.08	0.08	0.08	1993-05-25 00:00:00	NULL	81	2009-01-01
+19	Many	Many	NULL	1994-02-05	0.0	0.0	0.03	0.03	0.03	0.03	0.03	0.03	1994-02-06 00:00:00	NULL	-11	2009-01-01
+2	Two	Two	Two	1993-12-09	0.0	0.0	0.06	NULL	0.06	0.00	0.06	0.00	1994-01-01 00:00:00	NULL	-6	2009-01-01
+2	Two	Two	Two	1995-08-12	2011.3912000000003	2011.3912000000003	NULL	NULL	0.00	0.00	0.00	0.00	1995-08-23 00:00:00	NULL	-45	2009-01-01
+20	Many	Many	NULL	1998-07-02	32042.592	32042.592	0.01	NULL	0.01	0.00	0.01	0.00	1998-07-02 00:00:00	NULL	40	2009-01-01
+21	Many	Many	NULL	1994-10-05	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-10-26 00:00:00	NULL	38	2009-01-01
+21	Many	Many	NULL	1995-07-11	24640.0518	24640.0518	NULL	NULL	0.00	0.00	0.00	0.00	1995-07-31 00:00:00	NULL	78	2009-01-01
+22	Many	Many	NULL	1995-07-22	39353.82	39353.82	0.05	NULL	0.05	0.00	0.05	0.00	1995-07-19 00:00:00	NULL	45	2009-01-01
+22	Many	Many	NULL	1998-10-14	28405.0184	28405.0184	0.06	NULL	0.06	0.00	0.06	0.00	1998-10-12 00:00:00	NULL	-4	2009-01-01
+23	Many	Many	NULL	1994-07-24	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-07-25 00:00:00	NULL	26	2009-01-01
+23	Many	Many	NULL	1994-10-13	0.0	0.0	0.00	NULL	0.00	0.00	0.00	0.00	1994-10-24 00:00:00	NULL	79	2009-12-31
+23	Many	Many	NULL	1997-04-24	33946.3785	33946.3785	NULL	NULL	0.00	0.00	0.00	0.00	1997-05-06 00:00:00	NULL	81	2009-01-01
+24	Many	Many	NULL	1996-02-26	31762.584	31762.584	0.00	0.00	0.00	0.00	0.00	0.00	1996-03-18 00:00:00	NULL	75	2009-01-01
+24	Many	Many	NULL	1996-04-04	20542.032	20542.032	0.04	NULL	0.04	0.00	0.04	0.00	1996-04-01 00:00:00	NULL	18	2009-12-31
+25	Many	Many	NULL	1995-12-06	27263.995	27263.995	NULL	NULL	0.00	0.00	0.00	0.00	1995-12-21 00:00:00	NULL	-4	2009-01-01
+25	Many	Many	NULL	1998-04-15	43064.1575	43064.1575	0.07	NULL	0.07	0.00	0.07	0.00	1998-04-11 00:00:00	NULL	-11	2009-01-01
+26	Many	Many	NULL	1993-11-03	0.0	0.0	0.02	0.02	0.02	0.02	0.02	0.02	1993-11-04 00:00:00	NULL	-44	2009-01-01
+26	Many	Many	NULL	1994-10-21	0.0	0.0	0.08	NULL	0.08	0.00	0.08	0.00	1994-10-19 00:00:00	NULL	24	2009-01-01
+26	Many	Many	NULL	1995-04-25	0.0	0.0	0.03	NULL	0.03	0.00	0.03	0.00	1995-05-13 00:00:00	NULL	18	2009-01-01
+26	Many	Many	NULL	1996-11-09	39912.433600000004	39912.433600000004	0.04	NULL	0.04	0.00	0.04	0.00	1996-11-20 00:00:00	NULL	31	2009-01-01
+27	Many	Many	NULL	1994-01-26	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-01-23 00:00:00	NULL	62	2009-01-01
+27	Many	Many	NULL	1998-06-29	45590.2425	45590.2425	NULL	NULL	0.00	0.00	0.00	0.00	1998-06-29 00:00:00	NULL	4	2009-01-01
+28	Many	Many	NULL	1993-12-19	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1994-01-01 00:00:00	NULL	-9	2009-01-01
+28	Many	Many	NULL	1994-12-29	0.0	0.0	0.07	NULL	0.07	0.00	0.07	0.00	1995-01-16 00:00:00	NULL	83	2009-01-01
+28	Many	Many	NULL	1995-10-28	44866.219999999994	44866.219999999994	0.08	0.08	0.08	0.08	0.08	0.08	1995-10-26 00:00:00	NULL	60	2009-01-01
+28	Many	Many	NULL	1996-02-06	45975.3616	45975.3616	0.02	NULL	0.02	0.00	0.02	0.00	1996-02-28 00:00:00	NULL	66	2009-01-01
+28	Many	Many	NULL	1996-03-26	30855.6612	30855.6612	0.04	NULL	0.04	0.00	0.04	0.00	1996-04-20 00:00:00	NULL	12	2009-12-31
+28	Many	Many	NULL	1996-04-26	26349.6324	26349.6324	0.06	NULL	0.06	0.00	0.06	0.00	1996-05-16 00:00:00	NULL	47	2009-01-01
+29	Many	Many	NULL	1997-01-30	39341.806	39341.806	NULL	NULL	0.00	0.00	0.00	0.00	1997-01-27 00:00:00	NULL	0	2009-01-01
+3	Some	Some	Some	1994-06-11	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1994-06-15 00:00:00	NULL	-42	2009-12-31
+3	Some	Some	Some	1998-06-02	5137.6143	5137.6143	0.07	NULL	0.07	0.00	0.07	0.00	1998-06-02 00:00:00	NULL	60	2009-01-01
+3	Some	Some	Some	1998-07-09	2778.921	2778.921	0.02	NULL	0.02	0.00	0.02	0.00	1998-07-21 00:00:00	NULL	46	2009-12-31
+30	Many	Many	NULL	1994-06-08	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-06-22 00:00:00	NULL	24	2009-01-01
+30	Many	Many	NULL	1996-01-15	29770.173	29770.173	NULL	NULL	0.00	0.00	0.00	0.00	1996-01-18 00:00:00	NULL	35	2009-12-31
+30	Many	Many	NULL	1998-08-16	44561.46	44561.46	0.06	NULL	0.06	0.00	0.06	0.00	1998-08-14 00:00:00	NULL	34	2009-12-31
+31	Many	Many	NULL	1993-11-03	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1993-11-08 00:00:00	NULL	-41	2009-01-01
+31	Many	Many	NULL	1994-02-24	0.0	0.0	0.08	0.08	0.08	0.08	0.08	0.08	1994-02-20 00:00:00	NULL	-19	2009-01-01
+32	Many	Many	NULL	1993-12-14	0.0	0.0	0.05	NULL	0.05	0.00	0.05	0.00	1993-12-28 00:00:00	NULL	-7	2009-12-31
+32	Many	Many	NULL	1994-08-29	0.0	0.0	0.06	NULL	0.06	0.00	0.06	0.00	1994-08-31 00:00:00	NULL	14	2009-01-01
+32	Many	Many	NULL	1995-08-19	63313.3312	63313.3312	0.00	NULL	0.00	0.00	0.00	0.00	1995-08-27 00:00:00	NULL	-41	2009-01-01
+32	Many	Many	NULL	1996-02-04	46146.7488	46146.7488	NULL	NULL	0.00	0.00	0.00	0.00	1996-02-03 00:00:00	NULL	-4	2009-01-01
+32	Many	Many	NULL	1996-10-07	44955.15839999999	44955.15839999999	0.05	NULL	0.05	0.00	0.05	0.00	1996-10-14 00:00:00	NULL	-66	2009-12-31
+33	Many	Many	NULL	1998-04-17	54174.12	54174.12	0.01	NULL	0.01	0.00	0.01	0.00	1998-04-15 00:00:00	NULL	26	2009-01-01
+34	Many	Many	NULL	1995-11-13	60586.5448	60586.5448	0.06	NULL	0.06	0.00	0.06	0.00	1995-11-26 00:00:00	NULL	-50	2009-01-01
+34	Many	Many	NULL	1996-01-27	63982.002400000005	63982.002400000005	NULL	NULL	0.00	0.00	0.00	0.00	1996-01-27 00:00:00	NULL	21	2009-01-01
+34	Many	Many	NULL	1998-03-10	56487.763199999994	56487.763199999994	NULL	NULL	0.00	0.00	0.00	0.00	1998-03-30 00:00:00	NULL	-23	2009-01-01
+35	Many	Many	NULL	1996-01-21	40475.225	40475.225	0.03	0.03	0.03	0.03	0.03	0.03	1996-01-22 00:00:00	NULL	-32	2009-01-01
+36	Many	Many	NULL	1996-04-17	41844.6756	41844.6756	0.06	0.06	0.06	0.06	0.06	0.06	1996-04-20 00:00:00	NULL	52	2009-01-01
+37	Many	Many	NULL	1992-05-02	0.0	0.0	0.03	0.03	0.03	0.03	0.03	0.03	1992-05-02 00:00:00	NULL	-13	2009-01-01
+37	Many	Many	NULL	1993-04-23	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1993-04-14 00:00:00	NULL	15	2009-12-31
+37	Many	Many	NULL	1994-02-18	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1994-02-21 00:00:00	NULL	-23	2009-01-01
+38	Many	Many	NULL	1996-02-16	68028.3144	68028.3144	NULL	NULL	0.00	0.00	0.00	0.00	1996-02-18 00:00:00	NULL	-6	2009-01-01
+38	Many	Many	NULL	1997-02-02	44694.46	44694.46	0.05	0.05	0.05	0.05	0.05	0.05	1997-02-02 00:00:00	NULL	19	2009-01-01
+39	Many	Many	NULL	1992-07-07	0.0	0.0	0.02	0.02	0.02	0.02	0.02	0.02	1992-07-28 00:00:00	NULL	-21	2009-01-01
+39	Many	Many	NULL	1998-02-03	45146.01	45146.01	NULL	NULL	0.00	0.00	0.00	0.00	1998-02-18 00:00:00	NULL	-48	2009-01-01
+4	Some	Some	Some	1995-08-09	5990.4936	5990.4936	0.03	NULL	0.03	0.00	0.03	0.00	1995-09-03 00:00:00	NULL	-28	2009-01-01
+4	Some	Some	Some	1997-04-27	5669.7732000000005	5669.7732000000005	0.04	NULL	0.04	0.00	0.04	0.00	1997-04-20 00:00:00	NULL	79	2009-01-01
+40	Many	Many	NULL	1992-07-26	0.0	0.0	0.03	NULL	0.03	0.00	0.03	0.00	1992-08-15 00:00:00	NULL	14	2009-01-01
+40	Many	Many	NULL	1996-12-13	51224.736	51224.736	0.05	NULL	0.05	0.00	0.05	0.00	1997-01-01 00:00:00	NULL	71	2009-01-01
+41	Many	Many	NULL	1993-11-14	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1993-11-11 00:00:00	NULL	-74	2009-01-01
+41	Many	Many	NULL	1994-02-26	0.0	0.0	0.07	NULL	0.07	0.00	0.07	0.00	1994-03-18 00:00:00	NULL	17	2009-01-01
+41	Many	Many	NULL	1998-07-04	47989.6144	47989.6144	0.08	NULL	0.08	0.00	0.08	0.00	1998-07-06 00:00:00	NULL	9	2009-01-01
+42	Many	Many	NULL	1994-08-05	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-08-28 00:00:00	NULL	33	2009-12-31
+42	Many	Many	NULL	1996-02-13	68289.9672	68289.9672	0.00	NULL	0.00	0.00	0.00	0.00	1996-02-23 00:00:00	NULL	33	2009-01-01
+43	Many	Many	NULL	1992-07-15	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1992-08-02 00:00:00	NULL	27	2009-01-01
+43	Many	Many	NULL	1996-10-22	62727.3207	62727.3207	0.01	NULL	0.01	0.00	0.01	0.00	1996-10-26 00:00:00	NULL	-19	2009-12-31
+44	Many	Many	NULL	1995-09-02	75106.658	75106.658	NULL	NULL	0.00	0.00	0.00	0.00	1995-09-14 00:00:00	NULL	25	2009-01-01
+44	Many	Many	NULL	1996-10-04	80882.4192	80882.4192	0.02	NULL	0.02	0.00	0.02	0.00	1996-09-30 00:00:00	NULL	-48	2009-01-01
+44	Many	Many	NULL	1996-11-19	48941.692800000004	48941.692800000004	0.06	NULL	0.06	0.00	0.06	0.00	1996-12-12 00:00:00	NULL	-3	2009-01-01
+44	Many	Many	NULL	1997-03-23	60781.124800000005	60781.124800000005	NULL	NULL	0.00	0.00	0.00	0.00	1997-04-13 00:00:00	NULL	74	2009-12-31
+45	Many	Many	NULL	1994-02-07	0.0	0.0	0.00	NULL	0.00	0.00	0.00	0.00	1994-02-23 00:00:00	NULL	50	2009-01-01
+45	Many	Many	NULL	1998-03-05	61489.35	61489.35	NULL	NULL	0.00	0.00	0.00	0.00	1998-03-24 00:00:00	NULL	4	2009-01-01
+46	Many	Many	NULL	1996-01-20	73475.892	73475.892	0.07	NULL	0.07	0.00	0.07	0.00	1996-02-03 00:00:00	NULL	-53	2009-01-01
+46	Many	Many	NULL	1996-10-01	77781.4092	77781.4092	NULL	NULL	0.00	0.00	0.00	0.00	1996-10-26 00:00:00	NULL	-54	2009-01-01
+46	Many	Many	NULL	1998-07-01	56583.5144	56583.5144	0.05	NULL	0.05	0.00	0.05	0.00	1998-07-05 00:00:00	NULL	28	2009-01-01
+46	Many	Many	NULL	1998-08-18	84565.5168	84565.5168	0.05	NULL	0.05	0.00	0.05	0.00	1998-08-29 00:00:00	NULL	52	2009-01-01
+48	Many	Many	NULL	1994-08-22	0.0	0.0	0.07	NULL	0.07	0.00	0.07	0.00	1994-09-08 00:00:00	NULL	28	2009-01-01
+49	Many	Many	NULL	1993-11-14	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1993-11-24 00:00:00	NULL	-26	2009-12-31
+5	Some	Some	Some	1993-12-14	0.0	0.0	0.03	0.03	0.03	0.03	0.03	0.03	1993-12-23 00:00:00	NULL	-2	2009-01-01
+5	Some	Some	Some	1996-02-15	6217.103999999999	6217.103999999999	0.02	NULL	0.02	0.00	0.02	0.00	1996-02-13 00:00:00	NULL	-42	2009-01-01
+5	Some	Some	Some	1997-02-25	8116.96	8116.96	NULL	NULL	0.00	0.00	0.00	0.00	1997-02-21 00:00:00	NULL	9	2009-01-01
+50	Many	Many	NULL	1994-08-13	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-08-26 00:00:00	NULL	-48	2009-12-31
+6	Some	Some	Some	1995-07-26	8793.2736	8793.2736	0.03	NULL	0.03	0.00	0.03	0.00	1995-07-25 00:00:00	NULL	-60	2009-01-01
+6	Some	Some	Some	1998-11-04	9487.6152	9487.6152	0.06	NULL	0.06	0.00	0.06	0.00	1998-11-05 00:00:00	NULL	46	2009-12-31
+7	Some	Some	Some	1996-01-24	12613.136199999999	12613.136199999999	0.04	NULL	0.04	0.00	0.04	0.00	1996-01-29 00:00:00	NULL	38	2009-01-01
+8	Some	Some	Some	1994-01-17	0.0	0.0	0.08	0.08	0.08	0.08	0.08	0.08	1994-01-14 00:00:00	NULL	-44	2009-01-01
+8	Some	Some	Some	1996-02-03	11978.640000000001	11978.640000000001	0.02	0.02	0.02	0.02	0.02	0.02	1996-01-31 00:00:00	NULL	-34	2009-01-01
+9	Some	Some	Some	1996-02-11	10666.6272	10666.6272	0.08	0.08	0.08	0.08	0.08	0.08	1996-02-19 00:00:00	NULL	-12	2009-01-01
+NULL	Huge number	NULL	NULL	NULL	0.0	0.0	NULL	NULL	NULL	0.00	NULL	0.00	NULL	NULL	NULL	2009-12-31
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_test
+            Statistics: Num rows: 101 Data size: 78500 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:l_orderkey:int, 1:l_partkey:int, 2:l_suppkey:int, 3:l_linenumber:int, 4:l_quantity:int, 5:l_extendedprice:double, 6:l_discount:double, 7:l_tax:decimal(10,2)/DECIMAL_64, 8:l_returnflag:char(1), 9:l_linestatus:char(1), 10:l_shipdate:date, 11:l_commitdate:date, 12:l_receiptdate:date, 13:l_shipinstruct:varchar(20), 14:l_shipmode:char(10), 15:l_comment:string, 16:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Select Operator
+              expressions: l_quantity (type: int), CASE WHEN ((l_quantity = 1)) THEN ('Single') WHEN ((l_quantity = 2)) THEN ('Two') WHEN ((l_quantity < 10)) THEN ('Some') WHEN ((l_quantity < 100)) THEN ('Many') ELSE ('Huge number') END (type: string), CASE WHEN ((l_quantity = 1)) THEN ('Single') WHEN ((l_quantity = 2)) THEN ('Two') WHEN ((l_quantity < 10)) THEN ('Some') WHEN ((l_quantity < 100)) THEN ('Many') ELSE (null) END (type: string), CASE WHEN ((l_quantity = 1)) THEN ('Single') WHEN ((l_quantity = 2)) THEN ('Two') WHEN ((l_quantity < 10)) THEN ('Some') WHEN ((l_quantity < 100)) THEN (null) ELSE (null) END (type: string), if((l_shipmode = 'SHIP      '), date_add(l_shipdate, 10), date_add(l_shipdate, 5)) (type: date), CASE WHEN ((l_returnflag = 'N')) THEN ((l_extendedprice * (1.0D - l_discount))) ELSE (0) END (type: double), CASE WHEN ((l_returnflag = 'N')) THEN ((l_extendedprice * (1.0D - l_discount))) ELSE (0.0D) END (type: double), if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), null, l_tax) (type: decimal(10,2)), if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, null) (type: decimal(10,2)), if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax) (type: decimal(12,2)), if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0) (type: decimal(12,2)), if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax) (type: decimal(10,2)), if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0) (type: decimal(10,2)), if((l_partkey > 30), CAST( l_receiptdate AS TIMESTAMP), CAST( l_commitdate AS TIMESTAMP)) (type: timestamp), if((l_suppkey > 10000), datediff(l_receiptdate, l_commitdate), null) (type: int), if((l_suppkey > 10000), null, datediff(l_receiptdate, l_commitdate)) (type: int), if(((l_suppkey % 500) > 100), DATE'2009-01-01', DATE'2009-12-31') (type: date)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumnNums: [4, 22, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 38, 40, 43, 44]
+                  selectExpressions: IfExprStringScalarStringGroupColumn(col 17:boolean, val Singlecol 21:string)(children: LongColEqualLongScalar(col 4:int, val 1) -> 17:boolean, IfExprStringScalarStringGroupColumn(col 18:boolean, val Twocol 22:string)(children: LongColEqualLongScalar(col 4:int, val 2) -> 18:boolean, IfExprStringScalarStringGroupColumn(col 19:boolean, val Somecol 21:string)(children: LongColLessLongScalar(col 4:int, val 10) -> 19:boolean, IfExprStringScalarStringScalar(col 20:boolean, val Many, val Huge number)(children: LongColLessLongScalar(col 4:int, val 100) -> 20:boolean) -> 21:string) -> 22:string) -> 21:string) -> 22:string, IfExprStringScalarStringGroupColumn(col 17:boolean, val Singlecol 23:string)(children: LongColEqualLongScalar(col 4:int, val 1) -> 17:boolean, IfExprStringScalarStringGroupColumn(col 18:boolean, val Twocol 24:string)(children: LongColEqualLongScalar(col 4:int, val 2) -> 18:boolean, IfExprStringScalarStringGroupColumn(col 19:boolean, val Somecol 23:string)(children: LongColLessLongScalar(col 4:int, val 10) -> 19:boolean, IfExprColumnNull(col 20:boolean, col 21:string, null)(children: LongColLessLongScalar(col 4:int, val 100) -> 20:boolean, ConstantVectorExpression(val Many) -> 21:string) -> 23:string) -> 24:string) -> 23:string) -> 24:string, IfExprStringScalarStringGroupColumn(col 17:boolean, val Singlecol 23:string)(children: LongColEqualLongScalar(col 4:int, val 1) -> 17:boolean, IfExprStringScalarStringGroupColumn(col 18:boolean, val Twocol 25:string)(children: LongColEqualLongScalar(col 4:int, val 2) -> 18:boolean, IfExprStringScalarStringGroupColumn(col 19:boolean, val Somecol 23:string)(children: LongColLessLongScalar(col 4:int, val 10) -> 19:boolean, IfExprNullNull(null, null) -> 23:string) -> 25:string) -> 23:string) -> 25:string, IfExprLongColumnLongColumn(col 17:boolean, col 18:date, col 19:date)(children: StringGroupColEqualCharScalar(col 14:char(10), val SHIP) -> 17:boolean, VectorUDFDateAddColScalar(col 10:date, val 10) -> 18:date, VectorUDFDateAddColScalar(col 10:date, val 5) -> 19:date) -> 26:date, IfExprDoubleColumnLongScalar(col 17:boolean, col 28:double, val 0)(children: StringGroupColEqualCharScalar(col 8:char(1), val N) -> 17:boolean, DoubleColMultiplyDoubleColumn(col 5:double, col 27:double)(children: DoubleScalarSubtractDoubleColumn(val 1.0, col 6:double) -> 27:double) -> 28:double) -> 27:double, IfExprDoubleColumnDoubleScalar(col 17:boolean, col 29:double, val 0.0)(children: StringGroupColEqualCharScalar(col 8:char(1), val N) -> 17:boolean, DoubleColMultiplyDoubleColumn(col 5:double, col 28:double)(children: DoubleScalarSubtractDoubleColumn(val 1.0, col 6:double) -> 28:double) -> 29:double) -> 28:double, IfExprNullColumn(col 17:boolean, null, col 46)(children: StringGroupColEqualStringScalar(col 23:string, val DELIVER IN PERSON)(children: CastStringGroupToString(col 13:varchar(20)) -> 23:string) -> 17:boolean, ConvertDecimal64ToDecimal(col 7:decimal(10,2)/DECIMAL_64) -> 46:decimal(10,2)) -> 30:decimal(10,2), IfExprColumnNull(col 18:boolean, col 47:decimal(10,2), null)(children: StringGroupColEqualStringScalar(col 23:string, val TAKE BACK RETURN)(children: CastStringGroupToString(col 13:varchar(20)) -> 23:string) -> 18:boolean, ConvertDecimal64ToDecimal(col 7:decimal(10,2)/DECIMAL_64) -> 47:decimal(10,2)) -> 31:decimal(10,2), VectorUDFAdaptor(if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax))(children: StringGroupColEqualStringScalar(col 23:string, val DELIVER IN PERSON)(children: CastStringGroupToString(col 13:varchar(20)) -> 23:string) -> 19:boolean) -> 32:decimal(12,2), VectorUDFAdaptor(if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0))(children: StringGroupColEqualStringScalar(col 23:string, val TAKE BACK RETURN)(children: CastStringGroupToString(col 13:varchar(20)) -> 23:string) -> 19:boolean) -> 33:decimal(12,2), VectorUDFAdaptor(if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax))(children: StringGroupColEqualStringScalar(col 23:string, val DELIVER IN PERSON)(children: CastStringGroupToString(col 13:varchar(20)) -> 23:string) -> 19:boolean) -> 34:decimal(10,2), VectorUDFAdaptor(if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0))(children: StringGroupColEqualStringScalar(col 23:string, val TAKE BACK RETURN)(children: CastStringGroupToString(col 13:varchar(20)) -> 23:string) -> 19:boolean) -> 35:decimal(10,2), IfExprTimestampColumnColumn(col 19:boolean, col 36:timestampcol 37:timestamp)(children: LongColGreaterLongScalar(col 1:int, val 30) -> 19:boolean, CastDateToTimestamp(col 12:date) -> 36:timestamp, CastDateToTimestamp(col 11:date) -> 37:timestamp) -> 38:timestamp, IfExprColumnNull(col 19:boolean, col 39:int, null)(children: LongColGreaterLongScalar(col 2:int, val 10000) -> 19:boolean, VectorUDFDateDiffColCol(col 12:date, col 11:date) -> 39:int) -> 40:int, IfExprNullColumn(col 41:boolean, null, col 42)(children: LongColGreaterLongScalar(col 2:int, val 10000) -> 41:boolean, VectorUDFDateDiffColCol(col 12:date, col 11:date) -> 42:int) -> 43:int, IfExprLongScalarLongScalar(col 45:boolean, val 14245, val 14609)(children: LongColGreaterLongScalar(col 44:int, val 100)(children: LongColModuloLongScalar(col 2:int, val 500) -> 44:int) -> 45:boolean) -> 44:date
+              Statistics: Num rows: 101 Data size: 78500 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                File Sink Vectorization:
+                    className: VectorFileSinkOperator
+                    native: false
+                Statistics: Num rows: 101 Data size: 78500 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: true
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 16
+              includeColumns: [1, 2, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14]
+              dataColumns: l_orderkey:int, l_partkey:int, l_suppkey:int, l_linenumber:int, l_quantity:int, l_extendedprice:double, l_discount:double, l_tax:decimal(10,2)/DECIMAL_64, l_returnflag:char(1), l_linestatus:char(1), l_shipdate:date, l_commitdate:date, l_receiptdate:date, l_shipinstruct:varchar(20), l_shipmode:char(10), l_comment:string
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, bigint, bigint, bigint, string, string, string, string, string, bigint, double, double, double, decimal(10,2), decimal(10,2), decimal(12,2), decimal(12,2), decimal(10,2), decimal(10,2), timestamp, timestamp, timestamp, bigint, bigint, bigint, bigint, bigint, bigint, bigint, decimal(10,2), decimal(10,2)]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_test
+#### A masked pattern was here ####
+quantity	quantity_description	quantity_description_2	quantity_description_3	expected_date	field_1	field_2	field_3	field_4	field_5	field_6	field_7	field_8	field_9	field_10	field_11	field_12
+1	Single	Single	Single	1994-01-31	0.0	0.0	0.05	0.05	0.05	0.05	0.05	0.05	1994-01-28 00:00:00	NULL	-36	2009-01-01
+1	Single	Single	Single	1994-12-06	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-12-15 00:00:00	NULL	3	2009-01-01
+11	Many	Many	NULL	1994-03-22	0.0	0.0	0.05	NULL	0.05	0.00	0.05	0.00	1994-03-27 00:00:00	NULL	10	2009-01-01
+12	Many	Many	NULL	1996-05-12	12655.998	12655.998	0.03	0.03	0.03	0.03	0.03	0.03	1996-06-03 00:00:00	NULL	82	2009-01-01
+12	Many	Many	NULL	1997-02-01	12156.034800000001	12156.034800000001	0.05	NULL	0.05	0.00	0.05	0.00	1997-02-22 00:00:00	NULL	1	2009-01-01
+13	Many	Many	NULL	1993-04-06	0.0	0.0	0.02	NULL	0.02	0.00	0.02	0.00	1993-04-08 00:00:00	NULL	4	2009-01-01
+13	Many	Many	NULL	1994-03-08	0.0	0.0	0.06	NULL	0.06	0.00	0.06	0.00	1994-03-26 00:00:00	NULL	41	2009-01-01
+13	Many	Many	NULL	1998-10-28	17554.68	17554.68	0.07	NULL	0.07	0.00	0.07	0.00	1998-11-06 00:00:00	NULL	53	2009-01-01
+14	Many	Many	NULL	1995-01-04	0.0	0.0	0.02	NULL	0.02	0.00	0.02	0.00	1995-01-27 00:00:00	NULL	66	2009-01-01
+15	Many	Many	NULL	1994-11-05	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1994-11-20 00:00:00	NULL	81	2009-12-31
+17	Many	Many	NULL	1994-07-07	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1994-07-03 00:00:00	NULL	-4	2009-01-01
+17	Many	Many	NULL	1996-03-18	20321.500799999998	20321.500799999998	NULL	NULL	0.00	0.00	0.00	0.00	1996-03-22 00:00:00	NULL	39	2009-01-01
+19	Many	Many	NULL	1993-05-19	0.0	0.0	0.08	0.08	0.08	0.08	0.08	0.08	1993-05-25 00:00:00	NULL	81	2009-01-01
+19	Many	Many	NULL	1994-02-05	0.0	0.0	0.03	0.03	0.03	0.03	0.03	0.03	1994-02-06 00:00:00	NULL	-11	2009-01-01
+2	Two	Two	Two	1993-12-09	0.0	0.0	0.06	NULL	0.06	0.00	0.06	0.00	1994-01-01 00:00:00	NULL	-6	2009-01-01
+2	Two	Two	Two	1995-08-12	2011.3912000000003	2011.3912000000003	NULL	NULL	0.00	0.00	0.00	0.00	1995-08-23 00:00:00	NULL	-45	2009-01-01
+20	Many	Many	NULL	1998-07-02	32042.592	32042.592	0.01	NULL	0.01	0.00	0.01	0.00	1998-07-02 00:00:00	NULL	40	2009-01-01
+21	Many	Many	NULL	1994-10-05	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-10-26 00:00:00	NULL	38	2009-01-01
+21	Many	Many	NULL	1995-07-11	24640.0518	24640.0518	NULL	NULL	0.00	0.00	0.00	0.00	1995-07-31 00:00:00	NULL	78	2009-01-01
+22	Many	Many	NULL	1995-07-22	39353.82	39353.82	0.05	NULL	0.05	0.00	0.05	0.00	1995-07-19 00:00:00	NULL	45	2009-01-01
+22	Many	Many	NULL	1998-10-14	28405.0184	28405.0184	0.06	NULL	0.06	0.00	0.06	0.00	1998-10-12 00:00:00	NULL	-4	2009-01-01
+23	Many	Many	NULL	1994-07-24	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-07-25 00:00:00	NULL	26	2009-01-01
+23	Many	Many	NULL	1994-10-13	0.0	0.0	0.00	NULL	0.00	0.00	0.00	0.00	1994-10-24 00:00:00	NULL	79	2009-12-31
+23	Many	Many	NULL	1997-04-24	33946.3785	33946.3785	NULL	NULL	0.00	0.00	0.00	0.00	1997-05-06 00:00:00	NULL	81	2009-01-01
+24	Many	Many	NULL	1996-02-26	31762.584	31762.584	0.00	0.00	0.00	0.00	0.00	0.00	1996-03-18 00:00:00	NULL	75	2009-01-01
+24	Many	Many	NULL	1996-04-04	20542.032	20542.032	0.04	NULL	0.04	0.00	0.04	0.00	1996-04-01 00:00:00	NULL	18	2009-12-31
+25	Many	Many	NULL	1995-12-06	27263.995	27263.995	NULL	NULL	0.00	0.00	0.00	0.00	1995-12-21 00:00:00	NULL	-4	2009-01-01
+25	Many	Many	NULL	1998-04-15	43064.1575	43064.1575	0.07	NULL	0.07	0.00	0.07	0.00	1998-04-11 00:00:00	NULL	-11	2009-01-01
+26	Many	Many	NULL	1993-11-03	0.0	0.0	0.02	0.02	0.02	0.02	0.02	0.02	1993-11-04 00:00:00	NULL	-44	2009-01-01
+26	Many	Many	NULL	1994-10-21	0.0	0.0	0.08	NULL	0.08	0.00	0.08	0.00	1994-10-19 00:00:00	NULL	24	2009-01-01
+26	Many	Many	NULL	1995-04-25	0.0	0.0	0.03	NULL	0.03	0.00	0.03	0.00	1995-05-13 00:00:00	NULL	18	2009-01-01
+26	Many	Many	NULL	1996-11-09	39912.433600000004	39912.433600000004	0.04	NULL	0.04	0.00	0.04	0.00	1996-11-20 00:00:00	NULL	31	2009-01-01
+27	Many	Many	NULL	1994-01-26	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-01-23 00:00:00	NULL	62	2009-01-01
+27	Many	Many	NULL	1998-06-29	45590.2425	45590.2425	NULL	NULL	0.00	0.00	0.00	0.00	1998-06-29 00:00:00	NULL	4	2009-01-01
+28	Many	Many	NULL	1993-12-19	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1994-01-01 00:00:00	NULL	-9	2009-01-01
+28	Many	Many	NULL	1994-12-29	0.0	0.0	0.07	NULL	0.07	0.00	0.07	0.00	1995-01-16 00:00:00	NULL	83	2009-01-01
+28	Many	Many	NULL	1995-10-28	44866.219999999994	44866.219999999994	0.08	0.08	0.08	0.08	0.08	0.08	1995-10-26 00:00:00	NULL	60	2009-01-01
+28	Many	Many	NULL	1996-02-06	45975.3616	45975.3616	0.02	NULL	0.02	0.00	0.02	0.00	1996-02-28 00:00:00	NULL	66	2009-01-01
+28	Many	Many	NULL	1996-03-26	30855.6612	30855.6612	0.04	NULL	0.04	0.00	0.04	0.00	1996-04-20 00:00:00	NULL	12	2009-12-31
+28	Many	Many	NULL	1996-04-26	26349.6324	26349.6324	0.06	NULL	0.06	0.00	0.06	0.00	1996-05-16 00:00:00	NULL	47	2009-01-01
+29	Many	Many	NULL	1997-01-30	39341.806	39341.806	NULL	NULL	0.00	0.00	0.00	0.00	1997-01-27 00:00:00	NULL	0	2009-01-01
+3	Some	Some	Some	1994-06-11	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1994-06-15 00:00:00	NULL	-42	2009-12-31
+3	Some	Some	Some	1998-06-02	5137.6143	5137.6143	0.07	NULL	0.07	0.00	0.07	0.00	1998-06-02 00:00:00	NULL	60	2009-01-01
+3	Some	Some	Some	1998-07-09	2778.921	2778.921	0.02	NULL	0.02	0.00	0.02	0.00	1998-07-21 00:00:00	NULL	46	2009-12-31
+30	Many	Many	NULL	1994-06-08	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-06-22 00:00:00	NULL	24	2009-01-01
+30	Many	Many	NULL	1996-01-15	29770.173	29770.173	NULL	NULL	0.00	0.00	0.00	0.00	1996-01-18 00:00:00	NULL	35	2009-12-31
+30	Many	Many	NULL	1998-08-16	44561.46	44561.46	0.06	NULL	0.06	0.00	0.06	0.00	1998-08-14 00:00:00	NULL	34	2009-12-31
+31	Many	Many	NULL	1993-11-03	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1993-11-08 00:00:00	NULL	-41	2009-01-01
+31	Many	Many	NULL	1994-02-24	0.0	0.0	0.08	0.08	0.08	0.08	0.08	0.08	1994-02-20 00:00:00	NULL	-19	2009-01-01
+32	Many	Many	NULL	1993-12-14	0.0	0.0	0.05	NULL	0.05	0.00	0.05	0.00	1993-12-28 00:00:00	NULL	-7	2009-12-31
+32	Many	Many	NULL	1994-08-29	0.0	0.0	0.06	NULL	0.06	0.00	0.06	0.00	1994-08-31 00:00:00	NULL	14	2009-01-01
+32	Many	Many	NULL	1995-08-19	63313.3312	63313.3312	0.00	NULL	0.00	0.00	0.00	0.00	1995-08-27 00:00:00	NULL	-41	2009-01-01
+32	Many	Many	NULL	1996-02-04	46146.7488	46146.7488	NULL	NULL	0.00	0.00	0.00	0.00	1996-02-03 00:00:00	NULL	-4	2009-01-01
+32	Many	Many	NULL	1996-10-07	44955.15839999999	44955.15839999999	0.05	NULL	0.05	0.00	0.05	0.00	1996-10-14 00:00:00	NULL	-66	2009-12-31
+33	Many	Many	NULL	1998-04-17	54174.12	54174.12	0.01	NULL	0.01	0.00	0.01	0.00	1998-04-15 00:00:00	NULL	26	2009-01-01
+34	Many	Many	NULL	1995-11-13	60586.5448	60586.5448	0.06	NULL	0.06	0.00	0.06	0.00	1995-11-26 00:00:00	NULL	-50	2009-01-01
+34	Many	Many	NULL	1996-01-27	63982.002400000005	63982.002400000005	NULL	NULL	0.00	0.00	0.00	0.00	1996-01-27 00:00:00	NULL	21	2009-01-01
+34	Many	Many	NULL	1998-03-10	56487.763199999994	56487.763199999994	NULL	NULL	0.00	0.00	0.00	0.00	1998-03-30 00:00:00	NULL	-23	2009-01-01
+35	Many	Many	NULL	1996-01-21	40475.225	40475.225	0.03	0.03	0.03	0.03	0.03	0.03	1996-01-22 00:00:00	NULL	-32	2009-01-01
+36	Many	Many	NULL	1996-04-17	41844.6756	41844.6756	0.06	0.06	0.06	0.06	0.06	0.06	1996-04-20 00:00:00	NULL	52	2009-01-01
+37	Many	Many	NULL	1992-05-02	0.0	0.0	0.03	0.03	0.03	0.03	0.03	0.03	1992-05-02 00:00:00	NULL	-13	2009-01-01
+37	Many	Many	NULL	1993-04-23	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1993-04-14 00:00:00	NULL	15	2009-12-31
+37	Many	Many	NULL	1994-02-18	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1994-02-21 00:00:00	NULL	-23	2009-01-01
+38	Many	Many	NULL	1996-02-16	68028.3144	68028.3144	NULL	NULL	0.00	0.00	0.00	0.00	1996-02-18 00:00:00	NULL	-6	2009-01-01
+38	Many	Many	NULL	1997-02-02	44694.46	44694.46	0.05	0.05	0.05	0.05	0.05	0.05	1997-02-02 00:00:00	NULL	19	2009-01-01
+39	Many	Many	NULL	1992-07-07	0.0	0.0	0.02	0.02	0.02	0.02	0.02	0.02	1992-07-28 00:00:00	NULL	-21	2009-01-01
+39	Many	Many	NULL	1998-02-03	45146.01	45146.01	NULL	NULL	0.00	0.00	0.00	0.00	1998-02-18 00:00:00	NULL	-48	2009-01-01
+4	Some	Some	Some	1995-08-09	5990.4936	5990.4936	0.03	NULL	0.03	0.00	0.03	0.00	1995-09-03 00:00:00	NULL	-28	2009-01-01
+4	Some	Some	Some	1997-04-27	5669.7732000000005	5669.7732000000005	0.04	NULL	0.04	0.00	0.04	0.00	1997-04-20 00:00:00	NULL	79	2009-01-01
+40	Many	Many	NULL	1992-07-26	0.0	0.0	0.03	NULL	0.03	0.00	0.03	0.00	1992-08-15 00:00:00	NULL	14	2009-01-01
+40	Many	Many	NULL	1996-12-13	51224.736	51224.736	0.05	NULL	0.05	0.00	0.05	0.00	1997-01-01 00:00:00	NULL	71	2009-01-01
+41	Many	Many	NULL	1993-11-14	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1993-11-11 00:00:00	NULL	-74	2009-01-01
+41	Many	Many	NULL	1994-02-26	0.0	0.0	0.07	NULL	0.07	0.00	0.07	0.00	1994-03-18 00:00:00	NULL	17	2009-01-01
+41	Many	Many	NULL	1998-07-04	47989.6144	47989.6144	0.08	NULL	0.08	0.00	0.08	0.00	1998-07-06 00:00:00	NULL	9	2009-01-01
+42	Many	Many	NULL	1994-08-05	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-08-28 00:00:00	NULL	33	2009-12-31
+42	Many	Many	NULL	1996-02-13	68289.9672	68289.9672	0.00	NULL	0.00	0.00	0.00	0.00	1996-02-23 00:00:00	NULL	33	2009-01-01
+43	Many	Many	NULL	1992-07-15	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1992-08-02 00:00:00	NULL	27	2009-01-01
+43	Many	Many	NULL	1996-10-22	62727.3207	62727.3207	0.01	NULL	0.01	0.00	0.01	0.00	1996-10-26 00:00:00	NULL	-19	2009-12-31
+44	Many	Many	NULL	1995-09-02	75106.658	75106.658	NULL	NULL	0.00	0.00	0.00	0.00	1995-09-14 00:00:00	NULL	25	2009-01-01
+44	Many	Many	NULL	1996-10-04	80882.4192	80882.4192	0.02	NULL	0.02	0.00	0.02	0.00	1996-09-30 00:00:00	NULL	-48	2009-01-01
+44	Many	Many	NULL	1996-11-19	48941.692800000004	48941.692800000004	0.06	NULL	0.06	0.00	0.06	0.00	1996-12-12 00:00:00	NULL	-3	2009-01-01
+44	Many	Many	NULL	1997-03-23	60781.124800000005	60781.124800000005	NULL	NULL	0.00	0.00	0.00	0.00	1997-04-13 00:00:00	NULL	74	2009-12-31
+45	Many	Many	NULL	1994-02-07	0.0	0.0	0.00	NULL	0.00	0.00	0.00	0.00	1994-02-23 00:00:00	NULL	50	2009-01-01
+45	Many	Many	NULL	1998-03-05	61489.35	61489.35	NULL	NULL	0.00	0.00	0.00	0.00	1998-03-24 00:00:00	NULL	4	2009-01-01
+46	Many	Many	NULL	1996-01-20	73475.892	73475.892	0.07	NULL	0.07	0.00	0.07	0.00	1996-02-03 00:00:00	NULL	-53	2009-01-01
+46	Many	Many	NULL	1996-10-01	77781.4092	77781.4092	NULL	NULL	0.00	0.00	0.00	0.00	1996-10-26 00:00:00	NULL	-54	2009-01-01
+46	Many	Many	NULL	1998-07-01	56583.5144	56583.5144	0.05	NULL	0.05	0.00	0.05	0.00	1998-07-05 00:00:00	NULL	28	2009-01-01
+46	Many	Many	NULL	1998-08-18	84565.5168	84565.5168	0.05	NULL	0.05	0.00	0.05	0.00	1998-08-29 00:00:00	NULL	52	2009-01-01
+48	Many	Many	NULL	1994-08-22	0.0	0.0	0.07	NULL	0.07	0.00	0.07	0.00	1994-09-08 00:00:00	NULL	28	2009-01-01
+49	Many	Many	NULL	1993-11-14	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1993-11-24 00:00:00	NULL	-26	2009-12-31
+5	Some	Some	Some	1993-12-14	0.0	0.0	0.03	0.03	0.03	0.03	0.03	0.03	1993-12-23 00:00:00	NULL	-2	2009-01-01
+5	Some	Some	Some	1996-02-15	6217.103999999999	6217.103999999999	0.02	NULL	0.02	0.00	0.02	0.00	1996-02-13 00:00:00	NULL	-42	2009-01-01
+5	Some	Some	Some	1997-02-25	8116.96	8116.96	NULL	NULL	0.00	0.00	0.00	0.00	1997-02-21 00:00:00	NULL	9	2009-01-01
+50	Many	Many	NULL	1994-08-13	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-08-26 00:00:00	NULL	-48	2009-12-31
+6	Some	Some	Some	1995-07-26	8793.2736	8793.2736	0.03	NULL	0.03	0.00	0.03	0.00	1995-07-25 00:00:00	NULL	-60	2009-01-01
+6	Some	Some	Some	1998-11-04	9487.6152	9487.6152	0.06	NULL	0.06	0.00	0.06	0.00	1998-11-05 00:00:00	NULL	46	2009-12-31
+7	Some	Some	Some	1996-01-24	12613.136199999999	12613.136199999999	0.04	NULL	0.04	0.00	0.04	0.00	1996-01-29 00:00:00	NULL	38	2009-01-01
+8	Some	Some	Some	1994-01-17	0.0	0.0	0.08	0.08	0.08	0.08	0.08	0.08	1994-01-14 00:00:00	NULL	-44	2009-01-01
+8	Some	Some	Some	1996-02-03	11978.640000000001	11978.640000000001	0.02	0.02	0.02	0.02	0.02	0.02	1996-01-31 00:00:00	NULL	-34	2009-01-01
+9	Some	Some	Some	1996-02-11	10666.6272	10666.6272	0.08	0.08	0.08	0.08	0.08	0.08	1996-02-19 00:00:00	NULL	-12	2009-01-01
+NULL	Huge number	NULL	NULL	NULL	0.0	0.0	NULL	NULL	NULL	0.00	NULL	0.00	NULL	NULL	NULL	2009-12-31
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_test
+            Statistics: Num rows: 101 Data size: 78500 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:l_orderkey:int, 1:l_partkey:int, 2:l_suppkey:int, 3:l_linenumber:int, 4:l_quantity:int, 5:l_extendedprice:double, 6:l_discount:double, 7:l_tax:decimal(10,2)/DECIMAL_64, 8:l_returnflag:char(1), 9:l_linestatus:char(1), 10:l_shipdate:date, 11:l_commitdate:date, 12:l_receiptdate:date, 13:l_shipinstruct:varchar(20), 14:l_shipmode:char(10), 15:l_comment:string, 16:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Select Operator
+              expressions: l_quantity (type: int), CASE WHEN ((l_quantity = 1)) THEN ('Single') WHEN ((l_quantity = 2)) THEN ('Two') WHEN ((l_quantity < 10)) THEN ('Some') WHEN ((l_quantity < 100)) THEN ('Many') ELSE ('Huge number') END (type: string), CASE WHEN ((l_quantity = 1)) THEN ('Single') WHEN ((l_quantity = 2)) THEN ('Two') WHEN ((l_quantity < 10)) THEN ('Some') WHEN ((l_quantity < 100)) THEN ('Many') ELSE (null) END (type: string), CASE WHEN ((l_quantity = 1)) THEN ('Single') WHEN ((l_quantity = 2)) THEN ('Two') WHEN ((l_quantity < 10)) THEN ('Some') WHEN ((l_quantity < 100)) THEN (null) ELSE (null) END (type: string), if((l_shipmode = 'SHIP      '), date_add(l_shipdate, 10), date_add(l_shipdate, 5)) (type: date), CASE WHEN ((l_returnflag = 'N')) THEN ((l_extendedprice * (1.0D - l_discount))) ELSE (0) END (type: double), CASE WHEN ((l_returnflag = 'N')) THEN ((l_extendedprice * (1.0D - l_discount))) ELSE (0.0D) END (type: double), if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), null, l_tax) (type: decimal(10,2)), if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, null) (type: decimal(10,2)), if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax) (type: decimal(12,2)), if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0) (type: decimal(12,2)), if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax) (type: decimal(10,2)), if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0) (type: decimal(10,2)), if((l_partkey > 30), CAST( l_receiptdate AS TIMESTAMP), CAST( l_commitdate AS TIMESTAMP)) (type: timestamp), if((l_suppkey > 10000), datediff(l_receiptdate, l_commitdate), null) (type: int), if((l_suppkey > 10000), null, datediff(l_receiptdate, l_commitdate)) (type: int), if(((l_suppkey % 500) > 100), DATE'2009-01-01', DATE'2009-12-31') (type: date)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumnNums: [4, 27, 38, 48, 52, 54, 60, 63, 65, 67, 68, 69, 70, 73, 76, 79, 80]
+                  selectExpressions: IfExprColumnCondExpr(col 17:boolean, col 18:stringcol 26:string)(children: LongColEqualLongScalar(col 4:int, val 1) -> 17:boolean, ConstantVectorExpression(val Single) -> 18:string, IfExprColumnCondExpr(col 19:boolean, col 20:stringcol 25:string)(children: LongColEqualLongScalar(col 4:int, val 2) -> 19:boolean, ConstantVectorExpression(val Two) -> 20:string, IfExprColumnCondExpr(col 21:boolean, col 22:stringcol 24:string)(children: LongColLessLongScalar(col 4:int, val 10) -> 21:boolean, ConstantVectorExpression(val Some) -> 22:string, IfExprStringScalarStringScalar(col 23:boolean, val Many, val Huge number)(children: LongColLessLongScalar(col 4:int, val 100) -> 23:boolean) -> 24:string) -> 25:string) -> 26:string) -> 27:string, IfExprColumnCondExpr(col 23:boolean, col 28:stringcol 37:string)(children: LongColEqualLongScalar(col 4:int, val 1) -> 23:boolean, ConstantVectorExpression(val Single) -> 28:string, IfExprColumnCondExpr(col 29:boolean, col 30:stringcol 36:string)(children: LongColEqualLongScalar(col 4:int, val 2) -> 29:boolean, ConstantVectorExpression(val Two) -> 30:string, IfExprColumnCondExpr(col 31:boolean, col 32:stringcol 35:string)(children: LongColLessLongScalar(col 4:int, val 10) -> 31:boolean, ConstantVectorExpression(val Some) -> 32:string, IfExprColumnNull(col 33:boolean, col 34:string, null)(children: LongColLessLongScalar(col 4:int, val 100) -> 33:boolean, ConstantVectorExpression(val Many) -> 34:string) -> 35:string) -> 36:string) -> 37:string) -> 38:string, IfExprColumnCondExpr(col 39:boolean, col 40:stringcol 47:string)(children: LongColEqualLongScalar(col 4:int, val 1) -> 39:boolean, ConstantVectorExpression(val Single) -> 40:string, IfExprColumnCondExpr(col 41:boolean, col 42:stringcol 46:string)(children: LongColEqualLongScalar(col 4:int, val 2) -> 41:boolean, ConstantVectorExpression(val Two) -> 42:string, IfExprColumnCondExpr(col 43:boolean, col 44:stringcol 45:string)(children: LongColLessLongScalar(col 4:int, val 10) -> 43:boolean, ConstantVectorExpression(val Some) -> 44:string, IfExprNullNull(null, null) -> 45:string) -> 46:string) -> 47:string) -> 48:string, IfExprCondExprCondExpr(col 49:boolean, col 50:datecol 51:date)(children: StringGroupColEqualCharScalar(col 14:char(10), val SHIP) -> 49:boolean, VectorUDFDateAddColScalar(col 10:date, val 10) -> 50:date, VectorUDFDateAddColScalar(col 10:date, val 5) -> 51:date) -> 52:date, IfExprDoubleColumnLongScalar(col 57:boolean, col 58:double, val 0)(children: StringGroupColEqualCharScalar(col 8:char(1), val N) -> 57:boolean, DoubleColMultiplyDoubleColumn(col 5:double, col 54:double)(children: DoubleScalarSubtractDoubleColumn(val 1.0, col 6:double) -> 54:double) -> 58:double) -> 54:double, IfExprCondExprColumn(col 57:boolean, col 59:double, col 58:double)(children: StringGroupColEqualCharScalar(col 8:char(1), val N) -> 57:boolean, DoubleColMultiplyDoubleColumn(col 5:double, col 58:double)(children: DoubleScalarSubtractDoubleColumn(val 1.0, col 6:double) -> 58:double) -> 59:double, ConstantVectorExpression(val 0.0) -> 58:double) -> 60:double, IfExprNullColumn(col 62:boolean, null, col 82)(children: StringGroupColEqualStringScalar(col 61:string, val DELIVER IN PERSON)(children: CastStringGroupToString(col 13:varchar(20)) -> 61:string) -> 62:boolean, ConvertDecimal64ToDecimal(col 7:decimal(10,2)/DECIMAL_64) -> 82:decimal(10,2)) -> 63:decimal(10,2), IfExprColumnNull(col 64:boolean, col 83:decimal(10,2), null)(children: StringGroupColEqualStringScalar(col 61:string, val TAKE BACK RETURN)(children: CastStringGroupToString(col 13:varchar(20)) -> 61:string) -> 64:boolean, ConvertDecimal64ToDecimal(col 7:decimal(10,2)/DECIMAL_64) -> 83:decimal(10,2)) -> 65:decimal(10,2), VectorUDFAdaptor(if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax))(children: StringGroupColEqualStringScalar(col 61:string, val DELIVER IN PERSON)(children: CastStringGroupToString(col 13:varchar(20)) -> 61:string) -> 66:boolean) -> 67:decimal(12,2), VectorUDFAdaptor(if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0))(children: StringGroupColEqualStringScalar(col 61:string, val TAKE BACK RETURN)(children: CastStringGroupToString(col 13:varchar(20)) -> 61:string) -> 66:boolean) -> 68:decimal(12,2), VectorUDFAdaptor(if((UDFToString(l_shipinstruct) = 'DELIVER IN PERSON'), 0, l_tax))(children: StringGroupColEqualStringScalar(col 61:string, val DELIVER IN PERSON)(children: CastStringGroupToString(col 13:varchar(20)) -> 61:string) -> 66:boolean) -> 69:decimal(10,2), VectorUDFAdaptor(if((UDFToString(l_shipinstruct) = 'TAKE BACK RETURN'), l_tax, 0))(children: StringGroupColEqualStringScalar(col 61:string, val TAKE BACK RETURN)(children: CastStringGroupToString(col 13:varchar(20)) -> 61:string) -> 66:boolean) -> 70:decimal(10,2), IfExprCondExprCondExpr(col 66:boolean, col 71:timestampcol 72:timestamp)(children: LongColGreaterLongScalar(col 1:int, val 30) -> 66:boolean, CastDateToTimestamp(col 12:date) -> 71:timestamp, CastDateToTimestamp(col 11:date) -> 72:timestamp) -> 73:timestamp, IfExprCondExprNull(col 74:boolean, col 75:int, null)(children: LongColGreaterLongScalar(col 2:int, val 10000) -> 74:boolean, VectorUDFDateDiffColCol(col 12:date, col 11:date) -> 75:int) -> 76:int, IfExprNullCondExpr(col 77:boolean, null, col 78:int)(children: LongColGreaterLongScalar(col 2:int, val 10000) -> 77:boolean, VectorUDFDateDiffColCol(col 12:date, col 11:date) -> 78:int) -> 79:int, IfExprLongScalarLongScalar(col 81:boolean, val 14245, val 14609)(children: LongColGreaterLongScalar(col 80:int, val 100)(children: LongColModuloLongScalar(col 2:int, val 500) -> 80:int) -> 81:boolean) -> 80:date
+              Statistics: Num rows: 101 Data size: 78500 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                File Sink Vectorization:
+                    className: VectorFileSinkOperator
+                    native: false
+                Statistics: Num rows: 101 Data size: 78500 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: true
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 16
+              includeColumns: [1, 2, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14]
+              dataColumns: l_orderkey:int, l_partkey:int, l_suppkey:int, l_linenumber:int, l_quantity:int, l_extendedprice:double, l_discount:double, l_tax:decimal(10,2)/DECIMAL_64, l_returnflag:char(1), l_linestatus:char(1), l_shipdate:date, l_commitdate:date, l_receiptdate:date, l_shipinstruct:varchar(20), l_shipmode:char(10), l_comment:string
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, string, bigint, string, bigint, string, bigint, string, string, string, string, string, bigint, string, bigint, string, bigint, string, string, string, string, string, bigint, string, bigint, string, bigint, string, string, string, string, string, bigint, bigint, bigint, bigint, bigint, double, double, bigint, bigint, double, double, double, string, bigint, decimal(10,2), bigint, decimal(10,2), bigint, decimal(12,2), decimal(12,2), decimal(10,2), decimal(10,2), timestamp, timestamp, timestamp, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, decimal(10,2), decimal(10,2)]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+   L_QUANTITY as Quantity,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE "Huge number" END AS Quantity_Description,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN "Many"
+     ELSE NULL END AS Quantity_Description_2,
+   CASE
+     WHEN L_QUANTITY = 1 THEN "Single"
+     WHEN L_QUANTITY = 2 THEN "Two"
+     WHEN L_QUANTITY < 10 THEN "Some"
+     WHEN L_QUANTITY < 100 THEN NULL
+     ELSE NULL END AS Quantity_Description_3,
+   IF(L_SHIPMODE = "SHIP", DATE_ADD(l_shipdate, 10), DATE_ADD(l_shipdate, 5)) AS Expected_Date,
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE 0 END AS Field_1,  -- The 0 will be an integer and requires implicit casting.
+   CASE WHEN L_RETURNFLAG = "N"
+            THEN l_extendedprice * (1 - l_discount)
+        ELSE CAST(0 AS DOUBLE) END AS Field_2,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", NULL, L_TAX) AS Field_3,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, NULL) AS Field_4,
+   -- For the next 2 IF stmts, the 0s are integer and require implicit casting to decimal.
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0, L_TAX) AS Field_5,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0) AS Field_6,
+   IF(L_SHIPINSTRUCT = "DELIVER IN PERSON", 0BD, L_TAX) AS Field_7,
+   IF(L_SHIPINSTRUCT = "TAKE BACK RETURN", L_TAX, 0BD) AS Field_8,
+   IF(L_PARTKEY > 30, CAST(L_RECEIPTDATE AS TIMESTAMP), CAST(L_COMMITDATE AS TIMESTAMP)) AS Field_9,
+   IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
+   IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
+   IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
+FROM lineitem_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_test
+#### A masked pattern was here ####
+quantity	quantity_description	quantity_description_2	quantity_description_3	expected_date	field_1	field_2	field_3	field_4	field_5	field_6	field_7	field_8	field_9	field_10	field_11	field_12
+1	Single	Single	Single	1994-01-31	0.0	0.0	0.05	0.05	0.05	0.05	0.05	0.05	1994-01-28 00:00:00	NULL	-36	2009-01-01
+1	Single	Single	Single	1994-12-06	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-12-15 00:00:00	NULL	3	2009-01-01
+11	Many	Many	NULL	1994-03-22	0.0	0.0	0.05	NULL	0.05	0.00	0.05	0.00	1994-03-27 00:00:00	NULL	10	2009-01-01
+12	Many	Many	NULL	1996-05-12	12655.998	12655.998	0.03	0.03	0.03	0.03	0.03	0.03	1996-06-03 00:00:00	NULL	82	2009-01-01
+12	Many	Many	NULL	1997-02-01	12156.034800000001	12156.034800000001	0.05	NULL	0.05	0.00	0.05	0.00	1997-02-22 00:00:00	NULL	1	2009-01-01
+13	Many	Many	NULL	1993-04-06	0.0	0.0	0.02	NULL	0.02	0.00	0.02	0.00	1993-04-08 00:00:00	NULL	4	2009-01-01
+13	Many	Many	NULL	1994-03-08	0.0	0.0	0.06	NULL	0.06	0.00	0.06	0.00	1994-03-26 00:00:00	NULL	41	2009-01-01
+13	Many	Many	NULL	1998-10-28	17554.68	17554.68	0.07	NULL	0.07	0.00	0.07	0.00	1998-11-06 00:00:00	NULL	53	2009-01-01
+14	Many	Many	NULL	1995-01-04	0.0	0.0	0.02	NULL	0.02	0.00	0.02	0.00	1995-01-27 00:00:00	NULL	66	2009-01-01
+15	Many	Many	NULL	1994-11-05	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1994-11-20 00:00:00	NULL	81	2009-12-31
+17	Many	Many	NULL	1994-07-07	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1994-07-03 00:00:00	NULL	-4	2009-01-01
+17	Many	Many	NULL	1996-03-18	20321.500799999998	20321.500799999998	NULL	NULL	0.00	0.00	0.00	0.00	1996-03-22 00:00:00	NULL	39	2009-01-01
+19	Many	Many	NULL	1993-05-19	0.0	0.0	0.08	0.08	0.08	0.08	0.08	0.08	1993-05-25 00:00:00	NULL	81	2009-01-01
+19	Many	Many	NULL	1994-02-05	0.0	0.0	0.03	0.03	0.03	0.03	0.03	0.03	1994-02-06 00:00:00	NULL	-11	2009-01-01
+2	Two	Two	Two	1993-12-09	0.0	0.0	0.06	NULL	0.06	0.00	0.06	0.00	1994-01-01 00:00:00	NULL	-6	2009-01-01
+2	Two	Two	Two	1995-08-12	2011.3912000000003	2011.3912000000003	NULL	NULL	0.00	0.00	0.00	0.00	1995-08-23 00:00:00	NULL	-45	2009-01-01
+20	Many	Many	NULL	1998-07-02	32042.592	32042.592	0.01	NULL	0.01	0.00	0.01	0.00	1998-07-02 00:00:00	NULL	40	2009-01-01
+21	Many	Many	NULL	1994-10-05	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-10-26 00:00:00	NULL	38	2009-01-01
+21	Many	Many	NULL	1995-07-11	24640.0518	24640.0518	NULL	NULL	0.00	0.00	0.00	0.00	1995-07-31 00:00:00	NULL	78	2009-01-01
+22	Many	Many	NULL	1995-07-22	39353.82	39353.82	0.05	NULL	0.05	0.00	0.05	0.00	1995-07-19 00:00:00	NULL	45	2009-01-01
+22	Many	Many	NULL	1998-10-14	28405.0184	28405.0184	0.06	NULL	0.06	0.00	0.06	0.00	1998-10-12 00:00:00	NULL	-4	2009-01-01
+23	Many	Many	NULL	1994-07-24	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-07-25 00:00:00	NULL	26	2009-01-01
+23	Many	Many	NULL	1994-10-13	0.0	0.0	0.00	NULL	0.00	0.00	0.00	0.00	1994-10-24 00:00:00	NULL	79	2009-12-31
+23	Many	Many	NULL	1997-04-24	33946.3785	33946.3785	NULL	NULL	0.00	0.00	0.00	0.00	1997-05-06 00:00:00	NULL	81	2009-01-01
+24	Many	Many	NULL	1996-02-26	31762.584	31762.584	0.00	0.00	0.00	0.00	0.00	0.00	1996-03-18 00:00:00	NULL	75	2009-01-01
+24	Many	Many	NULL	1996-04-04	20542.032	20542.032	0.04	NULL	0.04	0.00	0.04	0.00	1996-04-01 00:00:00	NULL	18	2009-12-31
+25	Many	Many	NULL	1995-12-06	27263.995	27263.995	NULL	NULL	0.00	0.00	0.00	0.00	1995-12-21 00:00:00	NULL	-4	2009-01-01
+25	Many	Many	NULL	1998-04-15	43064.1575	43064.1575	0.07	NULL	0.07	0.00	0.07	0.00	1998-04-11 00:00:00	NULL	-11	2009-01-01
+26	Many	Many	NULL	1993-11-03	0.0	0.0	0.02	0.02	0.02	0.02	0.02	0.02	1993-11-04 00:00:00	NULL	-44	2009-01-01
+26	Many	Many	NULL	1994-10-21	0.0	0.0	0.08	NULL	0.08	0.00	0.08	0.00	1994-10-19 00:00:00	NULL	24	2009-01-01
+26	Many	Many	NULL	1995-04-25	0.0	0.0	0.03	NULL	0.03	0.00	0.03	0.00	1995-05-13 00:00:00	NULL	18	2009-01-01
+26	Many	Many	NULL	1996-11-09	39912.433600000004	39912.433600000004	0.04	NULL	0.04	0.00	0.04	0.00	1996-11-20 00:00:00	NULL	31	2009-01-01
+27	Many	Many	NULL	1994-01-26	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-01-23 00:00:00	NULL	62	2009-01-01
+27	Many	Many	NULL	1998-06-29	45590.2425	45590.2425	NULL	NULL	0.00	0.00	0.00	0.00	1998-06-29 00:00:00	NULL	4	2009-01-01
+28	Many	Many	NULL	1993-12-19	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1994-01-01 00:00:00	NULL	-9	2009-01-01
+28	Many	Many	NULL	1994-12-29	0.0	0.0	0.07	NULL	0.07	0.00	0.07	0.00	1995-01-16 00:00:00	NULL	83	2009-01-01
+28	Many	Many	NULL	1995-10-28	44866.219999999994	44866.219999999994	0.08	0.08	0.08	0.08	0.08	0.08	1995-10-26 00:00:00	NULL	60	2009-01-01
+28	Many	Many	NULL	1996-02-06	45975.3616	45975.3616	0.02	NULL	0.02	0.00	0.02	0.00	1996-02-28 00:00:00	NULL	66	2009-01-01
+28	Many	Many	NULL	1996-03-26	30855.6612	30855.6612	0.04	NULL	0.04	0.00	0.04	0.00	1996-04-20 00:00:00	NULL	12	2009-12-31
+28	Many	Many	NULL	1996-04-26	26349.6324	26349.6324	0.06	NULL	0.06	0.00	0.06	0.00	1996-05-16 00:00:00	NULL	47	2009-01-01
+29	Many	Many	NULL	1997-01-30	39341.806	39341.806	NULL	NULL	0.00	0.00	0.00	0.00	1997-01-27 00:00:00	NULL	0	2009-01-01
+3	Some	Some	Some	1994-06-11	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1994-06-15 00:00:00	NULL	-42	2009-12-31
+3	Some	Some	Some	1998-06-02	5137.6143	5137.6143	0.07	NULL	0.07	0.00	0.07	0.00	1998-06-02 00:00:00	NULL	60	2009-01-01
+3	Some	Some	Some	1998-07-09	2778.921	2778.921	0.02	NULL	0.02	0.00	0.02	0.00	1998-07-21 00:00:00	NULL	46	2009-12-31
+30	Many	Many	NULL	1994-06-08	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-06-22 00:00:00	NULL	24	2009-01-01
+30	Many	Many	NULL	1996-01-15	29770.173	29770.173	NULL	NULL	0.00	0.00	0.00	0.00	1996-01-18 00:00:00	NULL	35	2009-12-31
+30	Many	Many	NULL	1998-08-16	44561.46	44561.46	0.06	NULL	0.06	0.00	0.06	0.00	1998-08-14 00:00:00	NULL	34	2009-12-31
+31	Many	Many	NULL	1993-11-03	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1993-11-08 00:00:00	NULL	-41	2009-01-01
+31	Many	Many	NULL	1994-02-24	0.0	0.0	0.08	0.08	0.08	0.08	0.08	0.08	1994-02-20 00:00:00	NULL	-19	2009-01-01
+32	Many	Many	NULL	1993-12-14	0.0	0.0	0.05	NULL	0.05	0.00	0.05	0.00	1993-12-28 00:00:00	NULL	-7	2009-12-31
+32	Many	Many	NULL	1994-08-29	0.0	0.0	0.06	NULL	0.06	0.00	0.06	0.00	1994-08-31 00:00:00	NULL	14	2009-01-01
+32	Many	Many	NULL	1995-08-19	63313.3312	63313.3312	0.00	NULL	0.00	0.00	0.00	0.00	1995-08-27 00:00:00	NULL	-41	2009-01-01
+32	Many	Many	NULL	1996-02-04	46146.7488	46146.7488	NULL	NULL	0.00	0.00	0.00	0.00	1996-02-03 00:00:00	NULL	-4	2009-01-01
+32	Many	Many	NULL	1996-10-07	44955.15839999999	44955.15839999999	0.05	NULL	0.05	0.00	0.05	0.00	1996-10-14 00:00:00	NULL	-66	2009-12-31
+33	Many	Many	NULL	1998-04-17	54174.12	54174.12	0.01	NULL	0.01	0.00	0.01	0.00	1998-04-15 00:00:00	NULL	26	2009-01-01
+34	Many	Many	NULL	1995-11-13	60586.5448	60586.5448	0.06	NULL	0.06	0.00	0.06	0.00	1995-11-26 00:00:00	NULL	-50	2009-01-01
+34	Many	Many	NULL	1996-01-27	63982.002400000005	63982.002400000005	NULL	NULL	0.00	0.00	0.00	0.00	1996-01-27 00:00:00	NULL	21	2009-01-01
+34	Many	Many	NULL	1998-03-10	56487.763199999994	56487.763199999994	NULL	NULL	0.00	0.00	0.00	0.00	1998-03-30 00:00:00	NULL	-23	2009-01-01
+35	Many	Many	NULL	1996-01-21	40475.225	40475.225	0.03	0.03	0.03	0.03	0.03	0.03	1996-01-22 00:00:00	NULL	-32	2009-01-01
+36	Many	Many	NULL	1996-04-17	41844.6756	41844.6756	0.06	0.06	0.06	0.06	0.06	0.06	1996-04-20 00:00:00	NULL	52	2009-01-01
+37	Many	Many	NULL	1992-05-02	0.0	0.0	0.03	0.03	0.03	0.03	0.03	0.03	1992-05-02 00:00:00	NULL	-13	2009-01-01
+37	Many	Many	NULL	1993-04-23	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1993-04-14 00:00:00	NULL	15	2009-12-31
+37	Many	Many	NULL	1994-02-18	0.0	0.0	0.04	NULL	0.04	0.00	0.04	0.00	1994-02-21 00:00:00	NULL	-23	2009-01-01
+38	Many	Many	NULL	1996-02-16	68028.3144	68028.3144	NULL	NULL	0.00	0.00	0.00	0.00	1996-02-18 00:00:00	NULL	-6	2009-01-01
+38	Many	Many	NULL	1997-02-02	44694.46	44694.46	0.05	0.05	0.05	0.05	0.05	0.05	1997-02-02 00:00:00	NULL	19	2009-01-01
+39	Many	Many	NULL	1992-07-07	0.0	0.0	0.02	0.02	0.02	0.02	0.02	0.02	1992-07-28 00:00:00	NULL	-21	2009-01-01
+39	Many	Many	NULL	1998-02-03	45146.01	45146.01	NULL	NULL	0.00	0.00	0.00	0.00	1998-02-18 00:00:00	NULL	-48	2009-01-01
+4	Some	Some	Some	1995-08-09	5990.4936	5990.4936	0.03	NULL	0.03	0.00	0.03	0.00	1995-09-03 00:00:00	NULL	-28	2009-01-01
+4	Some	Some	Some	1997-04-27	5669.7732000000005	5669.7732000000005	0.04	NULL	0.04	0.00	0.04	0.00	1997-04-20 00:00:00	NULL	79	2009-01-01
+40	Many	Many	NULL	1992-07-26	0.0	0.0	0.03	NULL	0.03	0.00	0.03	0.00	1992-08-15 00:00:00	NULL	14	2009-01-01
+40	Many	Many	NULL	1996-12-13	51224.736	51224.736	0.05	NULL	0.05	0.00	0.05	0.00	1997-01-01 00:00:00	NULL	71	2009-01-01
+41	Many	Many	NULL	1993-11-14	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1993-11-11 00:00:00	NULL	-74	2009-01-01
+41	Many	Many	NULL	1994-02-26	0.0	0.0	0.07	NULL	0.07	0.00	0.07	0.00	1994-03-18 00:00:00	NULL	17	2009-01-01
+41	Many	Many	NULL	1998-07-04	47989.6144	47989.6144	0.08	NULL	0.08	0.00	0.08	0.00	1998-07-06 00:00:00	NULL	9	2009-01-01
+42	Many	Many	NULL	1994-08-05	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-08-28 00:00:00	NULL	33	2009-12-31
+42	Many	Many	NULL	1996-02-13	68289.9672	68289.9672	0.00	NULL	0.00	0.00	0.00	0.00	1996-02-23 00:00:00	NULL	33	2009-01-01
+43	Many	Many	NULL	1992-07-15	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1992-08-02 00:00:00	NULL	27	2009-01-01
+43	Many	Many	NULL	1996-10-22	62727.3207	62727.3207	0.01	NULL	0.01	0.00	0.01	0.00	1996-10-26 00:00:00	NULL	-19	2009-12-31
+44	Many	Many	NULL	1995-09-02	75106.658	75106.658	NULL	NULL	0.00	0.00	0.00	0.00	1995-09-14 00:00:00	NULL	25	2009-01-01
+44	Many	Many	NULL	1996-10-04	80882.4192	80882.4192	0.02	NULL	0.02	0.00	0.02	0.00	1996-09-30 00:00:00	NULL	-48	2009-01-01
+44	Many	Many	NULL	1996-11-19	48941.692800000004	48941.692800000004	0.06	NULL	0.06	0.00	0.06	0.00	1996-12-12 00:00:00	NULL	-3	2009-01-01
+44	Many	Many	NULL	1997-03-23	60781.124800000005	60781.124800000005	NULL	NULL	0.00	0.00	0.00	0.00	1997-04-13 00:00:00	NULL	74	2009-12-31
+45	Many	Many	NULL	1994-02-07	0.0	0.0	0.00	NULL	0.00	0.00	0.00	0.00	1994-02-23 00:00:00	NULL	50	2009-01-01
+45	Many	Many	NULL	1998-03-05	61489.35	61489.35	NULL	NULL	0.00	0.00	0.00	0.00	1998-03-24 00:00:00	NULL	4	2009-01-01
+46	Many	Many	NULL	1996-01-20	73475.892	73475.892	0.07	NULL	0.07	0.00	0.07	0.00	1996-02-03 00:00:00	NULL	-53	2009-01-01
+46	Many	Many	NULL	1996-10-01	77781.4092	77781.4092	NULL	NULL	0.00	0.00	0.00	0.00	1996-10-26 00:00:00	NULL	-54	2009-01-01
+46	Many	Many	NULL	1998-07-01	56583.5144	56583.5144	0.05	NULL	0.05	0.00	0.05	0.00	1998-07-05 00:00:00	NULL	28	2009-01-01
+46	Many	Many	NULL	1998-08-18	84565.5168	84565.5168	0.05	NULL	0.05	0.00	0.05	0.00	1998-08-29 00:00:00	NULL	52	2009-01-01
+48	Many	Many	NULL	1994-08-22	0.0	0.0	0.07	NULL	0.07	0.00	0.07	0.00	1994-09-08 00:00:00	NULL	28	2009-01-01
+49	Many	Many	NULL	1993-11-14	0.0	0.0	0.00	0.00	0.00	0.00	0.00	0.00	1993-11-24 00:00:00	NULL	-26	2009-12-31
+5	Some	Some	Some	1993-12-14	0.0	0.0	0.03	0.03	0.03	0.03	0.03	0.03	1993-12-23 00:00:00	NULL	-2	2009-01-01
+5	Some	Some	Some	1996-02-15	6217.103999999999	6217.103999999999	0.02	NULL	0.02	0.00	0.02	0.00	1996-02-13 00:00:00	NULL	-42	2009-01-01
+5	Some	Some	Some	1997-02-25	8116.96	8116.96	NULL	NULL	0.00	0.00	0.00	0.00	1997-02-21 00:00:00	NULL	9	2009-01-01
+50	Many	Many	NULL	1994-08-13	0.0	0.0	NULL	NULL	0.00	0.00	0.00	0.00	1994-08-26 00:00:00	NULL	-48	2009-12-31
+6	Some	Some	Some	1995-07-26	8793.2736	8793.2736	0.03	NULL	0.03	0.00	0.03	0.00	1995-07-25 00:00:00	NULL	-60	2009-01-01
+6	Some	Some	Some	1998-11-04	9487.6152	9487.6152	0.06	NULL	0.06	0.00	0.06	0.00	1998-11-05 00:00:00	NULL	46	2009-12-31
+7	Some	Some	Some	1996-01-24	12613.136199999999	12613.136199999999	0.04	NULL	0.04	0.00	0.04	0.00	1996-01-29 00:00:00	NULL	38	2009-01-01
+8	Some	Some	Some	1994-01-17	0.0	0.0	0.08	0.08	0.08	0.08	0.08	0.08	1994-01-14 00:00:00	NULL	-44	2009-01-01
+8	Some	Some	Some	1996-02-03	11978.640000000001	11978.640000000001	0.02	0.02	0.02	0.02	0.02	0.02	1996-01-31 00:00:00	NULL	-34	2009-01-01
+9	Some	Some	Some	1996-02-11	10666.6272	10666.6272	0.08	0.08	0.08	0.08	0.08	0.08	1996-02-19 00:00:00	NULL	-12	2009-01-01
+NULL	Huge number	NULL	NULL	NULL	0.0	0.0	NULL	NULL	NULL	0.00	NULL	0.00	NULL	NULL	NULL	2009-12-31

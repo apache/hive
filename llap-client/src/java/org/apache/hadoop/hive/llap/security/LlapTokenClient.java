@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
+import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.io.DataInputByteBuffer;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
@@ -55,7 +56,7 @@ public class LlapTokenClient {
   private final SocketFactory socketFactory;
   private final RetryPolicy retryPolicy;
   private final Configuration conf;
-  private LlapServiceInstanceSet activeInstances;
+  private ServiceInstanceSet<LlapServiceInstance> activeInstances;
   private Collection<LlapServiceInstance> lastKnownInstances;
   private LlapManagementProtocolClientImpl client;
   private LlapServiceInstance clientInstance;

@@ -1,69 +1,69 @@
-PREHOOK: query: CREATE TABLE test_table1 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE test_table1_n3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table1_n3
+POSTHOOK: query: CREATE TABLE test_table1_n3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Output: default@test_table1_n3
+PREHOOK: query: CREATE TABLE test_table2_n3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table2_n3
+POSTHOOK: query: CREATE TABLE test_table2_n3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: CREATE TABLE test_table3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Output: default@test_table2_n3
+PREHOOK: query: CREATE TABLE test_table3_n3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table3
-POSTHOOK: query: CREATE TABLE test_table3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table3_n3
+POSTHOOK: query: CREATE TABLE test_table3_n3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table3
+POSTHOOK: Output: default@test_table3_n3
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT key, key+1, value where key < 10
+INSERT OVERWRITE TABLE test_table1_n3 PARTITION (ds = '1') SELECT key, key+1, value where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1@ds=1
+PREHOOK: Output: default@test_table1_n3@ds=1
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT key, key+1, value where key < 10
+INSERT OVERWRITE TABLE test_table1_n3 PARTITION (ds = '1') SELECT key, key+1, value where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@test_table1_n3@ds=1
+POSTHOOK: Lineage: test_table1_n3 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n3 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n3 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT key, key+1, value where key < 100
+INSERT OVERWRITE TABLE test_table2_n3 PARTITION (ds = '1') SELECT key, key+1, value where key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table2@ds=1
+PREHOOK: Output: default@test_table2_n3@ds=1
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT key, key+1, value where key < 100
+INSERT OVERWRITE TABLE test_table2_n3 PARTITION (ds = '1') SELECT key, key+1, value where key < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table2@ds=1
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@test_table2_n3@ds=1
+POSTHOOK: Lineage: test_table2_n3 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n3 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n3 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -85,6 +85,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 8232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -96,6 +97,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -137,7 +139,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table3
+                      name: default.test_table3_n3
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), '1' (type: string)
                   outputColumnNames: key, key2, value, ds
@@ -188,7 +190,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n3
 
   Stage: Stage-3
     Stats Work
@@ -196,50 +198,40 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, key2, value
           Column Types: int, int, string
-          Table: default.test_table3
+          Table: default.test_table3_n3
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
-PREHOOK: Output: default@test_table3@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: Input: default@test_table1_n3
+PREHOOK: Input: default@test_table1_n3@ds=1
+PREHOOK: Input: default@test_table2_n3
+PREHOOK: Input: default@test_table2_n3@ds=1
+PREHOOK: Output: default@test_table3_n3@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
-POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: Input: default@test_table1_n3
+POSTHOOK: Input: default@test_table1_n3@ds=1
+POSTHOOK: Input: default@test_table2_n3
+POSTHOOK: Input: default@test_table2_n3@ds=1
+POSTHOOK: Output: default@test_table3_n3@ds=1
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).key SIMPLE [(test_table1_n3)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).key2 SIMPLE [(test_table1_n3)a.FieldSchema(name:key2, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).value EXPRESSION [(test_table1_n3)a.FieldSchema(name:value, type:string, comment:null), (test_table2_n3)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from test_table3_n3 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Input: default@test_table3_n3
+PREHOOK: Input: default@test_table3_n3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: query: select * from test_table3_n3 tablesample (bucket 1 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####
-PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Input: default@test_table3_n3
+POSTHOOK: Input: default@test_table3_n3@ds=1
 #### A masked pattern was here ####
 0	1	val_0val_0	1
 0	1	val_0val_0	1
@@ -252,32 +244,42 @@ POSTHOOK: Input: default@test_table3@ds=1
 0	1	val_0val_0	1
 2	3	val_2val_2	1
 4	5	val_4val_4	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
 8	9	val_8val_8	1
+PREHOOK: query: select * from test_table3_n3 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3_n3
+PREHOOK: Input: default@test_table3_n3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table3_n3 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3_n3
+POSTHOOK: Input: default@test_table3_n3@ds=1
+#### A masked pattern was here ####
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
 9	10	val_9val_9	1
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 POSTHOOK: type: QUERY
@@ -300,6 +302,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 8232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -311,6 +314,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -352,7 +356,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table3
+                      name: default.test_table3_n3
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), '1' (type: string)
                   outputColumnNames: key, key2, value, ds
@@ -403,7 +407,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n3
 
   Stage: Stage-3
     Stats Work
@@ -411,56 +415,46 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, key2, value
           Column Types: int, int, string
-          Table: default.test_table3
+          Table: default.test_table3_n3
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
-PREHOOK: Output: default@test_table3@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: Input: default@test_table1_n3
+PREHOOK: Input: default@test_table1_n3@ds=1
+PREHOOK: Input: default@test_table2_n3
+PREHOOK: Input: default@test_table2_n3@ds=1
+PREHOOK: Output: default@test_table3_n3@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
-POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: Input: default@test_table1_n3
+POSTHOOK: Input: default@test_table1_n3@ds=1
+POSTHOOK: Input: default@test_table2_n3
+POSTHOOK: Input: default@test_table2_n3@ds=1
+POSTHOOK: Output: default@test_table3_n3@ds=1
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).key SIMPLE [(test_table1_n3)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).key2 SIMPLE [(test_table1_n3)a.FieldSchema(name:key2, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).value EXPRESSION [(test_table1_n3)a.FieldSchema(name:value, type:string, comment:null), (test_table2_n3)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from test_table3_n3 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Input: default@test_table3_n3
+PREHOOK: Input: default@test_table3_n3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: query: select * from test_table3_n3 tablesample (bucket 1 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####
-PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Input: default@test_table3_n3
+POSTHOOK: Input: default@test_table3_n3@ds=1
 #### A masked pattern was here ####
 0	1	val_0val_0	1
 0	1	val_0val_0	1
@@ -473,27 +467,37 @@ POSTHOOK: Input: default@test_table3@ds=1
 0	1	val_0val_0	1
 2	3	val_2val_2	1
 4	5	val_4val_4	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
 8	9	val_8val_8	1
+PREHOOK: query: select * from test_table3_n3 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3_n3
+PREHOOK: Input: default@test_table3_n3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table3_n3 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3_n3
+POSTHOOK: Input: default@test_table3_n3@ds=1
+#### A masked pattern was here ####
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
 9	10	val_9val_9	1
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key2, a.key, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key2, a.key, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -515,6 +519,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 8232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -526,6 +531,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -567,7 +573,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table3
+                      name: default.test_table3_n3
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), '1' (type: string)
                   outputColumnNames: key, key2, value, ds
@@ -618,7 +624,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n3
 
   Stage: Stage-3
     Stats Work
@@ -626,23 +632,23 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, key2, value
           Column Types: int, int, string
-          Table: default.test_table3
+          Table: default.test_table3_n3
 
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq1.key2, subq1.key, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq1.key2, subq1.key, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 POSTHOOK: type: QUERY
@@ -665,6 +671,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 8232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -676,6 +683,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -717,7 +725,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table3
+                      name: default.test_table3_n3
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), '1' (type: string)
                   outputColumnNames: key, key2, value, ds
@@ -768,7 +776,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n3
 
   Stage: Stage-3
     Stats Work
@@ -776,28 +784,28 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, key2, value
           Column Types: int, int, string
-          Table: default.test_table3
+          Table: default.test_table3_n3
 
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq2.key, subq2.key2, subq2.value from
 (
 SELECT subq1.key2, subq1.key, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq2.key, subq2.key2, subq2.value from
 (
 SELECT subq1.key2, subq1.key, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
@@ -821,6 +829,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 8232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -832,6 +841,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -873,7 +883,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table3
+                      name: default.test_table3_n3
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), '1' (type: string)
                   outputColumnNames: key, key2, value, ds
@@ -924,7 +934,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n3
 
   Stage: Stage-3
     Stats Work
@@ -932,62 +942,52 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, key2, value
           Column Types: int, int, string
-          Table: default.test_table3
+          Table: default.test_table3_n3
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq2.key, subq2.key2, subq2.value from
 (
 SELECT subq1.key2, subq1.key, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
-PREHOOK: Output: default@test_table3@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: Input: default@test_table1_n3
+PREHOOK: Input: default@test_table1_n3@ds=1
+PREHOOK: Input: default@test_table2_n3
+PREHOOK: Input: default@test_table2_n3@ds=1
+PREHOOK: Output: default@test_table3_n3@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq2.key, subq2.key2, subq2.value from
 (
 SELECT subq1.key2, subq1.key, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
-POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: Input: default@test_table1_n3
+POSTHOOK: Input: default@test_table1_n3@ds=1
+POSTHOOK: Input: default@test_table2_n3
+POSTHOOK: Input: default@test_table2_n3@ds=1
+POSTHOOK: Output: default@test_table3_n3@ds=1
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).key SIMPLE [(test_table1_n3)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).key2 SIMPLE [(test_table1_n3)a.FieldSchema(name:key2, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).value EXPRESSION [(test_table1_n3)a.FieldSchema(name:value, type:string, comment:null), (test_table2_n3)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from test_table3_n3 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Input: default@test_table3_n3
+PREHOOK: Input: default@test_table3_n3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: query: select * from test_table3_n3 tablesample (bucket 1 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####
-PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Input: default@test_table3_n3
+POSTHOOK: Input: default@test_table3_n3@ds=1
 #### A masked pattern was here ####
 0	1	val_0val_0	1
 0	1	val_0val_0	1
@@ -1000,37 +1000,47 @@ POSTHOOK: Input: default@test_table3@ds=1
 0	1	val_0val_0	1
 2	3	val_2val_2	1
 4	5	val_4val_4	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
 8	9	val_8val_8	1
+PREHOOK: query: select * from test_table3_n3 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3_n3
+PREHOOK: Input: default@test_table3_n3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table3_n3 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3_n3
+POSTHOOK: Input: default@test_table3_n3@ds=1
+#### A masked pattern was here ####
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
 9	10	val_9val_9	1
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
 (
 SELECT subq1.key2 as k1, subq1.key as k2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
 (
 SELECT subq1.key2 as k1, subq1.key as k2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
@@ -1054,6 +1064,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 8232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -1065,6 +1076,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -1106,7 +1118,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table3
+                      name: default.test_table3_n3
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), '1' (type: string)
                   outputColumnNames: key, key2, value, ds
@@ -1157,7 +1169,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n3
 
   Stage: Stage-3
     Stats Work
@@ -1165,62 +1177,52 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, key2, value
           Column Types: int, int, string
-          Table: default.test_table3
+          Table: default.test_table3_n3
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
 (
 SELECT subq1.key2 as k1, subq1.key  as k2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
-PREHOOK: Output: default@test_table3@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: Input: default@test_table1_n3
+PREHOOK: Input: default@test_table1_n3@ds=1
+PREHOOK: Input: default@test_table2_n3
+PREHOOK: Input: default@test_table2_n3@ds=1
+PREHOOK: Output: default@test_table3_n3@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
 (
 SELECT subq1.key2 as k1, subq1.key  as k2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
-POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key2, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: Input: default@test_table1_n3
+POSTHOOK: Input: default@test_table1_n3@ds=1
+POSTHOOK: Input: default@test_table2_n3
+POSTHOOK: Input: default@test_table2_n3@ds=1
+POSTHOOK: Output: default@test_table3_n3@ds=1
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).key SIMPLE [(test_table1_n3)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).key2 SIMPLE [(test_table1_n3)a.FieldSchema(name:key2, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n3 PARTITION(ds=1).value EXPRESSION [(test_table1_n3)a.FieldSchema(name:value, type:string, comment:null), (test_table2_n3)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from test_table3_n3 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Input: default@test_table3_n3
+PREHOOK: Input: default@test_table3_n3@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: query: select * from test_table3_n3 tablesample (bucket 1 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####
-PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Input: default@test_table3_n3
+POSTHOOK: Input: default@test_table3_n3@ds=1
 #### A masked pattern was here ####
 0	1	val_0val_0	1
 0	1	val_0val_0	1
@@ -1233,16 +1235,26 @@ POSTHOOK: Input: default@test_table3@ds=1
 0	1	val_0val_0	1
 2	3	val_2val_2	1
 4	5	val_4val_4	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
-5	6	val_5val_5	1
 8	9	val_8val_8	1
+PREHOOK: query: select * from test_table3_n3 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3_n3
+PREHOOK: Input: default@test_table3_n3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table3_n3 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3_n3
+POSTHOOK: Input: default@test_table3_n3@ds=1
+#### A masked pattern was here ####
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
+5	6	val_5val_5	1
 9	10	val_9val_9	1
 PREHOOK: query: CREATE TABLE test_table4 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key DESC, key2 DESC) INTO 2 BUCKETS
@@ -1261,7 +1273,7 @@ SELECT subq2.k2, subq2.k1, subq2.value from
 SELECT subq1.key2 as k1, subq1.key  as k2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
@@ -1273,7 +1285,7 @@ SELECT subq2.k2, subq2.k1, subq2.value from
 SELECT subq1.key2 as k1, subq1.key  as k2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
@@ -1297,6 +1309,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 8232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)
@@ -1308,6 +1321,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key2 is not null) (type: boolean)

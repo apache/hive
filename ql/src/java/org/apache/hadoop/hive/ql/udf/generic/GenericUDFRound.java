@@ -76,6 +76,8 @@ public class GenericUDFRound extends GenericUDF {
 
   private transient PrimitiveCategory inputType;
   private transient Converter converterFromString;
+  private transient boolean constantScale = true;
+  private transient PrimitiveObjectInspector scaleOI;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -95,43 +97,46 @@ public class GenericUDFRound extends GenericUDF {
         throw new UDFArgumentTypeException(1,
             "ROUND second argument only takes primitive types, got " + arguments[1].getTypeName());
       }
-      PrimitiveObjectInspector scaleOI = (PrimitiveObjectInspector) arguments[1];
+      scaleOI = (PrimitiveObjectInspector) arguments[1];
       switch (scaleOI.getPrimitiveCategory()) {
       case VOID:
         break;
       case BYTE:
-        if (!(scaleOI instanceof WritableConstantByteObjectInspector)) {
-          throw new UDFArgumentTypeException(1, getFuncName().toUpperCase() + " second argument only takes constant");
+        if (scaleOI instanceof WritableConstantByteObjectInspector) {
+          scale = ((WritableConstantByteObjectInspector)scaleOI).getWritableConstantValue().get();
+        } else {
+          constantScale = false;
         }
-        scale = ((WritableConstantByteObjectInspector)scaleOI).getWritableConstantValue().get();
         break;
       case SHORT:
-        if (!(scaleOI instanceof WritableConstantShortObjectInspector)) {
-          throw new UDFArgumentTypeException(1, getFuncName().toUpperCase() + " second argument only takes constant");
+        if (scaleOI instanceof WritableConstantShortObjectInspector) {
+          scale = ((WritableConstantShortObjectInspector)scaleOI).getWritableConstantValue().get();
+        } else {
+          constantScale = false;
         }
-        scale = ((WritableConstantShortObjectInspector)scaleOI).getWritableConstantValue().get();
         break;
       case INT:
-        if (!(scaleOI instanceof WritableConstantIntObjectInspector)) {
-          throw new UDFArgumentTypeException(1, getFuncName().toUpperCase() + " second argument only takes constant");
+        if (scaleOI instanceof WritableConstantIntObjectInspector) {
+         scale = ((WritableConstantIntObjectInspector)scaleOI).getWritableConstantValue().get();
+        } else {
+          constantScale = false;
         }
-        scale = ((WritableConstantIntObjectInspector)scaleOI).getWritableConstantValue().get();
         break;
       case LONG:
-        if (!(scaleOI instanceof WritableConstantLongObjectInspector)) {
-          throw new UDFArgumentTypeException(1, getFuncName().toUpperCase()
-              + " second argument only takes constant");
+        if (scaleOI instanceof WritableConstantLongObjectInspector) {
+          long l = ((WritableConstantLongObjectInspector)scaleOI).getWritableConstantValue().get();
+          if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
+            throw new UDFArgumentException(getFuncName().toUpperCase()
+                + " scale argument out of allowed range");
+          }
+          scale = (int)l;
+        } else {
+          constantScale = false;
         }
-        long l = ((WritableConstantLongObjectInspector)scaleOI).getWritableConstantValue().get();
-        if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
-          throw new UDFArgumentException(getFuncName().toUpperCase()
-              + " scale argument out of allowed range");
-        }
-        scale = (int)l;
         break;
       default:
         throw new UDFArgumentTypeException(1, getFuncName().toUpperCase()
-            + " second argument only takes integer constant");
+            + " second argument only takes numeric type");
       }
     }
 
@@ -142,6 +147,10 @@ public class GenericUDFRound extends GenericUDF {
       DecimalTypeInfo inputTypeInfo = (DecimalTypeInfo) inputOI.getTypeInfo();
       DecimalTypeInfo typeInfo = getOutputTypeInfo(inputTypeInfo, scale);
       outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
+      if (!constantScale) {
+        throw new UDFArgumentTypeException(1,getFuncName().toUpperCase() + " scale argument for "
+            + "decimal must be constant");
+      }
       break;
     case VOID:
     case BYTE:
@@ -209,6 +218,9 @@ public class GenericUDFRound extends GenericUDF {
       }
     case BYTE:
       ByteWritable byteWritable = (ByteWritable)inputOI.getPrimitiveWritableObject(input);
+      if (!constantScale) {
+        scale = ((Number)scaleOI.getPrimitiveJavaObject(arguments[1].get())).intValue();
+      }
       if (scale >= 0) {
         return byteWritable;
       } else {
@@ -216,6 +228,9 @@ public class GenericUDFRound extends GenericUDF {
       }
     case SHORT:
       ShortWritable shortWritable = (ShortWritable)inputOI.getPrimitiveWritableObject(input);
+      if (!constantScale) {
+        scale = ((Number)scaleOI.getPrimitiveJavaObject(arguments[1].get())).intValue();
+      }
       if (scale >= 0) {
         return shortWritable;
       } else {
@@ -223,6 +238,9 @@ public class GenericUDFRound extends GenericUDF {
       }
     case INT:
       IntWritable intWritable = (IntWritable)inputOI.getPrimitiveWritableObject(input);
+      if (!constantScale) {
+        scale = ((Number)scaleOI.getPrimitiveJavaObject(arguments[1].get())).intValue();
+      }
       if (scale >= 0) {
         return intWritable;
       } else {
@@ -230,6 +248,9 @@ public class GenericUDFRound extends GenericUDF {
       }
     case LONG:
       LongWritable longWritable = (LongWritable)inputOI.getPrimitiveWritableObject(input);
+      if (!constantScale) {
+        scale = ((Number)scaleOI.getPrimitiveJavaObject(arguments[1].get())).intValue();
+      }
       if (scale >= 0) {
         return longWritable;
       } else {
@@ -237,8 +258,14 @@ public class GenericUDFRound extends GenericUDF {
       }
     case FLOAT:
       float f = ((FloatWritable)inputOI.getPrimitiveWritableObject(input)).get();
+      if (!constantScale) {
+        scale = ((Number)scaleOI.getPrimitiveJavaObject(arguments[1].get())).intValue();
+      }
       return new FloatWritable((float)round(f, scale));
      case DOUBLE:
+       if (!constantScale) {
+         scale = ((Number)scaleOI.getPrimitiveJavaObject(arguments[1].get())).intValue();
+       }
        return round(((DoubleWritable)inputOI.getPrimitiveWritableObject(input)), scale);
     case STRING:
     case VARCHAR:
@@ -246,6 +273,9 @@ public class GenericUDFRound extends GenericUDF {
        DoubleWritable doubleValue = (DoubleWritable) converterFromString.convert(input);
        if (doubleValue == null) {
          return null;
+       }
+       if (!constantScale) {
+         scale = ((Number)scaleOI.getPrimitiveJavaObject(arguments[1].get())).intValue();
        }
        return round(doubleValue, scale);
      default:
