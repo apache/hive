@@ -274,7 +274,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       if (part == null) {
         if (isCacheOnly) {
           LOG.info("Using cache only because there's no partition spec for SerDe-based IF");
-          injectLlapCaches(inputFormat, llapIo);
+          injectLlapCaches(inputFormat, llapIo, conf);
         } else {
           LOG.info("Not using LLAP IO because there's no partition spec for SerDe-based IF");
         }
@@ -294,7 +294,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
     if (isCacheOnly) {
-      injectLlapCaches(inputFormat, llapIo);
+      injectLlapCaches(inputFormat, llapIo, conf);
     }
     return inputFormat;
   }
@@ -320,8 +320,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   public static void injectLlapCaches(InputFormat<WritableComparable, Writable> inputFormat,
-      LlapIo<VectorizedRowBatch> llapIo) {
+      LlapIo<VectorizedRowBatch> llapIo, Configuration conf) {
     LOG.info("Injecting LLAP caches into " + inputFormat.getClass().getCanonicalName());
+    conf.setInt("parquet.read.allocation.size", 1024*1024*1024); // Disable buffer splitting for now.
     llapIo.initCacheOnlyInputFormat(inputFormat);
   }
 
