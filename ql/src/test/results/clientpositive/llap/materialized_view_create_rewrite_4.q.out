@@ -265,11 +265,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
-	rawDataSize         	248                 
+	rawDataSize         	0                   
 	totalSize           	736                 
 	transactional       	true                
 	transactional_properties	default             
@@ -494,11 +494,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
-	rawDataSize         	248                 
+	rawDataSize         	0                   
 	totalSize           	736                 
 	transactional       	true                
 	transactional_properties	default             
@@ -948,7 +948,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	3                   
 	numRows             	3                   
-	rawDataSize         	248                 
+	rawDataSize         	0                   
 	totalSize           	1508                
 	transactional       	true                
 	transactional_properties	default             
