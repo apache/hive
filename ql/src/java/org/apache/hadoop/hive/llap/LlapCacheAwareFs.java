@@ -224,6 +224,7 @@ public class LlapCacheAwareFs extends FileSystem {
           int offsetFromReadStart = (int)(from - readStartPos), candidateSize = (int)(to - from);
           ByteBuffer data = drl.getData().duplicate();
           data.get(array, arrayOffset + offsetFromReadStart, candidateSize);
+          cache.releaseBuffer(((CacheChunk)drl).getBuffer());
           sizeRead += candidateSize;
           drl = drl.next;
         }
@@ -250,6 +251,7 @@ public class LlapCacheAwareFs extends FileSystem {
         if (candidate.hasData()) {
           ByteBuffer data = candidate.getData().duplicate();
           data.get(array, arrayOffset + offsetFromReadStart, candidateSize);
+          cache.releaseBuffer(((CacheChunk)candidate).getBuffer());
           sizeRead += candidateSize;
           continue;
         }
@@ -269,6 +271,10 @@ public class LlapCacheAwareFs extends FileSystem {
           long chunkFrom = Math.max(from, missingChunk.getKey()),
               chunkTo = Math.min(to, missingChunk.getValue()),
               chunkLength = chunkTo - chunkFrom;
+          // TODO: if we allow partial reads (right now we disable this), we'd have to handle it here.
+          //       chunksInThisRead should probably be changed to be a struct array indicating both
+          //       partial and full sizes for each chunk; then the partial ones could be merged
+          //       with the previous partial ones, and any newly-full chunks put in the cache.
           MemoryBuffer[] largeBuffers = null, smallBuffer = null, newCacheData = null;
           try {
             int largeBufCount = (int) (chunkLength / maxAlloc);
@@ -364,12 +370,12 @@ public class LlapCacheAwareFs extends FileSystem {
         int maxAlloc, long from, long to) {
       Map.Entry<Long, Long> firstMissing = chunkIndex.floorEntry(from);
       if (firstMissing == null) {
-        throw new AssertionError("No lower bound for offset " + from);
+        throw new AssertionError("No lower bound for start offset " + from);
       }
       if (firstMissing.getValue() <= from
           || ((from - firstMissing.getKey()) % maxAlloc) != 0) {
         // The data does not belong to a recognized chunk, or is split wrong.
-        throw new AssertionError("Lower bound for offset " + from + " is ["
+        throw new AssertionError("Lower bound for start offset " + from + " is ["
             + firstMissing.getKey() + ", " + firstMissing.getValue() + ")");
       }
       SortedMap<Long, Long> missingChunks = chunkIndex.subMap(firstMissing.getKey(), to);
@@ -381,7 +387,7 @@ public class LlapCacheAwareFs extends FileSystem {
       if (lastMissingEnd < to
           || (to != lastMissingEnd && ((to - lastMissingOffset) % maxAlloc) != 0)) {
         // The data does not belong to a recognized chunk, or is split wrong.
-        throw new AssertionError("Lower bound for offset " + to + " is ["
+        throw new AssertionError("Lower bound for end offset " + to + " is ["
             + lastMissingOffset + ", " + lastMissingEnd + ")");
       }
       return missingChunks;
