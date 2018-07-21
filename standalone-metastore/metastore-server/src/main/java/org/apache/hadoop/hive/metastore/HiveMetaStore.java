@@ -5831,7 +5831,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       boolean ret = false;
       try {
-        ret = getMS().updateTableColumnStatistics(colStats, validWriteIds, writeId);
+        ret = getMS().updateTableColumnStatistics(colStats, validWriteIds, writeId) != null;
       } finally {
         endFunction("write_column_statistics", ret != false, null,
             colStats.getStatsDesc().getTableName());
@@ -5875,7 +5875,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         List<String> partVals = getPartValsFromName(tbl, csd.getPartName());
         return getMS().updatePartitionColumnStatistics(
-            colStats, partVals, validWriteIds, writeId);
+            colStats, partVals, validWriteIds, writeId) != null;
       } finally {
         endFunction("write_partition_column_statistics", ret != false, null, tableName);
       }

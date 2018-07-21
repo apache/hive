@@ -358,10 +358,11 @@ public interface RawStore extends Configurable {
    * @param name name of the table.
    * @param newTable New table object.  Which parts of the table can be altered are
    *                 implementation specific.
+   * @return
    * @throws InvalidObjectException The new table object is invalid.
    * @throws MetaException something went wrong, usually in the RDBMS or storage.
    */
-  void alterTable(String catName, String dbname, String name, Table newTable,
+  Table alterTable(String catName, String dbname, String name, Table newTable,
       String queryValidWriteIds)
       throws InvalidObjectException, MetaException;
 
@@ -499,10 +500,11 @@ public interface RawStore extends Configurable {
    * @param part_vals partition values that describe the partition.
    * @param new_part new partition object.  This should be a complete copy of the old with
    *                 changes values, not just the parts to update.
+   * @return
    * @throws InvalidObjectException No such partition.
    * @throws MetaException error accessing the RDBMS.
    */
-  void alterPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
+  Partition alterPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
       Partition new_part, String queryValidWriteIds)
           throws InvalidObjectException, MetaException;
 
@@ -519,10 +521,11 @@ public interface RawStore extends Configurable {
    * @param txnId transaction id of the transaction that called this method.
    * @param writeIdList valid write id list of the transaction on the current table
    * @param writeid write id of the transaction for the table
+   * @return
    * @throws InvalidObjectException One of the indicated partitions does not exist.
    * @throws MetaException error accessing the RDBMS.
    */
-  void alterPartitions(String catName, String db_name, String tbl_name,
+  List<Partition> alterPartitions(String catName, String db_name, String tbl_name,
       List<List<String>> part_vals_list, List<Partition> new_parts, long writeId,
       String queryValidWriteIds)
       throws InvalidObjectException, MetaException;
@@ -864,7 +867,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the stats object is invalid
    * @throws InvalidInputException unable to record the stats for the table
    */
-  boolean updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
+  Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
   /** Persists the given column statistics object to the metastore
@@ -877,7 +880,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidInputException unable to record the stats for the table
    * @throws TException
    */
-  boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
+  Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
      List<String> partVals, String validWriteIds, long writeId)
      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 

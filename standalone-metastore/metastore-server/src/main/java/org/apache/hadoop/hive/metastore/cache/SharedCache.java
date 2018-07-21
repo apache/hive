@@ -468,6 +468,16 @@ public class SharedCache {
       }
     }
 
+    public void removeAllTableColStats() {
+      try {
+        tableLock.writeLock().lock();
+        tableColStatsCache.clear();
+        isTableColStatsCacheDirty.set(true);
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
     public ColumnStatisticsObj getPartitionColStats(List<String> partVal, String colName) {
       try {
         tableLock.readLock().lock();
@@ -529,6 +539,20 @@ public class SharedCache {
       try {
         tableLock.writeLock().lock();
         partitionColStatsCache.remove(CacheUtils.buildPartitonColStatsCacheKey(partVals, colName));
+        isPartitionColStatsCacheDirty.set(true);
+        // Invalidate cached aggregate stats
+        if (!aggrColStatsCache.isEmpty()) {
+          aggrColStatsCache.clear();
+        }
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
+    public void removeAllPartitionColStats() {
+      try {
+        tableLock.writeLock().lock();
+        partitionColStatsCache.clear();
         isPartitionColStatsCacheDirty.set(true);
         // Invalidate cached aggregate stats
         if (!aggrColStatsCache.isEmpty()) {
@@ -1292,6 +1316,18 @@ public class SharedCache {
     }
   }
 
+  public void removeAllTableColStatsFromCache(String catName, String dbName, String tblName) {
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        tblWrapper.removeAllTableColStats();
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+  }
+
   public void updateTableColStatsInCache(String catName, String dbName, String tableName,
       List<ColumnStatisticsObj> colStatsForTable) {
     try {
@@ -1499,6 +1535,18 @@ public class SharedCache {
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
         tblWrapper.removePartitionColStats(partVals, colName);
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+  }
+
+  public void removeAllPartitionColStatsFromCache(String catName, String dbName, String tblName) {
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        tblWrapper.removeAllPartitionColStats();
       }
     } finally {
       cacheLock.readLock().unlock();

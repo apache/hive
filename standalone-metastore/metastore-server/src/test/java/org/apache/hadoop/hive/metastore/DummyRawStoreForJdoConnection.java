@@ -290,8 +290,9 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void alterTable(String catName, String dbname, String name, Table newTable, String queryValidWriteIds)
+  public Table alterTable(String catName, String dbname, String name, Table newTable, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
+    return newTable;
   }
 
   @Override
@@ -358,14 +359,16 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void alterPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
+  public Partition alterPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
       Partition new_part, String queryValidWriteIds) throws InvalidObjectException, MetaException {
+    return new_part;
   }
 
   @Override
-  public void alterPartitions(String catName, String db_name, String tbl_name,
+  public List<Partition> alterPartitions(String catName, String db_name, String tbl_name,
       List<List<String>> part_vals_list, List<Partition> new_parts,
       long writeId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
+    return new_parts;
   }
 
   @Override
@@ -743,17 +746,17 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics statsObj,
+  public Map<String, String> updateTableColumnStatistics(ColumnStatistics statsObj,
       String  validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException {
-    return false;
+    return null;
   }
 
   @Override
-  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,List<String> partVals,
+  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,List<String> partVals,
       String  validWriteIds, long writeId)
     throws NoSuchObjectException, MetaException, InvalidObjectException {
-    return false;
+    return null;
   }
 
   @Override

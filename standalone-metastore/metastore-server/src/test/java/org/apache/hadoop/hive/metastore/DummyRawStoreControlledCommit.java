@@ -292,10 +292,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void alterTable(String catName, String dbName, String name, Table newTable,
+  public Table alterTable(String catName, String dbName, String name, Table newTable,
       String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
-    objectStore.alterTable(catName, dbName, name, newTable, queryValidWriteIds);
+    return objectStore.alterTable(catName, dbName, name, newTable, queryValidWriteIds);
   }
 
   @Override
@@ -357,16 +357,16 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void alterPartition(String catName, String dbName, String tblName, List<String> partVals,
+  public Partition alterPartition(String catName, String dbName, String tblName, List<String> partVals,
       Partition newPart, String queryValidWriteIds) throws InvalidObjectException, MetaException {
-    objectStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryValidWriteIds);
+    return objectStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryValidWriteIds);
   }
 
   @Override
-  public void alterPartitions(String catName, String dbName, String tblName,
+  public List<Partition> alterPartitions(String catName, String dbName, String tblName,
       List<List<String>> partValsList, List<Partition> newParts,
       long writeId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
-    objectStore.alterPartitions(
+    return objectStore.alterPartitions(
         catName, dbName, tblName, partValsList, newParts, writeId, queryValidWriteIds);
   }
 
@@ -694,14 +694,14 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics statsObj, String validWriteIds, long writeId)
+  public Map<String, String> updateTableColumnStatistics(ColumnStatistics statsObj, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
     return objectStore.updateTableColumnStatistics(statsObj, validWriteIds, writeId);
   }
 
   @Override
-  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
+  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
       List<String> partVals, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
