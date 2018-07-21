@@ -30,18 +30,3 @@ explain select count(key) from stats_part;
 
 drop table stats_part;
 
--- test the case where we insert without updating stats... just in case
-
-create table stats2(key int,value string) tblproperties ("transactional"="true", "transactional_properties"="insert_only");
-insert into table stats2  values (1, "foo");
-explain select count(*) from stats2;
-insert into table stats2  values (2, "bar");
-explain select count(*) from stats2;
-desc formatted stats2 key;
-
-set hive.stats.autogather=false;
-set hive.stats.column.autogather=false;
-insert into table stats2  values (1, "baz");
-explain select count(*) from stats2;
-
-drop table stats2;
