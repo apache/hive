@@ -12473,13 +12473,6 @@ public class ObjectStore implements RawStore, Configurable {
       return false;
     }
 
-    // TODO## NUM_FILES could also be set to 0 by invalid update. We need to have a negative test. Or remove this and fix stuff.
-    // If the NUM_FILES of the table/partition is 0, return 'true' from this method.
-    // Since newly initialized empty table has 0 for the parameter.
-    if (Long.parseLong(statsParams.get(StatsSetupConst.NUM_FILES)) == 0) {
-      return true;
-    }
-
     if (queryValidWriteIdList != null) { // Can be null when stats are being reset to invalid.
       ValidWriteIdList list4TheQuery = new ValidReaderWriteIdList(queryValidWriteIdList);
       // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
