@@ -334,6 +334,7 @@ TOK_TABNAME;
 TOK_TABSRC;
 TOK_RESTRICT;
 TOK_CASCADE;
+TOK_FORCE;
 TOK_TABLESKEWED;
 TOK_TABCOLVALUE;
 TOK_TABCOLVALUE_PAIR;
@@ -985,6 +986,13 @@ ifNotExists
     -> ^(TOK_IFNOTEXISTS)
     ;
 
+force
+@init { msgs.push("force clause"); }
+@after { msgs.pop(); }
+    : KW_FORCE
+    -> ^(TOK_FORCE)
+    ;
+
 rewriteEnabled
 @init { pushMsg("rewrite enabled clause", state); }
 @after { popMsg(state); }
@@ -1106,7 +1114,8 @@ createTableStatement
 truncateTableStatement
 @init { pushMsg("truncate table statement", state); }
 @after { popMsg(state); }
-    : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList?);
+    : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? force?
+    -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList? force?);
 
 dropTableStatement
 @init { pushMsg("drop statement", state); }
