@@ -1050,14 +1050,18 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.renamePartition(DB_NAME, TABLE_NAME, Lists.newArrayList(), partToRename);
   }
 
-  @Test(expected = InvalidOperationException.class)
+  @Test
   public void testRenamePartitionNullOldPartList() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
 
     Partition partToRename = oldParts.get(3);
     partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
-    client.renamePartition(DB_NAME, TABLE_NAME, null, partToRename);
+    try {
+      client.renamePartition(DB_NAME, TABLE_NAME, null, partToRename);
+      Assert.fail("should throw");
+    } catch (InvalidOperationException | TProtocolException ex) {
+    }
   }
 
   @Test
@@ -1069,7 +1073,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       Partition partToRename = oldParts.get(3);
       partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
       client.renamePartition(DB_NAME, TABLE_NAME, oldValues.get(3), null);
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TProtocolException e) {
     }
   }
 
@@ -1103,24 +1107,32 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.renamePartition(DB_NAME, "", oldValues.get(3), partToRename);
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testRenamePartitionNullDbName() throws Exception {
     List<List<String>> oldValues = createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
 
     Partition partToRename = oldParts.get(3);
     partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
-    client.renamePartition(null, TABLE_NAME, oldValues.get(3), partToRename);
+    try {
+      client.renamePartition(null, TABLE_NAME, oldValues.get(3), partToRename);
+      Assert.fail("should throw");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testRenamePartitionNullTblName() throws Exception {
     List<List<String>> oldValues = createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
 
     Partition partToRename = oldParts.get(3);
     partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
-    client.renamePartition(DB_NAME, null, oldValues.get(3), partToRename);
+    try {
+      client.renamePartition(DB_NAME, null, oldValues.get(3), partToRename);
+      Assert.fail("should throw");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = MetaException.class)
