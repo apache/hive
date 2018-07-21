@@ -1447,8 +1447,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = getUnescapedName((ASTNode) root.getChild(0));
 
     Table table = getTable(tableName, true);
-    if (table.getTableType() != TableType.MANAGED_TABLE) {
-      throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
+    boolean isForce = ast.getFirstChildWithType(HiveParser.TOK_FORCE) != null;
+    if (!isForce) {
+      if (table.getTableType() != TableType.MANAGED_TABLE) {
+        throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
+      }
     }
     if (table.isNonNative()) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
@@ -1491,9 +1494,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Is this a truncate column command
     List<String> columnNames = null;
-    if (ast.getChildCount() == 2) {
+    ASTNode colNamesNode = (ASTNode) ast.getFirstChildWithType(HiveParser.TOK_TABCOLNAME);
+    if (colNamesNode != null) {
       try {
-        columnNames = getColumnNames((ASTNode)ast.getChild(1));
+        columnNames = getColumnNames(colNamesNode);
 
         // It would be possible to support this, but this is such a pointless command.
         if (AcidUtils.isInsertOnlyTable(table.getParameters())) {
