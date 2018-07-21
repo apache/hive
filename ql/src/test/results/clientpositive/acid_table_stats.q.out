@@ -147,11 +147,13 @@ POSTHOOK: Input: default@acid
 PREHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
 PREHOOK: Output: default@acid
 PREHOOK: Output: default@acid@ds=2008-04-08
 POSTHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
 POSTHOOK: Output: default@acid
 POSTHOOK: Output: default@acid@ds=2008-04-08
 PREHOOK: query: desc formatted acid partition(ds='2008-04-08')
@@ -177,7 +179,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	2                   
 	numRows             	1000                
-	rawDataSize         	208000              
+	rawDataSize         	0                   
 	totalSize           	4063                
 #### A masked pattern was here ####
 	 	 
@@ -228,7 +230,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	2                   
 	numRows             	1000                
-	rawDataSize         	208000              
+	rawDataSize         	0                   
 	totalSize           	4063                
 #### A masked pattern was here ####
 	 	 
@@ -320,7 +322,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	4                   
 	numRows             	2000                
-	rawDataSize         	208000              
+	rawDataSize         	0                   
 	totalSize           	8126                
 #### A masked pattern was here ####
 	 	 
@@ -337,11 +339,13 @@ Storage Desc Params:
 PREHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
 PREHOOK: Output: default@acid
 PREHOOK: Output: default@acid@ds=2008-04-08
 POSTHOOK: query: analyze table acid partition(ds='2008-04-08') compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
 POSTHOOK: Output: default@acid
 POSTHOOK: Output: default@acid@ds=2008-04-08
 PREHOOK: query: desc formatted acid partition(ds='2008-04-08')
@@ -367,7 +371,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	4                   
 	numRows             	2000                
-	rawDataSize         	416000              
+	rawDataSize         	0                   
 	totalSize           	8126                
 #### A masked pattern was here ####
 	 	 
@@ -433,11 +437,11 @@ STAGE PLANS:
           TableScan
             alias: acid
             filterExpr: (ds = '2008-04-08') (type: boolean)
-            Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 81260 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2000 Data size: 81260 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(key)
                 mode: hash
