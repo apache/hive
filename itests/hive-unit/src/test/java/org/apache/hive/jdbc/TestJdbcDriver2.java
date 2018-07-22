@@ -209,6 +209,37 @@ public class TestJdbcDriver2 {
     stmt.close();
   }
 
+
+  @Test
+  public void testExceucteUpdateCounts() throws Exception {
+    Statement stmt =  con.createStatement();
+    stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
+    stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
+        "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    stmt.execute("create table transactional_crud (a int, b int) stored as orc " +
+        "tblproperties('transactional'='true', 'transactional_properties'='default')");
+    int count = stmt.executeUpdate("insert into transactional_crud values(1,2),(3,4),(5,6)");
+    assertEquals("Statement insert", 3, count);
+    count = stmt.executeUpdate("update transactional_crud set b = 17 where a <= 3");
+    assertEquals("Statement update", 2, count);
+    count = stmt.executeUpdate("delete from transactional_crud where b = 6");
+    assertEquals("Statement delete", 1, count);
+
+    stmt.close();
+    PreparedStatement pStmt =
+        con.prepareStatement("update transactional_crud set b = ? where a = ? or a = ?");
+    pStmt.setInt(1, 15);
+    pStmt.setInt(2, 1);
+    pStmt.setInt(3, 3);
+    count = pStmt.executeUpdate();
+    assertEquals("2 row PreparedStatement update", 2, count);
+    pStmt.setInt(1, 19);
+    pStmt.setInt(2, 3);
+    pStmt.setInt(3, 3);
+    count = pStmt.executeUpdate();
+    assertEquals("1 row PreparedStatement update", 1, count);
+  }
+
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     Statement stmt = con.createStatement();
