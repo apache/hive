@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
+import java.util.function.BiFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -808,9 +809,16 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
+
     if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+      // It is not primitive; check if it is a struct and we can infer a common class
+      if (a.getCategory() == Category.STRUCT && b.getCategory() == Category.STRUCT) {
+        return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b,
+            (type1, type2) -> getCommonClassForComparison(type1, type2));
+      }
       return null;
     }
+
     PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
     PrimitiveCategory pcB = ((PrimitiveTypeInfo)b).getPrimitiveCategory();
 
@@ -943,7 +951,8 @@ public final class FunctionRegistry {
     }
     // It is not primitive; check if it is a struct and we can infer a common class
     if (a.getCategory() == Category.STRUCT && b.getCategory() == Category.STRUCT) {
-      return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b);
+      return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b,
+          (type1, type2) -> getCommonClass(type1, type2));
     }
     return null;
   }
@@ -954,7 +963,8 @@ public final class FunctionRegistry {
    *
    * @return null if no common class could be found.
    */
-  public static TypeInfo getCommonClassForStruct(StructTypeInfo a, StructTypeInfo b) {
+  public static TypeInfo getCommonClassForStruct(StructTypeInfo a, StructTypeInfo b,
+      BiFunction<TypeInfo, TypeInfo, TypeInfo> commonClassFunction) {
     if (a == b || a.equals(b)) {
       return a;
     }
@@ -983,7 +993,7 @@ public final class FunctionRegistry {
     ArrayList<TypeInfo> fromTypes = a.getAllStructFieldTypeInfos();
     ArrayList<TypeInfo> toTypes = b.getAllStructFieldTypeInfos();
     for (int i = 0; i < fromTypes.size(); i++) {
-      TypeInfo commonType = getCommonClass(fromTypes.get(i), toTypes.get(i));
+      TypeInfo commonType = commonClassFunction.apply(fromTypes.get(i), toTypes.get(i));
       if (commonType == null) {
         return null;
       }
