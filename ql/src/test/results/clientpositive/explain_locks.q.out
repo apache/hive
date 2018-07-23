@@ -1,0 +1,91 @@
+PREHOOK: query: explain locks drop table test_explain_locks
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: explain locks drop table test_explain_locks
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: explain locks create table test_explain_locks (a int, b int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: explain locks create table test_explain_locks (a int, b int)
+POSTHOOK: type: CREATETABLE
+LOCK INFORMATION:
+default -> SHARED_READ
+PREHOOK: query: drop table if exists target
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists target
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists source
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists source
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table target (a int, b int) partitioned by (p int, q int) clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target
+POSTHOOK: query: create table target (a int, b int) partitioned by (p int, q int) clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target
+PREHOOK: query: create table source (a1 int, b1 int, p1 int, q1 int) clustered by (a1) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source
+POSTHOOK: query: create table source (a1 int, b1 int, p1 int, q1 int) clustered by (a1) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source
+PREHOOK: query: insert into target partition(p,q) values (1,2,1,2), (3,4,1,2), (5,6,1,3), (7,8,2,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@target
+POSTHOOK: query: insert into target partition(p,q) values (1,2,1,2), (3,4,1,2), (5,6,1,3), (7,8,2,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@target@p=1/q=2
+POSTHOOK: Output: default@target@p=1/q=3
+POSTHOOK: Output: default@target@p=2/q=2
+POSTHOOK: Lineage: target PARTITION(p=1,q=2).a SCRIPT []
+POSTHOOK: Lineage: target PARTITION(p=1,q=2).b SCRIPT []
+POSTHOOK: Lineage: target PARTITION(p=1,q=3).a SCRIPT []
+POSTHOOK: Lineage: target PARTITION(p=1,q=3).b SCRIPT []
+POSTHOOK: Lineage: target PARTITION(p=2,q=2).a SCRIPT []
+POSTHOOK: Lineage: target PARTITION(p=2,q=2).b SCRIPT []
+PREHOOK: query: explain locks update target set b = 1 where p in (select t.q1 from source t where t.a1=5)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain locks update target set b = 1 where p in (select t.q1 from source t where t.a1=5)
+POSTHOOK: type: QUERY
+LOCK INFORMATION:
+default.source -> SHARED_READ
+default.target.p=1/q=2 -> SHARED_READ
+default.target.p=1/q=3 -> SHARED_READ
+default.target.p=2/q=2 -> SHARED_READ
+default.target.p=2/q=2 -> SHARED_WRITE
+default.target.p=1/q=3 -> SHARED_WRITE
+default.target.p=1/q=2 -> SHARED_WRITE
+PREHOOK: query: explain locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
+POSTHOOK: type: QUERY
+LOCK INFORMATION:
+default.target -> SHARED_READ
+default.target.p=2/q=2 -> SHARED_READ
+default.source -> SHARED_WRITE
+PREHOOK: query: explain formatted locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain formatted locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
+POSTHOOK: type: QUERY
+{"LOCK INFORMATION:":"[default.target -> SHARED_READ, default.target.p=2/q=2 -> SHARED_READ, default.source -> SHARED_WRITE]"}
+PREHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
+POSTHOOK: type: QUERY
+LOCK INFORMATION:
+default.source -> SHARED_READ
+default.target.p=1/q=2 -> SHARED_READ
+default.target.p=1/q=3 -> SHARED_READ
+default.target.p=2/q=2 -> SHARED_READ
+default.target.p=2/q=2 -> SHARED_WRITE
+default.target.p=2/q=2 -> SHARED_WRITE
+default.target.p=1/q=3 -> SHARED_WRITE
+default.target.p=1/q=3 -> SHARED_WRITE
+default.target.p=1/q=2 -> SHARED_WRITE
+default.target.p=1/q=2 -> SHARED_WRITE
+default.target -> SHARED_READ
