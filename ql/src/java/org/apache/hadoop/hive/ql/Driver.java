@@ -146,6 +146,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.common.util.TxnIdUtils;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -651,10 +652,6 @@ public class Driver implements IDriver {
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
 
       if (!retrial) {
-        if ((queryState.getHiveOperation() != null)
-                && queryState.getHiveOperation().equals(HiveOperation.REPLDUMP)) {
-          setLastReplIdForDump(queryState.getConf());
-        }
         openTransaction();
         generateValidTxnList();
       }
@@ -906,30 +903,29 @@ public class Driver implements IDriver {
    * This is needed to avoid losing data which are added/modified by concurrent txns when bootstrap
    * dump in progress.
    * @param conf Query configurations
-   * @throws Exception
+   * @throws HiveException
+   * @throws TException
    */
-  private void setLastReplIdForDump(HiveConf conf) throws Exception {
-    Long lastReplId = conf.getLong(ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY, -1L);
-    if (lastReplId >= 0L) {
-      // If already set, then do nothing
-      return;
-    }
-
+  private void setLastReplIdForDump(HiveConf conf) throws HiveException, TException {
     // Last logged notification event id would be the last repl Id for the current REPl DUMP.
     Hive hiveDb = Hive.get();
-    lastReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
+    Long lastReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
     conf.setLong(ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY, lastReplId);
     LOG.debug("Setting " + ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
 
-  private void openTransaction() throws LockException, CommandProcessorResponse {
+  private void openTransaction() throws CommandProcessorResponse, HiveException, TException {
     if (checkConcurrency() && startImplicitTxn(queryTxnMgr)) {
       String userFromUGI = getUserFromUGI();
       if (!queryTxnMgr.isTxnOpen()) {
         if (userFromUGI == null) {
           throw createProcessorResponse(10);
         }
-        long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
+        if ((queryState.getHiveOperation() != null)
+                && queryState.getHiveOperation().equals(HiveOperation.REPLDUMP)) {
+          setLastReplIdForDump(queryState.getConf());
+        }
+        queryTxnMgr.openTxn(ctx, userFromUGI);
       }
     }
   }

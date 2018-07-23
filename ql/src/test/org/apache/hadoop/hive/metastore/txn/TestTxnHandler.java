@@ -1676,14 +1676,15 @@ public class TestTxnHandler {
 
     replAbortTxnForTest(srcTxnIdList, "destdb.*");
 
-    // Test for aborted transactions
+    // Test for aborted transactions. Idempotent case where allocate write id when txn is already
+    // aborted should do nothing.
     failed = false;
     try {
       txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
     } catch (RuntimeException e) {
       failed = true;
     }
-    assertTrue(failed);
+    assertFalse(failed);
   }
 
   private void updateTxns(Connection conn) throws SQLException {
