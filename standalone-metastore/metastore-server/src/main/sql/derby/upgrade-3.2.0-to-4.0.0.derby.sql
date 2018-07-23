@@ -1,4 +1,4 @@
--- Upgrade MetaStore schema from 3.1.0 to 4.0.0
+-- Upgrade MetaStore schema from 3.2.0 to 4.0.0
 
 
 -- This needs to be the last thing done.  Insert any changes above this line.
