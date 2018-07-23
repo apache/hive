@@ -145,8 +145,8 @@ CREATE TABLE PARTITIONS
     LAST_ACCESS_TIME int NOT NULL,
     PART_NAME nvarchar(767) NULL,
     SD_ID bigint NULL,
-    TBL_ID bigint NULL,
-    WRITE_ID bigint NULL);
+    TBL_ID bigint NULL
+);
 
 ALTER TABLE PARTITIONS ADD CONSTRAINT PARTITIONS_PK PRIMARY KEY (PART_ID);
 
@@ -376,8 +376,8 @@ CREATE TABLE TBLS
     TBL_TYPE nvarchar(128) NULL,
     VIEW_EXPANDED_TEXT text NULL,
     VIEW_ORIGINAL_TEXT text NULL,
-    IS_REWRITE_ENABLED bit NOT NULL DEFAULT 0,
-    WRITE_ID bigint NULL);
+    IS_REWRITE_ENABLED bit NOT NULL DEFAULT 0
+);
 
 ALTER TABLE TBLS ADD CONSTRAINT TBLS_PK PRIMARY KEY (TBL_ID);
 
@@ -1281,4 +1281,4 @@ INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
-INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '4.0.0', 'Hive release version 4.0.0');
+INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.2.0', 'Hive release version 3.2.0');

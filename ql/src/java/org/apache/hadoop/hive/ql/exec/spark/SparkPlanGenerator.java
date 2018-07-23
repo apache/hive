@@ -109,6 +109,9 @@ public class SparkPlanGenerator {
 
     try {
       for (BaseWork work : sparkWork.getAllWork()) {
+        // Run the SparkDynamicPartitionPruner, we run this here instead of inside the
+        // InputFormat so that we don't have to run pruning when creating a Record Reader
+        runDynamicPartitionPruner(work);
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
         SparkTran tran = generate(work, sparkWork);
         SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
@@ -125,6 +128,27 @@ public class SparkPlanGenerator {
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
     return sparkPlan;
+  }
+
+  /**
+   * Run a {@link SparkDynamicPartitionPruner} on the given {@link BaseWork}. This method only
+   * runs the pruner if the work object is a {@link MapWork}. We do this here because we need to
+   * do it after all previous Spark jobs for the given query have completed, otherwise the input
+   * file for the pruner won't exist. We need to make sure this runs before we serialize the
+   * given work object to a file (so it can be read by individual tasks) because the pruner will
+   * mutate the work work object by removing certain input paths.
+   *
+   * @param work the {@link BaseWork} to run the pruner on
+   */
+  private void runDynamicPartitionPruner(BaseWork work) {
+    if (work instanceof MapWork && HiveConf.isSparkDPPAny(jobConf)) {
+      SparkDynamicPartitionPruner pruner = new SparkDynamicPartitionPruner();
+      try {
+        pruner.prune((MapWork) work, jobConf);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   // Generate (possibly get from a cached result) parent SparkTran

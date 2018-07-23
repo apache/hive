@@ -1,4 +1,4 @@
--- Upgrade MetaStore schema from 3.1.0 to 4.0.0
+-- Upgrade MetaStore schema from 3.2.0 to 4.0.0
 -- HIVE-19416
 ALTER TABLE "APP"."TBLS" ADD WRITE_ID bigint DEFAULT 0;
 ALTER TABLE "APP"."PARTITIONS" ADD WRITE_ID bigint DEFAULT 0;

@@ -224,7 +224,6 @@ CREATE TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_NAME` varchar(767) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `SD_ID` bigint(20) DEFAULT NULL,
   `TBL_ID` bigint(20) DEFAULT NULL,
-  `WRITE_ID` bigint(20) DEFAULT 0,
   PRIMARY KEY (`PART_ID`),
   UNIQUE KEY `UNIQUEPARTITION` (`PART_NAME`,`TBL_ID`),
   KEY `PARTITIONS_N49` (`TBL_ID`),
@@ -631,7 +630,6 @@ CREATE TABLE IF NOT EXISTS `TBLS` (
   `VIEW_EXPANDED_TEXT` mediumtext,
   `VIEW_ORIGINAL_TEXT` mediumtext,
   `IS_REWRITE_ENABLED` bit(1) NOT NULL DEFAULT 0,
-  `WRITE_ID` bigint(20) DEFAULT 0,
   PRIMARY KEY (`TBL_ID`),
   UNIQUE KEY `UNIQUETABLE` (`TBL_NAME`,`DB_ID`),
   KEY `TBLS_N50` (`SD_ID`),
@@ -1204,7 +1202,7 @@ INSERT INTO `SEQUENCE_TABLE` (`SEQUENCE_NAME`, `NEXT_VAL`) VALUES ('org.apache.h
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
-INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '4.0.0', 'Hive release version 4.0.0');
+INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.2.0', 'Hive release version 3.2.0');
 
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

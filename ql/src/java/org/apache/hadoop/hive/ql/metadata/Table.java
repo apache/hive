@@ -1087,4 +1087,8 @@ public class Table implements Serializable {
   public boolean hasDeserializer() {
     return deserializer != null;
   }
+
+  public String getCatalogName() {
+    return this.tTable.getCatName();
+  }
 };

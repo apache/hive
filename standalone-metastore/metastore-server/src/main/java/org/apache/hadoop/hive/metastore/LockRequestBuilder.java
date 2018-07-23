@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -94,6 +95,16 @@ public class LockRequestBuilder {
     return this;
   }
 
+  /**
+   * Add a collection with lock components to the lock request
+   * @param components to add
+   * @return reference to this builder
+   */
+  public LockRequestBuilder addLockComponents(Collection<LockComponent> components) {
+    trie.addAll(components);
+    return this;
+  }
+
   // For reasons that are completely incomprehensible to me the semantic
   // analyzers often ask for multiple locks on the same entity (for example
   // a shared_read and an exlcusive lock).  The db locking system gets confused
@@ -118,6 +129,12 @@ public class LockRequestBuilder {
         trie.put(comp.getDbname(), tabs);
       }
       setTable(comp, tabs);
+    }
+
+    public void addAll(Collection<LockComponent> components) {
+      for(LockComponent component: components) {
+        add(component);
+      }
     }
 
     public void addLocksToRequest(LockRequest request) {

@@ -295,7 +295,7 @@ public class RexNodeConverter {
     for (int i =0; i < func.getChildren().size(); ++i) {
       ExprNodeDesc childExpr = func.getChildren().get(i);
       tmpExprNode = childExpr;
-      if (tgtDT != null
+      if (tgtDT != null && tgtDT.getCategory() == Category.PRIMITIVE
           && TypeInfoUtils.isConversionRequiredForComparison(tgtDT, childExpr.getTypeInfo())) {
         if (isCompare || isBetween || isIN) {
           // For compare, we will convert requisite children
