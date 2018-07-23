@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
@@ -42,6 +43,7 @@ public class ExplainWork implements Serializable {
   private ArrayList<Task<?>> rootTasks;
   private Task<?> fetchTask;
   private HashSet<ReadEntity> inputs;
+  private HashSet<WriteEntity> outputs;
   private ParseContext pCtx;
 
   private ExplainConfiguration config;
@@ -71,6 +73,9 @@ public class ExplainWork implements Serializable {
     this.analyzer = analyzer;
     if (analyzer != null) {
       this.inputs = analyzer.getInputs();
+    }
+    if (analyzer != null) {
+      this.outputs = analyzer.getAllOutputs();
     }
     this.pCtx = pCtx;
     this.cboInfo = cboInfo;
@@ -108,6 +113,14 @@ public class ExplainWork implements Serializable {
 
   public void setInputs(HashSet<ReadEntity> inputs) {
     this.inputs = inputs;
+  }
+
+  public HashSet<WriteEntity> getOutputs() {
+    return outputs;
+  }
+
+  public void setOutputs(HashSet<WriteEntity> outputs) {
+    this.outputs = outputs;
   }
 
   public boolean getExtended() {
@@ -188,6 +201,10 @@ public class ExplainWork implements Serializable {
 
   public void setConfig(ExplainConfiguration config) {
     this.config = config;
+  }
+
+  public boolean isLocks() {
+    return config.isLocks();
   }
 
 }

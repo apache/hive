@@ -81,6 +81,12 @@ public final class GenericUDFUtils {
    */
   public static class ReturnObjectInspectorResolver {
 
+    public enum ConversionType {
+      COMMON,
+      UNION,
+      COMPARISON
+    }
+
     boolean allowTypeConversion;
     ObjectInspector returnObjectInspector;
 
@@ -103,7 +109,7 @@ public final class GenericUDFUtils {
      * @return false if there is a type mismatch
      */
     public boolean update(ObjectInspector oi) throws UDFArgumentTypeException {
-      return update(oi, false);
+      return update(oi, ConversionType.COMMON);
     }
 
     /**
@@ -113,7 +119,17 @@ public final class GenericUDFUtils {
      * @return false if there is a type mismatch
      */
     public boolean updateForUnionAll(ObjectInspector oi) throws UDFArgumentTypeException {
-      return update(oi, true);
+      return update(oi, ConversionType.UNION);
+    }
+
+    /**
+     * Update returnObjectInspector and valueInspectorsAreTheSame based on the
+     * ObjectInspector seen for comparison (for example GenericUDFIn).
+     *
+     * @return false if there is a type mismatch
+     */
+    public boolean updateForComparison(ObjectInspector oi) throws UDFArgumentTypeException {
+      return update(oi, ConversionType.COMPARISON);
     }
 
     /**
@@ -122,7 +138,7 @@ public final class GenericUDFUtils {
      *
      * @return false if there is a type mismatch
      */
-    private boolean update(ObjectInspector oi, boolean isUnionAll) throws UDFArgumentTypeException {
+    private boolean update(ObjectInspector oi, ConversionType conversionType) throws UDFArgumentTypeException {
       if (oi instanceof VoidObjectInspector) {
         return true;
       }
@@ -161,17 +177,20 @@ public final class GenericUDFUtils {
       // Types are different, we need to check whether we can convert them to
       // a common base class or not.
       TypeInfo commonTypeInfo = null;
-      if (isUnionAll) {
+      switch (conversionType) {
+      case COMMON:
+        commonTypeInfo = FunctionRegistry.getCommonClass(oiTypeInfo, rTypeInfo);
+        break;
+      case UNION:
         commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(rTypeInfo, oiTypeInfo);
-      } else {
-        commonTypeInfo = FunctionRegistry.getCommonClass(oiTypeInfo,
-          rTypeInfo);
+        break;
+      case COMPARISON:
+        commonTypeInfo = FunctionRegistry.getCommonClassForComparison(rTypeInfo, oiTypeInfo);
+        break;
       }
       if (commonTypeInfo == null) {
         return false;
       }
-
-      commonTypeInfo = updateCommonTypeForDecimal(commonTypeInfo, oiTypeInfo, rTypeInfo);
 
       returnObjectInspector = TypeInfoUtils
           .getStandardWritableObjectInspectorFromTypeInfo(commonTypeInfo);
@@ -232,22 +251,6 @@ public final class GenericUDFUtils {
 
   }
 
-  protected static TypeInfo updateCommonTypeForDecimal(
-      TypeInfo commonTypeInfo, TypeInfo ti, TypeInfo returnType) {
-    /**
-     * TODO: Hack fix until HIVE-5848 is addressed. non-exact type shouldn't be promoted
-     * to exact type, as FunctionRegistry.getCommonClass() might do. This corrects
-     * that.
-     */
-    if (commonTypeInfo instanceof DecimalTypeInfo) {
-      if ((!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo)ti)) ||
-          (!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo)returnType))) {
-        return TypeInfoFactory.doubleTypeInfo;
-      }
-    }
-    return commonTypeInfo;
-  }
-
   // Based on update() above.
   public static TypeInfo deriveInType(List<ExprNodeDesc> children) {
     TypeInfo returnType = null;
@@ -262,9 +265,9 @@ public final class GenericUDFUtils {
         continue;
       }
       if (returnType == ti) continue;
-      TypeInfo commonTypeInfo = FunctionRegistry.getCommonClass(returnType, ti);
+      TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForComparison(returnType, ti);
       if (commonTypeInfo == null) return null;
-      returnType = updateCommonTypeForDecimal(commonTypeInfo, ti, returnType);
+      returnType = commonTypeInfo;
     }
     return returnType;
   }

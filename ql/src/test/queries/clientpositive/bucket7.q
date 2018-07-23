@@ -1,4 +1,6 @@
 --! qt:dataset:
+-- SORT_QUERY_RESULTS
+
 set hive.enforce.bucketing=true;
 set hive.enforce.sorting=true;
 set hive.optimize.bucketingsorting=true;
