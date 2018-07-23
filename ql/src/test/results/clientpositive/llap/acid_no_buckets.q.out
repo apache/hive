@@ -269,12 +269,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	9                   
 	numPartitions       	4                   
 	numRows             	2003                
 	rawDataSize         	0                   
-	totalSize           	17988               
+	totalSize           	18013               
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -380,12 +381,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	9                   
 	numPartitions       	4                   
 	numRows             	2003                
 	rawDataSize         	0                   
-	totalSize           	17988               
+	totalSize           	18013               
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -538,18 +540,10 @@ POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
 PREHOOK: query: select count(*) from srcpart_acid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acid
-PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart_acid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acid
-POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1990
 PREHOOK: query: merge into srcpart_acid t using (select distinct ds, hr, key, value from srcpart_acid) s
@@ -597,12 +591,10 @@ POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acid)t.FieldSchema(n
 PREHOOK: query: select count(*) from srcpart_acid where ds='2008-04-08' and hr=='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acid
-PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart_acid where ds='2008-04-08' and hr=='12'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acid
-POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 0
 PREHOOK: query: select ds, hr, key, value from srcpart_acid where value like '%updated by merge'
@@ -1057,18 +1049,10 @@ POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
 PREHOOK: query: select count(*) from srcpart_acidb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidb
-PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart_acidb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidb
-POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1990
 PREHOOK: query: merge into srcpart_acidb t using (select distinct ds, hr, key, value from srcpart_acidb) s
@@ -1116,12 +1100,10 @@ POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidb)t.FieldSchema(
 PREHOOK: query: select count(*) from srcpart_acidb where ds='2008-04-08' and hr=='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidb
-PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart_acidb where ds='2008-04-08' and hr=='12'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidb
-POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 0
 PREHOOK: query: select ds, hr, key, value from srcpart_acidb where value like '%updated by merge'
@@ -1606,18 +1588,10 @@ POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
 PREHOOK: query: select count(*) from srcpart_acidv
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidv
-PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart_acidv
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidv
-POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1990
 PREHOOK: query: explain vectorization only detail
@@ -1918,12 +1892,10 @@ POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidv)t.FieldSchema(
 PREHOOK: query: select count(*) from srcpart_acidv where ds='2008-04-08' and hr=='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidv
-PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart_acidv where ds='2008-04-08' and hr=='12'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidv
-POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 0
 PREHOOK: query: select ds, hr, key, value from srcpart_acidv where value like '%updated by merge'
@@ -2408,18 +2380,10 @@ POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
 PREHOOK: query: select count(*) from srcpart_acidvb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidvb
-PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart_acidvb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidvb
-POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1990
 PREHOOK: query: explain vectorization only detail
@@ -2729,12 +2693,10 @@ POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidvb)t.FieldSchema
 PREHOOK: query: select count(*) from srcpart_acidvb where ds='2008-04-08' and hr=='12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidvb
-PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart_acidvb where ds='2008-04-08' and hr=='12'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_acidvb
-POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 0
 PREHOOK: query: select ds, hr, key, value from srcpart_acidvb where value like '%updated by merge'
