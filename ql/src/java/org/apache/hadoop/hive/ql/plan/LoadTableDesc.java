@@ -38,6 +38,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private ListBucketingCtx lbCtx;
   private boolean inheritTableSpecs = true; //For partitions, flag controlling whether the current
                                             //table specs are to be used
+  private boolean inheritLocation = false; // A silly setting.
   private int stmtId;
   private Long currentWriteId;
   private boolean isInsertOverwrite;
@@ -71,6 +72,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     this.dpCtx = o.dpCtx;
     this.lbCtx = o.lbCtx;
     this.inheritTableSpecs = o.inheritTableSpecs;
+    this.inheritLocation = o.inheritLocation;
     this.currentWriteId = o.currentWriteId;
     this.table = o.table;
     this.partitionSpec = o.partitionSpec;
@@ -207,8 +209,14 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     return inheritTableSpecs;
   }
 
+  public boolean getInheritLocation() {
+    return inheritLocation;
+  }
+
   public void setInheritTableSpecs(boolean inheritTableSpecs) {
-    this.inheritTableSpecs = inheritTableSpecs;
+    // Set inheritLocation if this is set to true explicitly.
+    // TODO: Who actually needs this? Might just be some be pointless legacy code.
+    this.inheritTableSpecs = inheritLocation = inheritTableSpecs;
   }
 
   public boolean isInsertOverwrite() {
