@@ -119,8 +119,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public int executeUpdate() throws SQLException {
-    super.executeUpdate(updateSql(sql, parameters));
-    return 0;
+    return super.executeUpdate(updateSql(sql, parameters));
   }
 
   /**
