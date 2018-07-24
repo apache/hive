@@ -1292,16 +1292,45 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-03-19	1970-10-14
 1969-11-13	1970-02-17
 PREHOOK: query: -- Boolean Values
- SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2
+
+
+ EXPLAIN SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Boolean Values
+
+
+ EXPLAIN SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames cboolean2,$f1
+            druid.fieldTypes boolean,bigint
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"cboolean2","outputName":"cboolean2","outputType":"LONG"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"count","name":"$f1"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: cboolean2 (type: boolean), $f1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: -- Boolean Values
- SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2
+POSTHOOK: query: SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-false	6105
+false	3148
+true	2957
 PREHOOK: query: -- Expected results of this query are wrong due to https://issues.apache.org/jira/browse/CALCITE-2319
   -- It should get fixed once we upgrade calcite
  SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2

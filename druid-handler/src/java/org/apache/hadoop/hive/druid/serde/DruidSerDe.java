@@ -346,7 +346,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
         break;
       case BOOLEAN:
         res = ((BooleanObjectInspector) fields.get(i).getFieldObjectInspector())
-            .get(values.get(i));
+            .get(values.get(i)) ? 1L : 0L;
         break;
       default:
         throw new SerDeException("Unsupported type: " + types[i].getPrimitiveCategory());
