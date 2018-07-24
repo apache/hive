@@ -155,6 +155,9 @@ public class TezCompiler extends TaskCompiler {
     runStatsAnnotation(procCtx);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Setup stats in the operator plan");
 
+    // Update bucketing version of ReduceSinkOp if needed
+    updateBucketingVersionForUpgrade(procCtx);
+
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // run the optimizations that use stats for optimization
     runStatsDependentOptimizations(procCtx, inputs, outputs);
@@ -1446,6 +1449,45 @@ public class TezCompiler extends TaskCompiler {
           continue;
         }
         deque.addAll(op.getChildOperators());
+      }
+    }
+  }
+
+  private void updateBucketingVersionForUpgrade(OptimizeTezProcContext procCtx) {
+    // Fetch all the FileSinkOperators.
+    Set<FileSinkOperator> fsOpsAll = new HashSet<>();
+    for (TableScanOperator ts : procCtx.parseContext.getTopOps().values()) {
+      Set<FileSinkOperator> fsOps = OperatorUtils.findOperators(
+          ts, FileSinkOperator.class);
+      fsOpsAll.addAll(fsOps);
+    }
+
+
+    for (FileSinkOperator fsOp : fsOpsAll) {
+      Operator<?> parentOfFS = fsOp.getParentOperators().get(0);
+      if (parentOfFS instanceof GroupByOperator) {
+        GroupByOperator gbyOp = (GroupByOperator) parentOfFS;
+        List<String> aggs = gbyOp.getConf().getAggregatorStrings();
+        boolean compute_stats = false;
+        for (String agg : aggs) {
+          if (agg.equalsIgnoreCase("compute_stats")) {
+            compute_stats = true;
+            break;
+          }
+        }
+        if (compute_stats) {
+          continue;
+        }
+      }
+
+      // Not compute_stats
+      Set<ReduceSinkOperator> rsOps = OperatorUtils.findOperatorsUpstream(parentOfFS, ReduceSinkOperator.class);
+      if (rsOps.isEmpty()) {
+        continue;
+      }
+      // Skip setting if the bucketing version is not set in FileSinkOp.
+      if (fsOp.getConf().getTableInfo().isSetBucketingVersion()) {
+        rsOps.iterator().next().setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
       }
     }
   }
