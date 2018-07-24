@@ -393,41 +393,22 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
         continue;
       }
       switch (types[i].getPrimitiveCategory()) {
-      case TIMESTAMP:
-        final TimestampWritableV2 timestampWritable;
-        if (value instanceof Number) {
-          timestampWritable = new TimestampWritableV2(
-              Timestamp.ofEpochMilli(((Number) value).longValue()));
-        } else {
-          timestampWritable = new TimestampWritableV2(
-              Timestamp.valueOf((String) value));
-        }
-        output.add(timestampWritable);
-        break;
-      case TIMESTAMPLOCALTZ:
-        final long numberOfMillis;
-        if (value instanceof Number) {
-          numberOfMillis = ((Number) value).longValue();
-        } else {
-          // it is an extraction fn need to be parsed
-          numberOfMillis = dateOptionalTimeParser().parseDateTime((String) value).getMillis();
-        }
-        output.add(new TimestampLocalTZWritable(new TimestampTZ(ZonedDateTime
-            .ofInstant(Instant.ofEpochMilli(numberOfMillis),
-                ((TimestampLocalTZTypeInfo) types[i]).timeZone()
-            ))));
-        break;
-      case DATE:
-        final DateWritableV2 dateWritable;
-        if (value instanceof Number) {
-          dateWritable = new DateWritableV2(
-              Date.ofEpochMilli((((Number) value).longValue())));
-        } else {
-          // it is an extraction fn need to be parsed
-          dateWritable = new DateWritableV2(
-              Date.ofEpochMilli(dateOptionalTimeParser().parseDateTime((String) value).getMillis()));
-        }
-        output.add(dateWritable);
+        case TIMESTAMP:
+          output.add(new TimestampWritableV2(
+              Timestamp.ofEpochMilli(deserializeToMillis(value))));
+          break;
+        case TIMESTAMPLOCALTZ:
+          output.add(new TimestampLocalTZWritable(
+              new TimestampTZ(
+                  ZonedDateTime
+                      .ofInstant(
+                          Instant.ofEpochMilli(deserializeToMillis(value)),
+                          ((TimestampLocalTZTypeInfo) types[i]).timeZone()
+                      ))));
+          break;
+        case DATE:
+          output.add(new DateWritableV2(
+              Date.ofEpochMilli(deserializeToMillis(value))));
         break;
       case BYTE:
         output.add(new ByteWritable(((Number) value).byteValue()));
@@ -476,6 +457,24 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
       }
     }
     return output;
+  }
+
+  private long deserializeToMillis(Object value)
+  {
+    long numberOfMillis;
+    if (value instanceof Number) {
+      numberOfMillis = ((Number) value).longValue();
+    } else {
+      // it is an extraction fn need to be parsed
+      try {
+        numberOfMillis = dateOptionalTimeParser().parseDateTime((String) value).getMillis();
+      } catch (IllegalArgumentException e) {
+        // we may not be able to parse the date if it already comes in Hive format,
+        // we retry and otherwise fail
+        numberOfMillis = Timestamp.valueOf((String) value).toEpochMilli();
+      }
+    }
+    return numberOfMillis;
   }
 
   @Override public ObjectInspector getObjectInspector() {
