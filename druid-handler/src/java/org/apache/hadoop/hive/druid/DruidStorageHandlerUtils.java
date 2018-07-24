@@ -90,7 +90,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.druid.serde.HiveDruidSerializationModule;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -195,9 +194,6 @@ public final class DruidStorageHandlerUtils {
 
     JSON_MAPPER.setInjectableValues(injectableValues);
     SMILE_MAPPER.setInjectableValues(injectableValues);
-    HiveDruidSerializationModule hiveDruidSerializationModule = new HiveDruidSerializationModule();
-    JSON_MAPPER.registerModule(hiveDruidSerializationModule);
-    SMILE_MAPPER.registerModule(hiveDruidSerializationModule);
     // Register the shard sub type to be used by the mapper
     JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
     JSON_MAPPER.registerSubtypes(new NamedType(NumberedShardSpec.class, "numbered"));

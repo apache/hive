@@ -909,7 +909,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes bigint
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"unix_timestamp(timestamp_format((1396681200 * '1000'),'yyyy-MM-dd HH:mm:ss','US/Pacific'),'yyyy-MM-dd HH:mm:ss')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"unix_timestamp(timestamp_format((1396681200 * '1000'),'yyyy-MM-dd HH:mm:ss','UTC'),'yyyy-MM-dd HH:mm:ss')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
             druid.query.type scan
           Select Operator
             expressions: vc (type: bigint)
@@ -924,7 +924,7 @@ POSTHOOK: query: select unix_timestamp(from_unixtime(1396681200)) from druid_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1396656000
+1396681200
 PREHOOK: query: explain select unix_timestamp(`__time`) from druid_table_n0 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select unix_timestamp(`__time`) from druid_table_n0 limit 1
@@ -979,7 +979,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes string
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format((div(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),1000) * '1000'),'yyyy-MM-dd HH:mm:ss','US/Pacific')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format((div(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),1000) * '1000'),'yyyy-MM-dd HH:mm:ss','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: string)
@@ -998,8 +998,8 @@ GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd H
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31 07:59:00
-1969-12-31 08:00:00
+1969-12-31 15:59:00
+1969-12-31 16:00:00
 PREHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
@@ -1017,7 +1017,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes string
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1Y','','US/Pacific'),'yyyy-MM-dd','US/Pacific')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1Y','','UTC'),'yyyy-MM-dd','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: string)
@@ -1068,7 +1068,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes string
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1M','','US/Pacific'),'yyyy-MM-dd','US/Pacific')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1M','','UTC'),'yyyy-MM-dd','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: string)
@@ -1119,7 +1119,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes string
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P3M','','US/Pacific'),'yyyy-MM-dd','US/Pacific')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P3M','','UTC'),'yyyy-MM-dd','UTC')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: string)
@@ -1200,7 +1200,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc,$f1
             druid.fieldTypes date,double
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(timestamp_parse(timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1M','','US/Pacific'),'yyyy-MM-dd','US/Pacific'),'','UTC'),'P1D','','UTC')","outputType":"LONG"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","expression":"(\"cdouble\" * \"cdouble\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(timestamp_parse(timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1M','','UTC'),'yyyy-MM-dd','UTC'),'','UTC'),'P1D','','UTC')","outputType":"LONG"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","expression":"(\"cdouble\" * \"cdouble\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: $f1 (type: double), vc (type: date)
@@ -1245,7 +1245,7 @@ STAGE PLANS:
                   properties:
                     druid.fieldNames vc,vc0
                     druid.fieldTypes date,date
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',CAST((\"cdouble\" / CAST(1000, 'DOUBLE')), 'LONG'),'US/Pacific')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',-( CAST((\"cdouble\" / CAST(1000, 'DOUBLE')), 'LONG') ),'US/Pacific')","outputType":"LONG"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',CAST((\"cdouble\" / CAST(1000, 'DOUBLE')), 'LONG'),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'P1D',-( CAST((\"cdouble\" / CAST(1000, 'DOUBLE')), 'LONG') ),'UTC')","outputType":"LONG"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -1289,7 +1289,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-02-26	1970-11-04
-1969-03-19	1970-10-13
+1969-03-19	1970-10-14
 1969-11-13	1970-02-17
 PREHOOK: query: -- Boolean Values
  SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2

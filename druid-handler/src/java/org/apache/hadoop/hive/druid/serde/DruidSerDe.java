@@ -99,7 +99,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.druid.serde.DruidSerDeUtils.TIMESTAMP_FORMAT;
 import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
 
 /**
@@ -395,14 +394,15 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
       }
       switch (types[i].getPrimitiveCategory()) {
       case TIMESTAMP:
+        final TimestampWritableV2 timestampWritable;
         if (value instanceof Number) {
-          output.add(new TimestampWritableV2(Timestamp.valueOf(
-              ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Number) value).longValue()), tsTZTypeInfo.timeZone())
-                  .format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT)))));
+          timestampWritable = new TimestampWritableV2(
+              Timestamp.ofEpochMilli(((Number) value).longValue()));
         } else {
-          output.add(new TimestampWritableV2(Timestamp.valueOf((String) value)));
+          timestampWritable = new TimestampWritableV2(
+              Timestamp.valueOf((String) value));
         }
-
+        output.add(timestampWritable);
         break;
       case TIMESTAMPLOCALTZ:
         final long numberOfMillis;
