@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField REPLACE_FIELD_DESC = new org.apache.thrift.protocol.TField("replace", org.apache.thrift.protocol.TType.BOOL, (short)1);
   private static final org.apache.thrift.protocol.TField FILES_ADDED_FIELD_DESC = new org.apache.thrift.protocol.TField("filesAdded", org.apache.thrift.protocol.TType.LIST, (short)2);
   private static final org.apache.thrift.protocol.TField FILES_ADDED_CHECKSUM_FIELD_DESC = new org.apache.thrift.protocol.TField("filesAddedChecksum", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField SUB_DIRECTORY_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("subDirectoryList", org.apache.thrift.protocol.TType.LIST, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +52,14 @@ import org.slf4j.LoggerFactory;
   private boolean replace; // optional
   private List<String> filesAdded; // required
   private List<String> filesAddedChecksum; // optional
+  private List<String> subDirectoryList; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     REPLACE((short)1, "replace"),
     FILES_ADDED((short)2, "filesAdded"),
-    FILES_ADDED_CHECKSUM((short)3, "filesAddedChecksum");
+    FILES_ADDED_CHECKSUM((short)3, "filesAddedChecksum"),
+    SUB_DIRECTORY_LIST((short)4, "subDirectoryList");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ import org.slf4j.LoggerFactory;
           return FILES_ADDED;
         case 3: // FILES_ADDED_CHECKSUM
           return FILES_ADDED_CHECKSUM;
+        case 4: // SUB_DIRECTORY_LIST
+          return SUB_DIRECTORY_LIST;
         default:
           return null;
       }
@@ -119,7 +124,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __REPLACE_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.REPLACE,_Fields.FILES_ADDED_CHECKSUM};
+  private static final _Fields optionals[] = {_Fields.REPLACE,_Fields.FILES_ADDED_CHECKSUM,_Fields.SUB_DIRECTORY_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -129,6 +134,9 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.FILES_ADDED_CHECKSUM, new org.apache.thrift.meta_data.FieldMetaData("filesAddedChecksum", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.SUB_DIRECTORY_LIST, new org.apache.thrift.meta_data.FieldMetaData("subDirectoryList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -159,6 +167,10 @@ import org.slf4j.LoggerFactory;
       List<String> __this__filesAddedChecksum = new ArrayList<String>(other.filesAddedChecksum);
       this.filesAddedChecksum = __this__filesAddedChecksum;
     }
+    if (other.isSetSubDirectoryList()) {
+      List<String> __this__subDirectoryList = new ArrayList<String>(other.subDirectoryList);
+      this.subDirectoryList = __this__subDirectoryList;
+    }
   }
 
   public InsertEventRequestData deepCopy() {
@@ -171,6 +183,7 @@ import org.slf4j.LoggerFactory;
     this.replace = false;
     this.filesAdded = null;
     this.filesAddedChecksum = null;
+    this.subDirectoryList = null;
   }
 
   public boolean isReplace() {
@@ -271,6 +284,44 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public int getSubDirectoryListSize() {
+    return (this.subDirectoryList == null) ? 0 : this.subDirectoryList.size();
+  }
+
+  public java.util.Iterator<String> getSubDirectoryListIterator() {
+    return (this.subDirectoryList == null) ? null : this.subDirectoryList.iterator();
+  }
+
+  public void addToSubDirectoryList(String elem) {
+    if (this.subDirectoryList == null) {
+      this.subDirectoryList = new ArrayList<String>();
+    }
+    this.subDirectoryList.add(elem);
+  }
+
+  public List<String> getSubDirectoryList() {
+    return this.subDirectoryList;
+  }
+
+  public void setSubDirectoryList(List<String> subDirectoryList) {
+    this.subDirectoryList = subDirectoryList;
+  }
+
+  public void unsetSubDirectoryList() {
+    this.subDirectoryList = null;
+  }
+
+  /** Returns true if field subDirectoryList is set (has been assigned a value) and false otherwise */
+  public boolean isSetSubDirectoryList() {
+    return this.subDirectoryList != null;
+  }
+
+  public void setSubDirectoryListIsSet(boolean value) {
+    if (!value) {
+      this.subDirectoryList = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case REPLACE:
@@ -297,6 +348,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case SUB_DIRECTORY_LIST:
+      if (value == null) {
+        unsetSubDirectoryList();
+      } else {
+        setSubDirectoryList((List<String>)value);
+      }
+      break;
+
     }
   }
 
@@ -310,6 +369,9 @@ import org.slf4j.LoggerFactory;
 
     case FILES_ADDED_CHECKSUM:
       return getFilesAddedChecksum();
+
+    case SUB_DIRECTORY_LIST:
+      return getSubDirectoryList();
 
     }
     throw new IllegalStateException();
@@ -328,6 +390,8 @@ import org.slf4j.LoggerFactory;
       return isSetFilesAdded();
     case FILES_ADDED_CHECKSUM:
       return isSetFilesAddedChecksum();
+    case SUB_DIRECTORY_LIST:
+      return isSetSubDirectoryList();
     }
     throw new IllegalStateException();
   }
@@ -372,6 +436,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_subDirectoryList = true && this.isSetSubDirectoryList();
+    boolean that_present_subDirectoryList = true && that.isSetSubDirectoryList();
+    if (this_present_subDirectoryList || that_present_subDirectoryList) {
+      if (!(this_present_subDirectoryList && that_present_subDirectoryList))
+        return false;
+      if (!this.subDirectoryList.equals(that.subDirectoryList))
+        return false;
+    }
+
     return true;
   }
 
@@ -393,6 +466,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_filesAddedChecksum);
     if (present_filesAddedChecksum)
       list.add(filesAddedChecksum);
+
+    boolean present_subDirectoryList = true && (isSetSubDirectoryList());
+    list.add(present_subDirectoryList);
+    if (present_subDirectoryList)
+      list.add(subDirectoryList);
 
     return list.hashCode();
   }
@@ -431,6 +509,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetFilesAddedChecksum()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.filesAddedChecksum, other.filesAddedChecksum);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSubDirectoryList()).compareTo(other.isSetSubDirectoryList());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSubDirectoryList()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.subDirectoryList, other.subDirectoryList);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -475,6 +563,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.filesAddedChecksum);
+      }
+      first = false;
+    }
+    if (isSetSubDirectoryList()) {
+      if (!first) sb.append(", ");
+      sb.append("subDirectoryList:");
+      if (this.subDirectoryList == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.subDirectoryList);
       }
       first = false;
     }
@@ -538,13 +636,13 @@ import org.slf4j.LoggerFactory;
           case 2: // FILES_ADDED
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list732 = iprot.readListBegin();
-                struct.filesAdded = new ArrayList<String>(_list732.size);
-                String _elem733;
-                for (int _i734 = 0; _i734 < _list732.size; ++_i734)
+                org.apache.thrift.protocol.TList _list740 = iprot.readListBegin();
+                struct.filesAdded = new ArrayList<String>(_list740.size);
+                String _elem741;
+                for (int _i742 = 0; _i742 < _list740.size; ++_i742)
                 {
-                  _elem733 = iprot.readString();
-                  struct.filesAdded.add(_elem733);
+                  _elem741 = iprot.readString();
+                  struct.filesAdded.add(_elem741);
                 }
                 iprot.readListEnd();
               }
@@ -556,17 +654,35 @@ import org.slf4j.LoggerFactory;
           case 3: // FILES_ADDED_CHECKSUM
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list735 = iprot.readListBegin();
-                struct.filesAddedChecksum = new ArrayList<String>(_list735.size);
-                String _elem736;
-                for (int _i737 = 0; _i737 < _list735.size; ++_i737)
+                org.apache.thrift.protocol.TList _list743 = iprot.readListBegin();
+                struct.filesAddedChecksum = new ArrayList<String>(_list743.size);
+                String _elem744;
+                for (int _i745 = 0; _i745 < _list743.size; ++_i745)
                 {
-                  _elem736 = iprot.readString();
-                  struct.filesAddedChecksum.add(_elem736);
+                  _elem744 = iprot.readString();
+                  struct.filesAddedChecksum.add(_elem744);
                 }
                 iprot.readListEnd();
               }
               struct.setFilesAddedChecksumIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // SUB_DIRECTORY_LIST
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list746 = iprot.readListBegin();
+                struct.subDirectoryList = new ArrayList<String>(_list746.size);
+                String _elem747;
+                for (int _i748 = 0; _i748 < _list746.size; ++_i748)
+                {
+                  _elem747 = iprot.readString();
+                  struct.subDirectoryList.add(_elem747);
+                }
+                iprot.readListEnd();
+              }
+              struct.setSubDirectoryListIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -593,9 +709,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FILES_ADDED_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAdded.size()));
-          for (String _iter738 : struct.filesAdded)
+          for (String _iter749 : struct.filesAdded)
           {
-            oprot.writeString(_iter738);
+            oprot.writeString(_iter749);
           }
           oprot.writeListEnd();
         }
@@ -606,9 +722,23 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(FILES_ADDED_CHECKSUM_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAddedChecksum.size()));
-            for (String _iter739 : struct.filesAddedChecksum)
+            for (String _iter750 : struct.filesAddedChecksum)
             {
-              oprot.writeString(_iter739);
+              oprot.writeString(_iter750);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.subDirectoryList != null) {
+        if (struct.isSetSubDirectoryList()) {
+          oprot.writeFieldBegin(SUB_DIRECTORY_LIST_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.subDirectoryList.size()));
+            for (String _iter751 : struct.subDirectoryList)
+            {
+              oprot.writeString(_iter751);
             }
             oprot.writeListEnd();
           }
@@ -634,9 +764,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filesAdded.size());
-        for (String _iter740 : struct.filesAdded)
+        for (String _iter752 : struct.filesAdded)
         {
-          oprot.writeString(_iter740);
+          oprot.writeString(_iter752);
         }
       }
       BitSet optionals = new BitSet();
@@ -646,16 +776,28 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetFilesAddedChecksum()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetSubDirectoryList()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetReplace()) {
         oprot.writeBool(struct.replace);
       }
       if (struct.isSetFilesAddedChecksum()) {
         {
           oprot.writeI32(struct.filesAddedChecksum.size());
-          for (String _iter741 : struct.filesAddedChecksum)
+          for (String _iter753 : struct.filesAddedChecksum)
           {
-            oprot.writeString(_iter741);
+            oprot.writeString(_iter753);
+          }
+        }
+      }
+      if (struct.isSetSubDirectoryList()) {
+        {
+          oprot.writeI32(struct.subDirectoryList.size());
+          for (String _iter754 : struct.subDirectoryList)
+          {
+            oprot.writeString(_iter754);
           }
         }
       }
@@ -665,33 +807,46 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, InsertEventRequestData struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list742 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.filesAdded = new ArrayList<String>(_list742.size);
-        String _elem743;
-        for (int _i744 = 0; _i744 < _list742.size; ++_i744)
+        org.apache.thrift.protocol.TList _list755 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.filesAdded = new ArrayList<String>(_list755.size);
+        String _elem756;
+        for (int _i757 = 0; _i757 < _list755.size; ++_i757)
         {
-          _elem743 = iprot.readString();
-          struct.filesAdded.add(_elem743);
+          _elem756 = iprot.readString();
+          struct.filesAdded.add(_elem756);
         }
       }
       struct.setFilesAddedIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.replace = iprot.readBool();
         struct.setReplaceIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list745 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.filesAddedChecksum = new ArrayList<String>(_list745.size);
-          String _elem746;
-          for (int _i747 = 0; _i747 < _list745.size; ++_i747)
+          org.apache.thrift.protocol.TList _list758 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.filesAddedChecksum = new ArrayList<String>(_list758.size);
+          String _elem759;
+          for (int _i760 = 0; _i760 < _list758.size; ++_i760)
           {
-            _elem746 = iprot.readString();
-            struct.filesAddedChecksum.add(_elem746);
+            _elem759 = iprot.readString();
+            struct.filesAddedChecksum.add(_elem759);
           }
         }
         struct.setFilesAddedChecksumIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TList _list761 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.subDirectoryList = new ArrayList<String>(_list761.size);
+          String _elem762;
+          for (int _i763 = 0; _i763 < _list761.size; ++_i763)
+          {
+            _elem762 = iprot.readString();
+            struct.subDirectoryList.add(_elem762);
+          }
+        }
+        struct.setSubDirectoryListIsSet(true);
       }
     }
   }
