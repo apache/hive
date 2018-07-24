@@ -2,11 +2,14 @@ PREHOOK: query: DESCRIBE FUNCTION string
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION string
 POSTHOOK: type: DESCFUNCTION
-There is no documentation for function 'string'
+CAST(<value> as STRING) - Converts the argument to a string value.
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED string
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED string
 POSTHOOK: type: DESCFUNCTION
-There is no documentation for function 'string'
-Function class:org.apache.hadoop.hive.ql.udf.UDFToString
+CAST(<value> as STRING) - Converts the argument to a string value.
+Example:
+   > SELECT CAST(1234 AS string) FROM src LIMIT 1;
+  '1234'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFToString
 Function type:BUILTIN

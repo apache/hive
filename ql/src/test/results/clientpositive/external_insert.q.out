@@ -1,0 +1,158 @@
+PREHOOK: query: drop table tbl1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tbl1
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: insert into tbl1 VALUES (2, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: insert into tbl1 VALUES (2, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl1
+POSTHOOK: Lineage: tbl1.index SCRIPT []
+POSTHOOK: Lineage: tbl1.value SCRIPT []
+PREHOOK: query: CREATE external TABLE tbl2 (index int, value int ) PARTITIONED BY ( created_date string )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: CREATE external TABLE tbl2 (index int, value int ) PARTITIONED BY ( created_date string )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: ALTER TABLE tbl2 ADD PARTITION(created_date='2018-02-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: ALTER TABLE tbl2 ADD PARTITION(created_date='2018-02-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tbl2
+POSTHOOK: Output: default@tbl2@created_date=2018-02-01
+#### A masked pattern was here ####
+PREHOOK: type: ALTERPARTITION_LOCATION
+PREHOOK: Input: default@tbl2
+PREHOOK: Output: default@tbl2@created_date=2018-02-01
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERPARTITION_LOCATION
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl2@created_date=2018-02-01
+POSTHOOK: Output: default@tbl2@created_date=2018-02-01
+#### A masked pattern was here ####
+PREHOOK: query: select * from tbl2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl2@created_date=2018-02-01
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl2@created_date=2018-02-01
+#### A masked pattern was here ####
+2	2	2018-02-01
+PREHOOK: query: describe formatted tbl2 partition(created_date='2018-02-01')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
+POSTHOOK: query: describe formatted tbl2 partition(created_date='2018-02-01')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
+# col_name            	data_type           	comment             
+index               	int                 	                    
+value               	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+created_date        	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2018-02-01]        	 
+Database:           	default             	 
+Table:              	tbl2                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"index\":\"true\",\"value\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into tbl2 partition(created_date='2018-02-01') VALUES (1, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl2@created_date=2018-02-01
+POSTHOOK: query: insert into tbl2 partition(created_date='2018-02-01') VALUES (1, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl2@created_date=2018-02-01
+POSTHOOK: Lineage: tbl2 PARTITION(created_date=2018-02-01).index SCRIPT []
+POSTHOOK: Lineage: tbl2 PARTITION(created_date=2018-02-01).value SCRIPT []
+PREHOOK: query: select * from tbl2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl2@created_date=2018-02-01
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl2@created_date=2018-02-01
+#### A masked pattern was here ####
+2	2	2018-02-01
+1	1	2018-02-01
+PREHOOK: query: describe formatted tbl2 partition(created_date='2018-02-01')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2
+POSTHOOK: query: describe formatted tbl2 partition(created_date='2018-02-01')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2
+# col_name            	data_type           	comment             
+index               	int                 	                    
+value               	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+created_date        	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2018-02-01]        	 
+Database:           	default             	 
+Table:              	tbl2                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"index\":\"true\",\"value\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	1                   
+	rawDataSize         	3                   
+	totalSize           	8                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
