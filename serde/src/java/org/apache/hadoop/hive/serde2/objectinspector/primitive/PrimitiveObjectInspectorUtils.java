@@ -963,8 +963,9 @@ public final class PrimitiveObjectInspectorUtils {
       result = ((HiveIntervalDayTimeObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
     case DECIMAL:
+      int scale = ((HiveDecimalObjectInspector) oi).scale();
       result = ((HiveDecimalObjectInspector) oi)
-          .getPrimitiveJavaObject(o).toString();
+          .getPrimitiveJavaObject(o).toFormatString(scale);
       break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "

@@ -435,18 +435,18 @@ public class TestVectorTypeCasts {
     BytesColumnVector r = (BytesColumnVector) b.cols[1];
 
     // As of HIVE-8745, these decimal values should be trimmed of trailing zeros.
-    byte[] v = toBytes("1.1");
+    byte[] v = toBytes("1.10");
     assertTrue(((Integer) v.length).toString() + " " + r.length[0], v.length == r.length[0]);
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[0], r.start[0], r.length[0]));
 
-    v = toBytes("-2.2");
+    v = toBytes("-2.20");
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[1], r.start[1], r.length[1]));
 
-    v = toBytes("9999999999999999");
+    v = toBytes("9999999999999999.00");
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[2], r.start[2], r.length[2]));
