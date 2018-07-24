@@ -826,10 +826,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
-                  filterExpr: (UDFToString(name1) = 'Bill') (type: boolean)
+                  filterExpr: (CAST( name1 AS STRING) = 'Bill') (type: boolean)
                   Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToString(name1) = 'Bill') (type: boolean)
+                    predicate: (CAST( name1 AS STRING) = 'Bill') (type: boolean)
                     Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: empid (type: int), deptno (type: int)
