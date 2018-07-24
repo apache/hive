@@ -186,10 +186,6 @@ public class Utils {
         return false;
       }
 
-      boolean isAcidTable = AcidUtils.isTransactionalTable(tableHandle);
-      if (isAcidTable) {
-        return hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES);
-      }
       return !tableHandle.isTemporary();
     }
     return true;

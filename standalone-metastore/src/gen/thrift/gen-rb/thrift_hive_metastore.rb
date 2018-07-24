@@ -2751,6 +2751,21 @@ module ThriftHiveMetastore
       return
     end
 
+    def add_write_notification_log(rqst)
+      send_add_write_notification_log(rqst)
+      return recv_add_write_notification_log()
+    end
+
+    def send_add_write_notification_log(rqst)
+      send_message('add_write_notification_log', Add_write_notification_log_args, :rqst => rqst)
+    end
+
+    def recv_add_write_notification_log()
+      result = receive_message(Add_write_notification_log_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_write_notification_log failed: unknown result')
+    end
+
     def cm_recycle(request)
       send_cm_recycle(request)
       return recv_cm_recycle()
@@ -5518,6 +5533,13 @@ module ThriftHiveMetastore
       result = FlushCache_result.new()
       @handler.flushCache()
       write_result(result, oprot, 'flushCache', seqid)
+    end
+
+    def process_add_write_notification_log(seqid, iprot, oprot)
+      args = read_args(iprot, Add_write_notification_log_args)
+      result = Add_write_notification_log_result.new()
+      result.success = @handler.add_write_notification_log(args.rqst)
+      write_result(result, oprot, 'add_write_notification_log', seqid)
     end
 
     def process_cm_recycle(seqid, iprot, oprot)
@@ -12210,6 +12232,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
 
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_write_notification_log_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = -1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::WriteNotificationLogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_write_notification_log_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WriteNotificationLogResponse}
     }
 
     def struct_fields; FIELDS; end

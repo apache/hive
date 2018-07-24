@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -702,6 +703,38 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   @Override
   @RetrySemantics.Idempotent
+  public long getTargetTxnId(String replPolicy, long sourceTxnId) throws MetaException {
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        List<Long> targetTxnIds = getTargetTxnIdList(replPolicy, Collections.singletonList(sourceTxnId), stmt);
+        if (targetTxnIds.isEmpty()) {
+          LOG.info("Txn {} not present for repl policy {}", sourceTxnId, replPolicy);
+          return -1;
+        }
+        assert (targetTxnIds.size() == 1);
+        return targetTxnIds.get(0);
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "getTargetTxnId(" + replPolicy + sourceTxnId + ")");
+        throw new MetaException("Unable to get target transaction id "
+                + StringUtils.stringifyException(e));
+      } finally {
+        close(null, stmt, dbConn);
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      return getTargetTxnId(replPolicy, sourceTxnId);
+    }
+  }
+
+  @Override
+  @RetrySemantics.Idempotent
   public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException {
     long txnid = rqst.getTxnid();
     long sourceTxnId = -1;
@@ -893,10 +926,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           shouldNeverHappen(txnid);
           //dbConn is rolled back in finally{}
         }
-        String conflictSQLSuffix = "from TXN_COMPONENTS where tc_txnid=" + txnid + " and tc_operation_type IN(" +
-          quoteChar(OpertaionType.UPDATE.sqlConst) + "," + quoteChar(OpertaionType.DELETE.sqlConst) + ")";
-        rs = stmt.executeQuery(sqlGenerator.addLimitClause(1, "tc_operation_type " + conflictSQLSuffix));
-        if (rs.next()) {
+
+        String conflictSQLSuffix = null;
+        if (rqst.isSetReplPolicy()) {
+          rs = null;
+        } else {
+          conflictSQLSuffix = "from TXN_COMPONENTS where tc_txnid=" + txnid + " and tc_operation_type IN(" +
+                  quoteChar(OpertaionType.UPDATE.sqlConst) + "," + quoteChar(OpertaionType.DELETE.sqlConst) + ")";
+          rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,
+                   "tc_operation_type " + conflictSQLSuffix));
+        }
+
+        if (rs != null && rs.next()) {
           isUpdateDelete = 'Y';
           close(rs);
           //if here it means currently committing txn performed update/delete and we should check WW conflict
@@ -985,45 +1026,66 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
            * Consider: if RO txn is after a W txn, then RO's openTxns() will be mutexed with W's
            * commitTxn() because both do S4U on NEXT_TXN_ID and thus RO will see result of W txn.
            * If RO < W, then there is no reads-from relationship.
+           * In replication flow we don't expect any write write conflict as it should have been handled at source.
            */
         }
-        // Move the record from txn_components into completed_txn_components so that the compactor
-        // knows where to look to compact.
-        String s = "insert into COMPLETED_TXN_COMPONENTS (ctc_txnid, ctc_database, " +
-            "ctc_table, ctc_partition, ctc_writeid, ctc_update_delete) select tc_txnid, tc_database, tc_table, " +
-            "tc_partition, tc_writeid, '" + isUpdateDelete + "' from TXN_COMPONENTS where tc_txnid = " + txnid;
-        LOG.debug("Going to execute insert <" + s + ">");
-        int modCount = 0;
-        if ((modCount = stmt.executeUpdate(s)) < 1) {
-          //this can be reasonable for an empty txn START/COMMIT or read-only txn
-          //also an IUD with DP that didn't match any rows.
-          LOG.info("Expected to move at least one record from txn_components to " +
-            "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
-        }
-        s = "delete from TXN_COMPONENTS where tc_txnid = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        modCount = stmt.executeUpdate(s);
-        s = "delete from HIVE_LOCKS where hl_txnid = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        modCount = stmt.executeUpdate(s);
-        s = "delete from TXNS where txn_id = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        modCount = stmt.executeUpdate(s);
-        s = "delete from MIN_HISTORY_LEVEL where mhl_txnid = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        modCount = stmt.executeUpdate(s);
-        LOG.info("Removed committed transaction: (" + txnid + ") from MIN_HISTORY_LEVEL");
 
-        s = "delete from MATERIALIZATION_REBUILD_LOCKS where mrl_txn_id = " + txnid;
-        LOG.debug("Going to execute update <" + s + ">");
-        modCount = stmt.executeUpdate(s);
+        String s;
+        if (!rqst.isSetReplPolicy()) {
+          // Move the record from txn_components into completed_txn_components so that the compactor
+          // knows where to look to compact.
+          s = "insert into COMPLETED_TXN_COMPONENTS (ctc_txnid, ctc_database, " +
+                  "ctc_table, ctc_partition, ctc_writeid, ctc_update_delete) select tc_txnid, tc_database, tc_table, " +
+                  "tc_partition, tc_writeid, '" + isUpdateDelete + "' from TXN_COMPONENTS where tc_txnid = " + txnid;
+          LOG.debug("Going to execute insert <" + s + ">");
+          int modCount = 0;
+          if ((modCount = stmt.executeUpdate(s)) < 1) {
+            //this can be reasonable for an empty txn START/COMMIT or read-only txn
+            //also an IUD with DP that didn't match any rows.
+            LOG.info("Expected to move at least one record from txn_components to " +
+                    "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
+          }
+        } else {
+          if (rqst.isSetWriteEventInfos()) {
+            List<String> rows = new ArrayList<>();
+            for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
+              rows.add(txnid + "," + quoteString(writeEventInfo.getDatabase()) + "," +
+                      quoteString(writeEventInfo.getTable()) + "," +
+                      quoteString(writeEventInfo.getPartition()) + "," +
+                      writeEventInfo.getWriteId() + "," +
+                      quoteChar(isUpdateDelete));
+            }
+            List<String> queries = sqlGenerator.createInsertValuesStmt("COMPLETED_TXN_COMPONENTS " +
+                   "(ctc_txnid," + " ctc_database, ctc_table, ctc_partition, ctc_writeid, ctc_update_delete)", rows);
+            for (String q : queries) {
+              LOG.debug("Going to execute insert  <" + q + "> ");
+              stmt.execute(q);
+            }
+          }
 
-        if (rqst.isSetReplPolicy()) {
           s = "delete from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
                   " and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
           LOG.info("Repl going to execute  <" + s + ">");
           stmt.executeUpdate(s);
         }
+
+        s = "delete from TXN_COMPONENTS where tc_txnid = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        s = "delete from HIVE_LOCKS where hl_txnid = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        s = "delete from TXNS where txn_id = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        s = "delete from MIN_HISTORY_LEVEL where mhl_txnid = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+        LOG.info("Removed committed transaction: (" + txnid + ") from MIN_HISTORY_LEVEL");
+
+        s = "delete from MATERIALIZATION_REBUILD_LOCKS where mrl_txn_id = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
 
         if (transactionalListeners != null) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
@@ -1525,6 +1587,43 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
 
   }
+  @Override
+  @RetrySemantics.Idempotent
+  public void addWriteNotificationLog(AcidWriteEvent acidWriteEvent)
+          throws MetaException {
+    Connection dbConn = null;
+    try {
+      try {
+        //Idempotent case is handled by notify Event
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
+                EventMessage.EventType.ACID_WRITE, acidWriteEvent, dbConn, sqlGenerator);
+        LOG.debug("Going to commit");
+        dbConn.commit();
+        return;
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        if (isDuplicateKeyError(e)) {
+          // in case of key duplicate error, retry as it might be because of race condition
+          if (waitForRetry("addWriteNotificationLog(" + acidWriteEvent + ")", e.getMessage())) {
+            throw new RetryException();
+          }
+          retryNum = 0;
+          throw new MetaException(e.getMessage());
+        }
+        checkRetryable(dbConn, e, "addWriteNotificationLog(" + acidWriteEvent + ")");
+        throw new MetaException("Unable to add write notification event " + StringUtils.stringifyException(e));
+      } finally{
+        closeDbConn(dbConn);
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      addWriteNotificationLog(acidWriteEvent);
+    }
+  }
+
   @Override
   @RetrySemantics.SafeToRetry
   public void performWriteSetGC() {
@@ -3214,6 +3313,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     closeStmt(stmt);
     closeDbConn(dbConn);
   }
+
+  private boolean waitForRetry(String caller, String errMsg) {
+    if (retryNum++ < retryLimit) {
+      LOG.warn("Retryable error detected in " + caller + ".  Will wait " + retryInterval +
+              "ms and retry up to " + (retryLimit - retryNum + 1) + " times.  Error: " + errMsg);
+      try {
+        Thread.sleep(retryInterval);
+      } catch (InterruptedException ex) {
+        //
+      }
+      return true;
+    } else {
+      LOG.error("Fatal error in " + caller + ". Retry limit (" + retryLimit + ") reached. Last error: " + errMsg);
+    }
+    return false;
+  }
   /**
    * Determine if an exception was such that it makes sense to retry.  Unfortunately there is no standard way to do
    * this, so we have to inspect the error messages and catch the telltale signs for each
@@ -3257,18 +3372,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       } else if (isRetryable(conf, e)) {
         //in MSSQL this means Communication Link Failure
-        if (retryNum++ < retryLimit) {
-          LOG.warn("Retryable error detected in " + caller + ".  Will wait " + retryInterval +
-            "ms and retry up to " + (retryLimit - retryNum + 1) + " times.  Error: " + getMessage(e));
-          try {
-            Thread.sleep(retryInterval);
-          } catch (InterruptedException ex) {
-            //
-          }
-          sendRetrySignal = true;
-        } else {
-          LOG.error("Fatal error in " + caller + ". Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
-        }
+        sendRetrySignal = waitForRetry(caller, e.getMessage());
       }
       else {
         //make sure we know we saw an error that we don't recognize

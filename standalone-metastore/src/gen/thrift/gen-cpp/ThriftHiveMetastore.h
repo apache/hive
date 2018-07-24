@@ -187,6 +187,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) = 0;
   virtual void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) = 0;
   virtual void flushCache() = 0;
+  virtual void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) = 0;
   virtual void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) = 0;
   virtual void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) = 0;
   virtual void get_file_metadata(GetFileMetadataResult& _return, const GetFileMetadataRequest& req) = 0;
@@ -778,6 +779,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void flushCache() {
+    return;
+  }
+  void add_write_notification_log(WriteNotificationLogResponse& /* _return */, const WriteNotificationLogRequest& /* rqst */) {
     return;
   }
   void cm_recycle(CmRecycleResponse& /* _return */, const CmRecycleRequest& /* request */) {
@@ -21228,6 +21232,110 @@ class ThriftHiveMetastore_flushCache_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_write_notification_log_args__isset {
+  _ThriftHiveMetastore_add_write_notification_log_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_add_write_notification_log_args__isset;
+
+class ThriftHiveMetastore_add_write_notification_log_args {
+ public:
+
+  ThriftHiveMetastore_add_write_notification_log_args(const ThriftHiveMetastore_add_write_notification_log_args&);
+  ThriftHiveMetastore_add_write_notification_log_args& operator=(const ThriftHiveMetastore_add_write_notification_log_args&);
+  ThriftHiveMetastore_add_write_notification_log_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_args() throw();
+  WriteNotificationLogRequest rqst;
+
+  _ThriftHiveMetastore_add_write_notification_log_args__isset __isset;
+
+  void __set_rqst(const WriteNotificationLogRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_add_write_notification_log_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_write_notification_log_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_write_notification_log_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_write_notification_log_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_pargs() throw();
+  const WriteNotificationLogRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_write_notification_log_result__isset {
+  _ThriftHiveMetastore_add_write_notification_log_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_add_write_notification_log_result__isset;
+
+class ThriftHiveMetastore_add_write_notification_log_result {
+ public:
+
+  ThriftHiveMetastore_add_write_notification_log_result(const ThriftHiveMetastore_add_write_notification_log_result&);
+  ThriftHiveMetastore_add_write_notification_log_result& operator=(const ThriftHiveMetastore_add_write_notification_log_result&);
+  ThriftHiveMetastore_add_write_notification_log_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_result() throw();
+  WriteNotificationLogResponse success;
+
+  _ThriftHiveMetastore_add_write_notification_log_result__isset __isset;
+
+  void __set_success(const WriteNotificationLogResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_add_write_notification_log_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_write_notification_log_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_write_notification_log_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_write_notification_log_presult__isset {
+  _ThriftHiveMetastore_add_write_notification_log_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_add_write_notification_log_presult__isset;
+
+class ThriftHiveMetastore_add_write_notification_log_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_presult() throw();
+  WriteNotificationLogResponse* success;
+
+  _ThriftHiveMetastore_add_write_notification_log_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_cm_recycle_args__isset {
   _ThriftHiveMetastore_cm_recycle_args__isset() : request(false) {}
   bool request :1;
@@ -26718,6 +26826,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void flushCache();
   void send_flushCache();
   void recv_flushCache();
+  void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst);
+  void send_add_write_notification_log(const WriteNotificationLogRequest& rqst);
+  void recv_add_write_notification_log(WriteNotificationLogResponse& _return);
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request);
   void send_cm_recycle(const CmRecycleRequest& request);
   void recv_cm_recycle(CmRecycleResponse& _return);
@@ -27019,6 +27130,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_notification_events_count(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_fire_listener_event(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_flushCache(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_write_notification_log(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_cm_recycle(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_file_metadata_by_expr(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_file_metadata(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -27230,6 +27342,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_notification_events_count"] = &ThriftHiveMetastoreProcessor::process_get_notification_events_count;
     processMap_["fire_listener_event"] = &ThriftHiveMetastoreProcessor::process_fire_listener_event;
     processMap_["flushCache"] = &ThriftHiveMetastoreProcessor::process_flushCache;
+    processMap_["add_write_notification_log"] = &ThriftHiveMetastoreProcessor::process_add_write_notification_log;
     processMap_["cm_recycle"] = &ThriftHiveMetastoreProcessor::process_cm_recycle;
     processMap_["get_file_metadata_by_expr"] = &ThriftHiveMetastoreProcessor::process_get_file_metadata_by_expr;
     processMap_["get_file_metadata"] = &ThriftHiveMetastoreProcessor::process_get_file_metadata;
@@ -28884,6 +28997,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->flushCache();
   }
 
+  void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_write_notification_log(_return, rqst);
+    }
+    ifaces_[i]->add_write_notification_log(_return, rqst);
+    return;
+  }
+
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -29805,6 +29928,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void flushCache();
   int32_t send_flushCache();
   void recv_flushCache(const int32_t seqid);
+  void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst);
+  int32_t send_add_write_notification_log(const WriteNotificationLogRequest& rqst);
+  void recv_add_write_notification_log(WriteNotificationLogResponse& _return, const int32_t seqid);
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request);
   int32_t send_cm_recycle(const CmRecycleRequest& request);
   void recv_cm_recycle(CmRecycleResponse& _return, const int32_t seqid);

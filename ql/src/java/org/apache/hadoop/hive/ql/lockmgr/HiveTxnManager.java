@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.Context;
@@ -61,11 +62,11 @@ public interface HiveTxnManager {
 
   /**
    * Commit the transaction in target cluster.
-   * @param replPolicy Replication policy to uniquely identify the source cluster.
-   * @param srcTxnId The id of the transaction at the source cluster
+   *
+   * @param rqst Commit transaction request having information related to commit txn and write events.
    * @throws LockException in case of failure to commit the transaction.
    */
-  void replCommitTxn(String replPolicy, long srcTxnId) throws LockException;
+  void replCommitTxn(CommitTxnRequest rqst) throws LockException;
 
  /**
    * Abort the transaction in target cluster.
@@ -294,6 +295,9 @@ public interface HiveTxnManager {
    * Even a single statement, (e.g. Merge, multi-insert may generates several writes).
    */
   int getStmtIdAndIncrement();
+
+  // Can be used by operation to set the stmt id when allocation is done somewhere else.
+  int getCurrentStmtId();
 
   /**
    * Acquire the materialization rebuild lock for a given view. We need to specify the fully
