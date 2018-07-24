@@ -32,9 +32,9 @@ POSTHOOK: Output: default@mysource
 POSTHOOK: Lineage: mysource.key SCRIPT []
 POSTHOOK: Lineage: mysource.p SCRIPT []
 POSTHOOK: Lineage: mysource.value SCRIPT []
-PREHOOK: query: drop table if exists stats_partitioned
+PREHOOK: query: drop table if exists stats_part
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists stats_partitioned
+POSTHOOK: query: drop table if exists stats_part
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table stats_part(key int,value string) partitioned by (p int) stored as orc tblproperties ("transactional"="true")
 PREHOOK: type: CREATETABLE
@@ -594,19 +594,19 @@ STAGE PLANS:
           TableScan
             alias: stats_part
             filterExpr: (p > 100) (type: boolean)
-            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: key
-              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: max(key)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -614,10 +614,10 @@ STAGE PLANS:
           aggregations: max(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1185,19 +1185,19 @@ STAGE PLANS:
           TableScan
             alias: stats_part
             filterExpr: (p > 100) (type: boolean)
-            Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: key
-              Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: max(key)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1205,10 +1205,10 @@ STAGE PLANS:
           aggregations: max(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

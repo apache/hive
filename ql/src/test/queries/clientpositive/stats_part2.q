@@ -15,6 +15,8 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.query.results.cache.enabled=false;
 
+set metastore.aggregate.stats.cache.enabled=false;
+
 -- create source.
 drop table if exists mysource;
 create table mysource (p int, key int, value string);
@@ -22,22 +24,14 @@ insert into mysource values (100,20,'value20'), (101,40,'string40'), (102,50,'st
 insert into mysource values (100,21,'value21'), (101,41,'value41'), (102,51,'value51');
 
 -- test partitioned table
-drop table if exists stats_partitioned;
+drop table if exists stats_part;
 
---create table stats_part(key int,value string) partitioned by (p int) stored as orc;
 create table stats_part(key int,value string) partitioned by (p int) stored as orc tblproperties ("transactional"="true");
---create table stats_part(key int,value string) partitioned by (p int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only");
 
---explain select count(*) from stats_part;
---select count(*) from stats_part;
---explain select count(*) from stats_part where p = 100;
---select count(*) from stats_part where p = 100;
 explain select count(*) from stats_part where p > 100;
 explain select max(key) from stats_part where p > 100;
---select count(*) from stats_part where p > 100;
 desc formatted stats_part;
 
---explain insert into table stats_part partition(p=100) select distinct key, value from mysource where p == 100;
 insert into table stats_part partition(p=100) select distinct key, value from mysource where p == 100;
 insert into table stats_part partition(p=101) select distinct key, value from mysource where p == 101;
 insert into table stats_part partition(p=102) select distinct key, value from mysource where p == 102;
