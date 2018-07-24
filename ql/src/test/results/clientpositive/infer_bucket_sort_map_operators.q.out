@@ -80,7 +80,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -309,7 +309,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+            expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -680,7 +680,7 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Select Operator
-            expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+            expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
             outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false

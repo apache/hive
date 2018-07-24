@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToString;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
@@ -194,6 +195,7 @@ public class IndexPredicateAnalyzer {
     GenericUDF udf = funcDesc.getGenericUDF();
     // check if its a simple cast expression.
     if ((udf instanceof GenericUDFBridge || udf instanceof GenericUDFToBinary
+        || udf instanceof GenericUDFToString
         || udf instanceof GenericUDFToChar || udf instanceof GenericUDFToVarchar
         || udf instanceof GenericUDFToDecimal || udf instanceof GenericUDFToDate
         || udf instanceof GenericUDFToUnixTimeStamp || udf instanceof GenericUDFToUtcTimestamp)
