@@ -16,33 +16,43 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions;
+package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
+import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-public class LongColEqualLongScalar extends VectorExpression {
+/**
+ * Generated from template DecimalColumnCompareDecimalScalar.txt, which covers binary comparison
+ * expressions between a column and a scalar. The boolean output is stored in a
+ * separate boolean column.
+ */
+public class <ClassName> extends VectorExpression {
+
   private static final long serialVersionUID = 1L;
 
-  protected final int colNum;
-  protected final long value;
+  private final int colNum;
+  private final HiveDecimalWritable value;
 
-  public LongColEqualLongScalar(int colNum, long value, int outputColumnNum) {
+  public <ClassName>(int colNum, HiveDecimal value, int outputColumnNum) {
     super(outputColumnNum);
     this.colNum = colNum;
-    this.value = value;
+    this.value = new HiveDecimalWritable(value);
   }
 
-  public LongColEqualLongScalar() {
+  public <ClassName>() {
     super();
 
     // Dummy final assignments.
     colNum = -1;
-    value = 0;
+    value = null;
   }
 
   @Override
@@ -58,48 +68,49 @@ public class LongColEqualLongScalar extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
-    int[] sel = batch.selected;
-    boolean[] inputIsNull = inputColVector.isNull;
-    boolean[] outputIsNull = outputColVector.isNull;
+    DecimalColumnVector inputColVector1 = (DecimalColumnVector) batch.cols[colNum];
+    HiveDecimalWritable[] vector1 = inputColVector1.vector;
 
-    long[] vector = inputColVector.vector;
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
+
+    int[] sel = batch.selected;
+    boolean[] inputIsNull = inputColVector1.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
     long[] outputVector = outputColVector.vector;
 
     // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
 
-    if (inputColVector.isRepeating) {
-      if (inputColVector.noNulls || !inputIsNull[0]) {
+    if (inputColVector1.isRepeating) {
+      if (inputColVector1.noNulls || !inputIsNull[0]) {
         outputIsNull[0] = false;
-        outputVector[0] = vector[0] == value ? 1 : 0;
+        outputVector[0] = vector1[0].compareTo(value) <OperatorSymbol> 0 ? 1 : 0;
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
       }
       outputColVector.isRepeating = true;
+      NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
       return;
     }
 
-    if (inputColVector.noNulls) {
+    if (inputColVector1.noNulls) {
       if (batch.selectedInUse) {
 
-        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+         // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
 
-        if (!outputColVector.noNulls) {
-          for(int j = 0; j != n; j++) {
-           final int i = sel[j];
-           // Set isNull before call in case it changes it mind.
-           outputIsNull[i] = false;
-           outputVector[i] = (((vector[i] - value) ^ (value - vector[i])) >>> 63) ^ 1;
-         }
-        } else {
-          for(int j = 0; j != n; j++) {
-            final int i = sel[j];
-            outputVector[i] = (((vector[i] - value) ^ (value - vector[i])) >>> 63) ^ 1;
+         if (!outputColVector.noNulls) {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             outputIsNull[i] = false;
+             outputVector[i] = vector1[i].compareTo(value) <OperatorSymbol> 0 ? 1 : 0;
           }
-        }
+         } else {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             outputVector[i] = vector1[i].compareTo(value) <OperatorSymbol> 0 ? 1 : 0;
+           }
+         }
       } else {
         if (!outputColVector.noNulls) {
 
@@ -109,36 +120,45 @@ public class LongColEqualLongScalar extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          outputVector[i] = (((vector[i] - value) ^ (value - vector[i])) >>> 63) ^ 1;
+          outputVector[i] = vector1[i].compareTo(value) <OperatorSymbol> 0 ? 1 : 0;
         }
       }
-    } else /* there are nulls in the inputColVector */ {
-
-      // Carefully handle NULLs...
+    } else /* there are NULLs in the inputColVector */ {
 
       /*
-       * For better performance on LONG/DOUBLE we don't want the conditional
-       * statements inside the for loop.
+       * Do careful maintenance of the outputColVector.noNulls flag.
        */
-      outputColVector.noNulls = false;
 
       if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          outputIsNull[i] = inputIsNull[i];
-          outputVector[i] = (((vector[i] - value) ^ (value - vector[i])) >>> 63) ^ 1;
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
+            outputVector[i] = vector1[i].compareTo(value) <OperatorSymbol> 0 ? 1 : 0;
+          } else {
+            // Comparison with NULL is NULL.
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
         }
       } else {
-        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
-          outputVector[i] = (((vector[i] - value) ^ (value - vector[i])) >>> 63) ^ 1;
+         if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
+            outputVector[i] = vector1[i].compareTo(value) <OperatorSymbol> 0 ? 1 : 0;
+          } else {
+            // Comparison with NULL is NULL.
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
         }
       }
     }
   }
 
+  @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum) + ", val " + value;
+    return getColumnParamString(0, colNum) + ", val " + value.toString();
   }
 
   @Override
@@ -148,8 +168,8 @@ public class LongColEqualLongScalar extends VectorExpression {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("long"),
-            VectorExpressionDescriptor.ArgumentType.getType("long"))
+            VectorExpressionDescriptor.ArgumentType.DECIMAL,
+            VectorExpressionDescriptor.ArgumentType.DECIMAL)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();

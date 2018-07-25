@@ -18,43 +18,42 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import java.util.Arrays;
+
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import java.util.Arrays;
 
 /**
- * Compute IF(expr1, expr2, expr3) for 3 input  expressions.
- * The first is always a boolean (LongColumnVector).
- * The second is a constant value.
- * The third is a constant value.
+ * Generated from template DecimalScalarCompareDecimalColumn.txt, which covers comparison
+ * expressions between a long/double scalar and a column. The boolean output is stored in a
+ * separate boolean column.
  */
 public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  protected final int arg1Column;
-  protected final <OperandType2> arg2Scalar;
-  protected final <OperandType3> arg3Scalar;
+  private final HiveDecimalWritable value;
+  private final int colNum;
 
-  public <ClassName>(int arg1Column, <OperandType2> arg2Scalar, <OperandType3> arg3Scalar,
-      int outputColumnNum) {
+  public <ClassName>(HiveDecimal value, int colNum, int outputColumnNum) {
     super(outputColumnNum);
-    this.arg1Column = arg1Column;
-    this.arg2Scalar = arg2Scalar;
-    this.arg3Scalar = arg3Scalar;
+    this.value = new HiveDecimalWritable(value);
+    this.colNum = colNum;
   }
 
   public <ClassName>() {
-    super();
+     super();
 
     // Dummy final assignments.
-    arg1Column = -1;
-    arg2Scalar = 0;
-    arg3Scalar = 0;
+    value = null;
+    colNum = -1;
   }
 
   @Override
@@ -70,41 +69,48 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
-    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
+    DecimalColumnVector inputColVector2 = (DecimalColumnVector) batch.cols[colNum];
+    HiveDecimalWritable[] vector2 = inputColVector2.vector;
+
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
+
     int[] sel = batch.selected;
+    boolean[] inputIsNull = inputColVector2.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
+
+    long[] outputVector = outputColVector.vector;
 
     // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
 
-    long[] vector1 = arg1ColVector.vector;
-    <ReturnType>[] outputVector = outputColVector.vector;
-
-    if (arg1ColVector.isRepeating) {
-      if ((arg1ColVector.noNulls || !arg1ColVector.isNull[0]) && vector1[0] == 1) {
-        outputColVector.fill(arg2Scalar);
+    if (inputColVector2.isRepeating) {
+      if (inputColVector2.noNulls || !inputIsNull[0]) {
+        outputIsNull[0] = false;
+        outputVector[0] = value.compareTo(vector2[0]) <OperatorSymbol> 0 ? 1 : 0;
       } else {
-        outputColVector.fill(arg3Scalar);
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
       }
+      outputColVector.isRepeating = true;
+      NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
       return;
     }
 
-    if (arg1ColVector.noNulls) {
+    if (inputColVector2.noNulls) {
       if (batch.selectedInUse) {
 
          // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
 
          if (!outputColVector.noNulls) {
            for(int j = 0; j != n; j++) {
-            final int i = sel[j];
-            outputIsNull[i] = false;
-            outputVector[i] = (vector1[i] == 1 ? arg2Scalar : arg3Scalar);
+             final int i = sel[j];
+             outputIsNull[i] = false;
+             outputVector[i] = value.compareTo(vector2[i]) <OperatorSymbol> 0 ? 1 : 0;
           }
          } else {
            for(int j = 0; j != n; j++) {
              final int i = sel[j];
-             outputVector[i] = (vector1[i] == 1 ? arg2Scalar : arg3Scalar);
+             outputVector[i] = value.compareTo(vector2[i]) <OperatorSymbol> 0 ? 1 : 0;
            }
          }
       } else {
@@ -116,47 +122,38 @@ public class <ClassName> extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          outputVector[i] = (vector1[i] == 1 ? arg2Scalar : arg3Scalar);
+          outputVector[i] = value.compareTo(vector2[i]) <OperatorSymbol> 0 ? 1 : 0;
         }
       }
     } else /* there are NULLs in the inputColVector */ {
 
-      // Carefully handle NULLs...
-
       /*
-       * Since we always generate a result without NULLs, we can optimize this case similar to
-       * the optimization above...
+       * Do careful maintenance of the outputColVector.noNulls flag.
        */
 
       if (batch.selectedInUse) {
-
-         // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
-
-         if (!outputColVector.noNulls) {
-           for(int j = 0; j != n; j++) {
-            final int i = sel[j];
+        for(int j=0; j != n; j++) {
+          int i = sel[j];
+          if (!inputIsNull[i]) {
             outputIsNull[i] = false;
-            outputVector[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
-                arg2Scalar : arg3Scalar);
+            outputVector[i] = value.compareTo(vector2[i]) <OperatorSymbol> 0 ? 1 : 0;
+          } else {
+            // Comparison with NULL is NULL.
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
           }
-         } else {
-           for(int j = 0; j != n; j++) {
-             final int i = sel[j];
-             outputVector[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
-                arg2Scalar : arg3Scalar);
-           }
-         }
-      } else {
-        if (!outputColVector.noNulls) {
-
-          // Assume it is almost always a performance win to fill all of isNull so we can
-          // safely reset noNulls.
-          Arrays.fill(outputIsNull, false);
-          outputColVector.noNulls = true;
         }
+      } else {
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
-          outputVector[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
-                arg2Scalar : arg3Scalar);
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
+            outputVector[i] = value.compareTo(vector2[i]) <OperatorSymbol> 0 ? 1 : 0;
+          } else {
+            // Comparison with NULL is NULL.
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
         }
       }
     }
@@ -164,7 +161,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, arg1Column) + ", val "+ arg2Scalar + ", val "+ arg3Scalar;
+    return "val " + value.toString() + ", " + getColumnParamString(1, colNum);
   }
 
   @Override
@@ -172,14 +169,12 @@ public class <ClassName> extends VectorExpression {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(
             VectorExpressionDescriptor.Mode.PROJECTION)
-        .setNumArguments(3)
+        .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("long"),
-            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType2>"),
-            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType3>"))
+            VectorExpressionDescriptor.ArgumentType.DECIMAL,
+            VectorExpressionDescriptor.ArgumentType.DECIMAL)
         .setInputExpressionTypes(
-            VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR,
-            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }
 }

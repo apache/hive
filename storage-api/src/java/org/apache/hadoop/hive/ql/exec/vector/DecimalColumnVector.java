@@ -62,8 +62,27 @@ public class DecimalColumnVector extends ColumnVector {
   }
 
   @Override
+  // Simplify vector by brute-force flattening noNulls and isRepeating
+  // This can be used to reduce combinatorial explosion of code paths in VectorExpressions
+  // with many arguments.
   public void flatten(boolean selectedInUse, int[] sel, int size) {
-    throw new RuntimeException("Not implemented");
+    flattenPush();
+    if (isRepeating) {
+      isRepeating = false;
+      HiveDecimalWritable repeat = vector[0];
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          vector[i].set(repeat);
+        }
+      } else {
+        for (int i = 0; i < size; i++) {
+          vector[i].set(repeat);
+        }
+      }
+      flattenRepeatingNulls(selectedInUse, sel, size);
+    }
+    flattenNoNulls(selectedInUse, sel, size);
   }
 
   /**

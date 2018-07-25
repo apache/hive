@@ -18,25 +18,39 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 
 /**
  * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
  * The first is always a boolean (LongColumnVector).
- * The second is a string scalar.
- * The third is a string scalar.
+ * The second is a column or non-constant expression result.
+ * The third is a constant value.
  */
-public class IfExprCharScalarStringScalar extends IfExprStringScalarStringScalar {
+public class IfExprDecimal64ScalarDecimal64Column extends IfExprLongScalarLongColumn {
 
   private static final long serialVersionUID = 1L;
 
-  public IfExprCharScalarStringScalar(
-      int arg1Column, byte[] arg2Scalar, byte[] arg3Scalar, int outputColumnNum) {
-    super(arg1Column, arg2Scalar, arg3Scalar, outputColumnNum);
+  public IfExprDecimal64ScalarDecimal64Column(int arg1Column, long arg2Scalar, int arg3Column,
+      int outputColumnNum) {
+    super(arg1Column, arg2Scalar, arg3Column, outputColumnNum);
   }
 
-  public IfExprCharScalarStringScalar() {
+  public IfExprDecimal64ScalarDecimal64Column() {
     super();
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) inputTypeInfos[1];
+    HiveDecimalWritable writable = new HiveDecimalWritable();
+    writable.deserialize64(arg2Scalar, decimalTypeInfo.scale());
+    return
+        getColumnParamString(0, arg1Column) +
+        ", decimal64Val " + arg2Scalar + ", decimalVal " + writable.toString() +
+        ", " + getColumnParamString(1, arg3Column);
   }
 
   @Override
@@ -46,12 +60,12 @@ public class IfExprCharScalarStringScalar extends IfExprStringScalarStringScalar
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(3)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.INT_FAMILY,
-            VectorExpressionDescriptor.ArgumentType.CHAR,
-            VectorExpressionDescriptor.ArgumentType.CHAR)
+            VectorExpressionDescriptor.ArgumentType.getType("long"),
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64,
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR,
-            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }
 }

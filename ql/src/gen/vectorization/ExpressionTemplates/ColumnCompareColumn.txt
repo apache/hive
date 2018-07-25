@@ -33,8 +33,8 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum1;
-  private final int colNum2;
+  protected final int colNum1;
+  protected final int colNum2;
 
   public <ClassName>(int colNum1, int colNum2, int outputColumnNum) {
     super(outputColumnNum);

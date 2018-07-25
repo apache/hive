@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -153,6 +154,20 @@ public class TestVectorIfStatement {
     Random random = new Random(12882);
 
     doIfTests(random, "decimal(10,4)");
+  }
+
+  @Test
+  public void testDecimal64() throws Exception {
+    Random random = new Random(12882);
+
+    doIfTestsWithDiffColumnScalar(
+        random, "decimal(10,4)", ColumnScalarMode.COLUMN_COLUMN, DataTypePhysicalVariation.DECIMAL_64, false, false);
+    doIfTestsWithDiffColumnScalar(
+        random, "decimal(10,4)", ColumnScalarMode.COLUMN_SCALAR, DataTypePhysicalVariation.DECIMAL_64, false, false);
+    doIfTestsWithDiffColumnScalar(
+        random, "decimal(10,4)", ColumnScalarMode.SCALAR_COLUMN, DataTypePhysicalVariation.DECIMAL_64, false, false);
+    doIfTestsWithDiffColumnScalar(
+        random, "decimal(10,4)", ColumnScalarMode.SCALAR_SCALAR, DataTypePhysicalVariation.DECIMAL_64, false, false);
   }
 
   public enum IfStmtTestMode {
@@ -280,22 +295,6 @@ public class TestVectorIfStatement {
 
     String[] columnNames = columns.toArray(new String[0]);
 
-    String[] outputScratchTypeNames = new String[] { typeName };
-    DataTypePhysicalVariation[] outputDataTypePhysicalVariations =
-        new DataTypePhysicalVariation[] { dataTypePhysicalVariation };
-
-    VectorizedRowBatchCtx batchContext =
-        new VectorizedRowBatchCtx(
-            columnNames,
-            rowSource.typeInfos(),
-            rowSource.dataTypePhysicalVariations(),
-            /* dataColumnNums */ null,
-            /* partitionColumnCount */ 0,
-            /* virtualColumnCount */ 0,
-            /* neededVirtualColumns */ null,
-            outputScratchTypeNames,
-            outputDataTypePhysicalVariations);
-
     Object[][] randomRows = rowSource.randomRows(100000);
 
     VectorRandomBatchSource batchSource =
@@ -324,13 +323,13 @@ public class TestVectorIfStatement {
         doVectorIfTest(
             typeInfo,
             columns,
+            columnNames,
             rowSource.typeInfos(),
             rowSource.dataTypePhysicalVariations(),
             children,
             ifStmtTestMode,
             columnScalarMode,
             batchSource,
-            batchContext,
             resultObjects);
         break;
       default:
@@ -353,14 +352,6 @@ public class TestVectorIfStatement {
                 " does not match row-mode expected result is NULL " + (expectedResult == null));
           }
         } else {
-
-          if (isDecimal64 && expectedResult instanceof LongWritable) {
-
-            HiveDecimalWritable expectedHiveDecimalWritable = new HiveDecimalWritable(0);
-            expectedHiveDecimalWritable.deserialize64(
-                ((LongWritable) expectedResult).get(), decimal64Scale);
-            expectedResult = expectedHiveDecimalWritable;
-          }
 
           if (!expectedResult.equals(vectorResult)) {
             Assert.fail(
@@ -418,10 +409,11 @@ public class TestVectorIfStatement {
 
   private void doVectorIfTest(TypeInfo typeInfo,
       List<String> columns,
+      String[] columnNames,
       TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
       List<ExprNodeDesc> children,
       IfStmtTestMode ifStmtTestMode, ColumnScalarMode columnScalarMode,
-      VectorRandomBatchSource batchSource, VectorizedRowBatchCtx batchContext,
+      VectorRandomBatchSource batchSource,
       Object[] resultObjects)
           throws Exception {
 
@@ -453,10 +445,36 @@ public class TestVectorIfStatement {
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
 
+    if (ifStmtTestMode == IfStmtTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
+          " ifStmtTestMode " + ifStmtTestMode +
+          " columnScalarMode " + columnScalarMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
+
+    String[] outputScratchTypeNames= vectorizationContext.getScratchColumnTypeNames();
+    DataTypePhysicalVariation[] outputDataTypePhysicalVariations =
+        vectorizationContext.getScratchDataTypePhysicalVariations();
+
+    VectorizedRowBatchCtx batchContext =
+        new VectorizedRowBatchCtx(
+            columnNames,
+            typeInfos,
+            dataTypePhysicalVariations,
+            /* dataColumnNums */ null,
+            /* partitionColumnCount */ 0,
+            /* virtualColumnCount */ 0,
+            /* neededVirtualColumns */ null,
+            outputScratchTypeNames,
+            outputDataTypePhysicalVariations);
+
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorExtractRow resultVectorExtractRow = new VectorExtractRow();
-    resultVectorExtractRow.init(new TypeInfo[] { typeInfo }, new int[] { columns.size() });
+    resultVectorExtractRow.init(
+        new TypeInfo[] { typeInfo }, new int[] { vectorExpression.getOutputColumnNum() });
     Object[] scrqtchRow = new Object[1];
 
     // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
@@ -466,7 +484,7 @@ public class TestVectorIfStatement {
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " ifStmtTestMode " + ifStmtTestMode +
         " columnScalarMode " + columnScalarMode +
-        " vectorExpression " + vectorExpression.getClass().getSimpleName());
+        " vectorExpression " + vectorExpression.toString());
     */
 
     batchSource.resetBatchIteration();
