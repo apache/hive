@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHive
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 
 public class TestSparkStatistics {
 
+  @Ignore("flaky test")
   @Test
   public void testSparkStatistics() {
     HiveConf conf = new HiveConf();
