@@ -31,7 +31,8 @@ import java.io.File;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class TestMiniDruidCliDriver {
+public class TestMiniDruidCliDriver
+{
 
   static CliAdapter adapter = new CliConfigs.MiniDruidCliConfig().getCliAdapter();
 

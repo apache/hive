@@ -137,7 +137,10 @@ STAGE PLANS:
                           Map-reduce partition columns: __time_granularity (type: timestamp), __druid_extra_partition_key (type: bigint)
                           Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: timestamp with local time zone), _col1 (type: string), _col2 (type: string), _col3 (type: double), _col4 (type: float), _col5 (type: tinyint), _col6 (type: smallint), _col7 (type: int), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: boolean)
+            Execution mode: llap
+            LLAP IO: all inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: timestamp with local time zone), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: double), VALUE._col4 (type: float), VALUE._col5 (type: tinyint), VALUE._col6 (type: smallint), VALUE._col7 (type: int), VALUE._col8 (type: bigint), VALUE._col9 (type: boolean), VALUE._col10 (type: boolean), KEY.__time_granularity (type: timestamp), KEY.__druid_extra_partition_key (type: bigint)
@@ -373,7 +376,10 @@ STAGE PLANS:
                           Map-reduce partition columns: __time_granularity (type: timestamp), __druid_extra_partition_key (type: bigint)
                           Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: timestamp with local time zone), _col1 (type: string), _col2 (type: string), _col3 (type: double), _col4 (type: float), _col5 (type: tinyint), _col6 (type: smallint), _col7 (type: int), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: boolean)
+            Execution mode: llap
+            LLAP IO: all inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: timestamp with local time zone), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: double), VALUE._col4 (type: float), VALUE._col5 (type: tinyint), VALUE._col6 (type: smallint), VALUE._col7 (type: int), VALUE._col8 (type: bigint), VALUE._col9 (type: boolean), VALUE._col10 (type: boolean), KEY.__time_granularity (type: timestamp), KEY.__druid_extra_partition_key (type: bigint)
@@ -511,7 +517,10 @@ STAGE PLANS:
                           Map-reduce partition columns: __time_granularity (type: timestamp), __druid_extra_partition_key (type: bigint)
                           Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: timestamp with local time zone), _col1 (type: string), _col2 (type: string), _col3 (type: double), _col4 (type: float), _col5 (type: tinyint), _col6 (type: smallint), _col7 (type: int), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: boolean)
+            Execution mode: llap
+            LLAP IO: all inputs
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: timestamp with local time zone), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: double), VALUE._col4 (type: float), VALUE._col5 (type: tinyint), VALUE._col6 (type: smallint), VALUE._col7 (type: int), VALUE._col8 (type: bigint), VALUE._col9 (type: boolean), VALUE._col10 (type: boolean), KEY.__time_granularity (type: timestamp), KEY.__druid_extra_partition_key (type: bigint)
