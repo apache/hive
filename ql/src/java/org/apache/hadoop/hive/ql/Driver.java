@@ -652,6 +652,10 @@ public class Driver implements IDriver {
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
 
       if (!retrial) {
+        if ((queryState.getHiveOperation() != null)
+                && queryState.getHiveOperation().equals(HiveOperation.REPLDUMP)) {
+          setLastReplIdForDump(queryState.getConf());
+        }
         openTransaction();
         generateValidTxnList();
       }
@@ -914,16 +918,12 @@ public class Driver implements IDriver {
     LOG.debug("Setting " + ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
 
-  private void openTransaction() throws CommandProcessorResponse, HiveException, TException {
+  private void openTransaction() throws LockException, CommandProcessorResponse {
     if (checkConcurrency() && startImplicitTxn(queryTxnMgr)) {
       String userFromUGI = getUserFromUGI();
       if (!queryTxnMgr.isTxnOpen()) {
         if (userFromUGI == null) {
           throw createProcessorResponse(10);
-        }
-        if ((queryState.getHiveOperation() != null)
-                && queryState.getHiveOperation().equals(HiveOperation.REPLDUMP)) {
-          setLastReplIdForDump(queryState.getConf());
         }
         queryTxnMgr.openTxn(ctx, userFromUGI);
       }

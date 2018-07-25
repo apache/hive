@@ -220,14 +220,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   Long bootStrapDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot) throws Exception {
     // bootstrap case
-    // Last repl id would've been captured in queryState configs before opening txn by current REPL DUMP operation.
+    // Last repl id would've been captured during compile phase in queryState configs before opening txn.
     // This is needed as we dump data on ACID/MM tables based on read snapshot or else we may lose data from
     // concurrent txns when bootstrap dump in progress. If it is not available, then get it from metastore.
     Hive hiveDb = getHive();
     Long bootDumpBeginReplId = queryState.getConf().getLong(ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY, -1L);
-    if (bootDumpBeginReplId < 0L) {
-      bootDumpBeginReplId = currentNotificationId(hiveDb);
-    }
+    assert (bootDumpBeginReplId >= 0L);
+
     String validTxnList = getValidTxnListForReplDump(hiveDb);
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);

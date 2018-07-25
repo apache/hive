@@ -96,7 +96,7 @@ public class FunctionTask extends Task<FunctionWork> {
           // For repl load flow, function may exist for first incremental phase. So, just return success.
           if (createFunctionDesc.getReplicationSpec().isInReplicationScope()
                   && (e.getCause() instanceof AlreadyExistsException)) {
-            LOG.debug("Create function is idempotent as function: "
+            LOG.info("Create function is idempotent as function: "
                     + createFunctionDesc.getFunctionName() + " already exists.");
             return 0;
           }
@@ -272,7 +272,7 @@ public class FunctionTask extends Task<FunctionWork> {
       // For repl load flow, function may not exist for first incremental phase. So, just return success.
       if (dropFunctionDesc.getReplicationSpec().isInReplicationScope()
               && (e.getCause() instanceof NoSuchObjectException)) {
-        LOG.debug("Drop function is idempotent as function: "
+        LOG.info("Drop function is idempotent as function: "
                 + dropFunctionDesc.getFunctionName() + " doesn't exist.");
         return 0;
       }
