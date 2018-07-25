@@ -19,30 +19,34 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
+import java.sql.Timestamp;
 
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
-public class LongScalarGreaterEqualLongColumn extends VectorExpression {
+
+/**
+ * Casts a string vector to a Timestamp vector.
+ */
+public class CastStringToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  protected final int colNum;
-  protected final long value;
+  private final int inputColumn;
 
-  public LongScalarGreaterEqualLongColumn(long value, int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
-    this.value = value;
-  }
-
-  public LongScalarGreaterEqualLongColumn() {
+  public CastStringToTimestamp() {
     super();
 
     // Dummy final assignments.
-    colNum = -1;
-    value = 0;
+    inputColumn = -1;
+  }
+
+  public CastStringToTimestamp(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
+    this.inputColumn = inputColumn;
   }
 
   @Override
@@ -52,17 +56,17 @@ public class LongScalarGreaterEqualLongColumn extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
+    int n = batch.size;
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
+
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    int n = batch.size;
-    long[] vector = inputColVector.vector;
-    long[] outputVector = outputColVector.vector;
 
-    // return immediately if batch is empty
     if (n == 0) {
+
+      // Nothing to do
       return;
     }
 
@@ -71,8 +75,9 @@ public class LongScalarGreaterEqualLongColumn extends VectorExpression {
 
     if (inputColVector.isRepeating) {
       if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
         outputIsNull[0] = false;
-        outputVector[0] = value >= vector[0] ? 1 : 0;
+        evaluate(outputColVector, inputColVector, 0);
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
@@ -91,14 +96,12 @@ public class LongScalarGreaterEqualLongColumn extends VectorExpression {
            final int i = sel[j];
            // Set isNull before call in case it changes it mind.
            outputIsNull[i] = false;
-           // The SIMD optimized form of "a >= b" is "((a - b) >>> 63) ^ 1"
-           outputVector[i] = ((value - vector[i]) >>> 63) ^ 1;
+           evaluate(outputColVector, inputColVector, i);
          }
         } else {
           for(int j = 0; j != n; j++) {
             final int i = sel[j];
-            // The SIMD optimized form of "a >= b" is "((a - b) >>> 63) ^ 1"
-            outputVector[i] = ((value - vector[i]) >>> 63) ^ 1;
+            evaluate(outputColVector, inputColVector, i);
           }
         }
       } else {
@@ -110,51 +113,65 @@ public class LongScalarGreaterEqualLongColumn extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          // The SIMD optimized form of "a >= b" is "((a - b) >>> 63) ^ 1"
-          outputVector[i] = ((value - vector[i]) >>> 63) ^ 1;
+          evaluate(outputColVector, inputColVector, i);
         }
       }
-    } else /* there are nulls in the inputColVector */ {
+    } else /* there are NULLs in the inputColVector */ {
 
       // Carefully handle NULLs...
 
-      /*
-       * For better performance on LONG/DOUBLE we don't want the conditional
-       * statements inside the for loop.
-       */
       outputColVector.noNulls = false;
 
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputIsNull[i] = inputIsNull[i];
-          outputVector[i] = ((value - vector[i]) >>> 63) ^ 1;
+          // Set isNull before call in case it changes it mind.
+          outputColVector.isNull[i] = inputColVector.isNull[i];
+          if (!inputColVector.isNull[i]) {
+            evaluate(outputColVector, inputColVector, i);
+          }
         }
       } else {
-        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
+        // Set isNull before calls in case they change their mind.
+        System.arraycopy(inputColVector.isNull, 0, outputColVector.isNull, 0, n);
         for(int i = 0; i != n; i++) {
-          outputVector[i] = ((value - vector[i]) >>> 63) ^ 1;
+          if (!inputColVector.isNull[i]) {
+            evaluate(outputColVector, inputColVector, i);
+          }
         }
       }
     }
   }
 
+  private void evaluate(TimestampColumnVector outputColVector, BytesColumnVector inputColVector, int i) {
+    try {
+      org.apache.hadoop.hive.common.type.Timestamp timestamp =
+          PrimitiveObjectInspectorUtils.getTimestampFromString(
+              new String(
+                  inputColVector.vector[i], inputColVector.start[i], inputColVector.length[i],
+                  "UTF-8"));
+      outputColVector.set(i, timestamp.toSqlTimestamp());
+    } catch (Exception e) {
+      outputColVector.setNullValue(i);
+      outputColVector.isNull[i] = true;
+      outputColVector.noNulls = false;
+    }
+  }
+
   @Override
   public String vectorExpressionParameters() {
-    return "val " + value + ", " + getColumnParamString(1, colNum);
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
-    return (new VectorExpressionDescriptor.Builder())
-        .setMode(
-            VectorExpressionDescriptor.Mode.PROJECTION)
-        .setNumArguments(2)
+    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
+    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("long"),
-            VectorExpressionDescriptor.ArgumentType.getType("long"))
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
         .setInputExpressionTypes(
-            VectorExpressionDescriptor.InputExpressionType.SCALAR,
-            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
+            VectorExpressionDescriptor.InputExpressionType.COLUMN);
+    return b.build();
   }
 }

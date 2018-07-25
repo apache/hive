@@ -730,7 +730,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -769,7 +769,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,2)]
+                    scratchColumnTypeNames: []
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -783,7 +783,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -821,7 +821,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,2)]
+                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1039,7 +1039,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1077,7 +1077,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,2)]
+                    scratchColumnTypeNames: []
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1091,7 +1091,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1130,7 +1130,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,2)]
+                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1347,7 +1347,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1386,7 +1386,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,2)]
+                    scratchColumnTypeNames: []
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1400,7 +1400,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1439,7 +1439,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,2)]
+                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2028,7 +2028,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2067,7 +2067,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(7,2)]
+                    scratchColumnTypeNames: []
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -2081,7 +2081,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2119,7 +2119,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(7,2)]
+                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2337,7 +2337,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2375,7 +2375,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(7,2)]
+                    scratchColumnTypeNames: []
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -2389,7 +2389,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2428,7 +2428,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(7,2)]
+                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2645,7 +2645,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2684,7 +2684,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(7,2)]
+                    scratchColumnTypeNames: []
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2698,7 +2698,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2)/DECIMAL_64)
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2737,7 +2737,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(7,2)]
+                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

@@ -188,8 +188,8 @@ public class IfExprStringScalarStringGroupColumn extends VectorExpression {
         .setNumArguments(3)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.INT_FAMILY,
-            VectorExpressionDescriptor.ArgumentType.STRING,
-            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
+            VectorExpressionDescriptor.ArgumentType.STRING_BINARY,
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY_BINARY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR,

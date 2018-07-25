@@ -35,9 +35,9 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int arg1Column;
-  private final int arg2Column;
-  private final <OperandType3> arg3Scalar;
+  protected final int arg1Column;
+  protected final int arg2Column;
+  protected final <OperandType3> arg3Scalar;
 
   public <ClassName>(int arg1Column, int arg2Column, <OperandType3> arg3Scalar,
       int outputColumnNum) {
