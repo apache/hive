@@ -235,7 +235,7 @@ public class HadoopJobExecHelper {
     List<ClientStatsPublisher> clientStatPublishers = getClientStatPublishers();
     final boolean localMode = ShimLoader.getHadoopShims().isLocalMode(job);
 
-    MapRedStats mapRedStats = new MapRedStats(numMap, numReduce, cpuMsec, false, rj.getID().toString());
+    MapRedStats mapRedStats = new MapRedStats(job, numMap, numReduce, cpuMsec, false, rj.getID().toString());
     updateMapRedTaskWebUIStatistics(mapRedStats, rj);
 
     while (!rj.isComplete()) {
