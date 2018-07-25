@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
@@ -78,6 +79,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.WebHCatJTShim23;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
+import org.apache.hadoop.mapreduce.FileSystemCounter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
@@ -1606,6 +1608,21 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @Override
     public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
       hdfsAdmin.disableErasureCodingPolicy(ecPolicyName);
+    }
+
+    /**
+     * @return true if if the runtime MR stat for Erasure Coding is available.
+     */
+    @Override
+    public boolean isMapReduceStatAvailable() {
+      // Look for FileSystemCounter.BYTES_READ_EC, this is present in hadoop 3.2
+      Field field = null;
+      try {
+        field = FileSystemCounter.class.getField("BYTES_READ_EC");
+      } catch (NoSuchFieldException e) {
+        // This version of Hadoop does not support EC stats for MR
+      }
+      return (field != null);
     }
   }
 }
