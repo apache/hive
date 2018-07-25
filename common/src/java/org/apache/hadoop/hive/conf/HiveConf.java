@@ -2852,6 +2852,12 @@ public class HiveConf extends Configuration {
         " on the assumption that data changes by external applications may have negative effects" +
         " on these operations."),
 
+    HIVE_EXTERNALTABLE_PURGE_DEFAULT("hive.external.table.purge.default", false,
+        "Set to true to set external.table.purge=true on newly created external tables," +
+        " which will specify that the table data should be deleted when the table is dropped." +
+        " Set to false maintain existing behavior that external tables do not delete data" +
+        " when the table is dropped."),
+
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
