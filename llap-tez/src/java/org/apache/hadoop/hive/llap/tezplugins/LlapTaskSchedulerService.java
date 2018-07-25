@@ -587,11 +587,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     boolean newState = false;
     synchronized (ti) {
       assert ti.isPendingUpdate;
-      if (ti.lastSetGuaranteed != null && ti.lastSetGuaranteed == ti.isGuaranteed) {
+      if ((ti.lastSetGuaranteed != null && ti.lastSetGuaranteed == ti.isGuaranteed)
+          || ti.isGuaranteed == null) {
+        // Nothing to do - e.g. two messages have canceled each other before we could react,
+        // or the task was deallocated.
         ti.requestedValue = ti.isGuaranteed;
         setUpdateDoneUnderTiLock(ti);
         WM_LOG.info("Not sending update to " + ti.attemptId);
-        return; // Nothing to do - e.g. two messages have canceled each other before we could react.
+        return;
       }
       newState = ti.isGuaranteed;
     }
@@ -612,7 +615,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private void setUpdateDoneUnderTiLock(TaskInfo ti) {
     ti.isPendingUpdate = false;
     // It's ok to update metrics for two tasks in parallel, but not for the same one.
-    if (metrics != null) {
+    // Don't update metrics for the cancelled tasks - already taken care of during cancellation.
+    if (metrics != null && ti.requestedValue != null) {
       metrics.setWmPendingDone(ti.requestedValue);
     }
     ti.lastSetGuaranteed = ti.requestedValue;
@@ -660,7 +664,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         // update the pending state for now as we release this lock to take both.
         newStateAnyTask = requestedValue;
       }
-    } // End of synchronized (ti) 
+    } // End of synchronized (ti)
     if (newStateSameTask != null) {
       WM_LOG.info("Sending update to the same task in response handling "
           + ti.attemptId + ", " + newStateSameTask);

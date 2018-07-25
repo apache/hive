@@ -31,9 +31,9 @@ public class IfExprLongColumnLongColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int arg1Column;
-  private final int arg2Column;
-  private final int arg3Column;
+  protected final int arg1Column;
+  protected final int arg2Column;
+  protected final int arg3Column;
 
   public IfExprLongColumnLongColumn(int arg1Column, int arg2Column, int arg3Column,
       int outputColumnNum) {
