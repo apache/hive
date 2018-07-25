@@ -708,4 +708,27 @@ public class CliConfigs {
     }
   }
 
+  public static class MiniDruidLlapLocalCliConfig extends AbstractCliConfig {
+    public MiniDruidLlapLocalCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "druid.llap.local.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/druid");
+        setLogDir("itests/qtest/target/tmp/log");
+
+        setInitScript("q_test_druid_init.sql");
+        setCleanupScript("q_test_cleanup_druid.sql");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.druidLocal);
+        setMetastoreType(MetastoreType.sql);
+        setFsType(QTestUtil.FsType.local);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
 }
