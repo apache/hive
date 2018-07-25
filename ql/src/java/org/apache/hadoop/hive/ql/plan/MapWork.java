@@ -596,11 +596,8 @@ public class MapWork extends BaseWork {
   }
 
   public ArrayList<Path> getPaths() {
-    ArrayList<Path> ret=new ArrayList<>();
-    ret.addAll(pathToAliases.keySet());
-    return ret;
+    return new ArrayList<Path>(pathToAliases.keySet());
   }
-
 
   public ArrayList<PartitionDesc> getPartitionDescs() {
     return new ArrayList<PartitionDesc>(aliasToPartnInfo.values());
