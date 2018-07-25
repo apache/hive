@@ -366,8 +366,8 @@ public class HiveAlterHandler implements AlterHandler {
     } catch (NoSuchObjectException e) {
       LOG.debug("Object not found in metastore ", e);
       throw new InvalidOperationException(
-          "Unable to change partition or table. Database " + dbname + " does not exist"
-              + " Check metastore logs for detailed stack." + e.getMessage());
+          "Unable to change partition or table. Object " +  e.getMessage() + " does not exist."
+              + " Check metastore logs for detailed stack.");
     } finally {
       if (!success) {
         LOG.error("Failed to alter table " + TableName.getQualified(catName, dbname, name));
