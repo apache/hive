@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -176,6 +177,7 @@ public class TestRpc {
     serverRpcFuture.cancel(true);
   }
 
+  @Ignore
   @Test
   public void testServerPort() throws Exception {
     Map<String, String> config = new HashMap<String, String>();
