@@ -27,7 +27,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
@@ -40,6 +43,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 public class MetaStoreTestUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreTestUtils.class);
+  private static final String TMP_DIR = System.getProperty("test.tmp.dir");
   public static final int RETRY_COUNT = 10;
 
   /**
@@ -82,9 +86,20 @@ public class MetaStoreTestUtils {
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
   }
 
+  public static int startMetaStoreWithRetry(Configuration conf, boolean keepJdbcUri)
+      throws Exception {
+    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf,
+        keepJdbcUri);
+  }
+
   public static int startMetaStoreWithRetry() throws Exception {
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
         MetastoreConf.newMetastoreConf());
+  }
+
+  public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
+                                            Configuration conf) throws Exception {
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false);
   }
 
   /**
@@ -94,22 +109,46 @@ public class MetaStoreTestUtils {
    * instances will use different warehouse directories.
    * @param bridge The Thrift bridge to uses
    * @param conf The configuration to use
+   * @param keepJdbcUri If set to true, then the JDBC url is not changed
    * @return The port on which the MetaStore finally started
    * @throws Exception
    */
   public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
-                                            Configuration conf) throws Exception {
+      Configuration conf, boolean keepJdbcUri) throws Exception {
     Exception metaStoreException = null;
     String warehouseDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
+
     for (int tryCount = 0; tryCount < MetaStoreTestUtils.RETRY_COUNT; tryCount++) {
       try {
         int metaStorePort = findFreePort();
+        // Setting metastore instance specific warehouse directory, postfixing with port
         Path postfixedWarehouseDir = new Path(warehouseDir, String.valueOf(metaStorePort));
         MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, postfixedWarehouseDir.toString());
+
+        String jdbcUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
+        if (!keepJdbcUri) {
+          // Setting metastore instance specific jdbc url postfixed with port
+          jdbcUrl = "jdbc:derby:;databaseName=" + TMP_DIR + File.separator
+              + "junit_metastore_db_" + metaStorePort + ";create=true";
+          MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, jdbcUrl);
+        }
+
+        // Setting metastore instance specific metastore uri
         MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + metaStorePort);
         MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf);
-        LOG.error("MetaStore Thrift Server started on port: {} with warehouse dir: {}",
-            metaStorePort, postfixedWarehouseDir);
+
+        // Creating warehouse dir, if not exists
+        Warehouse wh = new Warehouse(conf);
+        if (!wh.isDir(wh.getWhRoot())) {
+          FileSystem fs = wh.getWhRoot().getFileSystem(conf);
+          fs.mkdirs(wh.getWhRoot());
+          fs.setPermission(wh.getWhRoot(),
+              new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL));
+          LOG.info("MetaStore warehouse root dir ({}) is created", postfixedWarehouseDir);
+        }
+
+        LOG.info("MetaStore Thrift Server started on port: {} with warehouse dir: {} with " +
+            "jdbcUrl: {}", metaStorePort, postfixedWarehouseDir, jdbcUrl);
         return metaStorePort;
       } catch (ConnectException ce) {
         metaStoreException = ce;

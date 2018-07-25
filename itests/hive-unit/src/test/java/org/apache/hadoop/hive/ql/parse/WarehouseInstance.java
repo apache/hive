@@ -145,7 +145,7 @@ public class WarehouseInstance implements Closeable {
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
-    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true);
 
     Path testPath = new Path(hiveWarehouseLocation);
     FileSystem testPathFileSystem = FileSystem.get(testPath.toUri(), hiveConf);
