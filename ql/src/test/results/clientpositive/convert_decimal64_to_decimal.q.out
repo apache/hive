@@ -181,7 +181,7 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 33:decimal(4,2))(children: ConvertDecimal64ToDecimal(col 19:decimal(4,2)/DECIMAL_64) -> 33:decimal(4,2))
+                  predicateExpression: SelectColumnIsNotNull(col 19:decimal(4,2)/DECIMAL_64)
               predicate: decimal0402_col_20 is not null (type: boolean)
               Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -199,7 +199,7 @@ STAGE PLANS:
                     0 _col0 (type: decimal(9,2))
                     1 _col1 (type: decimal(9,2))
                   Map Join Vectorization:
-                      bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 19:decimal(9,2)/DECIMAL_64) -> 34:decimal(9,2)
+                      bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 19:decimal(9,2)/DECIMAL_64) -> 33:decimal(9,2)
                       bigTableValueExpressions: col 14:smallint
                       className: VectorMapJoinOperator
                       native: false
@@ -244,7 +244,7 @@ STAGE PLANS:
               includeColumns: [14, 19]
               dataColumns: tinyint_col_1:tinyint, float_col_2:float, bigint_col_3:bigint, boolean_col_4:boolean, decimal0202_col_5:decimal(2,2)/DECIMAL_64, decimal1612_col_6:decimal(16,12)/DECIMAL_64, double_col_7:double, char0205_col_8:char(205), bigint_col_9:bigint, decimal1202_col_10:decimal(12,2)/DECIMAL_64, boolean_col_11:boolean, double_col_12:double, decimal2208_col_13:decimal(22,8), decimal3722_col_14:decimal(37,22), smallint_col_15:smallint, decimal2824_col_16:decimal(28,24), boolean_col_17:boolean, float_col_18:float, timestamp_col_19:timestamp, decimal0402_col_20:decimal(4,2)/DECIMAL_64, char0208_col_21:char(208), char0077_col_22:char(77), decimal2915_col_23:decimal(29,15), char0234_col_24:char(234), timestamp_col_25:timestamp, tinyint_col_26:tinyint, decimal3635_col_27:decimal(36,35), boolean_col_28:boolean, float_col_29:float, smallint_col_30:smallint, varchar0200_col_31:varchar(200), boolean_col_32:boolean
               partitionColumnCount: 0
-              scratchColumnTypeNames: [decimal(4,2), decimal(9,2)]
+              scratchColumnTypeNames: [decimal(9,2)]
       Local Work:
         Map Reduce Local Work
       Reduce Vectorization:

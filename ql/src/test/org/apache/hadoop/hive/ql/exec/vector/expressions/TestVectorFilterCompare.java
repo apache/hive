@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomBatchSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
@@ -54,13 +55,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateAdd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateDiff;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateSub;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPDivide;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
@@ -78,15 +80,16 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.BooleanWritable;
 
 import junit.framework.Assert;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestVectorArithmetic {
+public class TestVectorFilterCompare {
 
-  public TestVectorArithmetic() {
+  public TestVectorFilterCompare() {
     // Arithmetic operations rely on getting conf from SessionState, need to initialize here.
     SessionState ss = new SessionState(new HiveConf());
     ss.getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
@@ -129,50 +132,48 @@ public class TestVectorArithmetic {
   }
 
   @Test
+  public void testTimestamp() throws Exception {
+    Random random = new Random(7743);
+
+    doTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.timestampTypeInfo);
+
+    doTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.longTypeInfo);
+    doTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.doubleTypeInfo);
+
+    doTests(random, TypeInfoFactory.longTypeInfo, TypeInfoFactory.timestampTypeInfo);
+    doTests(random, TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.timestampTypeInfo);
+  }
+
+  @Test
+  public void testDate() throws Exception {
+    Random random = new Random(7743);
+
+    doTests(random, TypeInfoFactory.dateTypeInfo, TypeInfoFactory.dateTypeInfo);
+  }
+
+  @Test
   public void testInterval() throws Exception {
     Random random = new Random(7743);
 
-    doIntervalTests(random);
+    doTests(random, TypeInfoFactory.intervalYearMonthTypeInfo, TypeInfoFactory.intervalYearMonthTypeInfo);
+    doTests(random, TypeInfoFactory.intervalDayTimeTypeInfo, TypeInfoFactory.intervalDayTimeTypeInfo);
   }
 
   @Test
-  public void testTimestampInterval() throws Exception {
+  public void testStringFamily() throws Exception {
     Random random = new Random(7743);
 
-    doAddSubTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.intervalYearMonthTypeInfo);
-    doAddSubTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.intervalDayTimeTypeInfo);
+    doTests(random, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
 
-    doSubTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.timestampTypeInfo);
-
-    doAddTests(random, TypeInfoFactory.intervalYearMonthTypeInfo, TypeInfoFactory.timestampTypeInfo);
-    doAddTests(random, TypeInfoFactory.intervalDayTimeTypeInfo, TypeInfoFactory.timestampTypeInfo);
+    doTests(random, new CharTypeInfo(10), new CharTypeInfo(10));
+    doTests(random, new VarcharTypeInfo(10), new VarcharTypeInfo(10));
   }
 
-  @Test
-  public void testTimestampDate() throws Exception {
-    Random random = new Random(7743);
-
-    doSubTests(random, TypeInfoFactory.dateTypeInfo, TypeInfoFactory.timestampTypeInfo);
-    doSubTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.dateTypeInfo);
-  }
-
-  @Test
-  public void testDateInterval() throws Exception {
-    Random random = new Random(7743);
-
-    doAddSubTests(random, TypeInfoFactory.dateTypeInfo, TypeInfoFactory.intervalYearMonthTypeInfo);
-    doAddSubTests(random, TypeInfoFactory.dateTypeInfo, TypeInfoFactory.intervalDayTimeTypeInfo);
-
-    doSubTests(random, TypeInfoFactory.dateTypeInfo, TypeInfoFactory.dateTypeInfo);
-
-    doAddTests(random, TypeInfoFactory.intervalYearMonthTypeInfo, TypeInfoFactory.dateTypeInfo);
-    doAddTests(random, TypeInfoFactory.intervalDayTimeTypeInfo, TypeInfoFactory.dateTypeInfo);
-  }
-
-  public enum ArithmeticTestMode {
+  public enum FilterCompareTestMode {
     ROW_MODE,
     ADAPTOR,
-    VECTOR_EXPRESSION;
+    FILTER_VECTOR_EXPRESSION,
+    COMPARE_VECTOR_EXPRESSION;
 
     static final int count = values().length;
   }
@@ -201,10 +202,7 @@ public class TestVectorArithmetic {
   private void doIntegerTests(Random random)
           throws Exception {
     for (TypeInfo typeInfo : integerTypeInfos) {
-      for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
-        doTestsWithDiffColumnScalar(
-            random, typeInfo, typeInfo, columnScalarMode);
-      }
+      doTests(random, typeInfo, typeInfo);
     }
   }
 
@@ -212,18 +210,12 @@ public class TestVectorArithmetic {
       throws Exception {
     for (TypeInfo typeInfo1 : integerTypeInfos) {
       for (TypeInfo typeInfo2 : floatingTypeInfos) {
-        for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
-          doTestsWithDiffColumnScalar(
-              random, typeInfo1, typeInfo2, columnScalarMode);
-        }
+        doTests(random, typeInfo1, typeInfo2);
       }
     }
     for (TypeInfo typeInfo1 : floatingTypeInfos) {
       for (TypeInfo typeInfo2 : integerTypeInfos) {
-        for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
-          doTestsWithDiffColumnScalar(
-              random, typeInfo1, typeInfo2, columnScalarMode);
-        }
+        doTests(random, typeInfo1, typeInfo2);
       }
     }
   }
@@ -232,10 +224,7 @@ public class TestVectorArithmetic {
       throws Exception {
     for (TypeInfo typeInfo1 : floatingTypeInfos) {
       for (TypeInfo typeInfo2 : floatingTypeInfos) {
-        for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
-          doTestsWithDiffColumnScalar(
-              random, typeInfo1, typeInfo2, columnScalarMode);
-        }
+        doTests(random, typeInfo1, typeInfo2);
       }
     }
   }
@@ -253,23 +242,7 @@ public class TestVectorArithmetic {
   private void doDecimalTests(Random random, boolean tryDecimal64)
       throws Exception {
     for (TypeInfo typeInfo : decimalTypeInfos) {
-      for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
-        doTestsWithDiffColumnScalar(
-            random, typeInfo, typeInfo, columnScalarMode, tryDecimal64);
-      }
-    }
-  }
-
-  private static TypeInfo[] intervalTypeInfos = new TypeInfo[] {
-    TypeInfoFactory.intervalYearMonthTypeInfo,
-    TypeInfoFactory.intervalDayTimeTypeInfo
-  };
-
-  private void doIntervalTests(Random random)
-      throws Exception {
-    for (TypeInfo typeInfo : intervalTypeInfos) {
-      doAddSubTests(
-          random, typeInfo, typeInfo);
+      doTests(random, typeInfo, typeInfo, tryDecimal64);
     }
   }
 
@@ -283,12 +256,13 @@ public class TestVectorArithmetic {
     return TypeInfoUtils.getTypeInfoFromObjectInspector(outputObjectInspector);
   }
 
-  public enum Arithmetic {
-    ADD,
-    SUBTRACT,
-    MULTIPLY,
-    DIVIDE,
-    MODULUS;
+  public enum Comparison {
+    EQUALS,
+    LESS_THAN,
+    LESS_THAN_EQUAL,
+    GREATER_THAN,
+    GREATER_THAN_EQUAL,
+    NOT_EQUALS;
   }
 
   private TypeInfo getDecimalScalarTypeInfo(Object scalarObject) {
@@ -307,48 +281,39 @@ public class TestVectorArithmetic {
     return result;
   }
 
-  private void doAddTests(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2)
+  private void doTests(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2, boolean tryDecimal64)
       throws Exception {
     for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
       doTestsWithDiffColumnScalar(
-          random, typeInfo1, typeInfo2, columnScalarMode, Arithmetic.ADD, false);
+          random, typeInfo1, typeInfo2, columnScalarMode, tryDecimal64);
     }
   }
 
-  private void doSubTests(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2)
+  private void doTests(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2)
       throws Exception {
     for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
       doTestsWithDiffColumnScalar(
-          random, typeInfo1, typeInfo2, columnScalarMode, Arithmetic.SUBTRACT, false);
+          random, typeInfo1, typeInfo2, columnScalarMode);
     }
-  }
-
-  private void doAddSubTests(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2)
-          throws Exception {
-    doAddTests(random, typeInfo1, typeInfo2);
-    doSubTests(random, typeInfo1, typeInfo2);
   }
 
   private void doTestsWithDiffColumnScalar(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2,
       ColumnScalarMode columnScalarMode)
           throws Exception {
-    for (Arithmetic arithmetic : Arithmetic.values()) {
-      doTestsWithDiffColumnScalar(
-          random, typeInfo1, typeInfo2, columnScalarMode, arithmetic, false);
-    }
+    doTestsWithDiffColumnScalar(random, typeInfo1, typeInfo2, columnScalarMode, false);
   }
 
   private void doTestsWithDiffColumnScalar(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2,
       ColumnScalarMode columnScalarMode, boolean tryDecimal64)
           throws Exception {
-    for (Arithmetic arithmetic : Arithmetic.values()) {
+    for (Comparison comparison : Comparison.values()) {
       doTestsWithDiffColumnScalar(
-          random, typeInfo1, typeInfo2, columnScalarMode, arithmetic, tryDecimal64);
+          random, typeInfo1, typeInfo2, columnScalarMode, comparison, tryDecimal64);
     }
   }
 
   private void doTestsWithDiffColumnScalar(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2,
-      ColumnScalarMode columnScalarMode, Arithmetic arithmetic, boolean tryDecimal64)
+      ColumnScalarMode columnScalarMode, Comparison comparison, boolean tryDecimal64)
           throws Exception {
 
     String typeName1 = typeInfo1.getTypeName();
@@ -450,24 +415,27 @@ public class TestVectorArithmetic {
             null);
 
     GenericUDF genericUdf;
-    switch (arithmetic) {
-    case ADD:
-      genericUdf = new GenericUDFOPPlus();
+    switch (comparison) {
+    case EQUALS:
+      genericUdf = new GenericUDFOPEqual();
       break;
-    case SUBTRACT:
-      genericUdf = new GenericUDFOPMinus();
+    case LESS_THAN:
+      genericUdf = new GenericUDFOPLessThan();
       break;
-    case MULTIPLY:
-      genericUdf = new GenericUDFOPMultiply();
+    case LESS_THAN_EQUAL:
+      genericUdf = new GenericUDFOPEqualOrLessThan();
       break;
-    case DIVIDE:
-      genericUdf = new GenericUDFOPDivide();
+    case GREATER_THAN:
+      genericUdf = new GenericUDFOPGreaterThan();
       break;
-    case MODULUS:
-      genericUdf = new GenericUDFOPMod();
+    case GREATER_THAN_EQUAL:
+      genericUdf = new GenericUDFOPEqualOrGreaterThan();
+      break;
+    case NOT_EQUALS:
+      genericUdf = new GenericUDFOPNotEqual();
       break;
     default:
-      throw new RuntimeException("Unexpected arithmetic " + arithmetic);
+      throw new RuntimeException("Unexpected arithmetic " + comparison);
     }
 
     ObjectInspector[] objectInspectors =
@@ -485,22 +453,22 @@ public class TestVectorArithmetic {
         new ExprNodeGenericFuncDesc(outputTypeInfo, genericUdf, children);
 
     final int rowCount = randomRows.length;
-    Object[][] resultObjectsArray = new Object[ArithmeticTestMode.count][];
-    for (int i = 0; i < ArithmeticTestMode.count; i++) {
+    Object[][] resultObjectsArray = new Object[FilterCompareTestMode.count][];
+    for (int i = 0; i < FilterCompareTestMode.count; i++) {
 
       Object[] resultObjects = new Object[rowCount];
       resultObjectsArray[i] = resultObjects;
 
-      ArithmeticTestMode arithmeticTestMode = ArithmeticTestMode.values()[i];
-      switch (arithmeticTestMode) {
+      FilterCompareTestMode filterCompareTestMode = FilterCompareTestMode.values()[i];
+      switch (filterCompareTestMode) {
       case ROW_MODE:
-        doRowArithmeticTest(
+        doRowFilterCompareTest(
             typeInfo1,
             typeInfo2,
             columns,
             children,
             exprDesc,
-            arithmetic,
+            comparison,
             randomRows,
             columnScalarMode,
             rowSource.rowStructObjectInspector(),
@@ -508,8 +476,9 @@ public class TestVectorArithmetic {
             resultObjects);
         break;
       case ADAPTOR:
-      case VECTOR_EXPRESSION:
-        doVectorArithmeticTest(
+      case FILTER_VECTOR_EXPRESSION:
+      case COMPARE_VECTOR_EXPRESSION:
+        doVectorFilterCompareTest(
             typeInfo1,
             typeInfo2,
             columns,
@@ -518,8 +487,8 @@ public class TestVectorArithmetic {
             rowSource.dataTypePhysicalVariations(),
             children,
             exprDesc,
-            arithmetic,
-            arithmeticTestMode,
+            comparison,
+            filterCompareTestMode,
             columnScalarMode,
             batchSource,
             exprDesc.getWritableObjectInspector(),
@@ -527,7 +496,7 @@ public class TestVectorArithmetic {
             resultObjects);
         break;
       default:
-        throw new RuntimeException("Unexpected IF statement test mode " + arithmeticTestMode);
+        throw new RuntimeException("Unexpected IF statement test mode " + filterCompareTestMode);
       }
     }
 
@@ -535,17 +504,40 @@ public class TestVectorArithmetic {
       // Row-mode is the expected value.
       Object expectedResult = resultObjectsArray[0][i];
 
-      for (int v = 1; v < ArithmeticTestMode.count; v++) {
+      for (int v = 1; v < FilterCompareTestMode.count; v++) {
+        FilterCompareTestMode filterCompareTestMode = FilterCompareTestMode.values()[v];
         Object vectorResult = resultObjectsArray[v][i];
-        if (expectedResult == null || vectorResult == null) {
+        if (filterCompareTestMode == FilterCompareTestMode.FILTER_VECTOR_EXPRESSION &&
+            expectedResult == null &&
+            vectorResult != null) {
+          // This is OK.
+          boolean vectorBoolean = ((BooleanWritable) vectorResult).get();
+          if (vectorBoolean) {
+            Assert.fail(
+                "Row " + i +
+                " typeName1 " + typeName1 +
+                " typeName2 " + typeName2 +
+                " outputTypeName " + outputTypeInfo.getTypeName() +
+                " " + comparison +
+                " " + filterCompareTestMode +
+                " " + columnScalarMode +
+                " result is NOT NULL and true" +
+                " does not match row-mode expected result is NULL which means false here" +
+                (columnScalarMode == ColumnScalarMode.SCALAR_COLUMN ?
+                    " scalar1 " + scalar1Object.toString() : "") +
+                " row values " + Arrays.toString(randomRows[i]) +
+                (columnScalarMode == ColumnScalarMode.COLUMN_SCALAR ?
+                    " scalar2 " + scalar2Object.toString() : ""));
+          }
+        } else if (expectedResult == null || vectorResult == null) {
           if (expectedResult != null || vectorResult != null) {
             Assert.fail(
                 "Row " + i +
                 " typeName1 " + typeName1 +
                 " typeName2 " + typeName2 +
                 " outputTypeName " + outputTypeInfo.getTypeName() +
-                " " + arithmetic +
-                " " + ArithmeticTestMode.values()[v] +
+                " " + comparison +
+                " " + filterCompareTestMode +
                 " " + columnScalarMode +
                 " result is NULL " + (vectorResult == null) +
                 " does not match row-mode expected result is NULL " + (expectedResult == null) +
@@ -563,8 +555,8 @@ public class TestVectorArithmetic {
                 " typeName1 " + typeName1 +
                 " typeName2 " + typeName2 +
                 " outputTypeName " + outputTypeInfo.getTypeName() +
-                " " + arithmetic +
-                " " + ArithmeticTestMode.values()[v] +
+                " " + comparison +
+                " " + filterCompareTestMode +
                 " " + columnScalarMode +
                 " result " + vectorResult.toString() +
                 " (" + vectorResult.getClass().getSimpleName() + ")" +
@@ -581,11 +573,11 @@ public class TestVectorArithmetic {
     }
   }
 
-  private void doRowArithmeticTest(TypeInfo typeInfo1,
+  private void doRowFilterCompareTest(TypeInfo typeInfo1,
       TypeInfo typeInfo2,
       List<String> columns, List<ExprNodeDesc> children,
       ExprNodeGenericFuncDesc exprDesc,
-      Arithmetic arithmetic,
+      Comparison comparison,
       Object[][] randomRows, ColumnScalarMode columnScalarMode,
       ObjectInspector rowInspector,
       TypeInfo outputTypeInfo, Object[] resultObjects) throws Exception {
@@ -594,7 +586,7 @@ public class TestVectorArithmetic {
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo1.toString() +
         " typeInfo2 " + typeInfo2 +
-        " arithmeticTestMode ROW_MODE" +
+        " filterCompareTestMode ROW_MODE" +
         " columnScalarMode " + columnScalarMode +
         " exprDesc " + exprDesc.toString());
     */
@@ -641,22 +633,22 @@ public class TestVectorArithmetic {
     }
   }
 
-  private void doVectorArithmeticTest(TypeInfo typeInfo1,
+  private void doVectorFilterCompareTest(TypeInfo typeInfo1,
       TypeInfo typeInfo2,
       List<String> columns,
       String[] columnNames,
       TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
       List<ExprNodeDesc> children,
       ExprNodeGenericFuncDesc exprDesc,
-      Arithmetic arithmetic,
-      ArithmeticTestMode arithmeticTestMode, ColumnScalarMode columnScalarMode,
+      Comparison comparison,
+      FilterCompareTestMode filterCompareTestMode, ColumnScalarMode columnScalarMode,
       VectorRandomBatchSource batchSource,
       ObjectInspector objectInspector,
       TypeInfo outputTypeInfo, Object[] resultObjects)
           throws Exception {
 
     HiveConf hiveConf = new HiveConf();
-    if (arithmeticTestMode == ArithmeticTestMode.ADAPTOR) {
+    if (filterCompareTestMode == FilterCompareTestMode.ADAPTOR) {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
 
       // Don't use DECIMAL_64 with the VectorUDFAdaptor.
@@ -670,15 +662,30 @@ public class TestVectorArithmetic {
             Arrays.asList(typeInfos),
             dataTypePhysicalVariations == null ? null : Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
-    VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
+    final VectorExpressionDescriptor.Mode mode;
+    switch (filterCompareTestMode) {
+    case ADAPTOR:
+    case COMPARE_VECTOR_EXPRESSION:
+      mode = VectorExpressionDescriptor.Mode.PROJECTION;
+      break;
+    case FILTER_VECTOR_EXPRESSION:
+      mode = VectorExpressionDescriptor.Mode.FILTER;
+      break;
+    default:
+      throw new RuntimeException("Unexpected filter compare mode " + filterCompareTestMode);
+    }
+    VectorExpression vectorExpression =
+        vectorizationContext.getVectorExpression(
+            exprDesc, mode);
     vectorExpression.transientInit();
 
-    if (arithmeticTestMode == ArithmeticTestMode.VECTOR_EXPRESSION &&
+    if (filterCompareTestMode == FilterCompareTestMode.COMPARE_VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {
       System.out.println(
           "*NO NATIVE VECTOR EXPRESSION* typeInfo1 " + typeInfo1.toString() +
           " typeInfo2 " + typeInfo2.toString() +
-          " arithmeticTestMode " + arithmeticTestMode +
+          " " + comparison + " " +
+          " filterCompareTestMode " + filterCompareTestMode +
           " columnScalarMode " + columnScalarMode +
           " vectorExpression " + vectorExpression.toString());
     }
@@ -702,8 +709,9 @@ public class TestVectorArithmetic {
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorExtractRow resultVectorExtractRow = new VectorExtractRow();
+    final int outputColumnNum = vectorExpression.getOutputColumnNum();
     resultVectorExtractRow.init(
-        new TypeInfo[] { outputTypeInfo }, new int[] { vectorExpression.getOutputColumnNum() });
+        new TypeInfo[] { outputTypeInfo }, new int[] { outputColumnNum });
     Object[] scrqtchRow = new Object[1];
 
     // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
@@ -712,10 +720,15 @@ public class TestVectorArithmetic {
     System.out.println(
         "*DEBUG* typeInfo1 " + typeInfo1.toString() +
         " typeInfo2 " + typeInfo2.toString() +
-        " arithmeticTestMode " + arithmeticTestMode +
+        " " + comparison + " " +
+        " filterCompareTestMode " + filterCompareTestMode +
         " columnScalarMode " + columnScalarMode +
         " vectorExpression " + vectorExpression.toString());
     */
+
+    final boolean isFilter = (mode == VectorExpressionDescriptor.Mode.FILTER);
+    boolean copySelectedInUse = false;
+    int[] copySelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;
@@ -723,10 +736,60 @@ public class TestVectorArithmetic {
       if (!batchSource.fillNextBatch(batch)) {
         break;
       }
+      final int originalBatchSize = batch.size;
+      if (isFilter) {
+        copySelectedInUse = batch.selectedInUse;
+        if (batch.selectedInUse) {
+          System.arraycopy(batch.selected, 0, copySelected, 0, originalBatchSize);
+        }
+      }
+
+      // In filter mode, the batch size can be made smaller.
       vectorExpression.evaluate(batch);
-      extractResultObjects(batch, rowIndex, resultVectorExtractRow, scrqtchRow,
-          objectInspector, resultObjects);
-      rowIndex += batch.size;
+
+      if (!isFilter) {
+        extractResultObjects(batch, rowIndex, resultVectorExtractRow, scrqtchRow,
+            objectInspector, resultObjects);
+      } else {
+        final int currentBatchSize = batch.size;
+        if (copySelectedInUse && batch.selectedInUse) {
+          int selectIndex = 0;
+          for (int i = 0; i < originalBatchSize; i++) {
+            final int originalBatchIndex = copySelected[i];
+            final boolean booleanResult;
+            if (selectIndex < currentBatchSize && batch.selected[selectIndex] == originalBatchIndex) {
+              booleanResult = true;
+              selectIndex++;
+            } else {
+              booleanResult = false;
+            }
+            resultObjects[rowIndex + i] = new BooleanWritable(booleanResult);
+          }
+        } else if (batch.selectedInUse) {
+          int selectIndex = 0;
+          for (int i = 0; i < originalBatchSize; i++) {
+            final boolean booleanResult;
+            if (selectIndex < currentBatchSize && batch.selected[selectIndex] == i) {
+              booleanResult = true;
+              selectIndex++;
+            } else {
+              booleanResult = false;
+            }
+            resultObjects[rowIndex + i] = new BooleanWritable(booleanResult);
+          }
+        } else if (currentBatchSize == 0) {
+          // Whole batch got zapped.
+          for (int i = 0; i < originalBatchSize; i++) {
+            resultObjects[rowIndex + i] = new BooleanWritable(false);
+          }
+        } else {
+          // Every row kept.
+          for (int i = 0; i < originalBatchSize; i++) {
+            resultObjects[rowIndex + i] = new BooleanWritable(true);
+          }
+        }
+      }
+      rowIndex += originalBatchSize;
     }
   }
 }

@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -157,13 +158,6 @@ public class TestVectorCastStatement {
   }
 
   @Test
-  public void testBinary() throws Exception {
-    Random random = new Random(12882);
-
-    doIfTests(random, "binary");
-  }
-
-  @Test
   public void testDecimal() throws Exception {
     Random random = new Random(9300);
 
@@ -203,17 +197,15 @@ public class TestVectorCastStatement {
         continue;
       }
 
-      // BINARY conversions supported by GenericUDFDecimal, GenericUDFTimestamp.
-      if (primitiveCategory == PrimitiveCategory.BINARY) {
-        if (targetPrimitiveCategory == PrimitiveCategory.DECIMAL ||
-            targetPrimitiveCategory == PrimitiveCategory.TIMESTAMP) {
-          continue;
-        }
-      }
-
-      // DATE conversions supported by GenericUDFDecimal.
+      // DATE conversions NOT supported by integers, floating point, and GenericUDFDecimal.
       if (primitiveCategory == PrimitiveCategory.DATE) {
-        if (targetPrimitiveCategory == PrimitiveCategory.DECIMAL) {
+        if (targetPrimitiveCategory == PrimitiveCategory.BYTE ||
+            targetPrimitiveCategory == PrimitiveCategory.SHORT ||
+            targetPrimitiveCategory == PrimitiveCategory.INT ||
+            targetPrimitiveCategory == PrimitiveCategory.LONG ||
+            targetPrimitiveCategory == PrimitiveCategory.FLOAT ||
+            targetPrimitiveCategory == PrimitiveCategory.DOUBLE ||
+            targetPrimitiveCategory == PrimitiveCategory.DECIMAL) {
           continue;
         }
       }
@@ -364,9 +356,10 @@ public class TestVectorCastStatement {
                 " sourceTypeName " + typeName +
                 " targetTypeName " + targetTypeName +
                 " " + CastStmtTestMode.values()[v] +
-                " result is NULL " + (vectorResult == null ? "YES" : "NO") +
+                " result is NULL " + (vectorResult == null ? "YES" : "NO result " + vectorResult.toString()) +
                 " does not match row-mode expected result is NULL " +
-                (expectedResult == null ? "YES" : "NO"));
+                (expectedResult == null ? "YES" : "NO result " + expectedResult.toString()) +
+                " row values " + Arrays.toString(randomRows[i]));
           }
         } else {
 
@@ -387,7 +380,8 @@ public class TestVectorCastStatement {
                 " result " + vectorResult.toString() +
                 " (" + vectorResult.getClass().getSimpleName() + ")" +
                 " does not match row-mode expected result " + expectedResult.toString() +
-                " (" + expectedResult.getClass().getSimpleName() + ")");
+                " (" + expectedResult.getClass().getSimpleName() + ")" +
+                " row values " + Arrays.toString(randomRows[i]));
           }
         }
       }
@@ -489,6 +483,14 @@ public class TestVectorCastStatement {
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
+
+    if (castStmtTestMode == CastStmtTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
+          " castStmtTestMode " + castStmtTestMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
 
     // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
 

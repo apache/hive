@@ -129,6 +129,23 @@ public class StringExpr {
     return charCount;
   }
 
+  public static void padRight(BytesColumnVector outV, int i, byte[] bytes, int start, int length,
+      int maxCharacterLength) {
+
+    final int characterLength = StringExpr.characterCount(bytes, start, length);
+    final int blankPadLength = Math.max(maxCharacterLength - characterLength, 0);
+    final int resultLength = length + blankPadLength;
+    outV.ensureValPreallocated(resultLength);
+    byte[] resultBytes = outV.getValPreallocatedBytes();
+    final int resultStart = outV.getValPreallocatedStart();
+    System.arraycopy(bytes, start, resultBytes, resultStart, length);
+    final int padEnd = resultStart + resultLength;
+    for (int p = resultStart + length; p < padEnd; p++) {
+      resultBytes[p] = ' ';
+    }
+    outV.setValPreallocated(i, resultLength);
+  }
+
   // A setVal with the same function signature as rightTrim, leftTrim, truncate, etc, below.
   // Useful for class generation via templates.
   public static void assign(BytesColumnVector outV, int i, byte[] bytes, int start, int length) {

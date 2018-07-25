@@ -18,25 +18,43 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 
 /**
- * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
+ * Compute IF(expr1, expr2, expr3) for 3 input  expressions.
  * The first is always a boolean (LongColumnVector).
- * The second is a string scalar.
- * The third is a string scalar.
+ * The second is a constant value.
+ * The third is a constant value.
  */
-public class IfExprCharScalarStringScalar extends IfExprStringScalarStringScalar {
+public class IfExprDecimal64ScalarDecimal64Scalar extends IfExprLongScalarLongScalar {
 
   private static final long serialVersionUID = 1L;
 
-  public IfExprCharScalarStringScalar(
-      int arg1Column, byte[] arg2Scalar, byte[] arg3Scalar, int outputColumnNum) {
+  public IfExprDecimal64ScalarDecimal64Scalar(int arg1Column, long arg2Scalar, long arg3Scalar,
+      int outputColumnNum) {
     super(arg1Column, arg2Scalar, arg3Scalar, outputColumnNum);
   }
 
-  public IfExprCharScalarStringScalar() {
+  public IfExprDecimal64ScalarDecimal64Scalar() {
     super();
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    DecimalTypeInfo decimalTypeInfo1 = (DecimalTypeInfo) inputTypeInfos[1];
+    HiveDecimalWritable writable1 = new HiveDecimalWritable();
+    writable1.deserialize64(arg2Scalar, decimalTypeInfo1.scale());
+
+    DecimalTypeInfo decimalTypeInfo2 = (DecimalTypeInfo) inputTypeInfos[2];
+    HiveDecimalWritable writable2 = new HiveDecimalWritable();
+    writable2.deserialize64(arg3Scalar, decimalTypeInfo2.scale());
+    return
+        getColumnParamString(0, arg1Column) +
+        ", decimal64Val1 " + arg2Scalar + ", decimalVal1 " + writable1.toString() +
+        ", decimal64Val2 " + arg3Scalar + ", decimalVal2 " + writable2.toString();
   }
 
   @Override
@@ -46,9 +64,9 @@ public class IfExprCharScalarStringScalar extends IfExprStringScalarStringScalar
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(3)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.INT_FAMILY,
-            VectorExpressionDescriptor.ArgumentType.CHAR,
-            VectorExpressionDescriptor.ArgumentType.CHAR)
+            VectorExpressionDescriptor.ArgumentType.getType("long"),
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64,
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR,
