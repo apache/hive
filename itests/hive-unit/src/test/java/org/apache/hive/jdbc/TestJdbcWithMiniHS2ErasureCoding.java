@@ -19,6 +19,8 @@
 package org.apache.hive.jdbc;
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -31,11 +33,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.processors.ErasureProcessor;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsErasureCodingShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -171,6 +179,53 @@ public class TestJdbcWithMiniHS2ErasureCoding {
       assertMatchAndCount(description, "numFilesErasureCoded=8", 1);
       assertMatchAndCount(description, "numPartitions=2", 1);
     }
+  }
+
+  /**
+   * Test MR stats.
+   */
+  @Test
+  public void testMapRedStats() throws Exception {
+    // Do log4j magic to save log output
+    StringWriter writer = new StringWriter();
+    Appender appender = addAppender(writer, "testMapRedStats");
+    try (Statement stmt = hs2Conn.createStatement()) {
+      String table = "mapredstats";
+      stmt.execute("set hive.execution.engine=mr");
+      stmt.execute(" CREATE TABLE " + table + " (a int) STORED AS PARQUET");
+      stmt.execute("INSERT INTO TABLE " + table + " VALUES (3)");
+      try (ResultSet rs = stmt.executeQuery("select a from " + table + " order by a")) {
+        while (rs.next()) {
+          int val = rs.getInt(1);
+          assertEquals(3, val);
+        }
+      }
+    }
+    String output = writer.toString();
+    // check for standard stats
+    assertTrue(output.contains("HDFS Read:"));
+    assertTrue(output.contains("HDFS Write:"));
+
+    // check for erasure coding stat
+    HadoopShims.HdfsErasureCodingShim erasureShim = ErasureProcessor.getErasureShim(conf);
+    if (erasureShim.isMapReduceStatAvailable()) {
+      assertTrue(output.contains("HDFS EC Read:"));
+    }
+  }
+
+  /**
+   * Add an appender to log4j.
+   * http://logging.apache.org/log4j/2.x/manual/customconfig.html#AddingToCurrent
+   */
+  private Appender addAppender(final Writer writer, final String writerName) {
+    final LoggerContext context = LoggerContext.getContext(false);
+    final Configuration config = context.getConfiguration();
+    final PatternLayout layout = PatternLayout.createDefaultLayout(config);
+    final Appender appender =
+        WriterAppender.createAppender(layout, null, writer, writerName, false, true);
+    appender.start();
+    config.getRootLogger().addAppender(appender, null, null);
+    return appender;
   }
 
   /**
