@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.SparkMetricsUtils;
 
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStage;
+import org.apache.hive.spark.counter.SparkCounter;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,6 +165,17 @@ public class SparkTask extends Task<SparkWork> {
 
       if (rc == 0) {
         sparkStatistics = sparkJobStatus.getSparkStatistics();
+        if (SessionState.get() != null) {
+          //Set the number of rows written in case of insert queries, to print in the client(beeline).
+          SparkCounters counters = sparkJobStatus.getCounter();
+          if (counters != null) {
+            SparkCounter counter = counters.getCounter(HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP),
+                FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
+            if (counter != null) {
+              queryState.setNumModifiedRows(counter.getValue());
+            }
+          }
+        }
         printConsoleMetrics();
         printExcessiveGCWarning();
         if (LOG.isInfoEnabled() && sparkStatistics != null) {
@@ -500,6 +513,7 @@ public class SparkTask extends Task<SparkWork> {
     List<String> hiveCounters = new LinkedList<String>();
     counters.put(groupName, hiveCounters);
     hiveCounters.add(Operator.HIVE_COUNTER_CREATED_FILES);
+    hiveCounters.add(FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
     // MapOperator is out of SparkWork, SparkMapRecordHandler use it to bridge
     // Spark transformation and Hive operators in SparkWork.
     for (MapOperator.Counter counter : MapOperator.Counter.values()) {
