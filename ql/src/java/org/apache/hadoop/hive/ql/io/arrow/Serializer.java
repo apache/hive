@@ -69,11 +69,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.arrow.memory.BufferAllocator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_ALLOCATOR_LIMIT;
 import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MICROS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MILLIS_PER_SECOND;
@@ -96,20 +98,29 @@ class Serializer {
   private final VectorizedRowBatch vectorizedRowBatch;
   private final VectorAssignRow vectorAssignRow;
   private int batchSize;
+  private BufferAllocator allocator;
 
   private final NullableMapVector rootVector;
 
   Serializer(ArrowColumnarBatchSerDe serDe) throws SerDeException {
     MAX_BUFFERED_ROWS = HiveConf.getIntVar(serDe.conf, HIVE_ARROW_BATCH_SIZE);
+    long childAllocatorLimit = HiveConf.getLongVar(serDe.conf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
     ArrowColumnarBatchSerDe.LOG.info("ArrowColumnarBatchSerDe max number of buffered columns: " + MAX_BUFFERED_ROWS);
+    String childAllocatorName = Thread.currentThread().getName();
+    //Use per-task allocator for accounting only, no need to reserve per-task memory
+    long childAllocatorReservation = 0L;
+    //Break out accounting of direct memory per-task, so we can check no memory is leaked when task is completed
+    allocator = serDe.rootAllocator.newChildAllocator(
+       childAllocatorName,
+       childAllocatorReservation,
+       childAllocatorLimit);
 
     // Schema
     structTypeInfo = (StructTypeInfo) getTypeInfoFromObjectInspector(serDe.rowObjectInspector);
     List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
     fieldSize = fieldTypeInfos.size();
-
     // Init Arrow stuffs
-    rootVector = NullableMapVector.empty(null, serDe.rootAllocator);
+    rootVector = NullableMapVector.empty(null, allocator);
 
     // Init Hive stuffs
     vectorizedRowBatch = new VectorizedRowBatch(fieldSize);
@@ -146,7 +157,7 @@ class Serializer {
 
     batchSize = 0;
     VectorSchemaRoot vectorSchemaRoot = new VectorSchemaRoot(rootVector);
-    return new ArrowWrapperWritable(vectorSchemaRoot);
+    return new ArrowWrapperWritable(vectorSchemaRoot, allocator, rootVector);
   }
 
   private FieldType toFieldType(TypeInfo typeInfo) {
