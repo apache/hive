@@ -164,35 +164,6 @@ public class HiveStringUtils {
     return fullHostname;
   }
 
-  private static DecimalFormat oneDecimal = new DecimalFormat("0.0");
-
-  /**
-   * Given an integer, return a string that is in an approximate, but human
-   * readable format.
-   * It uses the bases 'k', 'm', and 'g' for 1024, 1024**2, and 1024**3.
-   * @param number the number to format
-   * @return a human readable form of the integer
-   */
-  public static String humanReadableInt(long number) {
-    long absNumber = Math.abs(number);
-    double result = number;
-    String suffix = "";
-    if (absNumber < 1024) {
-      // since no division has occurred, don't format with a decimal point
-      return String.valueOf(number);
-    } else if (absNumber < 1024 * 1024) {
-      result = number / 1024.0;
-      suffix = "k";
-    } else if (absNumber < 1024 * 1024 * 1024) {
-      result = number / (1024.0 * 1024);
-      suffix = "m";
-    } else {
-      result = number / (1024.0 * 1024 * 1024);
-      suffix = "g";
-    }
-    return oneDecimal.format(result) + suffix;
-  }
-
   /**
    * Format a percentage for presentation to the user.
    * @param done the percentage to format (0.0 to 1.0)
