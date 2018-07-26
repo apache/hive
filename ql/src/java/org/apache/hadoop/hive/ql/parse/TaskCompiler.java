@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 
+import org.apache.commons.collections.*;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
+import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -327,13 +329,13 @@ public abstract class TaskCompiler {
       crtTblDesc.validate(conf);
       Task<? extends Serializable> crtTblTask = TaskFactory.get(new DDLWork(
           inputs, outputs, crtTblDesc));
-      patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtTblTask);
+      patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtTblTask, CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
     } else if (pCtx.getQueryProperties().isMaterializedView()) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateViewDesc viewDesc = pCtx.getCreateViewDesc();
       Task<? extends Serializable> crtViewTask = TaskFactory.get(new DDLWork(
           inputs, outputs, viewDesc));
-      patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtViewTask);
+      patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtViewTask, CollectionUtils.isEmpty(viewDesc.getPartColNames()));
     } else if (pCtx.getMaterializedViewUpdateDesc() != null) {
       // If there is a materialized view update desc, we create introduce it at the end
       // of the tree.
@@ -458,9 +460,10 @@ public abstract class TaskCompiler {
     }
   }
 
-  private void patchUpAfterCTASorMaterializedView(final List<Task<? extends Serializable>>  rootTasks,
+  private void patchUpAfterCTASorMaterializedView(final List<Task<? extends Serializable>> rootTasks,
                                                   final HashSet<WriteEntity> outputs,
-                                                  Task<? extends Serializable> createTask) {
+                                                  Task<? extends Serializable> createTask,
+                                                  boolean createTaskAfterMoveTask) {
     // clear the mapredWork output file from outputs for CTAS
     // DDLWork at the tail of the chain will have the output
     Iterator<WriteEntity> outIter = outputs.iterator();
@@ -479,17 +482,31 @@ public abstract class TaskCompiler {
     HashSet<Task<? extends Serializable>> leaves = new LinkedHashSet<>();
     getLeafTasks(rootTasks, leaves);
     assert (leaves.size() > 0);
+    // Target task is supposed to be the last task
     Task<? extends Serializable> targetTask = createTask;
     for (Task<? extends Serializable> task : leaves) {
       if (task instanceof StatsTask) {
         // StatsTask require table to already exist
         for (Task<? extends Serializable> parentOfStatsTask : task.getParentTasks()) {
-          parentOfStatsTask.addDependentTask(createTask);
+          if (parentOfStatsTask instanceof MoveTask && !createTaskAfterMoveTask) {
+            // For partitioned CTAS, we need to create the table before the move task
+            // as we need to create the partitions in metastore and for that we should
+            // have already registered the table
+            interleaveTask(parentOfStatsTask, createTask);
+          } else {
+            parentOfStatsTask.addDependentTask(createTask);
+          }
         }
         for (Task<? extends Serializable> parentOfCrtTblTask : createTask.getParentTasks()) {
           parentOfCrtTblTask.removeDependentTask(task);
         }
         createTask.addDependentTask(task);
+        targetTask = task;
+      } else if (task instanceof MoveTask && !createTaskAfterMoveTask) {
+        // For partitioned CTAS, we need to create the table before the move task
+        // as we need to create the partitions in metastore and for that we should
+        // have already registered the table
+        interleaveTask(task, createTask);
         targetTask = task;
       } else {
         task.addDependentTask(createTask);
@@ -520,6 +537,19 @@ public abstract class TaskCompiler {
           TaskFactory.get(
               new MaterializedViewDesc(tableName, retrieveAndInclude, disableRewrite, false), conf));
     }
+  }
+
+  /**
+   * Makes dependentTask dependent of task.
+   */
+  private void interleaveTask(Task<? extends Serializable> dependentTask, Task<? extends Serializable> task) {
+    for (Task<? extends Serializable> parentOfStatsTask : dependentTask.getParentTasks()) {
+      parentOfStatsTask.addDependentTask(task);
+    }
+    for (Task<? extends Serializable> parentOfCrtTblTask : task.getParentTasks()) {
+      parentOfCrtTblTask.removeDependentTask(dependentTask);
+    }
+    task.addDependentTask(dependentTask);
   }
 
   /**
