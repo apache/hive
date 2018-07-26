@@ -1489,10 +1489,15 @@ public final class GenMapRedUtils {
     boolean truncate = false;
     if (mvWork.getLoadTableWork() != null) {
       statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
-      String tableName = mvWork.getLoadTableWork().getTable().getTableName();
       truncate = mvWork.getLoadTableWork().getReplace();
+      String tableName = mvWork.getLoadTableWork().getTable().getTableName();
       try {
-        table = Hive.get().getTable(SessionState.get().getCurrentDatabase(), tableName);
+        // For partitioned CTAS, the table has not been created, but we can retrieve it
+        // from the loadTableWork. For rest of query types, we just retrieve it from
+        // metastore.
+        table = mvWork.getLoadTableWork().getMdTable() != null ?
+            mvWork.getLoadTableWork().getMdTable() :
+            Hive.get().getTable(SessionState.get().getCurrentDatabase(), tableName);
       } catch (HiveException e) {
         throw new RuntimeException("unexpected; table should be present already..: " + tableName, e);
       }
