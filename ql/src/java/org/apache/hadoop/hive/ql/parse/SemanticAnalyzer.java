@@ -12185,7 +12185,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QueryResultsCache.LookupInfo lookupInfo = null;
     if (isCacheEnabled && !needsTransform && queryTypeCanUseCache()) {
       lookupInfo = createLookupInfoForQuery(ast);
-      if (checkResultsCache(lookupInfo)) {
+      if (checkResultsCache(lookupInfo, false)) {
         return;
       }
     }
@@ -12230,7 +12230,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // TODO: Enable caching for queries with masking/filtering
     if (isCacheEnabled && needsTransform && !usesMasking && queryTypeCanUseCache()) {
       lookupInfo = createLookupInfoForQuery(ast);
-      if (checkResultsCache(lookupInfo)) {
+      if (checkResultsCache(lookupInfo, false)) {
         return;
       }
     }
@@ -12390,11 +12390,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (isCacheEnabled && lookupInfo != null) {
       if (queryCanBeCached()) {
-        QueryResultsCache.QueryInfo queryInfo = createCacheQueryInfoForQuery(lookupInfo);
+        // Last chance - check if the query is available in the cache.
+        // Since we have already generated a query plan, using a cached query result at this point
+        // requires SemanticAnalyzer state to be reset.
+        if (checkResultsCache(lookupInfo, true)) {
+          LOG.info("Cached result found on second lookup");
+          return;
+        } else {
+          QueryResultsCache.QueryInfo queryInfo = createCacheQueryInfoForQuery(lookupInfo);
 
-        // Specify that the results of this query can be cached.
-        setCacheUsage(new CacheUsage(
-            CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS, queryInfo));
+          // Specify that the results of this query can be cached.
+          setCacheUsage(new CacheUsage(
+              CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS, queryInfo));
+        }
       }
     }
   }
@@ -14741,7 +14749,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Set the query plan to use cache entry passed in to return the query results.
    * @param cacheEntry The results cache entry that will be used to resolve the query.
    */
-  private void useCachedResult(QueryResultsCache.CacheEntry cacheEntry) {
+  private void useCachedResult(QueryResultsCache.CacheEntry cacheEntry, boolean needsReset) {
+    if (needsReset) {
+      reset(true);
+      inputs.clear();
+    }
+
     // Change query FetchTask to use new location specified in results cache.
     FetchTask fetchTask = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork());
     setFetchTask(fetchTask);
@@ -14866,7 +14879,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * answered using the results cache. If the cache contains a suitable entry, the semantic analyzer
    * will be configured to use the found cache entry to anwer the query.
    */
-  private boolean checkResultsCache(QueryResultsCache.LookupInfo lookupInfo) {
+  private boolean checkResultsCache(QueryResultsCache.LookupInfo lookupInfo, boolean needsReset) {
     if (lookupInfo == null) {
       return false;
     }
@@ -14910,7 +14923,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           // Use the cache rather than full query execution.
           // At this point the caller should return from semantic analysis.
-          useCachedResult(cacheEntry);
+          useCachedResult(cacheEntry, needsReset);
           return true;
         }
       }
