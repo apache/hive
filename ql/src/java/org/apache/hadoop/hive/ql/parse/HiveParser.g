@@ -215,6 +215,7 @@ TOK_TABCOLLIST;
 TOK_TABCOL;
 TOK_TABLECOMMENT;
 TOK_TABLEPARTCOLS;
+TOK_TABLEPARTCOLNAMES;
 TOK_TABLEROWFORMAT;
 TOK_TABLEROWFORMATFIELD;
 TOK_TABLEROWFORMATCOLLITEMS;
@@ -1088,7 +1089,7 @@ createTableStatement
          tablePropertiesPrefixed?
        | (LPAREN columnNameTypeOrConstraintList RPAREN)?
          tableComment?
-         tablePartition?
+         createTablePartitionSpec?
          tableBuckets?
          tableSkewed?
          tableRowFormat?
@@ -1101,7 +1102,7 @@ createTableStatement
          ^(TOK_LIKETABLE $likeName?)
          columnNameTypeOrConstraintList?
          tableComment?
-         tablePartition?
+         createTablePartitionSpec?
          tableBuckets?
          tableSkewed?
          tableRowFormat?
@@ -1987,11 +1988,26 @@ tableComment
       KW_COMMENT comment=StringLiteral  -> ^(TOK_TABLECOMMENT $comment)
     ;
 
-tablePartition
-@init { pushMsg("table partition specification", state); }
+createTablePartitionSpec
+@init { pushMsg("create table partition specification", state); }
 @after { popMsg(state); }
-    : KW_PARTITIONED KW_BY LPAREN columnNameTypeConstraint (COMMA columnNameTypeConstraint)* RPAREN
+    : KW_PARTITIONED KW_BY LPAREN (opt1 = createTablePartitionColumnTypeSpec | opt2 = createTablePartitionColumnSpec) RPAREN
+    -> {$opt1.tree != null}? $opt1
+    -> $opt2
+    ;
+
+createTablePartitionColumnTypeSpec
+@init { pushMsg("create table partition specification", state); }
+@after { popMsg(state); }
+    : columnNameTypeConstraint (COMMA columnNameTypeConstraint)*
     -> ^(TOK_TABLEPARTCOLS columnNameTypeConstraint+)
+    ;
+
+createTablePartitionColumnSpec
+@init { pushMsg("create table partition specification", state); }
+@after { popMsg(state); }
+    : columnName (COMMA columnName)*
+    -> ^(TOK_TABLEPARTCOLNAMES columnName+)
     ;
 
 tableBuckets

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
@@ -44,6 +45,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private boolean isInsertOverwrite;
 
   // TODO: the below seem like they should just be combined into partitionDesc
+  private Table mdTable;
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
 
@@ -251,5 +253,13 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   //todo: should this not be passed in the c'tor?
   public void setStmtId(int stmtId) {
     this.stmtId = stmtId;
+  }
+
+  public Table getMdTable() {
+    return mdTable;
+  }
+
+  public void setMdTable(Table mdTable) {
+    this.mdTable = mdTable;
   }
 }

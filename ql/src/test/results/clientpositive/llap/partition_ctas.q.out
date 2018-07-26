@@ -1,0 +1,946 @@
+PREHOOK: query: EXPLAIN
+CREATE TABLE partition_ctas_1 PARTITIONED BY (key) AS
+SELECT value, key FROM src where key > 200 and key < 300
+PREHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: query: EXPLAIN
+CREATE TABLE partition_ctas_1 PARTITIONED BY (key) AS
+SELECT value, key FROM src where key > 200 and key < 300
+POSTHOOK: type: CREATETABLE_AS_SELECT
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-0, Stage-4
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 300.0D)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) < 300.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string), key (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.partition_ctas_1
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+      Create Table Operator:
+        Create Table
+          columns: value string
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          partition columns: key string
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          name: default.partition_ctas_1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            key 
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.partition_ctas_1
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: CREATE TABLE partition_ctas_1 PARTITIONED BY (key) AS
+SELECT value, key FROM src where key > 200 and key < 300
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_ctas_1
+PREHOOK: Output: default@partition_ctas_1
+POSTHOOK: query: CREATE TABLE partition_ctas_1 PARTITIONED BY (key) AS
+SELECT value, key FROM src where key > 200 and key < 300
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_1
+POSTHOOK: Output: default@partition_ctas_1@key=201
+POSTHOOK: Output: default@partition_ctas_1@key=202
+POSTHOOK: Output: default@partition_ctas_1@key=203
+POSTHOOK: Output: default@partition_ctas_1@key=205
+POSTHOOK: Output: default@partition_ctas_1@key=207
+POSTHOOK: Output: default@partition_ctas_1@key=208
+POSTHOOK: Output: default@partition_ctas_1@key=209
+POSTHOOK: Output: default@partition_ctas_1@key=213
+POSTHOOK: Output: default@partition_ctas_1@key=214
+POSTHOOK: Output: default@partition_ctas_1@key=216
+POSTHOOK: Output: default@partition_ctas_1@key=217
+POSTHOOK: Output: default@partition_ctas_1@key=218
+POSTHOOK: Output: default@partition_ctas_1@key=219
+POSTHOOK: Output: default@partition_ctas_1@key=221
+POSTHOOK: Output: default@partition_ctas_1@key=222
+POSTHOOK: Output: default@partition_ctas_1@key=223
+POSTHOOK: Output: default@partition_ctas_1@key=224
+POSTHOOK: Output: default@partition_ctas_1@key=226
+POSTHOOK: Output: default@partition_ctas_1@key=228
+POSTHOOK: Output: default@partition_ctas_1@key=229
+POSTHOOK: Output: default@partition_ctas_1@key=230
+POSTHOOK: Output: default@partition_ctas_1@key=233
+POSTHOOK: Output: default@partition_ctas_1@key=235
+POSTHOOK: Output: default@partition_ctas_1@key=237
+POSTHOOK: Output: default@partition_ctas_1@key=238
+POSTHOOK: Output: default@partition_ctas_1@key=239
+POSTHOOK: Output: default@partition_ctas_1@key=241
+POSTHOOK: Output: default@partition_ctas_1@key=242
+POSTHOOK: Output: default@partition_ctas_1@key=244
+POSTHOOK: Output: default@partition_ctas_1@key=247
+POSTHOOK: Output: default@partition_ctas_1@key=248
+POSTHOOK: Output: default@partition_ctas_1@key=249
+POSTHOOK: Output: default@partition_ctas_1@key=252
+POSTHOOK: Output: default@partition_ctas_1@key=255
+POSTHOOK: Output: default@partition_ctas_1@key=256
+POSTHOOK: Output: default@partition_ctas_1@key=257
+POSTHOOK: Output: default@partition_ctas_1@key=258
+POSTHOOK: Output: default@partition_ctas_1@key=260
+POSTHOOK: Output: default@partition_ctas_1@key=262
+POSTHOOK: Output: default@partition_ctas_1@key=263
+POSTHOOK: Output: default@partition_ctas_1@key=265
+POSTHOOK: Output: default@partition_ctas_1@key=266
+POSTHOOK: Output: default@partition_ctas_1@key=272
+POSTHOOK: Output: default@partition_ctas_1@key=273
+POSTHOOK: Output: default@partition_ctas_1@key=274
+POSTHOOK: Output: default@partition_ctas_1@key=275
+POSTHOOK: Output: default@partition_ctas_1@key=277
+POSTHOOK: Output: default@partition_ctas_1@key=278
+POSTHOOK: Output: default@partition_ctas_1@key=280
+POSTHOOK: Output: default@partition_ctas_1@key=281
+POSTHOOK: Output: default@partition_ctas_1@key=282
+POSTHOOK: Output: default@partition_ctas_1@key=283
+POSTHOOK: Output: default@partition_ctas_1@key=284
+POSTHOOK: Output: default@partition_ctas_1@key=285
+POSTHOOK: Output: default@partition_ctas_1@key=286
+POSTHOOK: Output: default@partition_ctas_1@key=287
+POSTHOOK: Output: default@partition_ctas_1@key=288
+POSTHOOK: Output: default@partition_ctas_1@key=289
+POSTHOOK: Output: default@partition_ctas_1@key=291
+POSTHOOK: Output: default@partition_ctas_1@key=292
+POSTHOOK: Output: default@partition_ctas_1@key=296
+POSTHOOK: Output: default@partition_ctas_1@key=298
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=201).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=202).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=203).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=205).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=207).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=208).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=209).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=213).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=214).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=216).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=217).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=218).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=219).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=221).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=222).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=223).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=224).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=226).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=228).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=229).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=230).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=233).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=235).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=237).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=238).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=239).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=241).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=242).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=244).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=247).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=248).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=249).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=252).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=255).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=256).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=257).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=258).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=260).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=262).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=263).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=265).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=266).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=272).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=273).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=274).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=275).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=277).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=278).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=280).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=281).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=282).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=283).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=284).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=285).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=286).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=287).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=288).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=289).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=291).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=292).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=296).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_1 PARTITION(key=298).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED partition_ctas_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partition_ctas_1
+POSTHOOK: query: DESCRIBE FORMATTED partition_ctas_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partition_ctas_1
+# col_name            	data_type           	comment             
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	62                  
+	numPartitions       	62                  
+	numRows             	101                 
+	rawDataSize         	707                 
+	totalSize           	808                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: EXPLAIN
+SELECT * FROM partition_ctas_1 where key = 238
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM partition_ctas_1 where key = 238
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: partition_ctas_1
+          filterExpr: (238.0D = 238.0D) (type: boolean)
+          Select Operator
+            expressions: value (type: string), key (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT * FROM partition_ctas_1 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_1
+PREHOOK: Input: default@partition_ctas_1@key=238
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM partition_ctas_1 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_1
+POSTHOOK: Input: default@partition_ctas_1@key=238
+#### A masked pattern was here ####
+val_238	238
+val_238	238
+PREHOOK: query: CREATE TABLE partition_ctas_2 PARTITIONED BY (value) AS
+SELECT key, value FROM src where key > 200 and key < 300
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_ctas_2
+PREHOOK: Output: default@partition_ctas_2
+POSTHOOK: query: CREATE TABLE partition_ctas_2 PARTITIONED BY (value) AS
+SELECT key, value FROM src where key > 200 and key < 300
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_2
+POSTHOOK: Output: default@partition_ctas_2@value=val_201
+POSTHOOK: Output: default@partition_ctas_2@value=val_202
+POSTHOOK: Output: default@partition_ctas_2@value=val_203
+POSTHOOK: Output: default@partition_ctas_2@value=val_205
+POSTHOOK: Output: default@partition_ctas_2@value=val_207
+POSTHOOK: Output: default@partition_ctas_2@value=val_208
+POSTHOOK: Output: default@partition_ctas_2@value=val_209
+POSTHOOK: Output: default@partition_ctas_2@value=val_213
+POSTHOOK: Output: default@partition_ctas_2@value=val_214
+POSTHOOK: Output: default@partition_ctas_2@value=val_216
+POSTHOOK: Output: default@partition_ctas_2@value=val_217
+POSTHOOK: Output: default@partition_ctas_2@value=val_218
+POSTHOOK: Output: default@partition_ctas_2@value=val_219
+POSTHOOK: Output: default@partition_ctas_2@value=val_221
+POSTHOOK: Output: default@partition_ctas_2@value=val_222
+POSTHOOK: Output: default@partition_ctas_2@value=val_223
+POSTHOOK: Output: default@partition_ctas_2@value=val_224
+POSTHOOK: Output: default@partition_ctas_2@value=val_226
+POSTHOOK: Output: default@partition_ctas_2@value=val_228
+POSTHOOK: Output: default@partition_ctas_2@value=val_229
+POSTHOOK: Output: default@partition_ctas_2@value=val_230
+POSTHOOK: Output: default@partition_ctas_2@value=val_233
+POSTHOOK: Output: default@partition_ctas_2@value=val_235
+POSTHOOK: Output: default@partition_ctas_2@value=val_237
+POSTHOOK: Output: default@partition_ctas_2@value=val_238
+POSTHOOK: Output: default@partition_ctas_2@value=val_239
+POSTHOOK: Output: default@partition_ctas_2@value=val_241
+POSTHOOK: Output: default@partition_ctas_2@value=val_242
+POSTHOOK: Output: default@partition_ctas_2@value=val_244
+POSTHOOK: Output: default@partition_ctas_2@value=val_247
+POSTHOOK: Output: default@partition_ctas_2@value=val_248
+POSTHOOK: Output: default@partition_ctas_2@value=val_249
+POSTHOOK: Output: default@partition_ctas_2@value=val_252
+POSTHOOK: Output: default@partition_ctas_2@value=val_255
+POSTHOOK: Output: default@partition_ctas_2@value=val_256
+POSTHOOK: Output: default@partition_ctas_2@value=val_257
+POSTHOOK: Output: default@partition_ctas_2@value=val_258
+POSTHOOK: Output: default@partition_ctas_2@value=val_260
+POSTHOOK: Output: default@partition_ctas_2@value=val_262
+POSTHOOK: Output: default@partition_ctas_2@value=val_263
+POSTHOOK: Output: default@partition_ctas_2@value=val_265
+POSTHOOK: Output: default@partition_ctas_2@value=val_266
+POSTHOOK: Output: default@partition_ctas_2@value=val_272
+POSTHOOK: Output: default@partition_ctas_2@value=val_273
+POSTHOOK: Output: default@partition_ctas_2@value=val_274
+POSTHOOK: Output: default@partition_ctas_2@value=val_275
+POSTHOOK: Output: default@partition_ctas_2@value=val_277
+POSTHOOK: Output: default@partition_ctas_2@value=val_278
+POSTHOOK: Output: default@partition_ctas_2@value=val_280
+POSTHOOK: Output: default@partition_ctas_2@value=val_281
+POSTHOOK: Output: default@partition_ctas_2@value=val_282
+POSTHOOK: Output: default@partition_ctas_2@value=val_283
+POSTHOOK: Output: default@partition_ctas_2@value=val_284
+POSTHOOK: Output: default@partition_ctas_2@value=val_285
+POSTHOOK: Output: default@partition_ctas_2@value=val_286
+POSTHOOK: Output: default@partition_ctas_2@value=val_287
+POSTHOOK: Output: default@partition_ctas_2@value=val_288
+POSTHOOK: Output: default@partition_ctas_2@value=val_289
+POSTHOOK: Output: default@partition_ctas_2@value=val_291
+POSTHOOK: Output: default@partition_ctas_2@value=val_292
+POSTHOOK: Output: default@partition_ctas_2@value=val_296
+POSTHOOK: Output: default@partition_ctas_2@value=val_298
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_201).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_202).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_203).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_205).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_207).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_208).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_209).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_213).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_214).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_216).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_217).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_218).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_219).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_221).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_222).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_223).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_224).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_226).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_228).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_229).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_230).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_233).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_235).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_237).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_238).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_239).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_241).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_242).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_244).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_247).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_248).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_249).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_252).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_255).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_256).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_257).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_258).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_260).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_262).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_263).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_265).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_266).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_272).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_273).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_274).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_275).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_277).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_278).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_280).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_281).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_282).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_283).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_284).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_285).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_286).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_287).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_288).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_289).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_291).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_292).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_296).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_298).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
+SELECT * FROM partition_ctas_2 where value = 'val_238'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM partition_ctas_2 where value = 'val_238'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: partition_ctas_2
+          filterExpr: (value = 'val_238') (type: boolean)
+          Select Operator
+            expressions: key (type: string), 'val_238' (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT * FROM partition_ctas_2 where value = 'val_238'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_2
+PREHOOK: Input: default@partition_ctas_2@value=val_238
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM partition_ctas_2 where value = 'val_238'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_2
+POSTHOOK: Input: default@partition_ctas_2@value=val_238
+#### A masked pattern was here ####
+238	val_238
+238	val_238
+PREHOOK: query: EXPLAIN
+SELECT value FROM partition_ctas_2 where key = 238
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT value FROM partition_ctas_2 where key = 238
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: partition_ctas_2
+          filterExpr: (UDFToDouble(key) = 238.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) = 238.0D) (type: boolean)
+            Select Operator
+              expressions: value (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT value FROM partition_ctas_2 where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_2
+PREHOOK: Input: default@partition_ctas_2@value=val_201
+PREHOOK: Input: default@partition_ctas_2@value=val_202
+PREHOOK: Input: default@partition_ctas_2@value=val_203
+PREHOOK: Input: default@partition_ctas_2@value=val_205
+PREHOOK: Input: default@partition_ctas_2@value=val_207
+PREHOOK: Input: default@partition_ctas_2@value=val_208
+PREHOOK: Input: default@partition_ctas_2@value=val_209
+PREHOOK: Input: default@partition_ctas_2@value=val_213
+PREHOOK: Input: default@partition_ctas_2@value=val_214
+PREHOOK: Input: default@partition_ctas_2@value=val_216
+PREHOOK: Input: default@partition_ctas_2@value=val_217
+PREHOOK: Input: default@partition_ctas_2@value=val_218
+PREHOOK: Input: default@partition_ctas_2@value=val_219
+PREHOOK: Input: default@partition_ctas_2@value=val_221
+PREHOOK: Input: default@partition_ctas_2@value=val_222
+PREHOOK: Input: default@partition_ctas_2@value=val_223
+PREHOOK: Input: default@partition_ctas_2@value=val_224
+PREHOOK: Input: default@partition_ctas_2@value=val_226
+PREHOOK: Input: default@partition_ctas_2@value=val_228
+PREHOOK: Input: default@partition_ctas_2@value=val_229
+PREHOOK: Input: default@partition_ctas_2@value=val_230
+PREHOOK: Input: default@partition_ctas_2@value=val_233
+PREHOOK: Input: default@partition_ctas_2@value=val_235
+PREHOOK: Input: default@partition_ctas_2@value=val_237
+PREHOOK: Input: default@partition_ctas_2@value=val_238
+PREHOOK: Input: default@partition_ctas_2@value=val_239
+PREHOOK: Input: default@partition_ctas_2@value=val_241
+PREHOOK: Input: default@partition_ctas_2@value=val_242
+PREHOOK: Input: default@partition_ctas_2@value=val_244
+PREHOOK: Input: default@partition_ctas_2@value=val_247
+PREHOOK: Input: default@partition_ctas_2@value=val_248
+PREHOOK: Input: default@partition_ctas_2@value=val_249
+PREHOOK: Input: default@partition_ctas_2@value=val_252
+PREHOOK: Input: default@partition_ctas_2@value=val_255
+PREHOOK: Input: default@partition_ctas_2@value=val_256
+PREHOOK: Input: default@partition_ctas_2@value=val_257
+PREHOOK: Input: default@partition_ctas_2@value=val_258
+PREHOOK: Input: default@partition_ctas_2@value=val_260
+PREHOOK: Input: default@partition_ctas_2@value=val_262
+PREHOOK: Input: default@partition_ctas_2@value=val_263
+PREHOOK: Input: default@partition_ctas_2@value=val_265
+PREHOOK: Input: default@partition_ctas_2@value=val_266
+PREHOOK: Input: default@partition_ctas_2@value=val_272
+PREHOOK: Input: default@partition_ctas_2@value=val_273
+PREHOOK: Input: default@partition_ctas_2@value=val_274
+PREHOOK: Input: default@partition_ctas_2@value=val_275
+PREHOOK: Input: default@partition_ctas_2@value=val_277
+PREHOOK: Input: default@partition_ctas_2@value=val_278
+PREHOOK: Input: default@partition_ctas_2@value=val_280
+PREHOOK: Input: default@partition_ctas_2@value=val_281
+PREHOOK: Input: default@partition_ctas_2@value=val_282
+PREHOOK: Input: default@partition_ctas_2@value=val_283
+PREHOOK: Input: default@partition_ctas_2@value=val_284
+PREHOOK: Input: default@partition_ctas_2@value=val_285
+PREHOOK: Input: default@partition_ctas_2@value=val_286
+PREHOOK: Input: default@partition_ctas_2@value=val_287
+PREHOOK: Input: default@partition_ctas_2@value=val_288
+PREHOOK: Input: default@partition_ctas_2@value=val_289
+PREHOOK: Input: default@partition_ctas_2@value=val_291
+PREHOOK: Input: default@partition_ctas_2@value=val_292
+PREHOOK: Input: default@partition_ctas_2@value=val_296
+PREHOOK: Input: default@partition_ctas_2@value=val_298
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value FROM partition_ctas_2 where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_2
+POSTHOOK: Input: default@partition_ctas_2@value=val_201
+POSTHOOK: Input: default@partition_ctas_2@value=val_202
+POSTHOOK: Input: default@partition_ctas_2@value=val_203
+POSTHOOK: Input: default@partition_ctas_2@value=val_205
+POSTHOOK: Input: default@partition_ctas_2@value=val_207
+POSTHOOK: Input: default@partition_ctas_2@value=val_208
+POSTHOOK: Input: default@partition_ctas_2@value=val_209
+POSTHOOK: Input: default@partition_ctas_2@value=val_213
+POSTHOOK: Input: default@partition_ctas_2@value=val_214
+POSTHOOK: Input: default@partition_ctas_2@value=val_216
+POSTHOOK: Input: default@partition_ctas_2@value=val_217
+POSTHOOK: Input: default@partition_ctas_2@value=val_218
+POSTHOOK: Input: default@partition_ctas_2@value=val_219
+POSTHOOK: Input: default@partition_ctas_2@value=val_221
+POSTHOOK: Input: default@partition_ctas_2@value=val_222
+POSTHOOK: Input: default@partition_ctas_2@value=val_223
+POSTHOOK: Input: default@partition_ctas_2@value=val_224
+POSTHOOK: Input: default@partition_ctas_2@value=val_226
+POSTHOOK: Input: default@partition_ctas_2@value=val_228
+POSTHOOK: Input: default@partition_ctas_2@value=val_229
+POSTHOOK: Input: default@partition_ctas_2@value=val_230
+POSTHOOK: Input: default@partition_ctas_2@value=val_233
+POSTHOOK: Input: default@partition_ctas_2@value=val_235
+POSTHOOK: Input: default@partition_ctas_2@value=val_237
+POSTHOOK: Input: default@partition_ctas_2@value=val_238
+POSTHOOK: Input: default@partition_ctas_2@value=val_239
+POSTHOOK: Input: default@partition_ctas_2@value=val_241
+POSTHOOK: Input: default@partition_ctas_2@value=val_242
+POSTHOOK: Input: default@partition_ctas_2@value=val_244
+POSTHOOK: Input: default@partition_ctas_2@value=val_247
+POSTHOOK: Input: default@partition_ctas_2@value=val_248
+POSTHOOK: Input: default@partition_ctas_2@value=val_249
+POSTHOOK: Input: default@partition_ctas_2@value=val_252
+POSTHOOK: Input: default@partition_ctas_2@value=val_255
+POSTHOOK: Input: default@partition_ctas_2@value=val_256
+POSTHOOK: Input: default@partition_ctas_2@value=val_257
+POSTHOOK: Input: default@partition_ctas_2@value=val_258
+POSTHOOK: Input: default@partition_ctas_2@value=val_260
+POSTHOOK: Input: default@partition_ctas_2@value=val_262
+POSTHOOK: Input: default@partition_ctas_2@value=val_263
+POSTHOOK: Input: default@partition_ctas_2@value=val_265
+POSTHOOK: Input: default@partition_ctas_2@value=val_266
+POSTHOOK: Input: default@partition_ctas_2@value=val_272
+POSTHOOK: Input: default@partition_ctas_2@value=val_273
+POSTHOOK: Input: default@partition_ctas_2@value=val_274
+POSTHOOK: Input: default@partition_ctas_2@value=val_275
+POSTHOOK: Input: default@partition_ctas_2@value=val_277
+POSTHOOK: Input: default@partition_ctas_2@value=val_278
+POSTHOOK: Input: default@partition_ctas_2@value=val_280
+POSTHOOK: Input: default@partition_ctas_2@value=val_281
+POSTHOOK: Input: default@partition_ctas_2@value=val_282
+POSTHOOK: Input: default@partition_ctas_2@value=val_283
+POSTHOOK: Input: default@partition_ctas_2@value=val_284
+POSTHOOK: Input: default@partition_ctas_2@value=val_285
+POSTHOOK: Input: default@partition_ctas_2@value=val_286
+POSTHOOK: Input: default@partition_ctas_2@value=val_287
+POSTHOOK: Input: default@partition_ctas_2@value=val_288
+POSTHOOK: Input: default@partition_ctas_2@value=val_289
+POSTHOOK: Input: default@partition_ctas_2@value=val_291
+POSTHOOK: Input: default@partition_ctas_2@value=val_292
+POSTHOOK: Input: default@partition_ctas_2@value=val_296
+POSTHOOK: Input: default@partition_ctas_2@value=val_298
+#### A masked pattern was here ####
+val_238
+val_238
+PREHOOK: query: CREATE TABLE partition_ctas_diff_order PARTITIONED BY (value) AS
+SELECT value, key FROM src where key > 200 and key < 300
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_ctas_diff_order
+PREHOOK: Output: default@partition_ctas_diff_order
+POSTHOOK: query: CREATE TABLE partition_ctas_diff_order PARTITIONED BY (value) AS
+SELECT value, key FROM src where key > 200 and key < 300
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_diff_order
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_201
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_202
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_203
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_205
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_207
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_208
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_209
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_213
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_214
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_216
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_217
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_218
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_219
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_221
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_222
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_223
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_224
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_226
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_228
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_229
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_230
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_233
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_235
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_237
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_238
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_239
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_241
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_242
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_244
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_247
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_248
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_249
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_252
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_255
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_256
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_257
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_258
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_260
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_262
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_263
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_265
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_266
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_272
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_273
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_274
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_275
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_277
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_278
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_280
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_281
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_282
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_283
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_284
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_285
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_286
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_287
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_288
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_289
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_291
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_292
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_296
+POSTHOOK: Output: default@partition_ctas_diff_order@value=val_298
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_201).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_202).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_203).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_205).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_207).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_208).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_209).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_213).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_214).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_216).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_217).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_218).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_219).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_221).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_222).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_223).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_224).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_226).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_228).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_229).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_230).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_233).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_235).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_237).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_238).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_239).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_241).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_242).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_244).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_247).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_248).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_249).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_252).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_255).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_256).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_257).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_258).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_260).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_262).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_263).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_265).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_266).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_272).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_273).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_274).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_275).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_277).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_278).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_280).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_281).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_282).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_283).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_284).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_285).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_286).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_287).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_288).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_289).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_291).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_292).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_296).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_298).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
+SELECT * FROM partition_ctas_diff_order where value = 'val_238'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM partition_ctas_diff_order where value = 'val_238'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: partition_ctas_diff_order
+          filterExpr: (value = 'val_238') (type: boolean)
+          Select Operator
+            expressions: key (type: string), 'val_238' (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT * FROM partition_ctas_diff_order where value = 'val_238'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_diff_order
+PREHOOK: Input: default@partition_ctas_diff_order@value=val_238
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM partition_ctas_diff_order where value = 'val_238'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_diff_order
+POSTHOOK: Input: default@partition_ctas_diff_order@value=val_238
+#### A masked pattern was here ####
+238	val_238
+238	val_238
+PREHOOK: query: CREATE TABLE partition_ctas_complex_order PARTITIONED BY (c0, c4, c1) AS
+SELECT concat(value, '_0') as c0,
+       concat(value, '_1') as c1,
+       concat(value, '_2') as c2,
+       concat(value, '_3') as c3,
+       concat(value, '_5') as c5,
+       concat(value, '_4') as c4
+FROM src where key > 200 and key < 240
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_ctas_complex_order
+PREHOOK: Output: default@partition_ctas_complex_order
+POSTHOOK: query: CREATE TABLE partition_ctas_complex_order PARTITIONED BY (c0, c4, c1) AS
+SELECT concat(value, '_0') as c0,
+       concat(value, '_1') as c1,
+       concat(value, '_2') as c2,
+       concat(value, '_3') as c3,
+       concat(value, '_5') as c5,
+       concat(value, '_4') as c4
+FROM src where key > 200 and key < 240
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_complex_order
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_201_0/c4=val_201_4/c1=val_201_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_202_0/c4=val_202_4/c1=val_202_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_203_0/c4=val_203_4/c1=val_203_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_205_0/c4=val_205_4/c1=val_205_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_207_0/c4=val_207_4/c1=val_207_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_208_0/c4=val_208_4/c1=val_208_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_209_0/c4=val_209_4/c1=val_209_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_213_0/c4=val_213_4/c1=val_213_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_214_0/c4=val_214_4/c1=val_214_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_216_0/c4=val_216_4/c1=val_216_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_217_0/c4=val_217_4/c1=val_217_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_218_0/c4=val_218_4/c1=val_218_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_219_0/c4=val_219_4/c1=val_219_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_221_0/c4=val_221_4/c1=val_221_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_222_0/c4=val_222_4/c1=val_222_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_223_0/c4=val_223_4/c1=val_223_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_224_0/c4=val_224_4/c1=val_224_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_226_0/c4=val_226_4/c1=val_226_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_228_0/c4=val_228_4/c1=val_228_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_229_0/c4=val_229_4/c1=val_229_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_230_0/c4=val_230_4/c1=val_230_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_233_0/c4=val_233_4/c1=val_233_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_235_0/c4=val_235_4/c1=val_235_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_237_0/c4=val_237_4/c1=val_237_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_238_0/c4=val_238_4/c1=val_238_1
+POSTHOOK: Output: default@partition_ctas_complex_order@c0=val_239_0/c4=val_239_4/c1=val_239_1
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_201_0,c4=val_201_4,c1=val_201_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_201_0,c4=val_201_4,c1=val_201_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_201_0,c4=val_201_4,c1=val_201_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_202_0,c4=val_202_4,c1=val_202_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_202_0,c4=val_202_4,c1=val_202_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_202_0,c4=val_202_4,c1=val_202_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_203_0,c4=val_203_4,c1=val_203_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_203_0,c4=val_203_4,c1=val_203_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_203_0,c4=val_203_4,c1=val_203_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_205_0,c4=val_205_4,c1=val_205_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_205_0,c4=val_205_4,c1=val_205_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_205_0,c4=val_205_4,c1=val_205_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_207_0,c4=val_207_4,c1=val_207_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_207_0,c4=val_207_4,c1=val_207_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_207_0,c4=val_207_4,c1=val_207_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_208_0,c4=val_208_4,c1=val_208_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_208_0,c4=val_208_4,c1=val_208_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_208_0,c4=val_208_4,c1=val_208_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_209_0,c4=val_209_4,c1=val_209_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_209_0,c4=val_209_4,c1=val_209_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_209_0,c4=val_209_4,c1=val_209_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_213_0,c4=val_213_4,c1=val_213_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_213_0,c4=val_213_4,c1=val_213_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_213_0,c4=val_213_4,c1=val_213_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_214_0,c4=val_214_4,c1=val_214_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_214_0,c4=val_214_4,c1=val_214_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_214_0,c4=val_214_4,c1=val_214_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_216_0,c4=val_216_4,c1=val_216_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_216_0,c4=val_216_4,c1=val_216_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_216_0,c4=val_216_4,c1=val_216_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_217_0,c4=val_217_4,c1=val_217_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_217_0,c4=val_217_4,c1=val_217_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_217_0,c4=val_217_4,c1=val_217_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_218_0,c4=val_218_4,c1=val_218_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_218_0,c4=val_218_4,c1=val_218_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_218_0,c4=val_218_4,c1=val_218_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_219_0,c4=val_219_4,c1=val_219_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_219_0,c4=val_219_4,c1=val_219_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_219_0,c4=val_219_4,c1=val_219_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_221_0,c4=val_221_4,c1=val_221_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_221_0,c4=val_221_4,c1=val_221_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_221_0,c4=val_221_4,c1=val_221_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_222_0,c4=val_222_4,c1=val_222_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_222_0,c4=val_222_4,c1=val_222_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_222_0,c4=val_222_4,c1=val_222_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_223_0,c4=val_223_4,c1=val_223_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_223_0,c4=val_223_4,c1=val_223_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_223_0,c4=val_223_4,c1=val_223_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_224_0,c4=val_224_4,c1=val_224_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_224_0,c4=val_224_4,c1=val_224_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_224_0,c4=val_224_4,c1=val_224_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_226_0,c4=val_226_4,c1=val_226_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_226_0,c4=val_226_4,c1=val_226_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_226_0,c4=val_226_4,c1=val_226_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_228_0,c4=val_228_4,c1=val_228_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_228_0,c4=val_228_4,c1=val_228_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_228_0,c4=val_228_4,c1=val_228_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_229_0,c4=val_229_4,c1=val_229_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_229_0,c4=val_229_4,c1=val_229_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_229_0,c4=val_229_4,c1=val_229_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_230_0,c4=val_230_4,c1=val_230_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_230_0,c4=val_230_4,c1=val_230_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_230_0,c4=val_230_4,c1=val_230_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_233_0,c4=val_233_4,c1=val_233_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_233_0,c4=val_233_4,c1=val_233_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_233_0,c4=val_233_4,c1=val_233_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_235_0,c4=val_235_4,c1=val_235_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_235_0,c4=val_235_4,c1=val_235_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_235_0,c4=val_235_4,c1=val_235_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_237_0,c4=val_237_4,c1=val_237_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_237_0,c4=val_237_4,c1=val_237_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_237_0,c4=val_237_4,c1=val_237_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_238_0,c4=val_238_4,c1=val_238_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_238_0,c4=val_238_4,c1=val_238_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_238_0,c4=val_238_4,c1=val_238_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_239_0,c4=val_239_4,c1=val_239_1).c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_239_0,c4=val_239_4,c1=val_239_1).c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_239_0,c4=val_239_4,c1=val_239_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
+SELECT * FROM partition_ctas_complex_order where c0 = 'val_238_0'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM partition_ctas_complex_order where c0 = 'val_238_0'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: partition_ctas_complex_order
+          filterExpr: (c0 = 'val_238_0') (type: boolean)
+          Select Operator
+            expressions: c2 (type: string), c3 (type: string), c5 (type: string), 'val_238_0' (type: string), c4 (type: string), c1 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            ListSink
+
+PREHOOK: query: SELECT * FROM partition_ctas_complex_order where c0 = 'val_238_0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_complex_order
+PREHOOK: Input: default@partition_ctas_complex_order@c0=val_238_0/c4=val_238_4/c1=val_238_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM partition_ctas_complex_order where c0 = 'val_238_0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_complex_order
+POSTHOOK: Input: default@partition_ctas_complex_order@c0=val_238_0/c4=val_238_4/c1=val_238_1
+#### A masked pattern was here ####
+val_238_2	val_238_3	val_238_5	val_238_0	val_238_4	val_238_1
+val_238_2	val_238_3	val_238_5	val_238_0	val_238_4	val_238_1
