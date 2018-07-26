@@ -153,7 +153,7 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       ((CountAgg) agg).value = 0;
-      ((CountAgg) agg).uniqueObjects = new HashSet<ObjectInspectorObject>();
+      ((CountAgg) agg).uniqueObjects = null;
     }
 
     @Override
@@ -177,7 +177,11 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
 
         // Skip the counting if the values are the same for windowing COUNT(DISTINCT) case
         if (countThisRow && isWindowingDistinct()) {
+          if (((CountAgg) agg).uniqueObjects == null) {
+            ((CountAgg) agg).uniqueObjects = new HashSet<ObjectInspectorObject>();
+          }
           HashSet<ObjectInspectorObject> uniqueObjs = ((CountAgg) agg).uniqueObjects;
+
           ObjectInspectorObject obj = new ObjectInspectorObject(
               ObjectInspectorUtils.copyToStandardObject(parameters, inputOI, ObjectInspectorCopyOption.JAVA),
               outputOI);
