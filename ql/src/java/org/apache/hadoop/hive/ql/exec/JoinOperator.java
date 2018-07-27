@@ -132,7 +132,6 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
       }
       storage[alias].addRow(nr);
     } catch (Exception e) {
-      e.printStackTrace();
       throw new HiveException(e);
     }
   }
