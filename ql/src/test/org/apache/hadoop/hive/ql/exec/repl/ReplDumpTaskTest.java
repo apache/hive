@@ -101,7 +101,7 @@ public class ReplDumpTaskTest {
       private int tableDumpCount = 0;
 
       @Override
-      void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot)
+      void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId)
           throws Exception {
         tableDumpCount++;
         if (tableDumpCount > 1) {

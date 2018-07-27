@@ -18,7 +18,10 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
@@ -27,20 +30,18 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.junit.rules.TestName;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.Utils;
 
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,15 +49,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import com.google.common.collect.Lists;
 import org.junit.Ignore;
+
+import static org.junit.Assert.assertTrue;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables
@@ -284,6 +291,77 @@ public class TestReplicationScenariosAcidTables {
             2, TxnDbUtil.countQueryAgent(replicaConf,
                     "select count(*) from COMPACTION_QUEUE where cq_database = '" + replicatedDbName
                             + "' and cq_table = 't2'"));
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithConcurrentWrites() throws Throwable {
+    HiveConf primaryConf = primary.getConf();
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(1)");
+
+    // Perform concurrent write on the acid table t1 when bootstrap dump in progress. Bootstrap
+    // won't see the written data but the subsequent incremental repl should see it.
+    BehaviourInjection<CallerArguments, Boolean> callerInjectedBehavior
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        if (injectionPathCalled) {
+          nonInjectedPathCalled = true;
+        } else {
+          // Insert another row to t1 from another txn when bootstrap dump in progress.
+          injectionPathCalled = true;
+          Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              LOG.info("Entered new thread");
+              IDriver driver = DriverFactory.newDriver(primaryConf);
+              SessionState.start(new CliSessionState(primaryConf));
+              CommandProcessorResponse ret = driver.run("insert into " + primaryDbName + ".t1 values(2)");
+              boolean success = (ret.getException() == null);
+              assertTrue(success);
+              LOG.info("Exit new thread success - {}", success, ret.getException());
+            }
+          });
+          t.start();
+          LOG.info("Created new thread {}", t.getName());
+          try {
+            t.join();
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        return true;
+      }
+    };
+
+    InjectableBehaviourObjectStore.setCallerVerifier(callerInjectedBehavior);
+    WarehouseInstance.Tuple bootstrapDump = null;
+    try {
+      bootstrapDump = primary.dump(primaryDbName, null);
+      callerInjectedBehavior.assertInjectionsPerformed(true, true);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    }
+
+    // Bootstrap dump has taken snapshot before concurrent tread performed write. So, it won't see data "2".
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(bootstrapDump.lastReplicationId)
+            .run("select id from t1 order by id")
+            .verifyResults(new String[]{"1" });
+
+    // Incremental should include the concurrent write of data "2" from another txn.
+    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(incrementalDump.lastReplicationId)
+            .run("select id from t1 order by id")
+            .verifyResults(new String[]{"1", "2" });
   }
 
   @Test
