@@ -811,6 +811,24 @@ public class TestObjectStore {
     Assert.assertEquals(0, eventResponse.getEventsSize());
   }
 
+  /**
+   * Test metastore configuration property METASTORE_MAX_EVENT_RESPONSE
+   */
+  @Test
+  public void testMaxEventResponse() throws InterruptedException, MetaException {
+    NotificationEvent event =
+        new NotificationEvent(0, 0, EventMessage.EventType.CREATE_DATABASE.toString(), "");
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_MAX_EVENT_RESPONSE, 1);
+    ObjectStore objs = new ObjectStore();
+    objs.setConf(conf);
+    // Verify if METASTORE_MAX_EVENT_RESPONSE will limit number of events to respond
+    for (int i = 0; i < 3; i++) {
+      objs.addNotificationEvent(event);
+    }
+    NotificationEventResponse eventResponse = objs.getNextNotification(new NotificationEventRequest());
+    Assert.assertEquals(1, eventResponse.getEventsSize());
+  }
+
   @Ignore(
       "This test is here to allow testing with other databases like mysql / postgres etc\n"
           + " with  user changes to the code. This cannot be run on apache derby because of\n"
