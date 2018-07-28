@@ -25,7 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
 import org.apache.hadoop.hive.shims.Utils;
@@ -45,6 +45,8 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
+import org.junit.Assert;
 
 import java.io.IOException;
 import java.net.URI;
@@ -80,10 +82,11 @@ public class TestReplicationScenariosAcrossInstances {
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private static WarehouseInstance primary, replica;
   private String primaryDbName, replicatedDbName;
+  private static HiveConf conf;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    Configuration conf = new Configuration();
+    conf = new HiveConf(TestReplicationScenarios.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
@@ -874,6 +877,56 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
+  public void testIncrementalDumpMultiIteration() throws Throwable {
+    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(bootstrapTuple.lastReplicationId);
+
+    WarehouseInstance.Tuple incremental = primary.run("use " + primaryDbName)
+            .run("create table table1 (id int) partitioned by (country string)")
+            .run("create table table2 (id int)")
+            .run("create table table3 (id int) partitioned by (country string)")
+            .run("insert into table1 partition(country='india') values(1)")
+            .run("insert into table2 values(2)")
+            .run("insert into table3 partition(country='india') values(3)")
+            .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+
+    replica.load(replicatedDbName, incremental.dumpLocation, Arrays.asList("'hive.repl.approx.max.load.tasks'='10'"))
+            .status(replicatedDbName)
+            .verifyResult(incremental.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("select id from table1")
+            .verifyResults(new String[] {"1" })
+            .run("select * from table2")
+            .verifyResults(new String[] {"2" })
+            .run("select id from table3")
+            .verifyResults(new String[] {"3" });
+    assert(IncrementalLoadTasksBuilder.getNumIteration() > 1);
+
+    incremental = primary.run("use " + primaryDbName)
+            .run("create table  table5 (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc")
+            .run("create table table4 (i int, j int)")
+            .run("insert into table4 values (1,2)")
+            .dump(primaryDbName, incremental.lastReplicationId);
+
+    Path path = new Path(incremental.dumpLocation);
+    FileSystem fs = path.getFileSystem(conf);
+    FileStatus[] fileStatus = fs.listStatus(path);
+    int numEvents = fileStatus.length - 1; //one is metadata file
+
+    replica.load(replicatedDbName, incremental.dumpLocation, Arrays.asList("'hive.repl.approx.max.load.tasks'='1'"))
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"table1", "table2", "table3", "table4", "table5" })
+            .run("select i from table4")
+            .verifyResult("1");
+    Assert.assertEquals(IncrementalLoadTasksBuilder.getNumIteration(), numEvents);
+  }
+
+  @Test
   public void testIfCkptAndSourceOfReplPropsIgnoredByReplDump() throws Throwable {
     WarehouseInstance.Tuple tuplePrimary = primary
             .run("use " + primaryDbName)
@@ -1088,9 +1141,7 @@ public class TestReplicationScenariosAcrossInstances {
 
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
-            .verifyResult("null")
-            .run("show tables")
-            .verifyResults(new String[] { "t1" });
+            .verifyResult("null");
     assertEquals(0, replica.getPrimaryKeyList(replicatedDbName, "t1").size());
     assertEquals(0, replica.getUniqueConstraintList(replicatedDbName, "t3").size());
     assertEquals(0, replica.getNotNullConstraintList(replicatedDbName, "t3").size());
@@ -1111,10 +1162,6 @@ public class TestReplicationScenariosAcrossInstances {
         if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.funcName != null)) {
           LOG.warn("Verifier - DB: " + String.valueOf(args.dbName) + " Func: " + String.valueOf(args.funcName));
           return false;
-        }
-        if (args.tblName != null) {
-          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
-          return (args.tblName.equals("t2") || args.tblName.equals("t3"));
         }
         if (args.constraintTblName != null) {
           LOG.warn("Verifier - Constraint Table: " + String.valueOf(args.constraintTblName));
@@ -1188,8 +1235,6 @@ public class TestReplicationScenariosAcrossInstances {
   public void testBootstrapReplLoadRetryAfterFailureForPartitions() throws Throwable {
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
-            .run("create table t1 (id int)")
-            .run("insert into table t1 values (10)")
             .run("create table t2 (place string) partitioned by (country string)")
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .run("insert into table t2 partition(country='uk') values ('london')")
@@ -1204,7 +1249,7 @@ public class TestReplicationScenariosAcrossInstances {
             .dump(primaryDbName, null);
 
     // Inject a behavior where REPL LOAD failed when try to load table "t2" and partition "uk".
-    // So, table "t1" and "t2" will exist and partition "india" will exist, rest failed as operation failed.
+    // So, table "t2" will exist and partition "india" will exist, rest failed as operation failed.
     BehaviourInjection<Partition, Partition> getPartitionStub
             = new BehaviourInjection<Partition, Partition>() {
       @Nullable
@@ -1229,9 +1274,7 @@ public class TestReplicationScenariosAcrossInstances {
             .run("repl status " + replicatedDbName)
             .verifyResult("null")
             .run("show tables")
-            .verifyResults(new String[] { "t1", "t2" })
-            .run("select id from t1")
-            .verifyResults(Arrays.asList("10"))
+            .verifyResults(new String[] {"t2" })
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("india"))
             .run("show functions like '" + replicatedDbName + "*'")
@@ -1271,9 +1314,7 @@ public class TestReplicationScenariosAcrossInstances {
             .run("repl status " + replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
             .run("show tables")
-            .verifyResults(new String[] { "t1", "t2" })
-            .run("select id from t1")
-            .verifyResults(Arrays.asList("10"))
+            .verifyResults(new String[] { "t2" })
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("india", "uk", "us"))
             .run("show functions like '" + replicatedDbName + "*'")

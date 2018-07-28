@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
+package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +64,16 @@ public class TaskTracker {
 
     List <Task<? extends Serializable>> visited = new ArrayList<>();
     updateTaskCount(task, visited);
+  }
+
+  public void addTaskList(List <Task<? extends Serializable>> taskList) {
+    List <Task<? extends Serializable>> visited = new ArrayList<>();
+    for (Task<? extends Serializable> task : taskList) {
+      if (!visited.contains(task)) {
+        tasks.add(task);
+        updateTaskCount(task, visited);
+      }
+    }
   }
 
   // This method is used to traverse the DAG created in tasks list and add the dependent task to
