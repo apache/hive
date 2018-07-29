@@ -4066,12 +4066,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelCollation canonizedCollation = traitSet.canonize(RelCollations.EMPTY);
         sortRel = new HiveSortLimit(cluster, traitSet, srcRel, canonizedCollation, offsetRN, fetchRN);
 
-        RowResolver outputRR = new RowResolver();
-        if (!RowResolver.add(outputRR, relToHiveRR.get(srcRel))) {
-          throw new CalciteSemanticException(
-              "Duplicates detected when adding columns to RR: see previous message",
-              UnsupportedFeature.Duplicates_in_RR);
-        }
+        RowResolver inputRR = relToHiveRR.get(srcRel);
+        RowResolver outputRR = inputRR.duplicate();
         ImmutableMap<String, Integer> hiveColNameCalcitePosMap = buildHiveToCalciteColumnMap(
             outputRR, sortRel);
         relToHiveRR.put(sortRel, outputRR);
@@ -4418,6 +4414,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Integer pos = Integer.valueOf(0);
       // TODO: will this also fix windowing? try
       RowResolver inputRR = this.relToHiveRR.get(srcRel), starRR = inputRR;
+      inputRR.setCheckForAmbiguity(true);
       if (starSrcRel != null) {
         starRR = this.relToHiveRR.get(starSrcRel);
       }
@@ -4622,11 +4619,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                     exp.getWritableObjectInspector(), tabAlias, false);
             colInfo.setSkewedCol((exp instanceof ExprNodeColumnDesc) ? ((ExprNodeColumnDesc) exp)
                     .isSkewedCol() : false);
-            if (!out_rwsch.putWithCheck(tabAlias, colAlias, null, colInfo)) {
-              throw new CalciteSemanticException("Cannot add column to RR: " + tabAlias + "."
-                      + colAlias + " => " + colInfo + " due to duplication, see previous warnings",
-                      UnsupportedFeature.Duplicates_in_RR);
-            }
+            out_rwsch.put(tabAlias, colAlias, colInfo);
 
             pos = Integer.valueOf(pos.intValue() + 1);
           }
@@ -4722,6 +4715,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         this.relToHiveRR.put(outputRel, groupByOutputRowResolver);
       }
 
+      inputRR.setCheckForAmbiguity(false);
       return new Pair<RelNode, RowResolver>(outputRel, null);
     }
 
@@ -4961,8 +4955,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       srcRel = (limitRel == null) ? srcRel : limitRel;
 
       // 8. Incase this QB corresponds to subquery then modify its RR to point
-      // to subquery alias
-      // TODO: cleanup this
+      // to subquery alias.
       if (qb.getParseInfo().getAlias() != null) {
         RowResolver rr = this.relToHiveRR.get(srcRel);
         RowResolver newRR = new RowResolver();
@@ -4976,7 +4969,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
           ColumnInfo newCi = new ColumnInfo(colInfo);
           newCi.setTabAlias(alias);
-          newRR.put(alias, tmp[1], newCi);
+          newRR.putWithCheck(alias, tmp[1], colInfo.getInternalName(), newCi);
         }
         relToHiveRR.put(srcRel, newRR);
         relToHiveColNameCalcitePosMap.put(srcRel, buildHiveToCalciteColumnMap(newRR, srcRel));

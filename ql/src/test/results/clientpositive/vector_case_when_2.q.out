@@ -36,7 +36,7 @@ POSTHOOK: Lineage: timestamps.cdate EXPRESSION [(timestamps_txt)timestamps_txt.F
 POSTHOOK: Lineage: timestamps.ctimestamp1 SIMPLE [(timestamps_txt)timestamps_txt.FieldSchema(name:tsval, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: timestamps.ctimestamp2 EXPRESSION [(timestamps_txt)timestamps_txt.FieldSchema(name:tsval, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: timestamps.stimestamp1 EXPRESSION [(timestamps_txt)timestamps_txt.FieldSchema(name:tsval, type:timestamp, comment:null), ]
-tsval	tsval	_c2	_c3
+tsval	tsval_1	_c2	_c3
 PREHOOK: query: INSERT INTO TABLE timestamps VALUES (NULL,NULL,NULL,NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
