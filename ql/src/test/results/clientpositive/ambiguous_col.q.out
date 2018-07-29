@@ -365,3 +365,26 @@ POSTHOOK: Input: default@src1
 66	66
 98	98
 98	98
+PREHOOK: query: explain select count(*) from (select key, key from src) subq
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(*) from (select key, key from src) subq
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from (select key, key from src) subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select key, key from src) subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+500

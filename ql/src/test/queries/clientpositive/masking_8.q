@@ -30,7 +30,7 @@ select ROW__ID, * from masking_test_n2;
 drop table masking_test_n2;
 
 create table masking_test_n2 as select cast(key as int) as key, '12'
-'12', '12', '12', '12', '12', INPUT__FILE__NAME, '12', '12', '12', '12', '12'
+'12', '12', '12', '12', '12', INPUT__FILE__NAME as file_name, '12', '12', '12', '12', '12'
  from src;
 
 select INPUT__FILE__NAME, *, ROW__ID from masking_test_n2;

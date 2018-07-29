@@ -270,14 +270,14 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@masking_test_n2
 POSTHOOK: Output: default@masking_test_n2
 PREHOOK: query: create table masking_test_n2 as select cast(key as int) as key, '12'
-'12', '12', '12', '12', '12', INPUT__FILE__NAME, '12', '12', '12', '12', '12'
+'12', '12', '12', '12', '12', INPUT__FILE__NAME as file_name, '12', '12', '12', '12', '12'
  from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_n2
 POSTHOOK: query: create table masking_test_n2 as select cast(key as int) as key, '12'
-'12', '12', '12', '12', '12', INPUT__FILE__NAME, '12', '12', '12', '12', '12'
+'12', '12', '12', '12', '12', INPUT__FILE__NAME as file_name, '12', '12', '12', '12', '12'
  from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -293,7 +293,7 @@ POSTHOOK: Lineage: masking_test_n2._c5 SIMPLE []
 POSTHOOK: Lineage: masking_test_n2._c7 SIMPLE []
 POSTHOOK: Lineage: masking_test_n2._c8 SIMPLE []
 POSTHOOK: Lineage: masking_test_n2._c9 SIMPLE []
-POSTHOOK: Lineage: masking_test_n2.input__file__name SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: masking_test_n2.file_name SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: masking_test_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select INPUT__FILE__NAME, *, ROW__ID from masking_test_n2
 PREHOOK: type: QUERY

@@ -82,12 +82,12 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.test_table2
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-            outputColumnNames: key, value1, value2
+            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), '1' (type: string)
+            outputColumnNames: key, value1, value2, ds
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: compute_stats(key, 'hll'), compute_stats(value1, 'hll'), compute_stats(value2, 'hll')
-              keys: '1' (type: string)
+              keys: ds (type: string)
               mode: hash
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -123,21 +123,21 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: '1' (type: string)
+              key expressions: _col0 (type: string)
               sort order: +
-              Map-reduce partition columns: '1' (type: string)
+              Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
-          keys: '1' (type: string)
+          keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), '1' (type: string)
+            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -256,12 +256,12 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.test_table3
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
-            outputColumnNames: key, value1, value2
+            expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), '1' (type: string)
+            outputColumnNames: key, value1, value2, ds
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: compute_stats(key, 'hll'), compute_stats(value1, 'hll'), compute_stats(value2, 'hll')
-              keys: '1' (type: string)
+              keys: ds (type: string)
               mode: hash
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -297,21 +297,21 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: '1' (type: string)
+              key expressions: _col0 (type: string)
               sort order: +
-              Map-reduce partition columns: '1' (type: string)
+              Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
-          keys: '1' (type: string)
+          keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), '1' (type: string)
+            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1477,12 +1477,12 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.test_table2
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-            outputColumnNames: key, value1, value2
+            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), '2' (type: string)
+            outputColumnNames: key, value1, value2, ds
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: compute_stats(key, 'hll'), compute_stats(value1, 'hll'), compute_stats(value2, 'hll')
-              keys: '2' (type: string)
+              keys: ds (type: string)
               mode: hash
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1518,21 +1518,21 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: '2' (type: string)
+              key expressions: _col0 (type: string)
               sort order: +
-              Map-reduce partition columns: '2' (type: string)
+              Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
-          keys: '2' (type: string)
+          keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), '2' (type: string)
+            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

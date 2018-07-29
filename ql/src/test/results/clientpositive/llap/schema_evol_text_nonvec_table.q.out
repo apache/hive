@@ -504,7 +504,7 @@ POSTHOOK: Lineage: table_change_date_group_string_group_date_group_n9.c7 SIMPLE 
 POSTHOOK: Lineage: table_change_date_group_string_group_date_group_n9.c8 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: table_change_date_group_string_group_date_group_n9.c9 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: table_change_date_group_string_group_date_group_n9.insert_num SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	date1	date1	date1	date1	date1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	_c11
+insert_num	date1	date1_1	date1_2	date1_3	date1_4	timestamp1	timestamp1_1	timestamp1_2	timestamp1_3	timestamp1_4	_c11
 PREHOOK: query: alter table table_change_date_group_string_group_date_group_n9 replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_date_group_string_group_date_group_n9
@@ -611,7 +611,7 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_gro
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group_n9.c8 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:bigint1, type:bigint, comment:null), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group_n9.c9 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group_n9.insert_num SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	_c21
+insert_num	tinyint1	smallint1	int1	bigint1	tinyint1_1	smallint1_1	int1_1	bigint1_1	tinyint1_2	smallint1_2	int1_2	bigint1_2	tinyint1_3	smallint1_3	int1_3	bigint1_3	tinyint1_4	smallint1_4	int1_4	bigint1_4	_c21
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group_n9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string_group_n9
@@ -801,7 +801,7 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n9.c8 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:float1, type:float, comment:null), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n9.c9 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:double1, type:double, comment:null), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n9.insert_num SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	decimal1	float1	double1	decimal1	float1	double1	decimal1	float1	double1	decimal1	float1	double1	decimal1	float1	double1	_c16
+insert_num	decimal1	float1	double1	decimal1_1	float1_1	double1_1	decimal1_2	float1_2	double1_2	decimal1_3	float1_3	double1_3	decimal1_4	float1_4	double1_4	_c16
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group_n9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n9
@@ -1116,7 +1116,7 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint_
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint_n9.c8 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:smallint1, type:smallint, comment:null), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint_n9.c9 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:smallint1, type:smallint, comment:null), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint_n9.insert_num SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	smallint1	smallint1	smallint1	smallint1	smallint1	int1	int1	int1	int1	bigint1	bigint1	bigint1	_c19
+insert_num	tinyint1	tinyint1_1	tinyint1_2	tinyint1_3	tinyint1_4	tinyint1_5	smallint1	smallint1_1	smallint1_2	smallint1_3	smallint1_4	int1	int1_1	int1_2	int1_3	bigint1	bigint1_1	bigint1_2	_c19
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint_n9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint_n9
@@ -1244,7 +1244,7 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float_n
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float_n9.c2 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float_n9.c3 SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:float1, type:float, comment:null), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float_n9.insert_num SIMPLE [(schema_evolution_data_n32)schema_evolution_data_n32.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	decimal1	decimal1	float1	_c4
+insert_num	decimal1	decimal1_1	float1	_c4
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float_n9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_float_n9

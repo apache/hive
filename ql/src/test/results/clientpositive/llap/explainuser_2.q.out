@@ -500,19 +500,19 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 5 vectorized, llap
-      File Output Operator [FS_130]
-        Group By Operator [GBY_129] (rows=33 width=177)
-          Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
+      File Output Operator [FS_172]
+        Group By Operator [GBY_171] (rows=33 width=268)
+          Output:["_col0","_col1","_col2"],keys:KEY._col0, KEY._col1, KEY._col2
         <-Union 4 [SIMPLE_EDGE]
           <-Reducer 3 [CONTAINS] llap
-            Reduce Output Operator [RS_88]
-              PartitionCols:_col0, _col1
-              Group By Operator [GBY_87] (rows=33 width=177)
-                Output:["_col0","_col1"],keys:_col0, _col1
-                Select Operator [SEL_85] (rows=33 width=177)
-                  Output:["_col0","_col1"]
-                  Merge Join Operator [MERGEJOIN_84] (rows=33 width=177)
-                    Conds:RS_22._col2=RS_128._col1(Inner),Output:["_col1","_col4"]
+            Reduce Output Operator [RS_130]
+              PartitionCols:_col0, _col1, _col2
+              Group By Operator [GBY_129] (rows=33 width=268)
+                Output:["_col0","_col1","_col2"],keys:_col0, _col1, _col2
+                Select Operator [SEL_127] (rows=33 width=268)
+                  Output:["_col0","_col1","_col2"]
+                  Merge Join Operator [MERGEJOIN_126] (rows=33 width=268)
+                    Conds:RS_22._col3=RS_170._col1(Inner),Output:["_col1","_col2","_col5"]
                   <-Reducer 11 [SIMPLE_EDGE] vectorized, llap
                     SHUFFLE [RS_128]
                       PartitionCols:_col1
@@ -545,18 +545,18 @@ Stage-0
                                       Output:["key","value"]
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_22]
-                      PartitionCols:_col2
-                      Merge Join Operator [MERGEJOIN_80] (rows=39 width=175)
-                        Conds:RS_120._col0=RS_124._col0(Inner),Output:["_col1","_col2"]
+                      PartitionCols:_col3
+                      Merge Join Operator [MERGEJOIN_122] (rows=39 width=266)
+                        Conds:RS_162._col0=RS_166._col0(Inner),Output:["_col1","_col2","_col3"]
                       <-Map 1 [SIMPLE_EDGE] vectorized, llap
                         SHUFFLE [RS_120]
                           PartitionCols:_col0
-                          Select Operator [SEL_119] (rows=500 width=87)
-                            Output:["_col0"]
-                            Filter Operator [FIL_118] (rows=500 width=87)
+                          Select Operator [SEL_161] (rows=500 width=178)
+                            Output:["_col0","_col1"]
+                            Filter Operator [FIL_160] (rows=500 width=178)
                               predicate:key is not null
-                              TableScan [TS_0] (rows=500 width=87)
-                                default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                              TableScan [TS_0] (rows=500 width=178)
+                                default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                       <-Map 8 [SIMPLE_EDGE] vectorized, llap
                         SHUFFLE [RS_124]
                           PartitionCols:_col0
@@ -567,14 +567,14 @@ Stage-0
                               TableScan [TS_3] (rows=25 width=175)
                                 default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-Reducer 7 [CONTAINS] llap
-            Reduce Output Operator [RS_93]
-              PartitionCols:_col0, _col1
-              Group By Operator [GBY_92] (rows=33 width=177)
-                Output:["_col0","_col1"],keys:_col0, _col1
-                Select Operator [SEL_90] (rows=33 width=177)
-                  Output:["_col0","_col1"]
-                  Merge Join Operator [MERGEJOIN_89] (rows=33 width=177)
-                    Conds:RS_48._col2=RS_133._col1(Inner),Output:["_col1","_col4"]
+            Reduce Output Operator [RS_135]
+              PartitionCols:_col0, _col1, _col2
+              Group By Operator [GBY_134] (rows=33 width=268)
+                Output:["_col0","_col1","_col2"],keys:_col0, _col1, _col2
+                Select Operator [SEL_132] (rows=33 width=268)
+                  Output:["_col0","_col1","_col2"]
+                  Merge Join Operator [MERGEJOIN_131] (rows=33 width=268)
+                    Conds:RS_48._col3=RS_175._col1(Inner),Output:["_col1","_col2","_col5"]
                   <-Reducer 15 [SIMPLE_EDGE] vectorized, llap
                     SHUFFLE [RS_133]
                       PartitionCols:_col1
@@ -607,9 +607,9 @@ Stage-0
                                       Output:["key","value"]
                   <-Reducer 6 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_48]
-                      PartitionCols:_col2
-                      Merge Join Operator [MERGEJOIN_81] (rows=39 width=175)
-                        Conds:RS_121._col0=RS_125._col0(Inner),Output:["_col1","_col2"]
+                      PartitionCols:_col3
+                      Merge Join Operator [MERGEJOIN_123] (rows=39 width=266)
+                        Conds:RS_163._col0=RS_167._col0(Inner),Output:["_col1","_col2","_col3"]
                       <-Map 1 [SIMPLE_EDGE] vectorized, llap
                         SHUFFLE [RS_121]
                           PartitionCols:_col0
@@ -1214,24 +1214,24 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 7 vectorized, llap
-      File Output Operator [FS_147]
-        Group By Operator [GBY_146] (rows=605 width=10)
-          Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
+      File Output Operator [FS_189]
+        Group By Operator [GBY_188] (rows=605 width=10)
+          Output:["_col0","_col1","_col2"],keys:KEY._col0, KEY._col1, KEY._col2
         <-Union 6 [SIMPLE_EDGE]
           <-Reducer 12 [CONTAINS] vectorized, llap
-            Reduce Output Operator [RS_165]
-              PartitionCols:_col0, _col1
-              Group By Operator [GBY_164] (rows=1210 width=10)
-                Output:["_col0","_col1"],keys:_col0, _col1
-                Select Operator [SEL_163] (rows=605 width=10)
-                  Output:["_col0","_col1"]
-                  Map Join Operator [MAPJOIN_162] (rows=605 width=10)
-                    Conds:RS_159._col2=SEL_161._col1(Inner),Output:["_col1","_col4"]
+            Reduce Output Operator [RS_207]
+              PartitionCols:_col0, _col1, _col2
+              Group By Operator [GBY_206] (rows=1210 width=10)
+                Output:["_col0","_col1","_col2"],keys:_col0, _col1, _col2
+                Select Operator [SEL_205] (rows=605 width=10)
+                  Output:["_col0","_col1","_col2"]
+                  Map Join Operator [MAPJOIN_204] (rows=605 width=10)
+                    Conds:RS_201._col3=SEL_203._col1(Inner),Output:["_col1","_col2","_col5"]
                   <-Map 9 [BROADCAST_EDGE] vectorized, llap
-                    BROADCAST [RS_159]
-                      PartitionCols:_col2
-                      Map Join Operator [MAPJOIN_158] (rows=550 width=10)
-                        Conds:SEL_157._col0=RS_135._col0(Inner),Output:["_col1","_col2"]
+                    BROADCAST [RS_201]
+                      PartitionCols:_col3
+                      Map Join Operator [MAPJOIN_200] (rows=550 width=10)
+                        Conds:SEL_199._col0=RS_177._col0(Inner),Output:["_col1","_col2","_col3"]
                       <-Map 2 [BROADCAST_EDGE] vectorized, llap
                         BROADCAST [RS_135]
                           PartitionCols:_col0
@@ -1241,13 +1241,13 @@ Stage-0
                               predicate:(key is not null and value is not null)
                               TableScan [TS_3] (rows=25 width=7)
                                 default@src1,x,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-                      <-Select Operator [SEL_157] (rows=500 width=10)
-                          Output:["_col0"]
-                          Filter Operator [FIL_156] (rows=500 width=10)
+                      <-Select Operator [SEL_199] (rows=500 width=10)
+                          Output:["_col0","_col1"]
+                          Filter Operator [FIL_198] (rows=500 width=10)
                             predicate:key is not null
                             TableScan [TS_26] (rows=500 width=10)
-                              default@src,y,Tbl:COMPLETE,Col:NONE,Output:["key"]
-                  <-Select Operator [SEL_161] (rows=262 width=10)
+                              default@src,y,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  <-Select Operator [SEL_203] (rows=262 width=10)
                       Output:["_col1"]
                       Group By Operator [GBY_160] (rows=262 width=10)
                         Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
@@ -1275,30 +1275,30 @@ Stage-0
                                   TableScan [TS_122] (rows=500 width=10)
                                     Output:["key","value"]
           <-Reducer 5 [CONTAINS] vectorized, llap
-            Reduce Output Operator [RS_145]
-              PartitionCols:_col0, _col1
-              Group By Operator [GBY_144] (rows=1210 width=10)
-                Output:["_col0","_col1"],keys:_col0, _col1
-                Select Operator [SEL_143] (rows=605 width=10)
-                  Output:["_col0","_col1"]
-                  Map Join Operator [MAPJOIN_142] (rows=605 width=10)
-                    Conds:RS_139._col2=SEL_141._col1(Inner),Output:["_col1","_col4"]
+            Reduce Output Operator [RS_187]
+              PartitionCols:_col0, _col1, _col2
+              Group By Operator [GBY_186] (rows=1210 width=10)
+                Output:["_col0","_col1","_col2"],keys:_col0, _col1, _col2
+                Select Operator [SEL_185] (rows=605 width=10)
+                  Output:["_col0","_col1","_col2"]
+                  Map Join Operator [MAPJOIN_184] (rows=605 width=10)
+                    Conds:RS_181._col3=SEL_183._col1(Inner),Output:["_col1","_col2","_col5"]
                   <-Map 1 [BROADCAST_EDGE] vectorized, llap
-                    BROADCAST [RS_139]
-                      PartitionCols:_col2
-                      Map Join Operator [MAPJOIN_138] (rows=550 width=10)
-                        Conds:SEL_137._col0=RS_134._col0(Inner),Output:["_col1","_col2"]
+                    BROADCAST [RS_181]
+                      PartitionCols:_col3
+                      Map Join Operator [MAPJOIN_180] (rows=550 width=10)
+                        Conds:SEL_179._col0=RS_176._col0(Inner),Output:["_col1","_col2","_col3"]
                       <-Map 2 [BROADCAST_EDGE] vectorized, llap
                         BROADCAST [RS_134]
                           PartitionCols:_col0
-                           Please refer to the previous Select Operator [SEL_133]
-                      <-Select Operator [SEL_137] (rows=500 width=10)
-                          Output:["_col0"]
-                          Filter Operator [FIL_136] (rows=500 width=10)
+                           Please refer to the previous Select Operator [SEL_175]
+                      <-Select Operator [SEL_179] (rows=500 width=10)
+                          Output:["_col0","_col1"]
+                          Filter Operator [FIL_178] (rows=500 width=10)
                             predicate:key is not null
                             TableScan [TS_0] (rows=500 width=10)
-                              default@src,y,Tbl:COMPLETE,Col:NONE,Output:["key"]
-                  <-Select Operator [SEL_141] (rows=262 width=10)
+                              default@src,y,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  <-Select Operator [SEL_183] (rows=262 width=10)
                       Output:["_col1"]
                       Group By Operator [GBY_140] (rows=262 width=10)
                         Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
@@ -1747,7 +1747,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n15
 PREHOOK: Input: default@tab_n15@ds=2008-04-08
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain 
+POSTHOOK: query: explain
 select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n15
@@ -1782,7 +1782,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n15
 PREHOOK: Input: default@tab_n15@ds=2008-04-08
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain 
+POSTHOOK: query: explain
 select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key join tab_n15 s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n15
@@ -1836,7 +1836,7 @@ PREHOOK: Input: default@tab2_n7@ds=2008-04-08
 PREHOOK: Input: default@tab_n15
 PREHOOK: Input: default@tab_n15@ds=2008-04-08
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain 
+POSTHOOK: query: explain
 select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab2_n7
@@ -1875,7 +1875,7 @@ PREHOOK: Input: default@tab2_n7@ds=2008-04-08
 PREHOOK: Input: default@tab_n15
 PREHOOK: Input: default@tab_n15@ds=2008-04-08
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain 
+POSTHOOK: query: explain
 select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key join tab2_n7 s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab2_n7
@@ -3491,7 +3491,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n172
 PREHOOK: Output: default@dest2_n43
-POSTHOOK: query: explain 
+POSTHOOK: query: explain
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc_n4

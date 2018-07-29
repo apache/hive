@@ -75,7 +75,7 @@ POSTHOOK: Lineage: table5_n0.b SIMPLE []
 POSTHOOK: Lineage: table5_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table5_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: table5_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: select a,b,c,d from table5_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table5_n0
@@ -210,7 +210,7 @@ POSTHOOK: Lineage: table6_n0.b SIMPLE []
 POSTHOOK: Lineage: table6_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table6_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: table6_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: insert into table table6_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num > 110
 PREHOOK: type: QUERY
 PREHOOK: Input: default@schema_evolution_data_2_n4
@@ -224,7 +224,7 @@ POSTHOOK: Lineage: table6_n0.b SIMPLE []
 POSTHOOK: Lineage: table6_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table6_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: table6_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: select a,b,c,d from table6_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table6_n0
@@ -353,7 +353,7 @@ POSTHOOK: Lineage: table7_n0.b SIMPLE []
 POSTHOOK: Lineage: table7_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table7_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: table7_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: insert into table table7_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num > 110
 PREHOOK: type: QUERY
 PREHOOK: Input: default@schema_evolution_data_2_n4
@@ -367,7 +367,7 @@ POSTHOOK: Lineage: table7_n0.b SIMPLE []
 POSTHOOK: Lineage: table7_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table7_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: table7_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: select a,b,c,d from table7_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table7_n0

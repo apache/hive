@@ -241,7 +241,7 @@ POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n8 PARTITION(pa
 POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n8 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_n44)schema_evolution_data_n44.FieldSchema(name:boolean1, type:boolean, comment:null), ]
 POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n8 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_n44)schema_evolution_data_n44.FieldSchema(name:boolean1, type:boolean, comment:null), ]
 POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n8 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n44)schema_evolution_data_n44.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	boolean1	boolean1	boolean1	boolean1	boolean1	boolean1	boolean1	boolean1	boolean1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	int1	int1	int1	int1	int1	int1	int1	int1	int1	int1	int1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	_c54
+insert_num	boolean1	boolean1_1	boolean1_2	boolean1_3	boolean1_4	boolean1_5	boolean1_6	boolean1_7	boolean1_8	tinyint1	tinyint1_1	tinyint1_2	tinyint1_3	tinyint1_4	tinyint1_5	tinyint1_6	tinyint1_7	tinyint1_8	tinyint1_9	tinyint1_10	smallint1	smallint1_1	smallint1_2	smallint1_3	smallint1_4	smallint1_5	smallint1_6	smallint1_7	smallint1_8	smallint1_9	smallint1_10	int1	int1_1	int1_2	int1_3	int1_4	int1_5	int1_6	int1_7	int1_8	int1_9	int1_10	bigint1	bigint1_1	bigint1_2	bigint1_3	bigint1_4	bigint1_5	bigint1_6	bigint1_7	bigint1_8	bigint1_9	bigint1_10	_c54
 PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint_n8
 PREHOOK: type: QUERY
@@ -497,8 +497,8 @@ POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n8 PARTITION(pa
 POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n8 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
 POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n8 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
 POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n8 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n8 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	float1	float1	float1	float1	float1	float1	float1	float1	float1	float1	float1	double1	double1	double1	double1	double1	double1	double1	double1	double1	double1	double1	_c34
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n8 PARTITION(part=1).insert_num SIMPLE []
+insert_num	decimal1	decimal1_1	decimal1_2	decimal1_3	decimal1_4	decimal1_5	decimal1_6	decimal1_7	decimal1_8	decimal1_9	decimal1_10	float1	float1_1	float1_2	float1_3	float1_4	float1_5	float1_6	float1_7	float1_8	float1_9	float1_10	double1	double1_1	double1_2	double1_3	double1_4	double1_5	double1_6	double1_7	double1_8	double1_9	double1_10	_c34
 PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double_n8
 PREHOOK: type: QUERY
@@ -676,8 +676,8 @@ POSTHOOK: Lineage: part_change_various_various_timestamp_n8 PARTITION(part=1).c6
 POSTHOOK: Lineage: part_change_various_various_timestamp_n8 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: part_change_various_various_timestamp_n8 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: part_change_various_various_timestamp_n8 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp_n8 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	_c13
+POSTHOOK: Lineage: part_change_various_various_timestamp_n8 PARTITION(part=1).insert_num SIMPLE []
+insert_num	timestamp1	timestamp1_1	timestamp1_2	timestamp1_3	timestamp1_4	timestamp1_5	timestamp1_6	timestamp1_7	timestamp1_8	timestamp1_9	timestamp1_10	timestamp1_11	_c13
 PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp_n8
 PREHOOK: type: QUERY
@@ -839,8 +839,8 @@ POSTHOOK: Lineage: part_change_various_various_date_n8 PARTITION(part=1).c1 SIMP
 POSTHOOK: Lineage: part_change_various_various_date_n8 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:date1, type:date, comment:null), ]
 POSTHOOK: Lineage: part_change_various_various_date_n8 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:date1, type:date, comment:null), ]
 POSTHOOK: Lineage: part_change_various_various_date_n8 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_date_n8 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n16)schema_evolution_data_2_n16.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	date1	date1	date1	date1	_c5
+POSTHOOK: Lineage: part_change_various_various_date_n8 PARTITION(part=1).insert_num SIMPLE []
+insert_num	date1	date1_1	date1_2	date1_3	_c5
 PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date_n8
 PREHOOK: type: QUERY

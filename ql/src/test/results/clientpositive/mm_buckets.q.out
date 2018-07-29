@@ -397,8 +397,8 @@ POSTHOOK: Input: default@intermediate_n2@p=455
 POSTHOOK: Input: default@intermediate_n2@p=456
 POSTHOOK: Input: default@intermediate_n2@p=457
 POSTHOOK: Output: default@bucket2_mm
-POSTHOOK: Lineage: bucket2_mm.id SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket2_mm.key SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket2_mm.id SIMPLE []
+POSTHOOK: Lineage: bucket2_mm.key SIMPLE []
 PREHOOK: query: select * from bucket2_mm order by key, id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket2_mm
