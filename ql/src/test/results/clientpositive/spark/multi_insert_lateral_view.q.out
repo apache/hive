@@ -77,7 +77,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col5
                         Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
-                          expressions: _col0 (type: string), UDFToString(_col5) (type: string)
+                          expressions: _col0 (type: string), CAST( _col5 AS STRING) (type: string)
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
@@ -99,7 +99,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col5
                           Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
-                            expressions: _col0 (type: string), UDFToString(_col5) (type: string)
+                            expressions: _col0 (type: string), CAST( _col5 AS STRING) (type: string)
                             outputColumnNames: _col0, _col1
                             Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                             File Output Operator
@@ -120,7 +120,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col5
                         Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
-                          expressions: _col0 (type: string), UDFToString(_col5) (type: string)
+                          expressions: _col0 (type: string), CAST( _col5 AS STRING) (type: string)
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
@@ -142,7 +142,7 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col5
                           Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
-                            expressions: _col0 (type: string), UDFToString(_col5) (type: string)
+                            expressions: _col0 (type: string), CAST( _col5 AS STRING) (type: string)
                             outputColumnNames: _col0, _col1
                             Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                             File Output Operator
@@ -393,7 +393,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -414,7 +414,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -618,7 +618,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -643,7 +643,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                      expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -664,7 +664,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                      expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -945,7 +945,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToString(_col0) (type: string), UDFToString(_col1) (type: string)
+                  expressions: CAST( _col0 AS STRING) (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -965,7 +965,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToString(_col0) (type: string), UDFToString(_col1) (type: string)
+                  expressions: CAST( _col0 AS STRING) (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -985,7 +985,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1304,7 +1304,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1324,7 +1324,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1349,7 +1349,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                      expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
@@ -1370,7 +1370,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                      expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator

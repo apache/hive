@@ -138,7 +138,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), UDFToString(VALUE._col0) (type: string)
+                expressions: KEY.reducesinkkey0 (type: string), CAST( VALUE._col0 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -167,7 +167,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), UDFToString(VALUE._col0) (type: string)
+                expressions: KEY.reducesinkkey0 (type: string), CAST( VALUE._col0 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
