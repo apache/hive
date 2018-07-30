@@ -85,7 +85,8 @@ public class IncrementalLoadTasksBuilder {
     replLogger.startLog();
   }
 
-  public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log) throws Exception {
+  public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log,
+                                            ReplLoadWork loadWork) throws Exception {
     Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
     Task<? extends Serializable> taskChainTail = evTaskRoot;
     Long lastReplayedEvent = null;
@@ -146,7 +147,10 @@ public class IncrementalLoadTasksBuilder {
       lastReplayedEvent = eventDmd.getEventTo();
     }
 
-    if (!evTaskRoot.equals(taskChainTail) && !iterator.hasNext()) {
+    if (iterator.hasNext()) {
+      // add load task to start the next iteration
+      taskChainTail.addDependentTask(TaskFactory.get(loadWork, conf));
+    } else {
       Map<String, String> dbProps = new HashMap<>();
       dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(lastReplayedEvent));
       ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);
