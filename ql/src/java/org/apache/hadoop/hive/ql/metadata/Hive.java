@@ -1716,7 +1716,8 @@ public class Hive {
    * @return Partition object being loaded with data
    */
   public Partition loadPartition(Path loadPath, Table tbl, Map<String, String> partSpec,
-      LoadFileType loadFileType, boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
+      LoadFileType loadFileType, boolean inheritTableSpecs, boolean inheritLocation,
+      boolean isSkewedStoreAsSubdir,
       boolean isSrcLocal, boolean isAcidIUDoperation, boolean hasFollowingStatsTask, Long writeId,
       int stmtId, boolean isInsertOverwrite) throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
@@ -1737,10 +1738,8 @@ public class Hive {
       Path oldPartPath = (oldPart != null) ? oldPart.getDataLocation() : null;
       Path newPartPath = null;
 
-      if (inheritTableSpecs) {
-        Path partPath = new Path(tbl.getDataLocation(), Warehouse.makePartPath(partSpec));
-        newPartPath = new Path(tblDataLocationPath.toUri().getScheme(),
-            tblDataLocationPath.toUri().getAuthority(), partPath.toUri().getPath());
+      if (inheritLocation) {
+        newPartPath = genPartPathFromTable(tbl, partSpec, tblDataLocationPath);
 
         if(oldPart != null) {
           /*
@@ -1757,7 +1756,8 @@ public class Hive {
           }
         }
       } else {
-        newPartPath = oldPartPath;
+        newPartPath = oldPartPath == null
+          ? newPartPath = genPartPathFromTable(tbl, partSpec, tblDataLocationPath) : oldPartPath;
       }
 
       PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -1914,6 +1914,14 @@ public class Hive {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
+  }
+
+
+  private static Path genPartPathFromTable(Table tbl, Map<String, String> partSpec,
+      Path tblDataLocationPath) throws MetaException {
+    Path partPath = new Path(tbl.getDataLocation(), Warehouse.makePartPath(partSpec));
+    return new Path(tblDataLocationPath.toUri().getScheme(),
+        tblDataLocationPath.toUri().getAuthority(), partPath.toUri().getPath());
   }
 
   /**
@@ -2238,7 +2246,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
               // load the partition
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec, loadFileType,
-                  true, numLB > 0, false, isAcid, hasFollowingStatsTask, writeId, stmtId,
+                  true, false, numLB > 0, false, isAcid, hasFollowingStatsTask, writeId, stmtId,
                   isInsertOverwrite);
               partitionsMap.put(fullPartSpec, newPartition);
 
