@@ -207,22 +207,35 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
     /* Verify that we re-arranged/renamed so that files names follow hive naming convention
     and are spread among deltas/buckets
     The order of files in RemoteIterator<LocatedFileStatus> iter = fs.listFiles(p, true)
-    is what determines which delta/file any original file ends up in */
-    testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from TFlat order by a";
-    String[][] expected3 = new String[][] {
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
+    is what determines which delta/file any original file ends up in
+
+    The test is split into 2 parts to test data and metadata because RemoteIterator walks in
+    different order on different machines*/
+
+    testQuery = "select a, b from TFlat order by a";
+    String[][] expectedData = new String[][] {
+        {"1\t2"},
+        {"2\t3"},
+        {"3\t4"},
+        {"4\t5"},
+        {"5\t6"}
+    };
+    checkResult(expectedData, testQuery, true, "TFlat post-check data", LOG);
+
+    testQuery = "select ROW__ID, INPUT__FILE__NAME from TFlat order by INPUT__FILE__NAME";
+    String[][] expectedMetaData = new String[][] {
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}",
             "tflat/delta_0000001_0000001/00000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t2\t3",
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}",
             "tflat/delta_0000002_0000002/00000_0"},
-        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t3\t4",
-            "tflat/delta_0000004_0000004/00000_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t4\t5",
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}",
             "tflat/delta_0000003_0000003/00000_0"},
-        {"{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
+        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}",
+            "tflat/delta_0000004_0000004/00000_0"},
+        {"{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}",
             "tflat/delta_0000005_0000005/00000_0"}
     };
-    checkResult(expected3, testQuery, false, "TFlat post-check", LOG);
-
+    checkResult(expectedMetaData, testQuery, false, "TFlat post-check files", LOG);
   }
   @Test
   public void testGuessNumBuckets() {
