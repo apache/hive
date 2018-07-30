@@ -44,6 +44,7 @@ import org.apache.calcite.rel.RelReferentialConstraint;
 import org.apache.calcite.rel.RelReferentialConstraintImpl;
 import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.ColumnStrategy;
@@ -87,6 +88,7 @@ public class RelOptHiveTable implements RelOptTable {
   //~ Instance fields --------------------------------------------------------
 
   private final RelOptSchema schema;
+  private final RelDataTypeFactory typeFactory;
   private final RelDataType rowType;
   private final List<String> qualifiedTblName;
   private final String name;
@@ -110,12 +112,13 @@ public class RelOptHiveTable implements RelOptTable {
 
   protected static final Logger LOG = LoggerFactory.getLogger(RelOptHiveTable.class.getName());
 
-  public RelOptHiveTable(RelOptSchema calciteSchema, List<String> qualifiedTblName,
+  public RelOptHiveTable(RelOptSchema calciteSchema, RelDataTypeFactory typeFactory, List<String> qualifiedTblName,
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
       List<ColumnInfo> hivePartitionCols, List<VirtualColumn> hiveVirtualCols, HiveConf hconf,
       Map<String, PrunedPartitionList> partitionCache, Map<String, ColumnStatsList> colStatsCache,
       AtomicInteger noColsMissingStats) {
     this.schema = calciteSchema;
+    this.typeFactory = typeFactory;
     this.qualifiedTblName = ImmutableList.copyOf(qualifiedTblName);
     this.name = this.qualifiedTblName.stream().collect(Collectors.joining("."));
     this.rowType = rowType;
@@ -153,6 +156,10 @@ public class RelOptHiveTable implements RelOptTable {
   @Override
   public RelOptSchema getRelOptSchema() {
     return schema;
+  }
+
+  public RelDataTypeFactory getTypeFactory() {
+    return typeFactory;
   }
 
   @Override
@@ -201,7 +208,7 @@ public class RelOptHiveTable implements RelOptTable {
     }
 
     // 3. Build new Table
-    return new RelOptHiveTable(this.schema, this.qualifiedTblName, newRowType,
+    return new RelOptHiveTable(this.schema, this.typeFactory, this.qualifiedTblName, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
         this.hiveConf, this.partitionCache, this.colStatsCache, this.noColsMissingStats);
   }
@@ -439,7 +446,7 @@ public class RelOptHiveTable implements RelOptTable {
 
       // We have valid pruning expressions, only retrieve qualifying partitions
       ExprNodeDesc pruneExpr = pruneNode.accept(new ExprNodeConverter(getName(), getRowType(),
-          partOrVirtualCols, this.getRelOptSchema().getTypeFactory()));
+          partOrVirtualCols, getTypeFactory()));
 
       partitionList = PartitionPruner.prune(hiveTblMetadata, pruneExpr, conf, getName(),
           partitionCache);
