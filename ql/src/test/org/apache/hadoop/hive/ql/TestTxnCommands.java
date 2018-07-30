@@ -394,7 +394,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     verifyLongStats(3, 0, 1000, getTxnTableStats(msClient, tableName));
   }
 
-  // TODO## this test is broken; would probably be fixed by HIVE-20046
   @Test
   public void testParallelTruncateAnalyzeStats() throws Exception {
     String tableName = "mm_table";
