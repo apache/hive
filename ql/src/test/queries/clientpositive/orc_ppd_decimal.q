@@ -128,10 +128,22 @@ set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', 0.22);
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', 0.22, cast('11.22' as float));
+select sum(hash(*)) from newtypesorc_n5 where d in (0.9, 0.22, 11.22);
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', 0.22, cast('11.22' as float));
+select sum(hash(*)) from newtypesorc_n5 where d in (0.9, 0.22, 11.22);
+
+set hive.optimize.index.filter=false;
+select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', '0.22', '11.22');
+
+set hive.optimize.index.filter=true;
+select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', '0.22', '11.22');
+
+set hive.optimize.index.filter=false;
+select sum(hash(*)) from newtypesorc_n5 where d in (cast('0.9' as float), cast('0.22' as float), cast('11.22' as float));
+
+set hive.optimize.index.filter=true;
+select sum(hash(*)) from newtypesorc_n5 where d in (cast('0.9' as float), cast('0.22' as float), cast('11.22' as float));
 
 set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d between 0 and 1;
