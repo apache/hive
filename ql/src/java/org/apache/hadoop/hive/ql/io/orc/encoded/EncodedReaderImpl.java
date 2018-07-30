@@ -1964,7 +1964,9 @@ class EncodedReaderImpl implements EncodedReader {
     } finally {
       // Release the unreleased buffers. See class comment about refcounts.
       try {
-        releaseInitialRefcounts(toRead.next);
+        if (toRead != null) {
+          releaseInitialRefcounts(toRead.next);
+        }
         releaseBuffers(toRelease.keySet(), true);
       } catch (Throwable t) {
         if (!hasError) throw new IOException(t);
