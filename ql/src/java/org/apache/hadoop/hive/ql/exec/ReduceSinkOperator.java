@@ -500,15 +500,13 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     if (null != out) {
       numRows++;
       runTimeNumRows++;
-      if (LOG.isTraceEnabled()) {
-        if (numRows == cntr) {
-          cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
-          if (cntr < 0 || numRows < 0) {
-            cntr = 0;
-            numRows = 1;
-          }
-          LOG.info(toString() + ": records written - " + numRows);
+      if (numRows == cntr) {
+        cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
+        if (cntr < 0 || numRows < 0) {
+          cntr = 0;
+          numRows = 1;
         }
+        LOG.info("{}: records written - {}", this, numRows);
       }
       out.collect(keyWritable, valueWritable);
     }
@@ -536,9 +534,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     out = null;
     random = null;
     reducerHash = null;
-    if (LOG.isTraceEnabled()) {
-      LOG.info(toString() + ": records written - " + numRows);
-    }
+    LOG.info("{}: Total records written - {}. abort - {}", this, numRows, abort);
   }
 
   /**
