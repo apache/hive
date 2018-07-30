@@ -2,15 +2,17 @@ PREHOOK: query: DROP TABLE IF EXISTS hbase_bulk
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS hbase_bulk
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_bulk (key INT, value STRING)
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_bulk (key INT, value STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ('hbase.columns.mapping' = ':key,cf:string')
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_bulk
-POSTHOOK: query: CREATE TABLE hbase_bulk (key INT, value STRING)
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_bulk (key INT, value STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ('hbase.columns.mapping' = ':key,cf:string')
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_bulk
