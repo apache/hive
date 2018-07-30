@@ -84,14 +84,55 @@ OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Partition Description:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: fact_daily
+            filterExpr: ((key = '484') and (value = 'val_484')) (type: boolean)
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: ((key = '484') and (value = 'val_484')) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: '484' (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Execution mode: vectorized
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
           Partition
+            base file name: value=val_484
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -138,21 +179,14 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily
             name: default.fact_daily
+      Truncated Path -> Alias:
+        /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
       Processor Tree:
-        TableScan
-          alias: fact_daily
-          filterExpr: ((key = '484') and (value = 'val_484')) (type: boolean)
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          GatherStats: false
-          Filter Operator
-            isSamplingPred: false
-            predicate: ((key = '484') and (value = 'val_484')) (type: boolean)
-            Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: '484' (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-              ListSink
+        ListSink
 
 PREHOOK: query: SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (key='484' and value= 'val_484')
 PREHOOK: type: QUERY
@@ -173,14 +207,55 @@ OPTIMIZED SQL: SELECT CAST('238' AS STRING) AS `key`, CAST('val_238' AS STRING) 
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '238' AND `value` = 'val_238'
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Partition Description:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: fact_daily
+            filterExpr: ((key = '238') and (value = 'val_238')) (type: boolean)
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: ((key = '238') and (value = 'val_238')) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: '238' (type: string), 'val_238' (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types string:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Execution mode: vectorized
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
           Partition
+            base file name: value=val_238
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -227,21 +302,14 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily
             name: default.fact_daily
+      Truncated Path -> Alias:
+        /fact_daily/ds=1/hr=4/key=238/value=val_238 [fact_daily]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
       Processor Tree:
-        TableScan
-          alias: fact_daily
-          filterExpr: ((key = '238') and (value = 'val_238')) (type: boolean)
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          GatherStats: false
-          Filter Operator
-            isSamplingPred: false
-            predicate: ((key = '238') and (value = 'val_238')) (type: boolean)
-            Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: '238' (type: string), 'val_238' (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
-              ListSink
+        ListSink
 
 PREHOOK: query: SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and (key='238' and value= 'val_238')
 PREHOOK: type: QUERY
@@ -263,14 +331,55 @@ OPTIMIZED SQL: SELECT `key`
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `value` = '3'
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Partition Description:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: fact_daily
+            filterExpr: ((ds = '1') and (hr = '4') and (value = '3')) (type: boolean)
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: (value = '3') (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Execution mode: vectorized
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
           Partition
+            base file name: HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -317,21 +426,14 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily
             name: default.fact_daily
+      Truncated Path -> Alias:
+        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
       Processor Tree:
-        TableScan
-          alias: fact_daily
-          filterExpr: ((ds = '1') and (hr = '4') and (value = '3')) (type: boolean)
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          GatherStats: false
-          Filter Operator
-            isSamplingPred: false
-            predicate: (value = '3') (type: boolean)
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-              ListSink
+        ListSink
 
 PREHOOK: query: SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (value = "3")
 PREHOOK: type: QUERY
@@ -351,14 +453,55 @@ OPTIMIZED SQL: SELECT CAST('495' AS STRING) AS `key`, `value`
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '495'
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Partition Description:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: fact_daily
+            filterExpr: ((ds = '1') and (hr = '4') and (key = '495')) (type: boolean)
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: (key = '495') (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: '495' (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types string:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Execution mode: vectorized
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
           Partition
+            base file name: HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -405,21 +548,14 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily
             name: default.fact_daily
+      Truncated Path -> Alias:
+        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
       Processor Tree:
-        TableScan
-          alias: fact_daily
-          filterExpr: ((ds = '1') and (hr = '4') and (key = '495')) (type: boolean)
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          GatherStats: false
-          Filter Operator
-            isSamplingPred: false
-            predicate: (key = '495') (type: boolean)
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: '495' (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-              ListSink
+        ListSink
 
 PREHOOK: query: SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and key = '369'
 PREHOOK: type: QUERY
