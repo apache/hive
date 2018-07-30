@@ -1307,9 +1307,6 @@ public class ObjectStore implements RawStore, Configurable {
               TableName.getQualified(catName, dbName, tableName));
         }
 
-        // TODO## remove? unused
-        Table table = convertToTable(tbl);
-
         List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
                                            catName, dbName, tableName, null);
         if (CollectionUtils.isNotEmpty(tabConstraints)) {
@@ -8452,7 +8449,7 @@ public class ObjectStore implements RawStore, Configurable {
         // There is no need to add colname again, otherwise we will get duplicate colNames.
       }
 
-      // TODO## ideally the col stats stats should be in colstats, not in the table!
+      // TODO: (HIVE-20109) ideally the col stats stats should be in colstats, not in the table!
       // Set the table properties
       // No need to check again if it exists.
       String dbname = table.getDbName();
@@ -8552,7 +8549,7 @@ public class ObjectStore implements RawStore, Configurable {
         writeMPartitionColumnStatistics(table, partition, mStatsObj,
             oldStats.get(statsObj.getColName()));
       }
-      // TODO## ideally the col stats stats should be in colstats, not in the partition!
+      // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
       Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
       StatsSetupConst.setColumnStatsState(newParams, colNames);
       boolean isTxn = TxnUtils.isTransactionalTable(table);
@@ -8759,7 +8756,7 @@ public class ObjectStore implements RawStore, Configurable {
           cs.setIsStatsCompliant(false);
         }
       } else {
-        // TODO## this could be improved to get partitions in bulk
+        // TODO: this could be improved to get partitions in bulk
         for (ColumnStatistics cs : allStats) {
           MPartition mpart = getMPartition(catName, dbName, tableName,
               Warehouse.getPartValuesFromPartName(cs.getStatsDesc().getPartName()));
@@ -12474,8 +12471,7 @@ public class ObjectStore implements RawStore, Configurable {
       boolean isCompleteStatsWriter) throws MetaException {
 
     // Note: can be changed to debug/info to verify the calls.
-    // TODO## change this to debug when merging
-    LOG.info("isCurrentStatsValidForTheQuery with stats write ID {}; query {}; writer: {} params {}",
+    LOG.debug("isCurrentStatsValidForTheQuery with stats write ID {}; query {}; writer: {} params {}",
         statsWriteId, queryValidWriteIdList, isCompleteStatsWriter, statsParams);
     // return true since the stats does not seem to be transactional.
     if (statsWriteId < 1) {
