@@ -48,7 +48,7 @@ public class TestQueryDisplay {
     conf = new HiveConf();
     conf.set("hive.support.concurrency", "false");
 
-    sessionManager = new SessionManager(null);
+    sessionManager = new SessionManager(null, true);
     sessionManager.init(conf);
   }
 

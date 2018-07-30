@@ -79,7 +79,7 @@ public class TestSessionManagerMetrics {
     conf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
     MetricsFactory.init(conf);
 
-    sm = new SessionManager(null);
+    sm = new SessionManager(null, true);
     sm.init(conf);
 
     metrics = (CodahaleMetrics) MetricsFactory.getInstance();

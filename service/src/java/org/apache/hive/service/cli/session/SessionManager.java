@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -63,9 +64,16 @@ import org.slf4j.LoggerFactory;
  */
 public class SessionManager extends CompositeService {
 
+  private static final String INACTIVE_ERROR_MESSAGE =
+      "Cannot open sessions on an inactive HS2 instance; use service discovery to connect";
   public static final String HIVERCFILE = ".hiverc";
   private static final Logger LOG = LoggerFactory.getLogger(CompositeService.class);
   private HiveConf hiveConf;
+  /** The lock that synchronizes the allowSessions flag and handleToSession map.
+      Active-passive HA first disables the connections, then closes existing one, making sure
+      there are no races between these two processes. */
+  private final Object sessionAddLock = new Object();
+  private boolean allowSessions;
   private final Map<SessionHandle, HiveSession> handleToSession =
       new ConcurrentHashMap<SessionHandle, HiveSession>();
   private final Map<String, LongAdder> connectionsCount = new ConcurrentHashMap<>();
@@ -87,9 +95,10 @@ public class SessionManager extends CompositeService {
   private String sessionImplWithUGIclassName;
   private String sessionImplclassName;
 
-  public SessionManager(HiveServer2 hiveServer2) {
+  public SessionManager(HiveServer2 hiveServer2, boolean allowSessions) {
     super(SessionManager.class.getSimpleName());
     this.hiveServer2 = hiveServer2;
+    this.allowSessions = allowSessions;
   }
 
   @Override
@@ -373,10 +382,18 @@ public class SessionManager extends CompositeService {
     return createSession(null, protocol, username, password, ipAddress, sessionConf,
       withImpersonation, delegationToken).getSessionHandle();
   }
+
   public HiveSession createSession(SessionHandle sessionHandle, TProtocolVersion protocol, String username,
     String password, String ipAddress, Map<String, String> sessionConf, boolean withImpersonation,
     String delegationToken)
     throws HiveSQLException {
+    // Check the flag opportunistically.
+    synchronized (sessionAddLock) {
+      if (!allowSessions) {
+        throw new HiveSQLException(INACTIVE_ERROR_MESSAGE);
+      }
+    }
+    // Do the expensive operations outside of any locks; we'll recheck the flag again at the end.
 
     // if client proxies connection, use forwarded ip-addresses instead of just the gateway
     final List<String> forwardedAddresses = getForwardedAddresses();
@@ -448,8 +465,23 @@ public class SessionManager extends CompositeService {
       session = null;
       throw new HiveSQLException("Failed to execute session hooks: " + e.getMessage(), e);
     }
-    handleToSession.put(session.getSessionHandle(), session);
-    LOG.info("Session opened, " + session.getSessionHandle() + ", current sessions:" + getOpenSessionCount());
+    boolean isAdded = false;
+    synchronized (sessionAddLock) {
+      if (allowSessions) {
+        handleToSession.put(session.getSessionHandle(), session);
+        isAdded = true;
+      }
+    }
+    if (!isAdded) {
+      try {
+        closeSessionInternal(session);
+      } catch (Exception e) {
+        LOG.warn("Failed to close the session opened during an HA state change; ignoring", e);
+      }
+      throw new HiveSQLException(INACTIVE_ERROR_MESSAGE);
+    }
+    LOG.info("Session opened, " + session.getSessionHandle()
+        + ", current sessions:" + getOpenSessionCount());
     return session;
   }
 
@@ -548,6 +580,10 @@ public class SessionManager extends CompositeService {
       throw new HiveSQLException("Session does not exist: " + sessionHandle);
     }
     LOG.info("Session closed, " + sessionHandle + ", current sessions:" + getOpenSessionCount());
+    closeSessionInternal(session);
+  }
+
+  private void closeSessionInternal(HiveSession session) throws HiveSQLException {
     try {
       session.close();
     } finally {
@@ -682,6 +718,12 @@ public class SessionManager extends CompositeService {
       return null;
     }
     return hiveServer2.getServerHost();
+  }
+
+  public void allowSessions(boolean b) {
+    synchronized (sessionAddLock) {
+      this.allowSessions = b;
+    }
   }
 }
 
