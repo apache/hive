@@ -958,6 +958,7 @@ class EncodedReaderImpl implements EncodedReader {
           LOG.error("Ignoring the cleanup error after another error", t);
         }
         chunk.setBuffer(null);
+        ++decompressedIx;
       }
     }
 
