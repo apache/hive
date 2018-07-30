@@ -1,6 +1,7 @@
-CREATE TABLE hbase_pushdown(key int, value string) 
+CREATE EXTERNAL TABLE hbase_pushdown(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string");
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
+TBLPROPERTIES ("external.table.purge" = "true");
 
 INSERT OVERWRITE TABLE hbase_pushdown 
 SELECT *
