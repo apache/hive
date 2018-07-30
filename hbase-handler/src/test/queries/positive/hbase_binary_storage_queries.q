@@ -1,6 +1,6 @@
 DROP TABLE t_hbase;
 
-CREATE EXTERNAL TABLE t_hbase(key STRING,
+CREATE TABLE t_hbase(key STRING,
                      tinyint_col TINYINT,
                      smallint_col SMALLINT,
                      int_col INT,
@@ -11,8 +11,7 @@ CREATE EXTERNAL TABLE t_hbase(key STRING,
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
 TBLPROPERTIES ("hbase.table.name" = "t_hive",
-               "hbase.table.default.storage.type" = "binary",
-               "external.table.purge" = "true");
+               "hbase.table.default.storage.type" = "binary");
 
 DESCRIBE FORMATTED t_hbase;
 
@@ -93,7 +92,7 @@ DROP TABLE t_hbase_1;
 DROP TABLE t_hbase;
 DROP TABLE t_hbase_2;
 
-CREATE EXTERNAL TABLE t_hbase_2(key STRING,
+CREATE TABLE t_hbase_2(key STRING,
                      tinyint_col TINYINT,
                      smallint_col SMALLINT,
                      int_col INT,
@@ -103,7 +102,7 @@ CREATE EXTERNAL TABLE t_hbase_2(key STRING,
                      boolean_col BOOLEAN)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
-TBLPROPERTIES ("hbase.table.name" = "t_hive_2", "external.table.purge" = "true");
+TBLPROPERTIES ("hbase.table.name" = "t_hive_2");
 
 INSERT OVERWRITE TABLE t_hbase_2
 SELECT 'user1', 1, 1, 1, 1, 1.0, 1.0, true
@@ -192,8 +191,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
 TBLPROPERTIES (
 "hbase.table.name" = "t_hive_2",
-"hbase.table.default.storage.type" = "binary",
-"external.table.purge" = "true");
+"hbase.table.default.storage.type" = "binary");
 
 SELECT * FROM t_hbase_4;
 

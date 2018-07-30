@@ -1,9 +1,8 @@
 -- HIVE-4375 Single sourced multi insert consists of native and non-native table mixed throws NPE
 CREATE TABLE src_x1(key string, value string);
-CREATE EXTERNAL TABLE src_x2(key string, value string)
+CREATE TABLE src_x2(key string, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:value")
-TBLPROPERTIES ("external.table.purge" = "true");
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:value");
 
 explain
 from src a

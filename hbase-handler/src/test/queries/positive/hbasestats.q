@@ -1,11 +1,10 @@
 DROP TABLE users;
 
-CREATE EXTERNAL TABLE users(key string, state string, country string, country_id int)
+CREATE TABLE users(key string, state string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "info:state,info:country,info:country_id"
-)
-TBLPROPERTIES ("external.table.purge" = "true");
+);
 
 desc formatted users;
 
