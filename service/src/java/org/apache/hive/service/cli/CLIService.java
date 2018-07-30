@@ -72,16 +72,19 @@ public class CLIService extends CompositeService implements ICLIService {
   // The HiveServer2 instance running this service
   private final HiveServer2 hiveServer2;
   private int defaultFetchRows;
+  // This is necessary for tests and embedded mode, where HS2 init is not executed.
+  private boolean allowSessionsInitial;
 
-  public CLIService(HiveServer2 hiveServer2) {
+  public CLIService(HiveServer2 hiveServer2, boolean allowSessions) {
     super(CLIService.class.getSimpleName());
     this.hiveServer2 = hiveServer2;
+    this.allowSessionsInitial = allowSessions;
   }
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
     setHiveConf(hiveConf);
-    sessionManager = new SessionManager(hiveServer2);
+    sessionManager = new SessionManager(hiveServer2, allowSessionsInitial);
     defaultFetchRows = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
     addService(sessionManager);
     //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
@@ -450,7 +453,7 @@ public class CLIService extends CompositeService implements ICLIService {
           HiveConf.ConfVars.HIVE_SERVER2_LONG_POLLING_TIMEOUT, TimeUnit.MILLISECONDS);
 
       final long elapsed = System.currentTimeMillis() - operation.getBeginTime();
-      // A step function to increase the polling timeout by 500 ms every 10 sec, 
+      // A step function to increase the polling timeout by 500 ms every 10 sec,
       // starting from 500 ms up to HIVE_SERVER2_LONG_POLLING_TIMEOUT
       final long timeout = Math.min(maxTimeout, (elapsed / TimeUnit.SECONDS.toMillis(10) + 1) * 500);
 
@@ -491,7 +494,7 @@ public class CLIService extends CompositeService implements ICLIService {
         || !OperationType.EXECUTE_STATEMENT.equals(operation.getType())) {
       return new JobProgressUpdate(ProgressMonitor.NULL);
     }
-    
+
     SessionState sessionState = operation.getParentSession().getSessionState();
     long startTime = System.nanoTime();
     int timeOutMs = 8;

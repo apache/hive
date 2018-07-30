@@ -18,14 +18,9 @@
 
 package org.apache.hive.service.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -211,7 +206,8 @@ public class HiveServer2 extends CompositeService {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
     }
 
-    cliService = new CLIService(this);
+    // Do not allow sessions - leader election or initialization will allow them for an active HS2.
+    cliService = new CLIService(this, false);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
     Runnable oomHook = new Runnable() {
@@ -706,6 +702,9 @@ public class HiveServer2 extends CompositeService {
     // If we're supporting dynamic service discovery, we'll add the service uri for this
     // HiveServer2 instance to Zookeeper as a znode.
     HiveConf hiveConf = getHiveConf();
+    if (!serviceDiscovery || !activePassiveHA) {
+      allowClientSessions();
+    }
     if (serviceDiscovery) {
       try {
         if (activePassiveHA) {
@@ -775,6 +774,7 @@ public class HiveServer2 extends CompositeService {
       }
       hiveServer2.startOrReconnectTezSessions();
       LOG.info("Started/Reconnected tez sessions.");
+      hiveServer2.allowClientSessions();
 
       // resolve futures used for testing
       if (HiveConf.getBoolVar(hiveServer2.getHiveConf(), ConfVars.HIVE_IN_TEST)) {
@@ -787,7 +787,7 @@ public class HiveServer2 extends CompositeService {
     public void notLeader() {
       LOG.info("HS2 instance {} LOST LEADERSHIP. Stopping/Disconnecting tez sessions..", hiveServer2.serviceUri);
       hiveServer2.isLeader.set(false);
-      hiveServer2.closeHiveSessions();
+      hiveServer2.closeAndDisallowHiveSessions();
       hiveServer2.stopOrDisconnectTezSessions();
       LOG.info("Stopped/Disconnected tez sessions.");
 
@@ -822,6 +822,10 @@ public class HiveServer2 extends CompositeService {
     }
     initAndStartTezSessionPoolManager(resourcePlan);
     initAndStartWorkloadManager(resourcePlan);
+  }
+
+  private void allowClientSessions() {
+    cliService.getSessionManager().allowSessions(true);
   }
 
   private void initAndStartTezSessionPoolManager(final WMFullResourcePlan resourcePlan) {
@@ -860,17 +864,18 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
-  private void closeHiveSessions() {
+  private void closeAndDisallowHiveSessions() {
     LOG.info("Closing all open hive sessions.");
-    if (cliService != null && cliService.getSessionManager().getOpenSessionCount() > 0) {
-      try {
-        for (HiveSession session : cliService.getSessionManager().getSessions()) {
-          cliService.getSessionManager().closeSession(session.getSessionHandle());
-        }
-        LOG.info("Closed all open hive sessions");
-      } catch (HiveSQLException e) {
-        LOG.error("Unable to close all open sessions.", e);
+    if (cliService == null) return;
+    cliService.getSessionManager().allowSessions(false);
+    // No sessions can be opened after the above call. Close the existing ones if any.
+    try {
+      for (HiveSession session : cliService.getSessionManager().getSessions()) {
+        cliService.getSessionManager().closeSession(session.getSessionHandle());
       }
+      LOG.info("Closed all open hive sessions");
+    } catch (HiveSQLException e) {
+      LOG.error("Unable to close all open sessions.", e);
     }
   }
 

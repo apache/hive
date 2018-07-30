@@ -621,6 +621,10 @@ public class MiniHS2 extends AbstractHiveService {
          */
         sessionHandle = hs2Client.openSession("foo", "bar", sessionConf);
       } catch (Exception e) {
+        if (e.getMessage().contains("Cannot open sessions on an inactive HS2")) {
+          // Passive HS2 has started. TODO: seems fragile
+          return;
+        }
         // service not started yet
         continue;
       }
