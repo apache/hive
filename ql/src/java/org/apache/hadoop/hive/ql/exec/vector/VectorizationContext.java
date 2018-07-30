@@ -440,6 +440,7 @@ public class VectorizationContext {
   // Set of UDF classes for type casting data types in row-mode.
   private static Set<Class<?>> castExpressionUdfs = new HashSet<Class<?>>();
   static {
+    castExpressionUdfs.add(GenericUDFToString.class);
     castExpressionUdfs.add(GenericUDFToDecimal.class);
     castExpressionUdfs.add(GenericUDFToBinary.class);
     castExpressionUdfs.add(GenericUDFToDate.class);
@@ -454,7 +455,6 @@ public class VectorizationContext {
     castExpressionUdfs.add(UDFToBoolean.class);
     castExpressionUdfs.add(UDFToDouble.class);
     castExpressionUdfs.add(UDFToFloat.class);
-    castExpressionUdfs.add(UDFToString.class);
     castExpressionUdfs.add(UDFToInteger.class);
     castExpressionUdfs.add(UDFToLong.class);
     castExpressionUdfs.add(UDFToShort.class);
@@ -1139,7 +1139,7 @@ public class VectorizationContext {
         udfClass = new UDFToDouble();
         break;
       case STRING:
-        udfClass = new UDFToString();
+        genericUdf = new GenericUDFToString();
         break;
       case CHAR:
         genericUdf = new GenericUDFToChar();
@@ -1207,11 +1207,7 @@ public class VectorizationContext {
           || udfClass.equals(UDFConv.class)
           || udfClass.equals(UDFFromUnixTime.class) && isIntFamily(arg0Type(expr))
           || isCastToIntFamily(udfClass) && isStringFamily(arg0Type(expr))
-          || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr))
-          || udfClass.equals(UDFToString.class) &&
-               (arg0Type(expr).equals("timestamp")
-                   || arg0Type(expr).equals("double")
-                   || arg0Type(expr).equals("float"))) {
+          || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr))) {
         return true;
       }
     } else if ((gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
@@ -1229,15 +1225,12 @@ public class VectorizationContext {
             || gudf instanceof GenericUDFCase
             || gudf instanceof GenericUDFWhen) {
       return true;
-    } else if (gudf instanceof GenericUDFToChar &&
+    } else if ((gudf instanceof GenericUDFToString
+                   || gudf instanceof GenericUDFToChar
+                   || gudf instanceof GenericUDFToVarchar) &&
                (arg0Type(expr).equals("timestamp")
                    || arg0Type(expr).equals("double")
                    || arg0Type(expr).equals("float"))) {
-      return true;
-    } else if (gudf instanceof GenericUDFToVarchar &&
-            (arg0Type(expr).equals("timestamp")
-                || arg0Type(expr).equals("double")
-                || arg0Type(expr).equals("float"))) {
       return true;
     } else if (gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
       // between has 4 args here, but can be vectorized like this
@@ -2061,6 +2054,8 @@ public class VectorizationContext {
     } else if (udf instanceof GenericUDFBridge) {
       ve = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode,
           returnType);
+    } else if (udf instanceof GenericUDFToString) {
+      ve = getCastToString(childExpr, returnType);
     } else if (udf instanceof GenericUDFToDecimal) {
       ve = getCastToDecimal(childExpr, returnType);
     } else if (udf instanceof GenericUDFToChar) {
@@ -2508,8 +2503,6 @@ public class VectorizationContext {
       ve = getCastToBoolean(childExpr);
     } else if (isCastToFloatFamily(cl)) {
       ve = getCastToDoubleExpression(cl, childExpr, returnType);
-    } else if (cl.equals(UDFToString.class)) {
-      ve = getCastToString(childExpr, returnType);
     }
     if (ve == null && childExpr instanceof ExprNodeGenericFuncDesc) {
       ve = getCustomUDFExpression((ExprNodeGenericFuncDesc) childExpr, mode);
@@ -2585,7 +2578,8 @@ public class VectorizationContext {
       return ((Number) scalar).toString();
     case DECIMAL:
       HiveDecimal decimalVal = (HiveDecimal) scalar;
-      return decimalVal.toString();
+      DecimalTypeInfo decType = (DecimalTypeInfo) type;
+      return decimalVal.toFormatString(decType.getScale());
     default:
       throw new HiveException("Unsupported type "+typename+" for cast to String");
     }

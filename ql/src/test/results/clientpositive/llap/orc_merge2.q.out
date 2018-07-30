@@ -59,7 +59,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                           name: default.orcfile_merge2a_n0
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), UDFToString(_col2) (type: string), UDFToString(_col3) (type: string)
+                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string), CAST( _col3 AS STRING) (type: string)
                       outputColumnNames: key, value, one, two, three
                       Statistics: Num rows: 500 Data size: 274000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator

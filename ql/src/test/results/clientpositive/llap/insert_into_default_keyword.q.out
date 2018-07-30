@@ -63,7 +63,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: UDFToInteger(VALUE._col0) (type: int), UDFToString(VALUE._col0) (type: string)
+                expressions: UDFToInteger(VALUE._col0) (type: int), CAST( VALUE._col0 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -202,7 +202,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), UDFToString(VALUE._col1) (type: string)
+                expressions: VALUE._col0 (type: int), CAST( VALUE._col1 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -341,7 +341,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), UDFToString(VALUE._col1) (type: string)
+                expressions: VALUE._col0 (type: int), CAST( VALUE._col1 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -620,7 +620,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), UDFToString(VALUE._col1) (type: string)
+                expressions: VALUE._col0 (type: int), CAST( VALUE._col1 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -777,7 +777,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), UDFToString(VALUE._col1) (type: string)
+                expressions: VALUE._col0 (type: int), CAST( VALUE._col1 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -916,7 +916,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), UDFToString(VALUE._col1) (type: string)
+                expressions: VALUE._col0 (type: int), CAST( VALUE._col1 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1055,7 +1055,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), UDFToString(VALUE._col1) (type: string)
+                expressions: VALUE._col0 (type: int), CAST( VALUE._col1 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1334,7 +1334,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), UDFToString(VALUE._col1) (type: string)
+                expressions: VALUE._col0 (type: int), CAST( VALUE._col1 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1473,7 +1473,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), UDFToString(VALUE._col1) (type: string)
+                expressions: VALUE._col0 (type: int), CAST( VALUE._col1 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1612,7 +1612,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), UDFToString(VALUE._col1) (type: string)
+                expressions: VALUE._col0 (type: int), CAST( VALUE._col1 AS STRING) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator

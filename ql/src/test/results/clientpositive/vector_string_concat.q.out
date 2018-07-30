@@ -342,7 +342,7 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: concat(concat(concat('Quarter ', UDFToString(UDFToInteger(((UDFToDouble((month(dt) - 1)) / 3.0D) + 1.0D)))), '-'), UDFToString(year(dt))) (type: string)
+              expressions: concat(concat(concat('Quarter ', CAST( UDFToInteger(((UDFToDouble((month(dt) - 1)) / 3.0D) + 1.0D)) AS STRING)), '-'), CAST( year(dt) AS STRING)) (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator

@@ -252,7 +252,7 @@ STAGE PLANS:
                 Statistics: Num rows: 171 Data size: 67364 Basic stats: PARTIAL Column stats: NONE
                 BucketMapJoin: true
                 Select Operator
-                  expressions: UDFToString(_col0) (type: string), _col1 (type: string), _col6 (type: string)
+                  expressions: CAST( _col0 AS STRING) (type: string), _col1 (type: string), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 171 Data size: 67364 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator

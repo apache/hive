@@ -520,9 +520,9 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0, 1]
                       Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToString(_col1) (type: string)
+                        key expressions: CAST( _col1 AS STRING) (type: string)
                         sort order: +
-                        Map-reduce partition columns: UDFToString(_col1) (type: string)
+                        Map-reduce partition columns: CAST( _col1 AS STRING) (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             keyExpressions: CastStringGroupToString(col 1:char(10)) -> 3:string
@@ -567,7 +567,7 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 UDFToString(_col1) (type: string)
+                          0 CAST( _col1 AS STRING) (type: string)
                           1 _col1 (type: string)
                         Map Join Vectorization:
                             className: VectorMapJoinInnerStringOperator

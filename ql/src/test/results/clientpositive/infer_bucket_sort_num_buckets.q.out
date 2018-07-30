@@ -66,7 +66,7 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.test_table_n0
           Select Operator
-            expressions: _col0 (type: int), _col1 (type: string), UDFToString(_col2) (type: string)
+            expressions: _col0 (type: int), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
             outputColumnNames: key, value, hr
             Statistics: Num rows: 234 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
             Group By Operator

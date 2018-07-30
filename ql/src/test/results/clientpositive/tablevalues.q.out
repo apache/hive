@@ -61,7 +61,7 @@ STAGE PLANS:
                   predicate: (col2 = 9) (type: boolean)
                   Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: UDFToString(col1) (type: string), '9' (type: string)
+                    expressions: CAST( col1 AS STRING) (type: string), '9' (type: string)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 269 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator

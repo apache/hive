@@ -70,7 +70,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: concat(c1, c2) (type: string), concat(c3, c4) (type: varchar(30)), (concat(c1, c2) = UDFToString(concat(c3, c4))) (type: boolean)
+                    expressions: concat(c1, c2) (type: string), concat(c3, c4) (type: varchar(30)), (concat(c1, c2) = CAST( concat(c3, c4) AS STRING)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -175,7 +175,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: upper(c2) (type: string), upper(c4) (type: varchar(20)), (upper(c2) = UDFToString(upper(c4))) (type: boolean)
+                    expressions: upper(c2) (type: string), upper(c4) (type: varchar(20)), (upper(c2) = CAST( upper(c4) AS STRING)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -280,7 +280,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: lower(c2) (type: string), lower(c4) (type: varchar(20)), (lower(c2) = UDFToString(lower(c4))) (type: boolean)
+                    expressions: lower(c2) (type: string), lower(c4) (type: varchar(20)), (lower(c2) = CAST( lower(c4) AS STRING)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
