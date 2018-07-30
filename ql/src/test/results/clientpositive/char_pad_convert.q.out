@@ -134,7 +134,7 @@ POSTHOOK: query: select lpad(f, 4, ' '),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_n6
 #### A masked pattern was here ####
-74.7	42	zzzzzTRUE	20	ddd45.4	yard du
+74.7	42	zzzzzTRUE	20	dd45.40	yard du
 26.4	37	zzzzzTRUE	20	dd29.62	history
 96.9	18	zzzzFALSE	20	dd27.32	history
 13.0	34	zzzzFALSE	20	dd23.91	topolog
@@ -180,7 +180,7 @@ POSTHOOK: query: select rpad(f, 4, ' '),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_n6
 #### A masked pattern was here ####
-74.7	42	TRUEzzzzz	20	45.4ddd	yard du
+74.7	42	TRUEzzzzz	20	45.40dd	yard du
 26.4	37	TRUEzzzzz	20	29.62dd	history
 96.9	18	FALSEzzzz	20	27.32dd	history
 13.0	34	FALSEzzzz	20	23.91dd	topolog
