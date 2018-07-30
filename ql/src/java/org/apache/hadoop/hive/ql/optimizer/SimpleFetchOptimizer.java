@@ -211,11 +211,38 @@ public class SimpleFetchOptimizer extends Transform {
         bypassFilter = !pctx.getPrunedPartitions(alias, ts).hasUnknownPartitions();
       }
     }
-    if (!aggressive && !bypassFilter) {
+
+    boolean onlyPruningFilter = bypassFilter;
+    Operator<?> op = ts;
+    while (onlyPruningFilter) {
+      if (op instanceof FileSinkOperator || op.getChildOperators() == null) {
+        break;
+      } else if (op.getChildOperators().size() != 1) {
+        onlyPruningFilter = false;
+        break;
+      } else {
+        op = op.getChildOperators().get(0);
+      }
+
+      if (op instanceof FilterOperator) {
+        ExprNodeDesc predicate = ((FilterOperator) op).getConf().getPredicate();
+        if (predicate instanceof ExprNodeConstantDesc
+                && "boolean".equals(predicate.getTypeInfo().getTypeName())) {
+          continue;
+        } else if (PartitionPruner.onlyContainsPartnCols(table, predicate)) {
+          continue;
+        } else {
+          onlyPruningFilter = false;
+        }
+      }
+    }
+
+    if (!aggressive && !onlyPruningFilter) {
       return null;
     }
+
     PrunedPartitionList partitions = pctx.getPrunedPartitions(alias, ts);
-    FetchData fetch = new FetchData(ts, parent, table, partitions, splitSample, bypassFilter);
+    FetchData fetch = new FetchData(ts, parent, table, partitions, splitSample, onlyPruningFilter);
     return checkOperators(fetch, aggressive, bypassFilter);
   }
 
