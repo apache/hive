@@ -218,7 +218,7 @@ CREATE TABLE "PARTITION_KEY_VALS" (
 CREATE TABLE "PARTITION_PARAMS" (
     "PART_ID" bigint NOT NULL,
     "PARAM_KEY" character varying(256) NOT NULL,
-    "PARAM_VALUE" character varying(4000) DEFAULT NULL::character varying
+    "PARAM_VALUE" text DEFAULT NULL
 );
 
 
