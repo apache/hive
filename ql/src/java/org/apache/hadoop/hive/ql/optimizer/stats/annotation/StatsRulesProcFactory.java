@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -2499,6 +2500,39 @@ public class StatsRulesProcFactory {
   }
 
   /**
+   * UDTF operator changes the number of rows and thereby the data size.
+   */
+  public static class UDTFStatsRule extends DefaultStatsRule implements NodeProcessor {
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+                          Object... nodeOutputs) throws SemanticException {
+      AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
+      UDTFOperator uop = (UDTFOperator) nd;
+
+      Operator<? extends OperatorDesc> parent = uop.getParentOperators().get(0);
+
+      Statistics parentStats = parent.getStatistics();
+
+      if (parentStats != null) {
+        Statistics st = parentStats.clone();
+
+        float udtfFactor=HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_UDTF_FACTOR);
+        long numRows = (long) (parentStats.getNumRows() * udtfFactor);
+        long dataSize = StatsUtils.safeMult(parentStats.getDataSize(), udtfFactor);
+        st.setNumRows(numRows);
+        st.setDataSize(dataSize);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("[0] STATS-" + uop.toString() + ": " + st.extendedToString());
+        }
+
+        uop.setStatistics(st);
+      }
+      return null;
+    }
+  }
+
+  /**
    * Default rule is to aggregate the statistics from all its parent operators.
    */
   public static class DefaultStatsRule implements NodeProcessor {
@@ -2582,6 +2616,10 @@ public class StatsRulesProcFactory {
 
   public static NodeProcessor getReduceSinkRule() {
     return new ReduceSinkStatsRule();
+  }
+
+  public static NodeProcessor getUDTFRule() {
+    return new UDTFStatsRule();
   }
 
   public static NodeProcessor getDefaultRule() {

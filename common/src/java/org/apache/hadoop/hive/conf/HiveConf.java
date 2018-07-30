@@ -2398,6 +2398,11 @@ public class HiveConf extends Configuration {
         "filter operators."),
     HIVE_STATS_IN_MIN_RATIO("hive.stats.filter.in.min.ratio", (float) 0.05,
         "Output estimation of an IN filter can't be lower than this ratio"),
+    HIVE_STATS_UDTF_FACTOR("hive.stats.udtf.factor", (float) 1.0,
+        "UDTFs change the number of rows of the output. A common UDTF is the explode() method that creates\n" +
+        "multiple rows for each element in the input array. This factor is applied to the number of\n" +
+        "output rows and output size."),
+
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
