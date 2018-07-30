@@ -1352,21 +1352,23 @@ public final class BuddyAllocator
 
     public void deallocate(LlapAllocatorBuffer buffer, boolean isAfterMove) {
       assert data != null;
-      int pos = buffer.byteBuffer.position();
-      // Note: this is called by someone who has ensured the buffer is not going to be moved.
-      int headerIx = pos >>> minAllocLog2;
-      int freeListIx = freeListFromAllocSize(buffer.allocSize);
-      if (assertsEnabled && !isAfterMove) {
-        LlapAllocatorBuffer buf = buffers[headerIx];
-        if (buf != buffer) {
-          failWithLog(arenaIx + ":" + headerIx + " => "
+      if (buffer != null && buffer.byteBuffer != null) {
+        int pos = buffer.byteBuffer.position();
+        // Note: this is called by someone who has ensured the buffer is not going to be moved.
+        int headerIx = pos >>> minAllocLog2;
+        int freeListIx = freeListFromAllocSize(buffer.allocSize);
+        if (assertsEnabled && !isAfterMove) {
+          LlapAllocatorBuffer buf = buffers[headerIx];
+          if (buf != buffer) {
+            failWithLog(arenaIx + ":" + headerIx + " => "
               + toDebugString(buffer) + ", " + toDebugString(buf));
+          }
+          assertBufferLooksValid(freeListFromHeader(headers[headerIx]), buf, arenaIx, headerIx);
+          checkHeader(headerIx, freeListIx, true);
         }
-        assertBufferLooksValid(freeListFromHeader(headers[headerIx]), buf, arenaIx, headerIx);
-        checkHeader(headerIx, freeListIx, true);
+        buffers[headerIx] = null;
+        addToFreeListWithMerge(headerIx, freeListIx, buffer, CasLog.Src.DEALLOC);
       }
-      buffers[headerIx] = null;
-      addToFreeListWithMerge(headerIx, freeListIx, buffer, CasLog.Src.DEALLOC);
     }
 
     private void addToFreeListWithMerge(int headerIx, int freeListIx,
