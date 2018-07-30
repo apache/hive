@@ -400,9 +400,8 @@ public class Hive {
       metaStoreClient.close();
       metaStoreClient = null;
     }
-    if (syncMetaStoreClient != null) {
-      syncMetaStoreClient.close();
-    }
+    // syncMetaStoreClient is wrapped on metaStoreClient. So, it is enough to close it once.
+    syncMetaStoreClient = null;
     if (owner != null) {
       owner = null;
     }

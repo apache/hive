@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
-import com.google.common.primitives.Ints;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -33,7 +31,6 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.messaging.EventUtils;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
@@ -48,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.events.EventUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
@@ -161,7 +159,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat()));
 
     EventUtils.MSClientNotificationFetcher evFetcher
-        = new EventUtils.MSClientNotificationFetcher(getHive().getMSC());
+        = new EventUtils.MSClientNotificationFetcher(getHive());
 
     EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
         evFetcher, work.eventFrom, work.maxEventLimit(), evFilter);
@@ -267,30 +265,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       replLogger.endLog(bootDumpBeginReplId.toString());
     }
     Long bootDumpEndReplId = currentNotificationId(hiveDb);
-    LOG.info("Bootstrap object dump phase took from {} to {}", bootDumpBeginReplId,
-        bootDumpEndReplId);
-
-    // Now that bootstrap has dumped all objects related, we have to account for the changes
-    // that occurred while bootstrap was happening - i.e. we have to look through all events
-    // during the bootstrap period and consolidate them with our dump.
-
-    IMetaStoreClient.NotificationFilter evFilter =
-        new DatabaseAndTableFilter(work.dbNameOrPattern, work.tableNameOrPattern);
-    EventUtils.MSClientNotificationFetcher evFetcher =
-        new EventUtils.MSClientNotificationFetcher(hiveDb.getMSC());
-    EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
-        evFetcher, bootDumpBeginReplId,
-        Ints.checkedCast(bootDumpEndReplId - bootDumpBeginReplId) + 1,
-        evFilter);
-
-    // Now we consolidate all the events that happenned during the objdump into the objdump
-    while (evIter.hasNext()) {
-      NotificationEvent ev = evIter.next();
-      Path eventRoot = new Path(dumpRoot, String.valueOf(ev.getEventId()));
-      // FIXME : implement consolidateEvent(..) similar to dumpEvent(ev,evRoot)
-    }
-    LOG.info(
-        "Consolidation done, preparing to return {},{}->{}",
+    LOG.info("Preparing to return {},{}->{}",
         dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
     dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot);
     dmd.write();
