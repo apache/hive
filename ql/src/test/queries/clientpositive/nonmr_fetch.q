@@ -13,6 +13,10 @@ select * from srcpart where ds='2008-04-08' AND hr='11' limit 10;
 explain select key from src limit 10;
 select key from src limit 10;
 
+-- negative, filter on partition column and non-partition column
+explain select * from srcpart where ds='2008-04-08' AND key > 100 limit 10;
+select * from srcpart where ds='2008-04-08' AND key > 100 limit 10;
+
 -- negative, filter on non-partition column
 explain select * from srcpart where key > 100 limit 10;
 select * from srcpart where key > 100 limit 10;
