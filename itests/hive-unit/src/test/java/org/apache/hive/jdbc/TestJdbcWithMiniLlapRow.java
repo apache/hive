@@ -25,10 +25,12 @@ import org.junit.BeforeClass;
 import org.junit.Before;
 import org.junit.After;
 import org.apache.hadoop.mapred.InputFormat;
+import org.junit.Ignore;
 
 /**
  * TestJdbcWithMiniLlap for llap Row format.
  */
+@Ignore
 public class TestJdbcWithMiniLlapRow extends BaseJdbcWithMiniLlap {
 
   @BeforeClass
