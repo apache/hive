@@ -16,20 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions;
+package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-/**
- * Vectorized version of TO_DATE(TIMESTAMP)/TO_DATE(DATE).
- * As TO_DATE() now returns DATE type, this should be the same behavior as the DATE cast operator.
- */
-public class VectorUDFDateLong extends CastLongToDate {
+public class <ClassName> extends <BaseClassName> {
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFDateLong() {
+  public <ClassName>() {
     super();
   }
 
-  public VectorUDFDateLong(int inputColumn, int outputColumnNum) {
-    super(inputColumn, outputColumnNum);
+  public <ClassName>(int colNum, byte[] left, byte[] right, int outputColumnNum) {
+    super(colNum, left, right, outputColumnNum);
   }
 }

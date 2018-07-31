@@ -329,7 +329,7 @@ public class TestVectorFilterCompare {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
 
     ExprNodeDesc col1Expr;
     Object scalar1Object = null;
