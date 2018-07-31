@@ -725,10 +725,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       VectorHashKeyWrapper[] batchKeys = keyWrappersBatch.getVectorHashKeyWrappers();
 
+      final VectorHashKeyWrapper prevKey = streamingKey;
       if (streamingKey == null) {
         // This is the first batch we process after switching from hash mode
         currentStreamingAggregators = streamAggregationBufferRowPool.getFromPool();
-        streamingKey = (VectorHashKeyWrapper) batchKeys[0].copyKey();
+        streamingKey = batchKeys[0];
       }
 
       aggregationBatchInfo.startBatch();
@@ -739,14 +740,9 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           // We've encountered a new key, must save current one
           // We can't forward yet, the aggregators have not been evaluated
           rowsToFlush[flushMark] = currentStreamingAggregators;
-          if (keysToFlush[flushMark] == null) {
-            keysToFlush[flushMark] = (VectorHashKeyWrapper) streamingKey.copyKey();
-          } else {
-            streamingKey.duplicateTo(keysToFlush[flushMark]);
-          }
-
+          keysToFlush[flushMark] = streamingKey;
           currentStreamingAggregators = streamAggregationBufferRowPool.getFromPool();
-          batchKeys[i].duplicateTo(streamingKey);
+          streamingKey = batchKeys[i];
           ++flushMark;
         }
         aggregationBatchInfo.mapAggregationBufferSet(currentStreamingAggregators, i);
@@ -759,7 +755,12 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       for (int i = 0; i < flushMark; ++i) {
         writeSingleRow(keysToFlush[i], rowsToFlush[i]);
         rowsToFlush[i].reset();
+        keysToFlush[i] = null;
         streamAggregationBufferRowPool.putInPool(rowsToFlush[i]);
+      }
+
+      if (streamingKey != prevKey) {
+        streamingKey = (VectorHashKeyWrapper) streamingKey.copyKey();
       }
     }
 
