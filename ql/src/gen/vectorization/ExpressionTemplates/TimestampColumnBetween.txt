@@ -16,47 +16,47 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions;
+package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.HashSet;
+
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.UDFLike;
-import org.apache.hadoop.io.Text;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * Evaluate an IN boolean expression (not a filter) on a batch for a vector of strings.
- * This is optimized so that no objects have to be created in
- * the inner loop, and there is a hash table implemented
- * with Cuckoo hashing that has fast lookup to do the IN test.
+ * Output a boolean value indicating if a column is BETWEEN two constants.
  */
-public class StringColumnInList extends VectorExpression implements IStringInExpr {
+public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  protected int inputCol;
-  private byte[][] inListValues;
 
-  // The set object containing the IN list. This is optimized for lookup
-  // of the data type of the column.
-  private transient CuckooSetBytes inSet;
+  private final int inputCol;
 
-  public StringColumnInList() {
+  private final Timestamp leftValue;
+  private final Timestamp rightValue;
+
+  public <ClassName>() {
     super();
+
+    // Dummy final assignments.
+    inputCol = -1;
+    leftValue = null;
+    rightValue = null;
   }
 
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
-  public StringColumnInList(int colNum, int outputColumnNum) {
+  public <ClassName>(int colNum, Timestamp leftValue, Timestamp rightValue, int outputColumnNum) {
     super(outputColumnNum);
     this.inputCol = colNum;
-    inSet = null;
+    this.leftValue = leftValue;
+    this.rightValue = rightValue;
   }
 
   @Override
@@ -66,21 +66,13 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
       super.evaluateChildren(batch);
     }
 
-    if (inSet == null) {
-      inSet = new CuckooSetBytes(inListValues.length);
-      inSet.load(inListValues);
-    }
-
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputCol];
+    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputCol];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
-    int n = batch.size;
-    byte[][] vector = inputColVector.vector;
-    int[] start = inputColVector.start;
-    int[] len = inputColVector.length;
-    long[] outputVector = outputColVector.vector;
     boolean[] outputIsNull = outputColVector.isNull;
+    int n = batch.size;
+    long[] outputVector = outputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -94,7 +86,9 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
       if (inputColVector.noNulls || !inputIsNull[0]) {
         // Set isNull before call in case it changes it mind.
         outputIsNull[0] = false;
-        outputVector[0] = inSet.lookup(vector[0], start[0], len[0]) ? 1 : 0;
+        outputVector[0] =
+           <OptionalNot>(inputColVector.compareTo(0, leftValue) < 0 ||
+            inputColVector.compareTo(0, rightValue) > 0) ? 0 : 1;
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
@@ -113,12 +107,16 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
            final int i = sel[j];
            // Set isNull before call in case it changes it mind.
            outputIsNull[i] = false;
-           outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+           outputVector[i] =
+               <OptionalNot>(inputColVector.compareTo(i, leftValue) < 0 ||
+                inputColVector.compareTo(i, rightValue) > 0) ? 0 : 1;
          }
         } else {
           for(int j = 0; j != n; j++) {
             final int i = sel[j];
-            outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+            outputVector[i] =
+               <OptionalNot>(inputColVector.compareTo(i, leftValue) < 0 ||
+                inputColVector.compareTo(i, rightValue) > 0) ? 0 : 1;
           }
         }
       } else {
@@ -130,7 +128,9 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+          outputVector[i] =
+               <OptionalNot>(inputColVector.compareTo(i, leftValue) < 0 ||
+                inputColVector.compareTo(i, rightValue) > 0) ? 0 : 1;
         }
       }
     } else /* there are nulls in the inputColVector */ {
@@ -141,16 +141,20 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputColVector.isNull[i] = inputIsNull[i];
+          outputIsNull[i] = inputIsNull[i];
           if (!inputIsNull[i]) {
-            outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+            outputVector[i] =
+               <OptionalNot>(inputColVector.compareTo(i, leftValue) < 0 ||
+                inputColVector.compareTo(i, rightValue) > 0) ? 0 : 1;
           }
         }
       } else {
-        System.arraycopy(inputIsNull, 0, outputColVector.isNull, 0, n);
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
           if (!inputIsNull[i]) {
-            outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+            outputVector[i] =
+               <OptionalNot>(inputColVector.compareTo(i, leftValue) < 0 ||
+                inputColVector.compareTo(i, rightValue) > 0) ? 0 : 1;
           }
         }
       }
@@ -164,17 +168,10 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
     return null;
   }
 
-  public void setInListValues(byte [][] a) {
-    this.inListValues = a;
-  }
-
-  @Override
+   @Override
   public String vectorExpressionParameters() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("col ");
-    sb.append(inputCol);
-    sb.append(", values ");
-    sb.append(displayArrayOfUtf8ByteArrays(inListValues));
-    return sb.toString();
+    return
+        getColumnParamString(0, inputCol) +
+        ", left " + leftValue.toString() + ", right " + rightValue.toString();
   }
 }

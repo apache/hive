@@ -183,12 +183,19 @@ public class VectorExtractRow {
    * @param logicalColumnIndex
    * @return
    */
-  private Object extractRowColumn(VectorizedRowBatch batch, int batchIndex, int logicalColumnIndex) {
+  private Object extractRowColumn(VectorizedRowBatch batch, int batchIndex,
+      int logicalColumnIndex) {
 
     final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
     final ColumnVector colVector = batch.cols[projectionColumnNum];
-    return extractRowColumn(
-        colVector, typeInfos[logicalColumnIndex], objectInspectors[logicalColumnIndex], batchIndex);
+    final TypeInfo typeInfo = typeInfos[logicalColumnIndex];
+    // try {
+      return extractRowColumn(
+          colVector, typeInfo, objectInspectors[logicalColumnIndex], batchIndex);
+    // } catch (Exception e){
+    //   throw new RuntimeException("Error evaluating column number " + projectionColumnNum +
+    //       ", typeInfo " + typeInfo.toString() + ", batchIndex " + batchIndex);
+    // }
   }
 
   public Object extractRowColumn(
