@@ -150,6 +150,7 @@ public class TestReplicationScenarios {
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+    hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, true);
     hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hconf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
@@ -453,11 +454,13 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableNuller);
-
-    // The ptned table will not be dumped as getTable will return null
-    run("REPL DUMP " + dbName, driver);
-    ptnedTableNuller.assertInjectionsPerformed(true,true);
-    InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    try {
+      // The ptned table will not be dumped as getTable will return null
+      run("REPL DUMP " + dbName, driver);
+      ptnedTableNuller.assertInjectionsPerformed(true,true);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    }
 
     String replDumpLocn = getResult(0, 0, driver);
     String replDumpId = getResult(0, 1, true, driver);
@@ -518,11 +521,13 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setListPartitionNamesBehaviour(listPartitionNamesNuller);
-
-    // None of the partitions will be dumped as the partitions list was empty
-    run("REPL DUMP " + dbName, driver);
-    listPartitionNamesNuller.assertInjectionsPerformed(true, false);
-    InjectableBehaviourObjectStore.resetListPartitionNamesBehaviour(); // reset the behaviour
+    try {
+      // None of the partitions will be dumped as the partitions list was empty
+      run("REPL DUMP " + dbName, driver);
+      listPartitionNamesNuller.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetListPartitionNamesBehaviour(); // reset the behaviour
+    }
 
     String replDumpLocn = getResult(0, 0, driver);
     String replDumpId = getResult(0, 1, true, driver);
@@ -605,12 +610,13 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableRenamer);
-
-    // The intermediate rename would've failed as bootstrap dump in progress
-    bootstrapLoadAndVerify(dbName, replDbName);
-
-    ptnedTableRenamer.assertInjectionsPerformed(true,true);
-    InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    try {
+      // The intermediate rename would've failed as bootstrap dump in progress
+      bootstrapLoadAndVerify(dbName, replDbName);
+      ptnedTableRenamer.assertInjectionsPerformed(true,true);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    }
 
     // The ptned table should be there in both source and target as rename was not successful
     verifyRun("SELECT a from " + dbName + ".ptned WHERE (b=1) ORDER BY a", ptn_data, driver);
@@ -658,7 +664,7 @@ public class TestReplicationScenarios {
               CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
               success = (ret.getException() == null);
               assertTrue(success);
-              LOG.info("Exit new thread success - {}", success);
+              LOG.info("Exit new thread success - {}", success, ret.getException());
             }
           });
           t.start();
@@ -673,11 +679,13 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableRenamer);
-
-    Tuple bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
-
-    ptnedTableRenamer.assertInjectionsPerformed(true,true);
-    InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    Tuple bootstrap = null;
+    try {
+      bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
+      ptnedTableRenamer.assertInjectionsPerformed(true,true);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    }
 
     incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
     verifyIfTableNotExist(replDbName, "ptned", metaStoreClientMirror);
@@ -851,12 +859,14 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventIdSkipper);
-
-    advanceDumpDir();
-    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    assertTrue(ret.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
-    eventIdSkipper.assertInjectionsPerformed(true,false);
-    InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    try {
+      advanceDumpDir();
+      CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName + " FROM " + replDumpId);
+      assertTrue(ret.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
+      eventIdSkipper.assertInjectionsPerformed(true,false);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    }
   }
 
   @Test
@@ -1370,11 +1380,12 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventTypeValidator);
-
-    incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
-
-    eventTypeValidator.assertInjectionsPerformed(true,false);
-    InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    try {
+      incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
+      eventTypeValidator.assertInjectionsPerformed(true,false);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    }
 
     verifyRun("SELECT a from " + replDbName + ".ptned where (b=1)", ptn_data, driverMirror);
   }
@@ -1429,11 +1440,12 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(insertEventRepeater);
-
-    incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
-
-    insertEventRepeater.assertInjectionsPerformed(true,false);
-    InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    try {
+      incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
+      insertEventRepeater.assertInjectionsPerformed(true,false);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    }
 
     verifyRun("SELECT a from " + replDbName + ".unptned", unptn_data, driverMirror);
   }

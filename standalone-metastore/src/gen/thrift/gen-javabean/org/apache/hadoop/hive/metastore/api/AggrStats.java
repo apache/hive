@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField COL_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("colStats", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField PARTS_FOUND_FIELD_DESC = new org.apache.thrift.protocol.TField("partsFound", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,11 +50,13 @@ import org.slf4j.LoggerFactory;
 
   private List<ColumnStatisticsObj> colStats; // required
   private long partsFound; // required
+  private boolean isStatsCompliant; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     COL_STATS((short)1, "colStats"),
-    PARTS_FOUND((short)2, "partsFound");
+    PARTS_FOUND((short)2, "partsFound"),
+    IS_STATS_COMPLIANT((short)3, "isStatsCompliant");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,6 +75,8 @@ import org.slf4j.LoggerFactory;
           return COL_STATS;
         case 2: // PARTS_FOUND
           return PARTS_FOUND;
+        case 3: // IS_STATS_COMPLIANT
+          return IS_STATS_COMPLIANT;
         default:
           return null;
       }
@@ -113,7 +118,9 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __PARTSFOUND_ISSET_ID = 0;
+  private static final int __ISSTATSCOMPLIANT_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.IS_STATS_COMPLIANT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -122,6 +129,8 @@ import org.slf4j.LoggerFactory;
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatisticsObj.class))));
     tmpMap.put(_Fields.PARTS_FOUND, new org.apache.thrift.meta_data.FieldMetaData("partsFound", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AggrStats.class, metaDataMap);
   }
@@ -152,6 +161,7 @@ import org.slf4j.LoggerFactory;
       this.colStats = __this__colStats;
     }
     this.partsFound = other.partsFound;
+    this.isStatsCompliant = other.isStatsCompliant;
   }
 
   public AggrStats deepCopy() {
@@ -163,6 +173,8 @@ import org.slf4j.LoggerFactory;
     this.colStats = null;
     setPartsFoundIsSet(false);
     this.partsFound = 0;
+    setIsStatsCompliantIsSet(false);
+    this.isStatsCompliant = false;
   }
 
   public int getColStatsSize() {
@@ -225,6 +237,28 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __PARTSFOUND_ISSET_ID, value);
   }
 
+  public boolean isIsStatsCompliant() {
+    return this.isStatsCompliant;
+  }
+
+  public void setIsStatsCompliant(boolean isStatsCompliant) {
+    this.isStatsCompliant = isStatsCompliant;
+    setIsStatsCompliantIsSet(true);
+  }
+
+  public void unsetIsStatsCompliant() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  /** Returns true if field isStatsCompliant is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsStatsCompliant() {
+    return EncodingUtils.testBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  public void setIsStatsCompliantIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case COL_STATS:
@@ -243,6 +277,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case IS_STATS_COMPLIANT:
+      if (value == null) {
+        unsetIsStatsCompliant();
+      } else {
+        setIsStatsCompliant((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -253,6 +295,9 @@ import org.slf4j.LoggerFactory;
 
     case PARTS_FOUND:
       return getPartsFound();
+
+    case IS_STATS_COMPLIANT:
+      return isIsStatsCompliant();
 
     }
     throw new IllegalStateException();
@@ -269,6 +314,8 @@ import org.slf4j.LoggerFactory;
       return isSetColStats();
     case PARTS_FOUND:
       return isSetPartsFound();
+    case IS_STATS_COMPLIANT:
+      return isSetIsStatsCompliant();
     }
     throw new IllegalStateException();
   }
@@ -304,6 +351,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_isStatsCompliant = true && this.isSetIsStatsCompliant();
+    boolean that_present_isStatsCompliant = true && that.isSetIsStatsCompliant();
+    if (this_present_isStatsCompliant || that_present_isStatsCompliant) {
+      if (!(this_present_isStatsCompliant && that_present_isStatsCompliant))
+        return false;
+      if (this.isStatsCompliant != that.isStatsCompliant)
+        return false;
+    }
+
     return true;
   }
 
@@ -320,6 +376,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_partsFound);
     if (present_partsFound)
       list.add(partsFound);
+
+    boolean present_isStatsCompliant = true && (isSetIsStatsCompliant());
+    list.add(present_isStatsCompliant);
+    if (present_isStatsCompliant)
+      list.add(isStatsCompliant);
 
     return list.hashCode();
   }
@@ -348,6 +409,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetPartsFound()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partsFound, other.partsFound);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetIsStatsCompliant()).compareTo(other.isSetIsStatsCompliant());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsStatsCompliant()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isStatsCompliant, other.isStatsCompliant);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -383,6 +454,12 @@ import org.slf4j.LoggerFactory;
     sb.append("partsFound:");
     sb.append(this.partsFound);
     first = false;
+    if (isSetIsStatsCompliant()) {
+      if (!first) sb.append(", ");
+      sb.append("isStatsCompliant:");
+      sb.append(this.isStatsCompliant);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -439,14 +516,14 @@ import org.slf4j.LoggerFactory;
           case 1: // COL_STATS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list276 = iprot.readListBegin();
-                struct.colStats = new ArrayList<ColumnStatisticsObj>(_list276.size);
-                ColumnStatisticsObj _elem277;
-                for (int _i278 = 0; _i278 < _list276.size; ++_i278)
+                org.apache.thrift.protocol.TList _list284 = iprot.readListBegin();
+                struct.colStats = new ArrayList<ColumnStatisticsObj>(_list284.size);
+                ColumnStatisticsObj _elem285;
+                for (int _i286 = 0; _i286 < _list284.size; ++_i286)
                 {
-                  _elem277 = new ColumnStatisticsObj();
-                  _elem277.read(iprot);
-                  struct.colStats.add(_elem277);
+                  _elem285 = new ColumnStatisticsObj();
+                  _elem285.read(iprot);
+                  struct.colStats.add(_elem285);
                 }
                 iprot.readListEnd();
               }
@@ -459,6 +536,14 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.partsFound = iprot.readI64();
               struct.setPartsFoundIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // IS_STATS_COMPLIANT
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isStatsCompliant = iprot.readBool();
+              struct.setIsStatsCompliantIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -480,9 +565,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(COL_STATS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.colStats.size()));
-          for (ColumnStatisticsObj _iter279 : struct.colStats)
+          for (ColumnStatisticsObj _iter287 : struct.colStats)
           {
-            _iter279.write(oprot);
+            _iter287.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -491,6 +576,11 @@ import org.slf4j.LoggerFactory;
       oprot.writeFieldBegin(PARTS_FOUND_FIELD_DESC);
       oprot.writeI64(struct.partsFound);
       oprot.writeFieldEnd();
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
+        oprot.writeBool(struct.isStatsCompliant);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -510,31 +600,44 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.colStats.size());
-        for (ColumnStatisticsObj _iter280 : struct.colStats)
+        for (ColumnStatisticsObj _iter288 : struct.colStats)
         {
-          _iter280.write(oprot);
+          _iter288.write(oprot);
         }
       }
       oprot.writeI64(struct.partsFound);
+      BitSet optionals = new BitSet();
+      if (struct.isSetIsStatsCompliant()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeBool(struct.isStatsCompliant);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, AggrStats struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list281 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.colStats = new ArrayList<ColumnStatisticsObj>(_list281.size);
-        ColumnStatisticsObj _elem282;
-        for (int _i283 = 0; _i283 < _list281.size; ++_i283)
+        org.apache.thrift.protocol.TList _list289 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.colStats = new ArrayList<ColumnStatisticsObj>(_list289.size);
+        ColumnStatisticsObj _elem290;
+        for (int _i291 = 0; _i291 < _list289.size; ++_i291)
         {
-          _elem282 = new ColumnStatisticsObj();
-          _elem282.read(iprot);
-          struct.colStats.add(_elem282);
+          _elem290 = new ColumnStatisticsObj();
+          _elem290.read(iprot);
+          struct.colStats.add(_elem290);
         }
       }
       struct.setColStatsIsSet(true);
       struct.partsFound = iprot.readI64();
       struct.setPartsFoundIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.isStatsCompliant = iprot.readBool();
+        struct.setIsStatsCompliantIsSet(true);
+      }
     }
   }
 

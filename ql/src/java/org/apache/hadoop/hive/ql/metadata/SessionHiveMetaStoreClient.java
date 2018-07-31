@@ -158,6 +158,18 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   @Override
+  public void truncateTable(String dbName, String tableName,
+      List<String> partNames, String validWriteIds, long writeId)
+      throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    if (table != null) {
+      truncateTempTable(table);
+      return;
+    }
+    super.truncateTable(dbName, tableName, partNames, validWriteIds, writeId);
+  }
+
+  @Override
   public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name) throws MetaException,
   TException, NoSuchObjectException {
     // First check temp tables
@@ -345,6 +357,20 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return;
     }
     super.alter_table(dbname, tbl_name, new_tbl, cascade);
+  }
+
+  @Override
+  public void alter_table(String catName, String dbName, String tbl_name,
+      org.apache.hadoop.hive.metastore.api.Table new_tbl,
+      EnvironmentContext envContext, String validWriteIds)
+      throws InvalidOperationException, MetaException, TException {
+    org.apache.hadoop.hive.metastore.api.Table old_tbl = getTempTable(dbName, tbl_name);
+    if (old_tbl != null) {
+      //actually temp table does not support partitions, cascade is not applicable here
+      alterTempTable(dbName, tbl_name, old_tbl, new_tbl, null);
+      return;
+    }
+    super.alter_table(catName, dbName, tbl_name, new_tbl, envContext, validWriteIds);
   }
 
   @Override

@@ -127,10 +127,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {
       Partish p = partish;
       Map<String, String> parameters = p.getPartParameters();
-      if (p.isTransactionalTable()) {
-        // TODO: this should also happen on any error. Right now this task will just fail.
-        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-      } else if (work.isTargetRewritten()) {
+      if (work.isTargetRewritten()) {
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
       }
 
@@ -266,7 +263,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         if (res == null) {
           return 0;
         }
-        db.alterTable(tableFullName, res, environmentContext);
+        db.alterTable(tableFullName, res, environmentContext, true);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
@@ -334,7 +331,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         }
 
         if (!updates.isEmpty()) {
-          db.alterPartitions(tableFullName, updates, environmentContext);
+          db.alterPartitions(tableFullName, updates, environmentContext, true);
         }
         if (work.isStatsReliable() && updates.size() != processors.size()) {
           LOG.info("Stats should be reliadble...however seems like there were some issue.. => ret 1");

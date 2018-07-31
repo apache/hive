@@ -1860,5 +1860,9 @@ public class MetaStoreUtils {
       FullTableName other = (FullTableName) obj;
       return catalog.equals(other.catalog) && db.equals(other.db) && table.equals(other.table);
     }
+
+    public String getDbTable() {
+      return db + "." + table;
+    }
   }
 }

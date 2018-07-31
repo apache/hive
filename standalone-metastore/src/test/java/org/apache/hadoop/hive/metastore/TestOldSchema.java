@@ -176,7 +176,7 @@ public class TestOldSchema {
       data.setLongStats(dcsd);
       obj.setStatsData(data);
       cs.addToStatsObj(obj);
-      store.updatePartitionColumnStatistics(cs, partVal);
+      store.updatePartitionColumnStatistics(cs, partVal, null, -1);
 
     }
 

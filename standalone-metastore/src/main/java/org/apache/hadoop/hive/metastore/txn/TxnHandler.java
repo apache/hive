@@ -90,6 +90,7 @@ import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -425,6 +426,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return getOpenTxnsInfo();
     }
   }
+
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns() throws MetaException {
@@ -2468,6 +2470,47 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return id;
     }
   }
+
+  @Override
+  @RetrySemantics.ReadOnly
+  public long getTxnIdForWriteId(
+      String dbName, String tblName, long writeId) throws MetaException {
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      try {
+        /**
+         * This runs at READ_COMMITTED for exactly the same reason as {@link #getOpenTxnsInfo()}
+         */
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        String query = "select t2w_txnid from TXN_TO_WRITE_ID where"
+            + " t2w_database = " + quoteString(dbName)
+            + " and t2w_table = " + quoteString(tblName)
+            + " and t2w_writeid = " + writeId;
+        LOG.debug("Going to execute query <" + query + ">");
+        ResultSet rs  = stmt.executeQuery(query);
+        long txnId = -1;
+        if (rs.next()) {
+          txnId = rs.getLong(1);
+        }
+        dbConn.rollback();
+        return txnId;
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "getTxnIdForWriteId");
+        throw new MetaException("Unable to select from transaction database, "
+                + StringUtils.stringifyException(e));
+      } finally {
+        close(null, stmt, dbConn);
+      }
+    } catch (RetryException e) {
+      return getTxnIdForWriteId(dbName, tblName, writeId);
+    }
+  }
+
   @Override
   @RetrySemantics.Idempotent
   public CompactionResponse compact(CompactionRequest rqst) throws MetaException {

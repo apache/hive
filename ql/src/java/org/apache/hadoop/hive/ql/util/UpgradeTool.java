@@ -229,7 +229,7 @@ public class UpgradeTool {
       metaTable.getParameters()
           .put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "insert_only");
     }
-    db.alterTable(Warehouse.getQualifiedName(t), metaTable, false, null);
+    db.alterTable(Warehouse.getQualifiedName(t), metaTable, false, null, false);
   }
 
   /**

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
+
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -132,6 +133,11 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   @Override
   public Table getTable(String catName, String dbName, String tableName) throws MetaException {
     return getTableModifier.apply(super.getTable(catName, dbName, tableName));
+  }
+
+  @Override
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList) throws MetaException {
+    return getTableModifier.apply(super.getTable(catName, dbName, tableName, writeIdList));
   }
 
   @Override

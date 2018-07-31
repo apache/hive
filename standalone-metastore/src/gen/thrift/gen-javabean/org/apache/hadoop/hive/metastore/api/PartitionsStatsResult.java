@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("PartitionsStatsResult");
 
   private static final org.apache.thrift.protocol.TField PART_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("partStats", org.apache.thrift.protocol.TType.MAP, (short)1);
+  private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,10 +48,12 @@ import org.slf4j.LoggerFactory;
   }
 
   private Map<String,List<ColumnStatisticsObj>> partStats; // required
+  private boolean isStatsCompliant; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    PART_STATS((short)1, "partStats");
+    PART_STATS((short)1, "partStats"),
+    IS_STATS_COMPLIANT((short)2, "isStatsCompliant");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ import org.slf4j.LoggerFactory;
       switch(fieldId) {
         case 1: // PART_STATS
           return PART_STATS;
+        case 2: // IS_STATS_COMPLIANT
+          return IS_STATS_COMPLIANT;
         default:
           return null;
       }
@@ -107,6 +112,9 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
+  private static final int __ISSTATSCOMPLIANT_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.IS_STATS_COMPLIANT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -115,6 +123,8 @@ import org.slf4j.LoggerFactory;
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
                 new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatisticsObj.class)))));
+    tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PartitionsStatsResult.class, metaDataMap);
   }
@@ -133,6 +143,7 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public PartitionsStatsResult(PartitionsStatsResult other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetPartStats()) {
       Map<String,List<ColumnStatisticsObj>> __this__partStats = new HashMap<String,List<ColumnStatisticsObj>>(other.partStats.size());
       for (Map.Entry<String, List<ColumnStatisticsObj>> other_element : other.partStats.entrySet()) {
@@ -151,6 +162,7 @@ import org.slf4j.LoggerFactory;
       }
       this.partStats = __this__partStats;
     }
+    this.isStatsCompliant = other.isStatsCompliant;
   }
 
   public PartitionsStatsResult deepCopy() {
@@ -160,6 +172,8 @@ import org.slf4j.LoggerFactory;
   @Override
   public void clear() {
     this.partStats = null;
+    setIsStatsCompliantIsSet(false);
+    this.isStatsCompliant = false;
   }
 
   public int getPartStatsSize() {
@@ -196,6 +210,28 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public boolean isIsStatsCompliant() {
+    return this.isStatsCompliant;
+  }
+
+  public void setIsStatsCompliant(boolean isStatsCompliant) {
+    this.isStatsCompliant = isStatsCompliant;
+    setIsStatsCompliantIsSet(true);
+  }
+
+  public void unsetIsStatsCompliant() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  /** Returns true if field isStatsCompliant is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsStatsCompliant() {
+    return EncodingUtils.testBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  public void setIsStatsCompliantIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case PART_STATS:
@@ -206,6 +242,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case IS_STATS_COMPLIANT:
+      if (value == null) {
+        unsetIsStatsCompliant();
+      } else {
+        setIsStatsCompliant((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -213,6 +257,9 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case PART_STATS:
       return getPartStats();
+
+    case IS_STATS_COMPLIANT:
+      return isIsStatsCompliant();
 
     }
     throw new IllegalStateException();
@@ -227,6 +274,8 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case PART_STATS:
       return isSetPartStats();
+    case IS_STATS_COMPLIANT:
+      return isSetIsStatsCompliant();
     }
     throw new IllegalStateException();
   }
@@ -253,6 +302,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_isStatsCompliant = true && this.isSetIsStatsCompliant();
+    boolean that_present_isStatsCompliant = true && that.isSetIsStatsCompliant();
+    if (this_present_isStatsCompliant || that_present_isStatsCompliant) {
+      if (!(this_present_isStatsCompliant && that_present_isStatsCompliant))
+        return false;
+      if (this.isStatsCompliant != that.isStatsCompliant)
+        return false;
+    }
+
     return true;
   }
 
@@ -264,6 +322,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_partStats);
     if (present_partStats)
       list.add(partStats);
+
+    boolean present_isStatsCompliant = true && (isSetIsStatsCompliant());
+    list.add(present_isStatsCompliant);
+    if (present_isStatsCompliant)
+      list.add(isStatsCompliant);
 
     return list.hashCode();
   }
@@ -282,6 +345,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetPartStats()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partStats, other.partStats);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetIsStatsCompliant()).compareTo(other.isSetIsStatsCompliant());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsStatsCompliant()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isStatsCompliant, other.isStatsCompliant);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -313,6 +386,12 @@ import org.slf4j.LoggerFactory;
       sb.append(this.partStats);
     }
     first = false;
+    if (isSetIsStatsCompliant()) {
+      if (!first) sb.append(", ");
+      sb.append("isStatsCompliant:");
+      sb.append(this.isStatsCompliant);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -336,6 +415,8 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -363,30 +444,38 @@ import org.slf4j.LoggerFactory;
           case 1: // PART_STATS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map432 = iprot.readMapBegin();
-                struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map432.size);
-                String _key433;
-                List<ColumnStatisticsObj> _val434;
-                for (int _i435 = 0; _i435 < _map432.size; ++_i435)
+                org.apache.thrift.protocol.TMap _map440 = iprot.readMapBegin();
+                struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map440.size);
+                String _key441;
+                List<ColumnStatisticsObj> _val442;
+                for (int _i443 = 0; _i443 < _map440.size; ++_i443)
                 {
-                  _key433 = iprot.readString();
+                  _key441 = iprot.readString();
                   {
-                    org.apache.thrift.protocol.TList _list436 = iprot.readListBegin();
-                    _val434 = new ArrayList<ColumnStatisticsObj>(_list436.size);
-                    ColumnStatisticsObj _elem437;
-                    for (int _i438 = 0; _i438 < _list436.size; ++_i438)
+                    org.apache.thrift.protocol.TList _list444 = iprot.readListBegin();
+                    _val442 = new ArrayList<ColumnStatisticsObj>(_list444.size);
+                    ColumnStatisticsObj _elem445;
+                    for (int _i446 = 0; _i446 < _list444.size; ++_i446)
                     {
-                      _elem437 = new ColumnStatisticsObj();
-                      _elem437.read(iprot);
-                      _val434.add(_elem437);
+                      _elem445 = new ColumnStatisticsObj();
+                      _elem445.read(iprot);
+                      _val442.add(_elem445);
                     }
                     iprot.readListEnd();
                   }
-                  struct.partStats.put(_key433, _val434);
+                  struct.partStats.put(_key441, _val442);
                 }
                 iprot.readMapEnd();
               }
               struct.setPartStatsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // IS_STATS_COMPLIANT
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isStatsCompliant = iprot.readBool();
+              struct.setIsStatsCompliantIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -408,20 +497,25 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PART_STATS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, struct.partStats.size()));
-          for (Map.Entry<String, List<ColumnStatisticsObj>> _iter439 : struct.partStats.entrySet())
+          for (Map.Entry<String, List<ColumnStatisticsObj>> _iter447 : struct.partStats.entrySet())
           {
-            oprot.writeString(_iter439.getKey());
+            oprot.writeString(_iter447.getKey());
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter439.getValue().size()));
-              for (ColumnStatisticsObj _iter440 : _iter439.getValue())
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter447.getValue().size()));
+              for (ColumnStatisticsObj _iter448 : _iter447.getValue())
               {
-                _iter440.write(oprot);
+                _iter448.write(oprot);
               }
               oprot.writeListEnd();
             }
           }
           oprot.writeMapEnd();
         }
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
+        oprot.writeBool(struct.isStatsCompliant);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -443,17 +537,25 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.partStats.size());
-        for (Map.Entry<String, List<ColumnStatisticsObj>> _iter441 : struct.partStats.entrySet())
+        for (Map.Entry<String, List<ColumnStatisticsObj>> _iter449 : struct.partStats.entrySet())
         {
-          oprot.writeString(_iter441.getKey());
+          oprot.writeString(_iter449.getKey());
           {
-            oprot.writeI32(_iter441.getValue().size());
-            for (ColumnStatisticsObj _iter442 : _iter441.getValue())
+            oprot.writeI32(_iter449.getValue().size());
+            for (ColumnStatisticsObj _iter450 : _iter449.getValue())
             {
-              _iter442.write(oprot);
+              _iter450.write(oprot);
             }
           }
         }
+      }
+      BitSet optionals = new BitSet();
+      if (struct.isSetIsStatsCompliant()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeBool(struct.isStatsCompliant);
       }
     }
 
@@ -461,28 +563,33 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, PartitionsStatsResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map443 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
-        struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map443.size);
-        String _key444;
-        List<ColumnStatisticsObj> _val445;
-        for (int _i446 = 0; _i446 < _map443.size; ++_i446)
+        org.apache.thrift.protocol.TMap _map451 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
+        struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map451.size);
+        String _key452;
+        List<ColumnStatisticsObj> _val453;
+        for (int _i454 = 0; _i454 < _map451.size; ++_i454)
         {
-          _key444 = iprot.readString();
+          _key452 = iprot.readString();
           {
-            org.apache.thrift.protocol.TList _list447 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            _val445 = new ArrayList<ColumnStatisticsObj>(_list447.size);
-            ColumnStatisticsObj _elem448;
-            for (int _i449 = 0; _i449 < _list447.size; ++_i449)
+            org.apache.thrift.protocol.TList _list455 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            _val453 = new ArrayList<ColumnStatisticsObj>(_list455.size);
+            ColumnStatisticsObj _elem456;
+            for (int _i457 = 0; _i457 < _list455.size; ++_i457)
             {
-              _elem448 = new ColumnStatisticsObj();
-              _elem448.read(iprot);
-              _val445.add(_elem448);
+              _elem456 = new ColumnStatisticsObj();
+              _elem456.read(iprot);
+              _val453.add(_elem456);
             }
           }
-          struct.partStats.put(_key444, _val445);
+          struct.partStats.put(_key452, _val453);
         }
       }
       struct.setPartStatsIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.isStatsCompliant = iprot.readBool();
+        struct.setIsStatsCompliantIsSet(true);
+      }
     }
   }
 

@@ -39,6 +39,8 @@ import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -71,6 +73,8 @@ import com.google.common.collect.Multimaps;
  * faster to compute the table/partition statistics by reading the footer than scanning all the
  * rows. This task can be used for computing basic stats like numFiles, numRows, fileSize,
  * rawDataSize from ORC footer.
+ * However, this cannot be used for full ACID tables, since some of the files may contain updates
+ * and deletes to existing rows, so summing up the per-file row counts is invalid.
  **/
 public class BasicStatsNoJobTask implements IStatsProcessor {
 
@@ -86,6 +90,11 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     console = new LogHelper(LOG);
   }
 
+  public static boolean canUseFooterScan(
+      Table table, Class<? extends InputFormat> inputFormat) {
+    return (OrcInputFormat.class.isAssignableFrom(inputFormat) && !AcidUtils.isFullAcidTable(table))
+        || MapredParquetInputFormat.class.isAssignableFrom(inputFormat);
+  }
 
   @Override
   public void initialize(CompilationOpContext opContext) {
@@ -344,12 +353,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
 
       if (values.get(0).result instanceof Table) {
-        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext);
+        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext, true);
         LOG.debug("Updated stats for {}.", tableFullName);
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, FooterStatCollector.EXTRACT_RESULT_FUNCTION);
-          db.alterPartitions(tableFullName, results, environmentContext);
+          db.alterPartitions(tableFullName, results, environmentContext, true);
           LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
         } else {
           throw new RuntimeException("inconsistent");

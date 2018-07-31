@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -576,8 +577,8 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select txn_id from TXNS where " +
-          "txn_id not in (select tc_txnid from TXN_COMPONENTS) and " +
-          "txn_state = '" + TXN_ABORTED + "'";
+            "txn_id not in (select tc_txnid from TXN_COMPONENTS) and " +
+            "txn_state = '" + TXN_ABORTED + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         List<Long> txnids = new ArrayList<>();
@@ -587,10 +588,60 @@ class CompactionTxnHandler extends TxnHandler {
           return;
         }
         Collections.sort(txnids);//easier to read logs
+
         List<String> queries = new ArrayList<>();
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
 
+        // Turn off COLUMN_STATS_ACCURATE for txnids' components in TBLS and PARTITIONS
+        prefix.append("select tbl_id from TBLS inner join DBS on TBLS.DB_ID = DBS.DB_ID "
+            + "inner join TXN_TO_WRITE_ID on t2w_database = DBS.NAME and t2w_table = TBLS.TBL_NAME"
+            + " and t2w_writeid = TBLS.WRITE_ID where ");
+        suffix.append("");
+        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "t2w_txnid", true, false);
+
+        // Delete COLUMN_STATS_ACCURATE.BASIC_STATS rows from TABLE_PARAMS for the txnids.
+        List<StringBuilder> finalCommands = new ArrayList<>(queries.size());
+        for (int i = 0; i < queries.size(); i++) {
+          String query = queries.get(i);
+          finalCommands.add(i, new StringBuilder("delete from TABLE_PARAMS " +
+                  " where param_key = '" + "COLUMN_STATS_ACCURATE" + "' and tbl_id in ("));
+          finalCommands.get(i).append(query + ")");
+          LOG.debug("Going to execute update <" + finalCommands.get(i) + ">");
+          int rc = stmt.executeUpdate(finalCommands.get(i).toString());
+          LOG.info("Turned off " + rc + " COLUMN_STATE_ACCURATE.BASIC_STATS states from TBLS");
+        }
+
+        queries.clear();
+        prefix.setLength(0);
+        suffix.setLength(0);
+        finalCommands.clear();
+
+        // Delete COLUMN_STATS_ACCURATE.BASIC_STATS rows from PARTITIONS_PARAMS for the txnids.
+        prefix.append("select part_id from PARTITIONS "
+            + "inner join TBLS on PARTITIONS.TBL_ID = TBLS.TBL_ID "
+            + "inner join DBS on TBLS.DB_ID = DBS.DB_ID "
+            + "inner join TXN_TO_WRITE_ID on t2w_database = DBS.NAME and t2w_table = TBLS.TBL_NAME"
+            + " and t2w_writeid = TBLS.WRITE_ID where ");
+        suffix.append("");
+        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "t2w_txnid", true, false);
+
+        for (int i = 0; i < queries.size(); i++) {
+          String query = queries.get(i);
+          finalCommands.add(i, new StringBuilder("delete from PARTITION_PARAMS " +
+                  " where param_key = '" + "COLUMN_STATS_ACCURATE" + "' and part_id in ("));
+          finalCommands.get(i).append(query + ")");
+          LOG.debug("Going to execute update <" + finalCommands.get(i) + ">");
+          int rc = stmt.executeUpdate(finalCommands.get(i).toString());
+          LOG.info("Turned off " + rc + " COLUMN_STATE_ACCURATE.BASIC_STATS states from PARTITIONS");
+        }
+
+        queries.clear();
+        prefix.setLength(0);
+        suffix.setLength(0);
+        finalCommands.clear();
+
+        // Delete from TXNS.
         prefix.append("delete from TXNS where ");
         suffix.append("");
 

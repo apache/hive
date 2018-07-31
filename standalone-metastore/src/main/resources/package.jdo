@@ -210,6 +210,9 @@
       <field name="tableType">
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>
+      <field name="writeId">
+        <column name="WRITE_ID"/>
+      </field>
     </class>
 
     <class name="MCreationMetadata" identity-type="datastore" table="MV_CREATION_METADATA" detachable="true">
@@ -488,6 +491,9 @@
         <value>
            <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
         </value>
+      </field>
+      <field name="writeId">
+        <column name="WRITE_ID"/>
       </field>
     </class>
     

@@ -538,13 +538,13 @@ import org.slf4j.LoggerFactory;
           case 2: // FILES_ADDED
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list724 = iprot.readListBegin();
-                struct.filesAdded = new ArrayList<String>(_list724.size);
-                String _elem725;
-                for (int _i726 = 0; _i726 < _list724.size; ++_i726)
+                org.apache.thrift.protocol.TList _list732 = iprot.readListBegin();
+                struct.filesAdded = new ArrayList<String>(_list732.size);
+                String _elem733;
+                for (int _i734 = 0; _i734 < _list732.size; ++_i734)
                 {
-                  _elem725 = iprot.readString();
-                  struct.filesAdded.add(_elem725);
+                  _elem733 = iprot.readString();
+                  struct.filesAdded.add(_elem733);
                 }
                 iprot.readListEnd();
               }
@@ -556,13 +556,13 @@ import org.slf4j.LoggerFactory;
           case 3: // FILES_ADDED_CHECKSUM
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list727 = iprot.readListBegin();
-                struct.filesAddedChecksum = new ArrayList<String>(_list727.size);
-                String _elem728;
-                for (int _i729 = 0; _i729 < _list727.size; ++_i729)
+                org.apache.thrift.protocol.TList _list735 = iprot.readListBegin();
+                struct.filesAddedChecksum = new ArrayList<String>(_list735.size);
+                String _elem736;
+                for (int _i737 = 0; _i737 < _list735.size; ++_i737)
                 {
-                  _elem728 = iprot.readString();
-                  struct.filesAddedChecksum.add(_elem728);
+                  _elem736 = iprot.readString();
+                  struct.filesAddedChecksum.add(_elem736);
                 }
                 iprot.readListEnd();
               }
@@ -593,9 +593,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FILES_ADDED_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAdded.size()));
-          for (String _iter730 : struct.filesAdded)
+          for (String _iter738 : struct.filesAdded)
           {
-            oprot.writeString(_iter730);
+            oprot.writeString(_iter738);
           }
           oprot.writeListEnd();
         }
@@ -606,9 +606,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(FILES_ADDED_CHECKSUM_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAddedChecksum.size()));
-            for (String _iter731 : struct.filesAddedChecksum)
+            for (String _iter739 : struct.filesAddedChecksum)
             {
-              oprot.writeString(_iter731);
+              oprot.writeString(_iter739);
             }
             oprot.writeListEnd();
           }
@@ -634,9 +634,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filesAdded.size());
-        for (String _iter732 : struct.filesAdded)
+        for (String _iter740 : struct.filesAdded)
         {
-          oprot.writeString(_iter732);
+          oprot.writeString(_iter740);
         }
       }
       BitSet optionals = new BitSet();
@@ -653,9 +653,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetFilesAddedChecksum()) {
         {
           oprot.writeI32(struct.filesAddedChecksum.size());
-          for (String _iter733 : struct.filesAddedChecksum)
+          for (String _iter741 : struct.filesAddedChecksum)
           {
-            oprot.writeString(_iter733);
+            oprot.writeString(_iter741);
           }
         }
       }
@@ -665,13 +665,13 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, InsertEventRequestData struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list734 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.filesAdded = new ArrayList<String>(_list734.size);
-        String _elem735;
-        for (int _i736 = 0; _i736 < _list734.size; ++_i736)
+        org.apache.thrift.protocol.TList _list742 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.filesAdded = new ArrayList<String>(_list742.size);
+        String _elem743;
+        for (int _i744 = 0; _i744 < _list742.size; ++_i744)
         {
-          _elem735 = iprot.readString();
-          struct.filesAdded.add(_elem735);
+          _elem743 = iprot.readString();
+          struct.filesAdded.add(_elem743);
         }
       }
       struct.setFilesAddedIsSet(true);
@@ -682,13 +682,13 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list737 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.filesAddedChecksum = new ArrayList<String>(_list737.size);
-          String _elem738;
-          for (int _i739 = 0; _i739 < _list737.size; ++_i739)
+          org.apache.thrift.protocol.TList _list745 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.filesAddedChecksum = new ArrayList<String>(_list745.size);
+          String _elem746;
+          for (int _i747 = 0; _i747 < _list745.size; ++_i747)
           {
-            _elem738 = iprot.readString();
-            struct.filesAddedChecksum.add(_elem738);
+            _elem746 = iprot.readString();
+            struct.filesAddedChecksum.add(_elem746);
           }
         }
         struct.setFilesAddedChecksumIsSet(true);

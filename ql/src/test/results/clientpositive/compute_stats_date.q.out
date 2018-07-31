@@ -127,8 +127,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@tab_date
+PREHOOK: Output: default@tab_date
 POSTHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
 POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@tab_date
+POSTHOOK: Output: default@tab_date
 PREHOOK: query: describe formatted tab_date fl_date
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@tab_date

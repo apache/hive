@@ -905,7 +905,8 @@ public class HiveStrictManagedMigration {
       org.apache.hadoop.hive.ql.metadata.Table modifiedTable =
           new org.apache.hadoop.hive.ql.metadata.Table(table);
       modifiedTable.setDataLocation(newLocation);
-      hive.alterTable(table.getDbName(), table.getTableName(), modifiedTable, false, null);
+      hive.alterTable(table.getCatName(), table.getDbName(), table.getTableName(),
+          modifiedTable, false, null, false);
     }
 
     void updatePartitionLocation(String dbName, Table table, String partName, Partition part, Path newLocation)
@@ -919,7 +920,7 @@ public class HiveStrictManagedMigration {
               new org.apache.hadoop.hive.ql.metadata.Table(table),
               part);
       modifiedPart.setLocation(newLocation.toString());
-      hive.alterPartition(dbName, table.getTableName(), modifiedPart, null);
+      hive.alterPartition(dbName, table.getTableName(), modifiedPart, null, false);
     }
 
     void updateTableProperties(Table table, Map<String, String> props) throws HiveException {
@@ -950,7 +951,8 @@ public class HiveStrictManagedMigration {
           getQualifiedName(table), sb.toString());
       LOG.info(msg);
 
-      hive.alterTable(table.getDbName(), table.getTableName(), modifiedTable, false, null);
+      hive.alterTable(table.getCatName(), table.getDbName(), table.getTableName(), modifiedTable,
+          false, null, false);
     }
   }
 
