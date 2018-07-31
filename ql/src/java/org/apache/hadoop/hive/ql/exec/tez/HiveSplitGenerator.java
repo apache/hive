@@ -186,7 +186,8 @@ public class HiveSplitGenerator extends InputInitializer {
         if (getContext() != null) {
           totalResource = getContext().getTotalAvailableResource().getMemory();
           taskResource = getContext().getVertexTaskResource().getMemory();
-          availableSlots = totalResource / taskResource;
+          int availableSlotsDebug = totalResource / taskResource;
+          availableSlots = availableSlotsDebug < 0 ? 0 : availableSlotsDebug;
         }
 
         if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
