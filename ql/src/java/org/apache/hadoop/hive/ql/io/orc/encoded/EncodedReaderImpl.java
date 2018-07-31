@@ -25,11 +25,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
+import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -146,6 +148,8 @@ class EncodedReaderImpl implements EncodedReader {
   private final TypeDescription fileSchema;
   private final WriterVersion version;
   private final String tag;
+  private AtomicBoolean isStopped;
+  private StoppableAllocator allocator;
 
   public EncodedReaderImpl(Object fileKey, List<OrcProto.Type> types,
       TypeDescription fileSchema, org.apache.orc.CompressionKind kind, WriterVersion version,
@@ -162,6 +166,8 @@ class EncodedReaderImpl implements EncodedReader {
     this.bufferSize = bufferSize;
     this.rowIndexStride = strideRate;
     this.cacheWrapper = cacheWrapper;
+    Allocator alloc = cacheWrapper.getAllocator();
+    this.allocator = alloc instanceof StoppableAllocator ? (StoppableAllocator) alloc : null;
     this.dataReader = dataReader;
     this.trace = trace;
     this.tag = tag;
@@ -897,8 +903,7 @@ class EncodedReaderImpl implements EncodedReader {
     }
     boolean isAllocated = false;
     try {
-      cacheWrapper.getAllocator().allocateMultiple(targetBuffers, bufferSize,
-          cacheWrapper.getDataBufferFactory());
+      allocateMultiple(targetBuffers, bufferSize);
       isAllocated = true;
     } finally {
       // toDecompress/targetBuffers contents are actually already added to some structures that
@@ -1206,8 +1211,7 @@ class EncodedReaderImpl implements EncodedReader {
       cacheKeys[ix] = chunk; // Relies on the fact that cache does not actually store these.
       ++ix;
     }
-    cacheWrapper.getAllocator().allocateMultiple(targetBuffers,
-        (int)(partCount == 1 ? streamLen : partSize), cacheWrapper.getDataBufferFactory());
+    allocateMultiple(targetBuffers, (int)(partCount == 1 ? streamLen : partSize));
 
     // 4. Now copy the data into cache buffers.
     ix = 0;
@@ -1260,8 +1264,7 @@ class EncodedReaderImpl implements EncodedReader {
     // non-cached. Since we are at the first gap, the previous stuff must be contiguous.
     singleAlloc[0] = null;
     trace.logPartialUncompressedData(partOffset, candidateEnd, true);
-    cacheWrapper.getAllocator().allocateMultiple(
-        singleAlloc, (int)(candidateEnd - partOffset), cacheWrapper.getDataBufferFactory());
+    allocateMultiple(singleAlloc, (int)(candidateEnd - partOffset));
     MemoryBuffer buffer = singleAlloc[0];
     cacheWrapper.reuseBuffer(buffer);
     ByteBuffer dest = buffer.getByteBufferRaw();
@@ -1270,12 +1273,19 @@ class EncodedReaderImpl implements EncodedReader {
     return tcc;
   }
 
+  private void allocateMultiple(MemoryBuffer[] dest, int size) {
+    if (allocator != null) {
+      allocator.allocateMultiple(dest, size, cacheWrapper.getDataBufferFactory(), isStopped);
+    } else {
+      cacheWrapper.getAllocator().allocateMultiple(dest, size, cacheWrapper.getDataBufferFactory());
+    }
+  }
+
   private CacheChunk copyAndReplaceUncompressedToNonCached(
       BufferChunk bc, DataCache cacheWrapper, MemoryBuffer[] singleAlloc) {
     singleAlloc[0] = null;
     trace.logPartialUncompressedData(bc.getOffset(), bc.getEnd(), false);
-    cacheWrapper.getAllocator().allocateMultiple(
-        singleAlloc, bc.getLength(), cacheWrapper.getDataBufferFactory());
+    allocateMultiple(singleAlloc, bc.getLength());
     MemoryBuffer buffer = singleAlloc[0];
     cacheWrapper.reuseBuffer(buffer);
     ByteBuffer dest = buffer.getByteBufferRaw();
@@ -2151,5 +2161,10 @@ class EncodedReaderImpl implements EncodedReader {
       default:
         return false;
     }
+  }
+
+  @Override
+  public void setStopped(AtomicBoolean isStopped) {
+    this.isStopped = isStopped;
   }
 }

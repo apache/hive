@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.common.io.Allocator.AllocatorOutOfMemoryException;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
@@ -58,7 +59,7 @@ public class TestBuddyAllocator {
 
   static class DummyMemoryManager implements MemoryManager {
     @Override
-    public void reserveMemory(long memoryToReserve) {
+    public void reserveMemory(long memoryToReserve, AtomicBoolean isStopped) {
     }
 
     @Override
