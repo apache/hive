@@ -143,6 +143,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       int maxIdleTime = (int) hiveConf.getTimeVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME,
           TimeUnit.MILLISECONDS);
       connector.setIdleTimeout(maxIdleTime);
+      connector.setAcceptQueueSize(maxWorkerThreads);
 
       server.addConnector(connector);
 
