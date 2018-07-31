@@ -284,6 +284,7 @@ public class LlapCacheAwareFs extends FileSystem {
             int extraOffsetInChunk = 0;
             if (maxAlloc < chunkLength) {
               largeBuffers = new MemoryBuffer[largeBufCount];
+              // Note: we don't use StoppableAllocator here - this is not on an IO thread.
               allocator.allocateMultiple(largeBuffers, maxAlloc, cache.getDataBufferFactory());
               for (int i = 0; i < largeBuffers.length; ++i) {
                 // By definition here we copy up to the limit of the buffer.
@@ -301,6 +302,7 @@ public class LlapCacheAwareFs extends FileSystem {
             largeBuffers = null;
             if (smallSize > 0) {
               smallBuffer = new MemoryBuffer[1];
+              // Note: we don't use StoppableAllocator here - this is not on an IO thread.
               allocator.allocateMultiple(smallBuffer, smallSize, cache.getDataBufferFactory());
               ByteBuffer bb = smallBuffer[0].getByteBufferRaw();
               copyDiskDataToCacheBuffer(array,
