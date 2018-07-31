@@ -940,6 +940,29 @@ public class GenVectorCode extends Task {
       {"FilterColumnBetweenDynamicValue", "date", ""},
       {"FilterColumnBetweenDynamicValue", "timestamp", ""},
 
+      {"ColumnBetween", "long", ""},
+      {"ColumnBetween", "double", ""},
+      {"ColumnBetween", "long", "!"},
+      {"ColumnBetween", "double", "!"},
+
+      {"StringColumnBetween", "string", ""},
+      {"StringColumnBetween", "string", "!"},
+
+      {"TruncStringColumnBetween", "char", ""},
+      {"TruncStringColumnBetween", "char", "!"},
+
+      {"TruncStringColumnBetween", "varchar", ""},
+      {"TruncStringColumnBetween", "varchar", "!"},
+
+      {"TimestampColumnBetween", "timestamp", ""},
+      {"TimestampColumnBetween", "timestamp", "!"},
+
+      {"DecimalColumnBetween", "decimal", ""},
+      {"DecimalColumnBetween", "decimal", "!"},
+
+      {"Decimal64ColumnBetween", ""},
+      {"Decimal64ColumnBetween", "!"},
+
       {"ColumnCompareColumn", "Equal", "long", "long", "=="},
       {"ColumnCompareColumn", "Equal", "long", "double", "=="},
       {"ColumnCompareColumn", "Equal", "double", "double", "=="},
@@ -1368,6 +1391,15 @@ public class GenVectorCode extends Task {
         generateFilterColumnBetween(tdesc);
       } else if (tdesc[0].equals("FilterColumnBetweenDynamicValue")) {
         generateFilterColumnBetweenDynamicValue(tdesc);
+      } else if (tdesc[0].equals("ColumnBetween") ||
+                 tdesc[0].equals("StringColumnBetween") ||
+                 tdesc[0].equals("TimestampColumnBetween") ||
+                 tdesc[0].equals("DecimalColumnBetween")) {
+        generateColumnBetween(tdesc);
+      } else if (tdesc[0].equals("TruncStringColumnBetween")) {
+        generateTruncStringColumnBetween(tdesc);
+      } else if (tdesc[0].equals("Decimal64ColumnBetween")) {
+        generateDecimal64ColumnBetween(tdesc);
       } else if (tdesc[0].equals("ScalarArithmeticColumn") || tdesc[0].equals("ScalarDivideColumn")) {
         generateScalarArithmeticColumn(tdesc);
       } else if (tdesc[0].equals("FilterColumnCompareColumn")) {
@@ -1688,6 +1720,63 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<GetPrimitiveMethod>", getPrimitiveMethod);
     templateString = templateString.replaceAll("<GetValueMethod>", getValueMethod);
     templateString = templateString.replaceAll("<ConversionMethod>", conversionMethod);
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateColumnBetween(String[] tdesc) throws Exception {
+    String operandType = tdesc[1];
+    String optionalNot = tdesc[2];
+
+    String className = getCamelCaseType(operandType) + "Column" +
+      (optionalNot.equals("!") ? "Not" : "") + "Between";
+    String inputColumnVectorType = getColumnVectorType(operandType);
+
+    // Read the template into a string, expand it, and write it.
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateTruncStringColumnBetween(String[] tdesc) throws Exception {
+    String operandType = tdesc[1];
+    String optionalNot = tdesc[2];
+
+    String className = getCamelCaseType(operandType) + "Column" +
+      (optionalNot.equals("!") ? "Not" : "") + "Between";
+    String baseClassName = "StringColumn" +
+        (optionalNot.equals("!") ? "Not" : "") + "Between";
+
+    // Read the template into a string, expand it, and write it.
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateDecimal64ColumnBetween(String[] tdesc) throws Exception {
+    String optionalNot = tdesc[1];
+
+    String className = "Decimal64Column" +
+      (optionalNot.equals("!") ? "Not" : "") + "Between";
+    String baseClassName = "LongColumn" +
+        (optionalNot.equals("!") ? "Not" : "") + "Between";
+
+    // Read the template into a string, expand it, and write it.
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);

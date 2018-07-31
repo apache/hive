@@ -118,6 +118,8 @@ public class VectorRandomRowSource {
 
   private List<ObjectInspector> primitiveObjectInspectorList;
 
+  private List<String> columnNames;
+
   private StructObjectInspector rowStructObjectInspector;
 
   private List<GenerationSpec> generationSpecList;
@@ -159,20 +161,24 @@ public class VectorRandomRowSource {
       OMIT_GENERATION,
       STRING_FAMILY,
       STRING_FAMILY_OTHER_TYPE_VALUE,
-      TIMESTAMP_MILLISECONDS
+      TIMESTAMP_MILLISECONDS,
+      VALUE_LIST
     }
 
     private final GenerationKind generationKind;
     private final TypeInfo typeInfo;
     private final TypeInfo sourceTypeInfo;
     private final StringGenerationOption stringGenerationOption;
+    private final List<Object> valueList;
 
     private GenerationSpec(GenerationKind generationKind, TypeInfo typeInfo,
-        TypeInfo sourceTypeInfo, StringGenerationOption stringGenerationOption) {
+        TypeInfo sourceTypeInfo, StringGenerationOption stringGenerationOption,
+        List<Object> valueList) {
       this.generationKind = generationKind;
       this.typeInfo = typeInfo;
       this.sourceTypeInfo = sourceTypeInfo;
       this.stringGenerationOption = stringGenerationOption;
+      this.valueList = valueList;
     }
 
     public GenerationKind getGenerationKind() {
@@ -191,31 +197,40 @@ public class VectorRandomRowSource {
       return stringGenerationOption;
     }
 
+    public List<Object> getValueList() {
+      return valueList;
+    }
+
     public static GenerationSpec createSameType(TypeInfo typeInfo) {
       return new GenerationSpec(
-          GenerationKind.SAME_TYPE, typeInfo, null, null);
+          GenerationKind.SAME_TYPE, typeInfo, null, null, null);
     }
 
     public static GenerationSpec createOmitGeneration(TypeInfo typeInfo) {
       return new GenerationSpec(
-          GenerationKind.OMIT_GENERATION, typeInfo, null, null);
+          GenerationKind.OMIT_GENERATION, typeInfo, null, null, null);
     }
 
     public static GenerationSpec createStringFamily(TypeInfo typeInfo,
         StringGenerationOption stringGenerationOption) {
       return new GenerationSpec(
-          GenerationKind.STRING_FAMILY, typeInfo, null, stringGenerationOption);
+          GenerationKind.STRING_FAMILY, typeInfo, null, stringGenerationOption, null);
     }
 
     public static GenerationSpec createStringFamilyOtherTypeValue(TypeInfo typeInfo,
         TypeInfo otherTypeTypeInfo) {
       return new GenerationSpec(
-          GenerationKind.STRING_FAMILY_OTHER_TYPE_VALUE, typeInfo, otherTypeTypeInfo, null);
+          GenerationKind.STRING_FAMILY_OTHER_TYPE_VALUE, typeInfo, otherTypeTypeInfo, null, null);
     }
 
     public static GenerationSpec createTimestampMilliseconds(TypeInfo typeInfo) {
       return new GenerationSpec(
-          GenerationKind.TIMESTAMP_MILLISECONDS, typeInfo, null, null);
+          GenerationKind.TIMESTAMP_MILLISECONDS, typeInfo, null, null, null);
+    }
+
+    public static GenerationSpec createValueList(TypeInfo typeInfo, List<Object> valueList) {
+      return new GenerationSpec(
+          GenerationKind.VALUE_LIST, typeInfo, null, null, valueList);
     }
   }
 
@@ -241,6 +256,10 @@ public class VectorRandomRowSource {
 
   public PrimitiveTypeInfo[] primitiveTypeInfos() {
     return primitiveTypeInfos;
+  }
+
+  public List<String> columnNames() {
+    return columnNames;
   }
 
   public StructObjectInspector rowStructObjectInspector() {
@@ -342,7 +361,7 @@ public class VectorRandomRowSource {
       "map"
   };
 
-  private static String getRandomTypeName(Random random, SupportedTypes supportedTypes,
+  public static String getRandomTypeName(Random random, SupportedTypes supportedTypes,
       Set<String> allowedTypeNameSet) {
 
     String typeName = null;
@@ -370,7 +389,7 @@ public class VectorRandomRowSource {
     return getDecoratedTypeName(random, typeName, null, null, 0, 1);
   }
 
-  private static String getDecoratedTypeName(Random random, String typeName,
+  public static String getDecoratedTypeName(Random random, String typeName,
       SupportedTypes supportedTypes, Set<String> allowedTypeNameSet, int depth, int maxDepth) {
 
     depth++;
@@ -421,7 +440,7 @@ public class VectorRandomRowSource {
         if (i > 0) {
           sb.append(",");
         }
-        sb.append("col");
+        sb.append("field");
         sb.append(i);
         sb.append(":");
         sb.append(fieldTypeName);
@@ -549,7 +568,7 @@ public class VectorRandomRowSource {
       allTypes = false;
       onlyOne = false;
     } else if (allowedTypeNameSet != null) {
-      columnCount = 1 + r.nextInt(20);
+      columnCount = 1 + r.nextInt(allowedTypeNameSet.size());
       allTypes = false;
       onlyOne = false;
     } else {
@@ -586,9 +605,9 @@ public class VectorRandomRowSource {
     primitiveCategories = new PrimitiveCategory[columnCount];
     primitiveTypeInfos = new PrimitiveTypeInfo[columnCount];
     primitiveObjectInspectorList = new ArrayList<ObjectInspector>(columnCount);
-    List<String> columnNames = new ArrayList<String>(columnCount);
+    columnNames = new ArrayList<String>(columnCount);
     for (int c = 0; c < columnCount; c++) {
-      columnNames.add(String.format("col%d", c));
+      columnNames.add(String.format("col%d", c + 1));
       final String typeName;
       DataTypePhysicalVariation dataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
 
@@ -902,6 +921,13 @@ public class VectorRandomRowSource {
             object = longWritable;
           }
           break;
+        case VALUE_LIST:
+          {
+            List<Object> valueList = generationSpec.getValueList();
+            final int valueCount = valueList.size();
+            object = valueList.get(r.nextInt(valueCount));
+          }
+          break;
         default:
           throw new RuntimeException("Unexpected generationKind " + generationKind);
         }
@@ -1180,6 +1206,42 @@ public class VectorRandomRowSource {
     }
   }
 
+  public static Object getWritableObject(TypeInfo typeInfo,
+      ObjectInspector objectInspector, Object object) {
+
+    final Category category = typeInfo.getCategory();
+    switch (category) {
+    case PRIMITIVE:
+      return
+          getWritablePrimitiveObject(
+              (PrimitiveTypeInfo) typeInfo,
+              objectInspector, DataTypePhysicalVariation.NONE, object);
+    case STRUCT:
+      {
+        final StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        final StandardStructObjectInspector structInspector =
+            (StandardStructObjectInspector) objectInspector;
+        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        final int size = fieldTypeInfos.size();
+        final List<? extends StructField> structFields =
+            structInspector.getAllStructFieldRefs();
+
+        List<Object> input = (ArrayList<Object>) object;
+        List<Object> result = new ArrayList<Object>(size);
+        for (int i = 0; i < size; i++) {
+          final StructField structField = structFields.get(i);
+          final TypeInfo fieldTypeInfo = fieldTypeInfos.get(i);
+          result.add(
+              getWritableObject(
+                  fieldTypeInfo, structField.getFieldObjectInspector(), input.get(i)));
+        }
+        return result;
+      }
+    default:
+      throw new RuntimeException("Unexpected category " + category);
+    }
+  }
+
   public static Object getNonWritablePrimitiveObject(Object object, TypeInfo typeInfo,
       ObjectInspector objectInspector) {
 
@@ -1290,41 +1352,91 @@ public class VectorRandomRowSource {
     }
   }
 
+  public static Object getNonWritableObject(Object object, TypeInfo typeInfo,
+      ObjectInspector objectInspector) {
+    final Category category = typeInfo.getCategory();
+    switch (category) {
+    case PRIMITIVE:
+      return getNonWritablePrimitiveObject(object, typeInfo, objectInspector);
+    case STRUCT:
+      {
+        final StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        final StandardStructObjectInspector structInspector =
+            (StandardStructObjectInspector) objectInspector;
+        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        final int size = fieldTypeInfos.size();
+        final List<? extends StructField> structFields =
+            structInspector.getAllStructFieldRefs();
+
+        List<Object> input = (ArrayList<Object>) object;
+        List<Object> result = new ArrayList<Object>(size);
+        for (int i = 0; i < size; i++) {
+          final StructField structField = structFields.get(i);
+          final TypeInfo fieldTypeInfo = fieldTypeInfos.get(i);
+          result.add(
+              getNonWritableObject(input.get(i), fieldTypeInfo,
+                  structField.getFieldObjectInspector()));
+        }
+        return result;
+      }
+    default:
+      throw new RuntimeException("Unexpected category " + category);
+    }
+  }
+
   public Object randomWritable(int column) {
     return randomWritable(
-        typeInfos[column], objectInspectorList.get(column), dataTypePhysicalVariations[column],
+        r, typeInfos[column], objectInspectorList.get(column), dataTypePhysicalVariations[column],
         allowNull);
   }
 
   public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector) {
-    return randomWritable(typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
+    return randomWritable(r, typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
   }
 
   public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector,
       boolean allowNull) {
-    return randomWritable(typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
+    return randomWritable(r, typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
   }
 
   public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector,
       DataTypePhysicalVariation dataTypePhysicalVariation, boolean allowNull) {
+    return randomWritable(r, typeInfo, objectInspector, dataTypePhysicalVariation, allowNull);
+  }
+
+  public static Object randomWritable(Random random, TypeInfo typeInfo,
+      ObjectInspector objectInspector) {
+    return randomWritable(
+        random, typeInfo, objectInspector, DataTypePhysicalVariation.NONE, false);
+  }
+
+  public static Object randomWritable(Random random, TypeInfo typeInfo,
+      ObjectInspector objectInspector, boolean allowNull) {
+    return randomWritable(
+        random, typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
+  }
+
+  public static Object randomWritable(Random random, TypeInfo typeInfo,
+      ObjectInspector objectInspector, DataTypePhysicalVariation dataTypePhysicalVariation,
+      boolean allowNull) {
 
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
       {
-        if (allowNull && r.nextInt(20) == 0) {
+        if (allowNull && random.nextInt(20) == 0) {
           return null;
         }
-        final Object object = randomPrimitiveObject(r, (PrimitiveTypeInfo) typeInfo);
+        final Object object = randomPrimitiveObject(random, (PrimitiveTypeInfo) typeInfo);
         return getWritablePrimitiveObject(
             (PrimitiveTypeInfo) typeInfo, objectInspector, dataTypePhysicalVariation, object);
       }
     case LIST:
       {
-        if (allowNull && r.nextInt(20) == 0) {
+        if (allowNull && random.nextInt(20) == 0) {
           return null;
         }
         // Always generate a list with at least 1 value?
-        final int elementCount = 1 + r.nextInt(100);
+        final int elementCount = 1 + random.nextInt(100);
         final StandardListObjectInspector listObjectInspector =
             (StandardListObjectInspector) objectInspector;
         final ObjectInspector elementObjectInspector =
@@ -1345,7 +1457,8 @@ public class VectorRandomRowSource {
         }
         final Object listObj = listObjectInspector.create(elementCount);
         for (int i = 0; i < elementCount; i++) {
-          final Object ele = randomWritable(elementTypeInfo, elementObjectInspector, allowNull);
+          final Object ele = randomWritable(
+              random, elementTypeInfo, elementObjectInspector, allowNull);
           // UNDONE: For now, a 1-element list with a null element is a null list...
           if (ele == null && elementCount == 1) {
             return null;
@@ -1382,10 +1495,10 @@ public class VectorRandomRowSource {
       }
     case MAP:
       {
-        if (allowNull && r.nextInt(20) == 0) {
+        if (allowNull && random.nextInt(20) == 0) {
           return null;
         }
-        final int keyPairCount = r.nextInt(100);
+        final int keyPairCount = random.nextInt(100);
         final StandardMapObjectInspector mapObjectInspector =
             (StandardMapObjectInspector) objectInspector;
         final ObjectInspector keyObjectInspector =
@@ -1400,15 +1513,15 @@ public class VectorRandomRowSource {
                 valueObjectInspector);
         final Object mapObj = mapObjectInspector.create();
         for (int i = 0; i < keyPairCount; i++) {
-          Object key = randomWritable(keyTypeInfo, keyObjectInspector);
-          Object value = randomWritable(valueTypeInfo, valueObjectInspector);
+          Object key = randomWritable(random, keyTypeInfo, keyObjectInspector);
+          Object value = randomWritable(random, valueTypeInfo, valueObjectInspector);
           mapObjectInspector.put(mapObj, key, value);
         }
         return mapObj;
       }
     case STRUCT:
       {
-        if (allowNull && r.nextInt(20) == 0) {
+        if (allowNull && random.nextInt(20) == 0) {
           return null;
         }
         final StandardStructObjectInspector structObjectInspector =
@@ -1423,7 +1536,7 @@ public class VectorRandomRowSource {
           final TypeInfo fieldTypeInfo =
               TypeInfoUtils.getTypeInfoFromObjectInspector(
                   fieldObjectInspector);
-          final Object fieldObj = randomWritable(fieldTypeInfo, fieldObjectInspector);
+          final Object fieldObj = randomWritable(random, fieldTypeInfo, fieldObjectInspector);
           structObjectInspector.setStructFieldData(structObj, fieldRef, fieldObj);
         }
         return structObj;
@@ -1434,13 +1547,13 @@ public class VectorRandomRowSource {
             (StandardUnionObjectInspector) objectInspector;
         final List<ObjectInspector> objectInspectorList = unionObjectInspector.getObjectInspectors();
         final int unionCount = objectInspectorList.size();
-        final byte tag = (byte) r.nextInt(unionCount);
+        final byte tag = (byte) random.nextInt(unionCount);
         final ObjectInspector fieldObjectInspector =
             objectInspectorList.get(tag);
         final TypeInfo fieldTypeInfo =
             TypeInfoUtils.getTypeInfoFromObjectInspector(
                 fieldObjectInspector);
-        final Object fieldObj = randomWritable(fieldTypeInfo, fieldObjectInspector, false);
+        final Object fieldObj = randomWritable(random, fieldTypeInfo, fieldObjectInspector, false);
         if (fieldObj == null) {
           throw new RuntimeException();
         }
