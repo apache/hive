@@ -56,6 +56,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) = 0;
   virtual void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) = 0;
   virtual void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) = 0;
+  virtual void truncate_table_req(TruncateTableResponse& _return, const TruncateTableRequest& req) = 0;
   virtual void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) = 0;
   virtual void get_tables_by_type(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern, const std::string& tableType) = 0;
   virtual void get_materialized_views_for_rewriting(std::vector<std::string> & _return, const std::string& db_name) = 0;
@@ -71,6 +72,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void alter_table(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl) = 0;
   virtual void alter_table_with_environment_context(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const EnvironmentContext& environment_context) = 0;
   virtual void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade) = 0;
+  virtual void alter_table_req(AlterTableResponse& _return, const AlterTableRequest& req) = 0;
   virtual void add_partition(Partition& _return, const Partition& new_part) = 0;
   virtual void add_partition_with_environment_context(Partition& _return, const Partition& new_part, const EnvironmentContext& environment_context) = 0;
   virtual int32_t add_partitions(const std::vector<Partition> & new_parts) = 0;
@@ -106,8 +108,10 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) = 0;
   virtual void alter_partitions(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts) = 0;
   virtual void alter_partitions_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts, const EnvironmentContext& environment_context) = 0;
+  virtual void alter_partitions_req(AlterPartitionsResponse& _return, const AlterPartitionsRequest& req) = 0;
   virtual void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context) = 0;
   virtual void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) = 0;
+  virtual void rename_partition_req(RenamePartitionResponse& _return, const RenamePartitionRequest& req) = 0;
   virtual bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception) = 0;
   virtual void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) = 0;
   virtual void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) = 0;
@@ -122,6 +126,8 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_check_constraints(CheckConstraintsResponse& _return, const CheckConstraintsRequest& request) = 0;
   virtual bool update_table_column_statistics(const ColumnStatistics& stats_obj) = 0;
   virtual bool update_partition_column_statistics(const ColumnStatistics& stats_obj) = 0;
+  virtual void update_table_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) = 0;
+  virtual void update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) = 0;
   virtual void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) = 0;
   virtual void get_partition_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) = 0;
   virtual void get_table_statistics_req(TableStatsResult& _return, const TableStatsRequest& request) = 0;
@@ -363,6 +369,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void truncate_table(const std::string& /* dbName */, const std::string& /* tableName */, const std::vector<std::string> & /* partNames */) {
     return;
   }
+  void truncate_table_req(TruncateTableResponse& /* _return */, const TruncateTableRequest& /* req */) {
+    return;
+  }
   void get_tables(std::vector<std::string> & /* _return */, const std::string& /* db_name */, const std::string& /* pattern */) {
     return;
   }
@@ -406,6 +415,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void alter_table_with_cascade(const std::string& /* dbname */, const std::string& /* tbl_name */, const Table& /* new_tbl */, const bool /* cascade */) {
+    return;
+  }
+  void alter_table_req(AlterTableResponse& /* _return */, const AlterTableRequest& /* req */) {
     return;
   }
   void add_partition(Partition& /* _return */, const Partition& /* new_part */) {
@@ -520,10 +532,16 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void alter_partitions_with_environment_context(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<Partition> & /* new_parts */, const EnvironmentContext& /* environment_context */) {
     return;
   }
+  void alter_partitions_req(AlterPartitionsResponse& /* _return */, const AlterPartitionsRequest& /* req */) {
+    return;
+  }
   void alter_partition_with_environment_context(const std::string& /* db_name */, const std::string& /* tbl_name */, const Partition& /* new_part */, const EnvironmentContext& /* environment_context */) {
     return;
   }
   void rename_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* part_vals */, const Partition& /* new_part */) {
+    return;
+  }
+  void rename_partition_req(RenamePartitionResponse& /* _return */, const RenamePartitionRequest& /* req */) {
     return;
   }
   bool partition_name_has_valid_characters(const std::vector<std::string> & /* part_vals */, const bool /* throw_exception */) {
@@ -571,6 +589,12 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   bool update_partition_column_statistics(const ColumnStatistics& /* stats_obj */) {
     bool _return = false;
     return _return;
+  }
+  void update_table_column_statistics_req(SetPartitionsStatsResponse& /* _return */, const SetPartitionsStatsRequest& /* req */) {
+    return;
+  }
+  void update_partition_column_statistics_req(SetPartitionsStatsResponse& /* _return */, const SetPartitionsStatsRequest& /* req */) {
+    return;
   }
   void get_table_column_statistics(ColumnStatistics& /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* col_name */) {
     return;
@@ -5049,6 +5073,118 @@ class ThriftHiveMetastore_truncate_table_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_truncate_table_req_args__isset {
+  _ThriftHiveMetastore_truncate_table_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_truncate_table_req_args__isset;
+
+class ThriftHiveMetastore_truncate_table_req_args {
+ public:
+
+  ThriftHiveMetastore_truncate_table_req_args(const ThriftHiveMetastore_truncate_table_req_args&);
+  ThriftHiveMetastore_truncate_table_req_args& operator=(const ThriftHiveMetastore_truncate_table_req_args&);
+  ThriftHiveMetastore_truncate_table_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_truncate_table_req_args() throw();
+  TruncateTableRequest req;
+
+  _ThriftHiveMetastore_truncate_table_req_args__isset __isset;
+
+  void __set_req(const TruncateTableRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_truncate_table_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_truncate_table_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_truncate_table_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_truncate_table_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_truncate_table_req_pargs() throw();
+  const TruncateTableRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_truncate_table_req_result__isset {
+  _ThriftHiveMetastore_truncate_table_req_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_truncate_table_req_result__isset;
+
+class ThriftHiveMetastore_truncate_table_req_result {
+ public:
+
+  ThriftHiveMetastore_truncate_table_req_result(const ThriftHiveMetastore_truncate_table_req_result&);
+  ThriftHiveMetastore_truncate_table_req_result& operator=(const ThriftHiveMetastore_truncate_table_req_result&);
+  ThriftHiveMetastore_truncate_table_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_truncate_table_req_result() throw();
+  TruncateTableResponse success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_truncate_table_req_result__isset __isset;
+
+  void __set_success(const TruncateTableResponse& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_truncate_table_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_truncate_table_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_truncate_table_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_truncate_table_req_presult__isset {
+  _ThriftHiveMetastore_truncate_table_req_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_truncate_table_req_presult__isset;
+
+class ThriftHiveMetastore_truncate_table_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_truncate_table_req_presult() throw();
+  TruncateTableResponse* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_truncate_table_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_tables_args__isset {
   _ThriftHiveMetastore_get_tables_args__isset() : db_name(false), pattern(false) {}
   bool db_name :1;
@@ -6935,6 +7071,126 @@ class ThriftHiveMetastore_alter_table_with_cascade_presult {
   MetaException o2;
 
   _ThriftHiveMetastore_alter_table_with_cascade_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_table_req_args__isset {
+  _ThriftHiveMetastore_alter_table_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_alter_table_req_args__isset;
+
+class ThriftHiveMetastore_alter_table_req_args {
+ public:
+
+  ThriftHiveMetastore_alter_table_req_args(const ThriftHiveMetastore_alter_table_req_args&);
+  ThriftHiveMetastore_alter_table_req_args& operator=(const ThriftHiveMetastore_alter_table_req_args&);
+  ThriftHiveMetastore_alter_table_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_table_req_args() throw();
+  AlterTableRequest req;
+
+  _ThriftHiveMetastore_alter_table_req_args__isset __isset;
+
+  void __set_req(const AlterTableRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_table_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_table_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_table_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_table_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_table_req_pargs() throw();
+  const AlterTableRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_table_req_result__isset {
+  _ThriftHiveMetastore_alter_table_req_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_alter_table_req_result__isset;
+
+class ThriftHiveMetastore_alter_table_req_result {
+ public:
+
+  ThriftHiveMetastore_alter_table_req_result(const ThriftHiveMetastore_alter_table_req_result&);
+  ThriftHiveMetastore_alter_table_req_result& operator=(const ThriftHiveMetastore_alter_table_req_result&);
+  ThriftHiveMetastore_alter_table_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_table_req_result() throw();
+  AlterTableResponse success;
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_table_req_result__isset __isset;
+
+  void __set_success(const AlterTableResponse& val);
+
+  void __set_o1(const InvalidOperationException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_table_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_table_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_table_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_table_req_presult__isset {
+  _ThriftHiveMetastore_alter_table_req_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_alter_table_req_presult__isset;
+
+class ThriftHiveMetastore_alter_table_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_table_req_presult() throw();
+  AlterTableResponse* success;
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_table_req_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -11773,6 +12029,126 @@ class ThriftHiveMetastore_alter_partitions_with_environment_context_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_alter_partitions_req_args__isset {
+  _ThriftHiveMetastore_alter_partitions_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_alter_partitions_req_args__isset;
+
+class ThriftHiveMetastore_alter_partitions_req_args {
+ public:
+
+  ThriftHiveMetastore_alter_partitions_req_args(const ThriftHiveMetastore_alter_partitions_req_args&);
+  ThriftHiveMetastore_alter_partitions_req_args& operator=(const ThriftHiveMetastore_alter_partitions_req_args&);
+  ThriftHiveMetastore_alter_partitions_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_partitions_req_args() throw();
+  AlterPartitionsRequest req;
+
+  _ThriftHiveMetastore_alter_partitions_req_args__isset __isset;
+
+  void __set_req(const AlterPartitionsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_partitions_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_partitions_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_partitions_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_partitions_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_partitions_req_pargs() throw();
+  const AlterPartitionsRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_partitions_req_result__isset {
+  _ThriftHiveMetastore_alter_partitions_req_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_alter_partitions_req_result__isset;
+
+class ThriftHiveMetastore_alter_partitions_req_result {
+ public:
+
+  ThriftHiveMetastore_alter_partitions_req_result(const ThriftHiveMetastore_alter_partitions_req_result&);
+  ThriftHiveMetastore_alter_partitions_req_result& operator=(const ThriftHiveMetastore_alter_partitions_req_result&);
+  ThriftHiveMetastore_alter_partitions_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_partitions_req_result() throw();
+  AlterPartitionsResponse success;
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_partitions_req_result__isset __isset;
+
+  void __set_success(const AlterPartitionsResponse& val);
+
+  void __set_o1(const InvalidOperationException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_partitions_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_partitions_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_partitions_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_partitions_req_presult__isset {
+  _ThriftHiveMetastore_alter_partitions_req_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_alter_partitions_req_presult__isset;
+
+class ThriftHiveMetastore_alter_partitions_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_partitions_req_presult() throw();
+  AlterPartitionsResponse* success;
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_partitions_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_alter_partition_with_environment_context_args__isset {
   _ThriftHiveMetastore_alter_partition_with_environment_context_args__isset() : db_name(false), tbl_name(false), new_part(false), environment_context(false) {}
   bool db_name :1;
@@ -12034,6 +12410,126 @@ class ThriftHiveMetastore_rename_partition_presult {
   MetaException o2;
 
   _ThriftHiveMetastore_rename_partition_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_rename_partition_req_args__isset {
+  _ThriftHiveMetastore_rename_partition_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_rename_partition_req_args__isset;
+
+class ThriftHiveMetastore_rename_partition_req_args {
+ public:
+
+  ThriftHiveMetastore_rename_partition_req_args(const ThriftHiveMetastore_rename_partition_req_args&);
+  ThriftHiveMetastore_rename_partition_req_args& operator=(const ThriftHiveMetastore_rename_partition_req_args&);
+  ThriftHiveMetastore_rename_partition_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_rename_partition_req_args() throw();
+  RenamePartitionRequest req;
+
+  _ThriftHiveMetastore_rename_partition_req_args__isset __isset;
+
+  void __set_req(const RenamePartitionRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_rename_partition_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_rename_partition_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_rename_partition_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_rename_partition_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_rename_partition_req_pargs() throw();
+  const RenamePartitionRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_rename_partition_req_result__isset {
+  _ThriftHiveMetastore_rename_partition_req_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_rename_partition_req_result__isset;
+
+class ThriftHiveMetastore_rename_partition_req_result {
+ public:
+
+  ThriftHiveMetastore_rename_partition_req_result(const ThriftHiveMetastore_rename_partition_req_result&);
+  ThriftHiveMetastore_rename_partition_req_result& operator=(const ThriftHiveMetastore_rename_partition_req_result&);
+  ThriftHiveMetastore_rename_partition_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_rename_partition_req_result() throw();
+  RenamePartitionResponse success;
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_rename_partition_req_result__isset __isset;
+
+  void __set_success(const RenamePartitionResponse& val);
+
+  void __set_o1(const InvalidOperationException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_rename_partition_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_rename_partition_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_rename_partition_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_rename_partition_req_presult__isset {
+  _ThriftHiveMetastore_rename_partition_req_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_rename_partition_req_presult__isset;
+
+class ThriftHiveMetastore_rename_partition_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_rename_partition_req_presult() throw();
+  RenamePartitionResponse* success;
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_rename_partition_req_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -13826,6 +14322,278 @@ class ThriftHiveMetastore_update_partition_column_statistics_presult {
   InvalidInputException o4;
 
   _ThriftHiveMetastore_update_partition_column_statistics_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_update_table_column_statistics_req_args__isset {
+  _ThriftHiveMetastore_update_table_column_statistics_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_update_table_column_statistics_req_args__isset;
+
+class ThriftHiveMetastore_update_table_column_statistics_req_args {
+ public:
+
+  ThriftHiveMetastore_update_table_column_statistics_req_args(const ThriftHiveMetastore_update_table_column_statistics_req_args&);
+  ThriftHiveMetastore_update_table_column_statistics_req_args& operator=(const ThriftHiveMetastore_update_table_column_statistics_req_args&);
+  ThriftHiveMetastore_update_table_column_statistics_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_table_column_statistics_req_args() throw();
+  SetPartitionsStatsRequest req;
+
+  _ThriftHiveMetastore_update_table_column_statistics_req_args__isset __isset;
+
+  void __set_req(const SetPartitionsStatsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_update_table_column_statistics_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_table_column_statistics_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_table_column_statistics_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_table_column_statistics_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_table_column_statistics_req_pargs() throw();
+  const SetPartitionsStatsRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_table_column_statistics_req_result__isset {
+  _ThriftHiveMetastore_update_table_column_statistics_req_result__isset() : success(false), o1(false), o2(false), o3(false), o4(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_update_table_column_statistics_req_result__isset;
+
+class ThriftHiveMetastore_update_table_column_statistics_req_result {
+ public:
+
+  ThriftHiveMetastore_update_table_column_statistics_req_result(const ThriftHiveMetastore_update_table_column_statistics_req_result&);
+  ThriftHiveMetastore_update_table_column_statistics_req_result& operator=(const ThriftHiveMetastore_update_table_column_statistics_req_result&);
+  ThriftHiveMetastore_update_table_column_statistics_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_table_column_statistics_req_result() throw();
+  SetPartitionsStatsResponse success;
+  NoSuchObjectException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+  InvalidInputException o4;
+
+  _ThriftHiveMetastore_update_table_column_statistics_req_result__isset __isset;
+
+  void __set_success(const SetPartitionsStatsResponse& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  void __set_o4(const InvalidInputException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_table_column_statistics_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    if (!(o4 == rhs.o4))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_table_column_statistics_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_table_column_statistics_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_table_column_statistics_req_presult__isset {
+  _ThriftHiveMetastore_update_table_column_statistics_req_presult__isset() : success(false), o1(false), o2(false), o3(false), o4(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_update_table_column_statistics_req_presult__isset;
+
+class ThriftHiveMetastore_update_table_column_statistics_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_table_column_statistics_req_presult() throw();
+  SetPartitionsStatsResponse* success;
+  NoSuchObjectException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+  InvalidInputException o4;
+
+  _ThriftHiveMetastore_update_table_column_statistics_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_update_partition_column_statistics_req_args__isset {
+  _ThriftHiveMetastore_update_partition_column_statistics_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_update_partition_column_statistics_req_args__isset;
+
+class ThriftHiveMetastore_update_partition_column_statistics_req_args {
+ public:
+
+  ThriftHiveMetastore_update_partition_column_statistics_req_args(const ThriftHiveMetastore_update_partition_column_statistics_req_args&);
+  ThriftHiveMetastore_update_partition_column_statistics_req_args& operator=(const ThriftHiveMetastore_update_partition_column_statistics_req_args&);
+  ThriftHiveMetastore_update_partition_column_statistics_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_partition_column_statistics_req_args() throw();
+  SetPartitionsStatsRequest req;
+
+  _ThriftHiveMetastore_update_partition_column_statistics_req_args__isset __isset;
+
+  void __set_req(const SetPartitionsStatsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_update_partition_column_statistics_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_partition_column_statistics_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_partition_column_statistics_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_partition_column_statistics_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_partition_column_statistics_req_pargs() throw();
+  const SetPartitionsStatsRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_partition_column_statistics_req_result__isset {
+  _ThriftHiveMetastore_update_partition_column_statistics_req_result__isset() : success(false), o1(false), o2(false), o3(false), o4(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_update_partition_column_statistics_req_result__isset;
+
+class ThriftHiveMetastore_update_partition_column_statistics_req_result {
+ public:
+
+  ThriftHiveMetastore_update_partition_column_statistics_req_result(const ThriftHiveMetastore_update_partition_column_statistics_req_result&);
+  ThriftHiveMetastore_update_partition_column_statistics_req_result& operator=(const ThriftHiveMetastore_update_partition_column_statistics_req_result&);
+  ThriftHiveMetastore_update_partition_column_statistics_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_partition_column_statistics_req_result() throw();
+  SetPartitionsStatsResponse success;
+  NoSuchObjectException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+  InvalidInputException o4;
+
+  _ThriftHiveMetastore_update_partition_column_statistics_req_result__isset __isset;
+
+  void __set_success(const SetPartitionsStatsResponse& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  void __set_o4(const InvalidInputException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_partition_column_statistics_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    if (!(o4 == rhs.o4))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_partition_column_statistics_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_partition_column_statistics_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_partition_column_statistics_req_presult__isset {
+  _ThriftHiveMetastore_update_partition_column_statistics_req_presult__isset() : success(false), o1(false), o2(false), o3(false), o4(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_update_partition_column_statistics_req_presult__isset;
+
+class ThriftHiveMetastore_update_partition_column_statistics_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_partition_column_statistics_req_presult() throw();
+  SetPartitionsStatsResponse* success;
+  NoSuchObjectException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+  InvalidInputException o4;
+
+  _ThriftHiveMetastore_update_partition_column_statistics_req_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -26433,6 +27201,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
   void send_truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
   void recv_truncate_table();
+  void truncate_table_req(TruncateTableResponse& _return, const TruncateTableRequest& req);
+  void send_truncate_table_req(const TruncateTableRequest& req);
+  void recv_truncate_table_req(TruncateTableResponse& _return);
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern);
   void send_get_tables(const std::string& db_name, const std::string& pattern);
   void recv_get_tables(std::vector<std::string> & _return);
@@ -26478,6 +27249,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade);
   void send_alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade);
   void recv_alter_table_with_cascade();
+  void alter_table_req(AlterTableResponse& _return, const AlterTableRequest& req);
+  void send_alter_table_req(const AlterTableRequest& req);
+  void recv_alter_table_req(AlterTableResponse& _return);
   void add_partition(Partition& _return, const Partition& new_part);
   void send_add_partition(const Partition& new_part);
   void recv_add_partition(Partition& _return);
@@ -26583,12 +27357,18 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void alter_partitions_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts, const EnvironmentContext& environment_context);
   void send_alter_partitions_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts, const EnvironmentContext& environment_context);
   void recv_alter_partitions_with_environment_context();
+  void alter_partitions_req(AlterPartitionsResponse& _return, const AlterPartitionsRequest& req);
+  void send_alter_partitions_req(const AlterPartitionsRequest& req);
+  void recv_alter_partitions_req(AlterPartitionsResponse& _return);
   void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context);
   void send_alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context);
   void recv_alter_partition_with_environment_context();
   void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
   void send_rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
   void recv_rename_partition();
+  void rename_partition_req(RenamePartitionResponse& _return, const RenamePartitionRequest& req);
+  void send_rename_partition_req(const RenamePartitionRequest& req);
+  void recv_rename_partition_req(RenamePartitionResponse& _return);
   bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
   void send_partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
   bool recv_partition_name_has_valid_characters();
@@ -26631,6 +27411,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool update_partition_column_statistics(const ColumnStatistics& stats_obj);
   void send_update_partition_column_statistics(const ColumnStatistics& stats_obj);
   bool recv_update_partition_column_statistics();
+  void update_table_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req);
+  void send_update_table_column_statistics_req(const SetPartitionsStatsRequest& req);
+  void recv_update_table_column_statistics_req(SetPartitionsStatsResponse& _return);
+  void update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req);
+  void send_update_partition_column_statistics_req(const SetPartitionsStatsRequest& req);
+  void recv_update_partition_column_statistics_req(SetPartitionsStatsResponse& _return);
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   void send_get_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   void recv_get_table_column_statistics(ColumnStatistics& _return);
@@ -26999,6 +27785,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_drop_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_truncate_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_truncate_table_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_tables(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_tables_by_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_materialized_views_for_rewriting(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -27014,6 +27801,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_alter_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_table_with_cascade(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_alter_table_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partition_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -27049,8 +27837,10 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_alter_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_partitions_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_alter_partitions_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_partition_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_rename_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_rename_partition_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_partition_name_has_valid_characters(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_config_value(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_partition_name_to_vals(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -27065,6 +27855,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_check_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_table_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_partition_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_table_column_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_partition_column_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_table_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_partition_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_table_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -27211,6 +28003,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["drop_table"] = &ThriftHiveMetastoreProcessor::process_drop_table;
     processMap_["drop_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_drop_table_with_environment_context;
     processMap_["truncate_table"] = &ThriftHiveMetastoreProcessor::process_truncate_table;
+    processMap_["truncate_table_req"] = &ThriftHiveMetastoreProcessor::process_truncate_table_req;
     processMap_["get_tables"] = &ThriftHiveMetastoreProcessor::process_get_tables;
     processMap_["get_tables_by_type"] = &ThriftHiveMetastoreProcessor::process_get_tables_by_type;
     processMap_["get_materialized_views_for_rewriting"] = &ThriftHiveMetastoreProcessor::process_get_materialized_views_for_rewriting;
@@ -27226,6 +28019,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["alter_table"] = &ThriftHiveMetastoreProcessor::process_alter_table;
     processMap_["alter_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_alter_table_with_environment_context;
     processMap_["alter_table_with_cascade"] = &ThriftHiveMetastoreProcessor::process_alter_table_with_cascade;
+    processMap_["alter_table_req"] = &ThriftHiveMetastoreProcessor::process_alter_table_req;
     processMap_["add_partition"] = &ThriftHiveMetastoreProcessor::process_add_partition;
     processMap_["add_partition_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_add_partition_with_environment_context;
     processMap_["add_partitions"] = &ThriftHiveMetastoreProcessor::process_add_partitions;
@@ -27261,8 +28055,10 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["alter_partition"] = &ThriftHiveMetastoreProcessor::process_alter_partition;
     processMap_["alter_partitions"] = &ThriftHiveMetastoreProcessor::process_alter_partitions;
     processMap_["alter_partitions_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_alter_partitions_with_environment_context;
+    processMap_["alter_partitions_req"] = &ThriftHiveMetastoreProcessor::process_alter_partitions_req;
     processMap_["alter_partition_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_alter_partition_with_environment_context;
     processMap_["rename_partition"] = &ThriftHiveMetastoreProcessor::process_rename_partition;
+    processMap_["rename_partition_req"] = &ThriftHiveMetastoreProcessor::process_rename_partition_req;
     processMap_["partition_name_has_valid_characters"] = &ThriftHiveMetastoreProcessor::process_partition_name_has_valid_characters;
     processMap_["get_config_value"] = &ThriftHiveMetastoreProcessor::process_get_config_value;
     processMap_["partition_name_to_vals"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_vals;
@@ -27277,6 +28073,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_check_constraints"] = &ThriftHiveMetastoreProcessor::process_get_check_constraints;
     processMap_["update_table_column_statistics"] = &ThriftHiveMetastoreProcessor::process_update_table_column_statistics;
     processMap_["update_partition_column_statistics"] = &ThriftHiveMetastoreProcessor::process_update_partition_column_statistics;
+    processMap_["update_table_column_statistics_req"] = &ThriftHiveMetastoreProcessor::process_update_table_column_statistics_req;
+    processMap_["update_partition_column_statistics_req"] = &ThriftHiveMetastoreProcessor::process_update_partition_column_statistics_req;
     processMap_["get_table_column_statistics"] = &ThriftHiveMetastoreProcessor::process_get_table_column_statistics;
     processMap_["get_partition_column_statistics"] = &ThriftHiveMetastoreProcessor::process_get_partition_column_statistics;
     processMap_["get_table_statistics_req"] = &ThriftHiveMetastoreProcessor::process_get_table_statistics_req;
@@ -27736,6 +28534,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->truncate_table(dbName, tableName, partNames);
   }
 
+  void truncate_table_req(TruncateTableResponse& _return, const TruncateTableRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->truncate_table_req(_return, req);
+    }
+    ifaces_[i]->truncate_table_req(_return, req);
+    return;
+  }
+
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -27880,6 +28688,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade);
     }
     ifaces_[i]->alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade);
+  }
+
+  void alter_table_req(AlterTableResponse& _return, const AlterTableRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->alter_table_req(_return, req);
+    }
+    ifaces_[i]->alter_table_req(_return, req);
+    return;
   }
 
   void add_partition(Partition& _return, const Partition& new_part) {
@@ -28222,6 +29040,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->alter_partitions_with_environment_context(db_name, tbl_name, new_parts, environment_context);
   }
 
+  void alter_partitions_req(AlterPartitionsResponse& _return, const AlterPartitionsRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->alter_partitions_req(_return, req);
+    }
+    ifaces_[i]->alter_partitions_req(_return, req);
+    return;
+  }
+
   void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -28238,6 +29066,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->rename_partition(db_name, tbl_name, part_vals, new_part);
     }
     ifaces_[i]->rename_partition(db_name, tbl_name, part_vals, new_part);
+  }
+
+  void rename_partition_req(RenamePartitionResponse& _return, const RenamePartitionRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->rename_partition_req(_return, req);
+    }
+    ifaces_[i]->rename_partition_req(_return, req);
+    return;
   }
 
   bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception) {
@@ -28373,6 +29211,26 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->update_partition_column_statistics(stats_obj);
     }
     return ifaces_[i]->update_partition_column_statistics(stats_obj);
+  }
+
+  void update_table_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_table_column_statistics_req(_return, req);
+    }
+    ifaces_[i]->update_table_column_statistics_req(_return, req);
+    return;
+  }
+
+  void update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_partition_column_statistics_req(_return, req);
+    }
+    ifaces_[i]->update_partition_column_statistics_req(_return, req);
+    return;
   }
 
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
@@ -29535,6 +30393,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
   int32_t send_truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
   void recv_truncate_table(const int32_t seqid);
+  void truncate_table_req(TruncateTableResponse& _return, const TruncateTableRequest& req);
+  int32_t send_truncate_table_req(const TruncateTableRequest& req);
+  void recv_truncate_table_req(TruncateTableResponse& _return, const int32_t seqid);
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern);
   int32_t send_get_tables(const std::string& db_name, const std::string& pattern);
   void recv_get_tables(std::vector<std::string> & _return, const int32_t seqid);
@@ -29580,6 +30441,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade);
   int32_t send_alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade);
   void recv_alter_table_with_cascade(const int32_t seqid);
+  void alter_table_req(AlterTableResponse& _return, const AlterTableRequest& req);
+  int32_t send_alter_table_req(const AlterTableRequest& req);
+  void recv_alter_table_req(AlterTableResponse& _return, const int32_t seqid);
   void add_partition(Partition& _return, const Partition& new_part);
   int32_t send_add_partition(const Partition& new_part);
   void recv_add_partition(Partition& _return, const int32_t seqid);
@@ -29685,12 +30549,18 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void alter_partitions_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts, const EnvironmentContext& environment_context);
   int32_t send_alter_partitions_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts, const EnvironmentContext& environment_context);
   void recv_alter_partitions_with_environment_context(const int32_t seqid);
+  void alter_partitions_req(AlterPartitionsResponse& _return, const AlterPartitionsRequest& req);
+  int32_t send_alter_partitions_req(const AlterPartitionsRequest& req);
+  void recv_alter_partitions_req(AlterPartitionsResponse& _return, const int32_t seqid);
   void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context);
   int32_t send_alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context);
   void recv_alter_partition_with_environment_context(const int32_t seqid);
   void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
   int32_t send_rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
   void recv_rename_partition(const int32_t seqid);
+  void rename_partition_req(RenamePartitionResponse& _return, const RenamePartitionRequest& req);
+  int32_t send_rename_partition_req(const RenamePartitionRequest& req);
+  void recv_rename_partition_req(RenamePartitionResponse& _return, const int32_t seqid);
   bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
   int32_t send_partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
   bool recv_partition_name_has_valid_characters(const int32_t seqid);
@@ -29733,6 +30603,12 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool update_partition_column_statistics(const ColumnStatistics& stats_obj);
   int32_t send_update_partition_column_statistics(const ColumnStatistics& stats_obj);
   bool recv_update_partition_column_statistics(const int32_t seqid);
+  void update_table_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req);
+  int32_t send_update_table_column_statistics_req(const SetPartitionsStatsRequest& req);
+  void recv_update_table_column_statistics_req(SetPartitionsStatsResponse& _return, const int32_t seqid);
+  void update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req);
+  int32_t send_update_partition_column_statistics_req(const SetPartitionsStatsRequest& req);
+  void recv_update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const int32_t seqid);
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   int32_t send_get_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name);
   void recv_get_table_column_statistics(ColumnStatistics& _return, const int32_t seqid);

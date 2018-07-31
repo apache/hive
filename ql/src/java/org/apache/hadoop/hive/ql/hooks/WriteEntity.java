@@ -39,6 +39,7 @@ public class WriteEntity extends Entity implements Serializable {
 
   private boolean isTempURI = false;
   private transient boolean isDynamicPartitionWrite = false;
+  private transient boolean isTxnAnalyze = false;
 
   public static enum WriteType {
     DDL_EXCLUSIVE, // for use in DDL statements that require an exclusive lock,
@@ -223,6 +224,7 @@ public class WriteEntity extends Entity implements Serializable {
       case ADDPARTITION:
       case ADDSERDEPROPS:
       case ADDPROPS:
+      case UPDATESTATS:
         return WriteType.DDL_SHARED;
 
       case COMPACT:
@@ -242,4 +244,11 @@ public class WriteEntity extends Entity implements Serializable {
     return toString() + " Type=" + getTyp() + " WriteType=" + getWriteType() + " isDP=" + isDynamicPartitionWrite();
   }
 
+  public boolean isTxnAnalyze() {
+    return isTxnAnalyze;
+  }
+
+  public void setTxnAnalyze(boolean isTxnAnalyze) {
+    this.isTxnAnalyze = isTxnAnalyze;
+  }
 }

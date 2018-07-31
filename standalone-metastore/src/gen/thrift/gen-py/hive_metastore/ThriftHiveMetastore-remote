@@ -58,6 +58,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void drop_table(string dbname, string name, bool deleteData)')
   print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
   print('  void truncate_table(string dbName, string tableName,  partNames)')
+  print('  TruncateTableResponse truncate_table_req(TruncateTableRequest req)')
   print('   get_tables(string db_name, string pattern)')
   print('   get_tables_by_type(string db_name, string pattern, string tableType)')
   print('   get_materialized_views_for_rewriting(string db_name)')
@@ -73,6 +74,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void alter_table(string dbname, string tbl_name, Table new_tbl)')
   print('  void alter_table_with_environment_context(string dbname, string tbl_name, Table new_tbl, EnvironmentContext environment_context)')
   print('  void alter_table_with_cascade(string dbname, string tbl_name, Table new_tbl, bool cascade)')
+  print('  AlterTableResponse alter_table_req(AlterTableRequest req)')
   print('  Partition add_partition(Partition new_part)')
   print('  Partition add_partition_with_environment_context(Partition new_part, EnvironmentContext environment_context)')
   print('  i32 add_partitions( new_parts)')
@@ -108,8 +110,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void alter_partition(string db_name, string tbl_name, Partition new_part)')
   print('  void alter_partitions(string db_name, string tbl_name,  new_parts)')
   print('  void alter_partitions_with_environment_context(string db_name, string tbl_name,  new_parts, EnvironmentContext environment_context)')
+  print('  AlterPartitionsResponse alter_partitions_req(AlterPartitionsRequest req)')
   print('  void alter_partition_with_environment_context(string db_name, string tbl_name, Partition new_part, EnvironmentContext environment_context)')
   print('  void rename_partition(string db_name, string tbl_name,  part_vals, Partition new_part)')
+  print('  RenamePartitionResponse rename_partition_req(RenamePartitionRequest req)')
   print('  bool partition_name_has_valid_characters( part_vals, bool throw_exception)')
   print('  string get_config_value(string name, string defaultValue)')
   print('   partition_name_to_vals(string part_name)')
@@ -124,6 +128,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  CheckConstraintsResponse get_check_constraints(CheckConstraintsRequest request)')
   print('  bool update_table_column_statistics(ColumnStatistics stats_obj)')
   print('  bool update_partition_column_statistics(ColumnStatistics stats_obj)')
+  print('  SetPartitionsStatsResponse update_table_column_statistics_req(SetPartitionsStatsRequest req)')
+  print('  SetPartitionsStatsResponse update_partition_column_statistics_req(SetPartitionsStatsRequest req)')
   print('  ColumnStatistics get_table_column_statistics(string db_name, string tbl_name, string col_name)')
   print('  ColumnStatistics get_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)')
   print('  TableStatsResult get_table_statistics_req(TableStatsRequest request)')
@@ -505,6 +511,12 @@ elif cmd == 'truncate_table':
     sys.exit(1)
   pp.pprint(client.truncate_table(args[0],args[1],eval(args[2]),))
 
+elif cmd == 'truncate_table_req':
+  if len(args) != 1:
+    print('truncate_table_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.truncate_table_req(eval(args[0]),))
+
 elif cmd == 'get_tables':
   if len(args) != 2:
     print('get_tables requires 2 args')
@@ -594,6 +606,12 @@ elif cmd == 'alter_table_with_cascade':
     print('alter_table_with_cascade requires 4 args')
     sys.exit(1)
   pp.pprint(client.alter_table_with_cascade(args[0],args[1],eval(args[2]),eval(args[3]),))
+
+elif cmd == 'alter_table_req':
+  if len(args) != 1:
+    print('alter_table_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.alter_table_req(eval(args[0]),))
 
 elif cmd == 'add_partition':
   if len(args) != 1:
@@ -805,6 +823,12 @@ elif cmd == 'alter_partitions_with_environment_context':
     sys.exit(1)
   pp.pprint(client.alter_partitions_with_environment_context(args[0],args[1],eval(args[2]),eval(args[3]),))
 
+elif cmd == 'alter_partitions_req':
+  if len(args) != 1:
+    print('alter_partitions_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.alter_partitions_req(eval(args[0]),))
+
 elif cmd == 'alter_partition_with_environment_context':
   if len(args) != 4:
     print('alter_partition_with_environment_context requires 4 args')
@@ -816,6 +840,12 @@ elif cmd == 'rename_partition':
     print('rename_partition requires 4 args')
     sys.exit(1)
   pp.pprint(client.rename_partition(args[0],args[1],eval(args[2]),eval(args[3]),))
+
+elif cmd == 'rename_partition_req':
+  if len(args) != 1:
+    print('rename_partition_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.rename_partition_req(eval(args[0]),))
 
 elif cmd == 'partition_name_has_valid_characters':
   if len(args) != 2:
@@ -900,6 +930,18 @@ elif cmd == 'update_partition_column_statistics':
     print('update_partition_column_statistics requires 1 args')
     sys.exit(1)
   pp.pprint(client.update_partition_column_statistics(eval(args[0]),))
+
+elif cmd == 'update_table_column_statistics_req':
+  if len(args) != 1:
+    print('update_table_column_statistics_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.update_table_column_statistics_req(eval(args[0]),))
+
+elif cmd == 'update_partition_column_statistics_req':
+  if len(args) != 1:
+    print('update_partition_column_statistics_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.update_partition_column_statistics_req(eval(args[0]),))
 
 elif cmd == 'get_table_column_statistics':
   if len(args) != 3:

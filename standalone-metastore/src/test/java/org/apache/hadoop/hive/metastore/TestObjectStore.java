@@ -231,7 +231,7 @@ public class TestObjectStore {
     newTbl1.setOwner("role1");
     newTbl1.setOwnerType(PrincipalType.ROLE);
 
-    objectStore.alterTable(DEFAULT_CATALOG_NAME, DB1, TABLE1, newTbl1);
+    objectStore.alterTable(DEFAULT_CATALOG_NAME, DB1, TABLE1, newTbl1, null);
     tables = objectStore.getTables(DEFAULT_CATALOG_NAME, DB1, "new*");
     Assert.assertEquals(1, tables.size());
     Assert.assertEquals("new" + TABLE1, tables.get(0));

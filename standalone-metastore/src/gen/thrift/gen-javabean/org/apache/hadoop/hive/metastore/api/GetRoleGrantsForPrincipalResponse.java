@@ -354,14 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // PRINCIPAL_GRANTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list78 = iprot.readListBegin();
-                struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list78.size);
-                RolePrincipalGrant _elem79;
-                for (int _i80 = 0; _i80 < _list78.size; ++_i80)
+                org.apache.thrift.protocol.TList _list86 = iprot.readListBegin();
+                struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list86.size);
+                RolePrincipalGrant _elem87;
+                for (int _i88 = 0; _i88 < _list86.size; ++_i88)
                 {
-                  _elem79 = new RolePrincipalGrant();
-                  _elem79.read(iprot);
-                  struct.principalGrants.add(_elem79);
+                  _elem87 = new RolePrincipalGrant();
+                  _elem87.read(iprot);
+                  struct.principalGrants.add(_elem87);
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PRINCIPAL_GRANTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.principalGrants.size()));
-          for (RolePrincipalGrant _iter81 : struct.principalGrants)
+          for (RolePrincipalGrant _iter89 : struct.principalGrants)
           {
-            _iter81.write(oprot);
+            _iter89.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -414,9 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.principalGrants.size());
-        for (RolePrincipalGrant _iter82 : struct.principalGrants)
+        for (RolePrincipalGrant _iter90 : struct.principalGrants)
         {
-          _iter82.write(oprot);
+          _iter90.write(oprot);
         }
       }
     }
@@ -425,14 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetRoleGrantsForPrincipalResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list83 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list83.size);
-        RolePrincipalGrant _elem84;
-        for (int _i85 = 0; _i85 < _list83.size; ++_i85)
+        org.apache.thrift.protocol.TList _list91 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.principalGrants = new ArrayList<RolePrincipalGrant>(_list91.size);
+        RolePrincipalGrant _elem92;
+        for (int _i93 = 0; _i93 < _list91.size; ++_i93)
         {
-          _elem84 = new RolePrincipalGrant();
-          _elem84.read(iprot);
-          struct.principalGrants.add(_elem84);
+          _elem92 = new RolePrincipalGrant();
+          _elem92.read(iprot);
+          struct.principalGrants.add(_elem92);
         }
       }
       struct.setPrincipalGrantsIsSet(true);

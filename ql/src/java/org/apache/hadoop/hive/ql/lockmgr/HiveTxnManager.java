@@ -278,7 +278,18 @@ public interface HiveTxnManager {
    */
   long getTableWriteId(String dbName, String tableName) throws LockException;
 
-  /**
+ /**
+  * if {@code isTxnOpen()}, returns the already allocated table write ID of the table with
+  * the given "dbName.tableName" for the current active transaction.
+  * If not allocated, then returns 0.
+  * @param dbName
+  * @param tableName
+  * @return 0 if not yet allocated
+  * @throws LockException
+  */
+ public long getAllocatedTableWriteId(String dbName, String tableName) throws LockException;
+
+ /**
    * Allocates write id for each transaction in the list.
    * @param dbName database name
    * @param tableName the name of the table to allocate the write id

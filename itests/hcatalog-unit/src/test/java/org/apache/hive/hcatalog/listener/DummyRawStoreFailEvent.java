@@ -267,6 +267,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public Table getTable(String catName, String dbName, String tableName,
+                        String writeIdList) throws MetaException {
+    return objectStore.getTable(catName, dbName, tableName, writeIdList);
+  }
+
+  @Override
   public boolean addPartition(Partition part)
       throws InvalidObjectException, MetaException {
     return objectStore.addPartition(part);
@@ -276,6 +282,13 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public Partition getPartition(String catName, String dbName, String tableName, List<String> partVals)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartition(catName, dbName, tableName, partVals);
+  }
+
+  @Override
+  public Partition getPartition(String catName, String dbName, String tableName,
+                                List<String> partVals, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getPartition(catName, dbName, tableName, partVals, writeIdList);
   }
 
   @Override
@@ -302,10 +315,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void alterTable(String catName, String dbName, String name, Table newTable)
+  public Table alterTable(String catName, String dbName, String name, Table newTable, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
     if (shouldEventSucceed) {
-      objectStore.alterTable(catName, dbName, name, newTable);
+      return objectStore.alterTable(catName, dbName, name, newTable, queryValidWriteIds);
     } else {
       throw new RuntimeException("Event failed.");
     }
@@ -366,20 +379,25 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void alterPartition(String catName, String dbName, String tblName, List<String> partVals,
-                             Partition newPart) throws InvalidObjectException, MetaException {
+  public Partition alterPartition(String catName, String dbName, String tblName, List<String> partVals,
+                             Partition newPart, String queryValidWriteIds) throws InvalidObjectException, MetaException {
     if (shouldEventSucceed) {
-      objectStore.alterPartition(catName, dbName, tblName, partVals, newPart);
+      return objectStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryValidWriteIds);
     } else {
       throw new RuntimeException("Event failed.");
     }
   }
 
   @Override
-  public void alterPartitions(String catName, String dbName, String tblName,
-                              List<List<String>> partValsList, List<Partition> newParts)
+  public List<Partition> alterPartitions(String catName, String dbName, String tblName,
+                              List<List<String>> partValsList, List<Partition> newParts,
+                              long writeId, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
-    objectStore.alterPartitions(catName, dbName, tblName, partValsList, newParts);
+    if (shouldEventSucceed) {
+      return objectStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, writeId, queryValidWriteIds);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
@@ -402,8 +420,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-                                              List<String> partNames) throws MetaException, NoSuchObjectException {
-    return objectStore.getPartitionsByNames(catName, dbName, tblName, partNames);
+      List<String> partNames)
+          throws MetaException, NoSuchObjectException {
+    return objectStore.getPartitionsByNames(
+        catName, dbName, tblName, partNames);
   }
 
   @Override
@@ -686,6 +706,14 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
+                                                   List<String> colNames,
+                                                   String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getTableColumnStatistics(catName, dbName, tableName, colNames, writeIdList);
+  }
+
+  @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
                                              String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -702,18 +730,16 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics statsObj)
-      throws NoSuchObjectException, MetaException, InvalidObjectException,
-      InvalidInputException {
-    return objectStore.updateTableColumnStatistics(statsObj);
+  public Map<String, String> updateTableColumnStatistics(ColumnStatistics statsObj, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return objectStore.updateTableColumnStatistics(statsObj, validWriteIds, writeId);
   }
 
   @Override
-  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
-                                                 List<String> partVals)
-      throws NoSuchObjectException, MetaException, InvalidObjectException,
-      InvalidInputException {
-    return objectStore.updatePartitionColumnStatistics(statsObj, partVals);
+  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
+      List<String> partVals, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return objectStore.updatePartitionColumnStatistics(statsObj, partVals, validWriteIds, writeId);
   }
 
   @Override
@@ -757,6 +783,16 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public void verifySchema() throws MetaException {
+  }
+
+  @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
+                                                             String tblName, List<String> colNames,
+                                                             List<String> partNames,
+                                                             String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getPartitionColumnStatistics(
+        catName, dbName, tblName  , colNames, partNames, writeIdList);
   }
 
   @Override
@@ -850,6 +886,14 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
                                       String tblName, List<String> partNames, List<String> colNames)
+      throws MetaException {
+    return null;
+  }
+
+  @Override
+  public AggrStats get_aggr_stats_for(String catName, String dbName,
+                                      String tblName, List<String> partNames, List<String> colNames,
+                                      String writeIdList)
       throws MetaException {
     return null;
   }
@@ -1257,4 +1301,6 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
       String dbName, String tableName) throws MetaException,
       NoSuchObjectException {
     return null;
-  }}
+  }
+
+}

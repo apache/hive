@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
@@ -84,8 +86,7 @@ public class GenMRTableScan1 implements NodeProcessor {
 
         if (parseCtx.getQueryProperties().isAnalyzeCommand()) {
           boolean noScan = parseCtx.getQueryProperties().isNoScanAnalyzeCommand();
-          if (OrcInputFormat.class.isAssignableFrom(inputFormat) ||
-                  MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
+          if (BasicStatsNoJobTask.canUseFooterScan(table, inputFormat)) {
             // For ORC and Parquet, all the following statements are the same
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;

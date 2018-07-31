@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName = "Truncate Table or Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class TruncateTableDesc extends DDLDesc implements DDLDesc.DDLDescWithWriteId {
+  private final static Logger LOG = LoggerFactory.getLogger(TruncateTableDesc.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -51,9 +54,11 @@ public class TruncateTableDesc extends DDLDesc implements DDLDesc.DDLDescWithWri
   public TruncateTableDesc() {
   }
 
+
   public TruncateTableDesc(String tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec) {
     this(tableName, partSpec, replicationSpec, null);
   }
+
   public TruncateTableDesc(String tableName, Map<String, String> partSpec,
       ReplicationSpec replicationSpec, Table table) {
     this.tableName = tableName;

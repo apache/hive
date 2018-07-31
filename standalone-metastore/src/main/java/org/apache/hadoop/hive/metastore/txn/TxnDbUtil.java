@@ -28,9 +28,12 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import com.google.common.annotations.VisibleForTesting;
+import jline.internal.Log;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.zookeeper.txn.TxnHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -266,7 +269,7 @@ public final class TxnDbUtil {
       try {
         stmt.execute("CREATE TABLE \"APP\".\"PARTITION_PARAMS\" (" +
             " \"PART_ID\" BIGINT NOT NULL, \"PARAM_KEY\" VARCHAR(256) NOT NULL, " +
-            " \"PARAM_VALUE\" CLOB, " +
+            " \"PARAM_VALUE\" VARCHAR(4000), " +
             " PRIMARY KEY (PART_ID, PARAM_KEY))"
         );
       } catch (SQLException e) {
@@ -481,6 +484,35 @@ public final class TxnDbUtil {
         return 0;
       }
       return rs.getInt(1);
+    } finally {
+      closeResources(conn, stmt, rs);
+    }
+  }
+
+  /**
+   * Return true if the transaction of the given txnId is open.
+   * @param conf    HiveConf
+   * @param txnId   transaction id to search for
+   * @return
+   * @throws Exception
+   */
+  public static boolean isOpenOrAbortedTransaction(Configuration conf, long txnId) throws Exception {
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet rs = null;
+    try {
+      conn = getConnection(conf);
+      conn.setAutoCommit(false);
+      conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+
+      stmt = conn.prepareStatement("SELECT txn_id FROM TXNS WHERE txn_id = ?");
+      stmt.setLong(1, txnId);
+      rs = stmt.executeQuery();
+      if (!rs.next()) {
+        return false;
+      } else {
+        return true;
+      }
     } finally {
       closeResources(conn, stmt, rs);
     }

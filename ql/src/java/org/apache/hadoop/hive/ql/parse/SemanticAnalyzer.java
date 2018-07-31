@@ -40,6 +40,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -393,6 +394,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   final ASTSearcher astSearcher = new ASTSearcher();
 
   protected AnalyzeRewriteContext analyzeRewrite;
+
+  private WriteEntity acidAnalyzeTable;
 
   // A mapping from a tableName to a table object in metastore.
   Map<String, Table> tabNameToTabObject;
@@ -11351,64 +11354,76 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // if it is not analyze command and not column stats, then do not gatherstats
     if (!qbp.isAnalyzeCommand() && qbp.getAnalyzeRewrite() == null) {
       tsDesc.setGatherStats(false);
-    } else {
-      if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-        String statsTmpLoc = ctx.getTempDirForInterimJobPath(tab.getPath()).toString();
-        LOG.debug("Set stats collection dir : " + statsTmpLoc);
-        tsDesc.setTmpStatsDir(statsTmpLoc);
+      return;
+    }
+
+    if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
+      String statsTmpLoc = ctx.getTempDirForInterimJobPath(tab.getPath()).toString();
+      LOG.debug("Set stats collection dir : " + statsTmpLoc);
+      tsDesc.setTmpStatsDir(statsTmpLoc);
+    }
+    tsDesc.setGatherStats(true);
+    tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+
+    // append additional virtual columns for storing statistics
+    Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
+    List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
+    while (vcs.hasNext()) {
+      VirtualColumn vc = vcs.next();
+      rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),
+          vc.getTypeInfo(), alias, true, vc.getIsHidden()));
+      vcList.add(vc);
+    }
+    tsDesc.addVirtualCols(vcList);
+
+    String tblName = tab.getTableName();
+    // Theoretically the key prefix could be any unique string shared
+    // between TableScanOperator (when publishing) and StatsTask (when aggregating).
+    // Here we use
+    // db_name.table_name + partitionSec
+    // as the prefix for easy of read during explain and debugging.
+    // Currently, partition spec can only be static partition.
+    String k = org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
+    tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
+
+    // set up WriteEntity for replication and txn stats
+    WriteEntity we = new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED);
+    we.setTxnAnalyze(true);
+    outputs.add(we);
+    if (AcidUtils.isTransactionalTable(tab)) {
+      if (acidAnalyzeTable != null) {
+        throw new IllegalStateException("Multiple ACID tables in analyze: "
+            + we + ", " + acidAnalyzeTable);
       }
-      tsDesc.setGatherStats(true);
-      tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+      acidAnalyzeTable = we;
+    }
 
-      // append additional virtual columns for storing statistics
-      Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
-      List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
-      while (vcs.hasNext()) {
-        VirtualColumn vc = vcs.next();
-        rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),
-            vc.getTypeInfo(), alias, true, vc.getIsHidden()));
-        vcList.add(vc);
+    // add WriteEntity for each matching partition
+    if (tab.isPartitioned()) {
+      List<String> cols = new ArrayList<String>();
+      if (qbp.getAnalyzeRewrite() != null) {
+        List<FieldSchema> partitionCols = tab.getPartCols();
+        for (FieldSchema fs : partitionCols) {
+          cols.add(fs.getName());
+        }
+        tsDesc.setPartColumns(cols);
+        return;
       }
-      tsDesc.addVirtualCols(vcList);
-
-      String tblName = tab.getTableName();
-      // Theoretically the key prefix could be any unique string shared
-      // between TableScanOperator (when publishing) and StatsTask (when aggregating).
-      // Here we use
-      // db_name.table_name + partitionSec
-      // as the prefix for easy of read during explain and debugging.
-      // Currently, partition spec can only be static partition.
-      String k = org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
-      tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
-
-      // set up WriteEntity for replication
-      outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
-
-      // add WriteEntity for each matching partition
-      if (tab.isPartitioned()) {
-        List<String> cols = new ArrayList<String>();
-        if (qbp.getAnalyzeRewrite() != null) {
-          List<FieldSchema> partitionCols = tab.getPartCols();
-          for (FieldSchema fs : partitionCols) {
-            cols.add(fs.getName());
-          }
-          tsDesc.setPartColumns(cols);
-          return;
-        }
-        TableSpec tblSpec = qbp.getTableSpec(alias);
-        Map<String, String> partSpec = tblSpec.getPartSpec();
-        if (partSpec != null) {
-          cols.addAll(partSpec.keySet());
-          tsDesc.setPartColumns(cols);
-        } else {
-          throw new SemanticException(ErrorMsg.NEED_PARTITION_SPECIFICATION.getMsg());
-        }
-        List<Partition> partitions = qbp.getTableSpec().partitions;
-        if (partitions != null) {
-          for (Partition partn : partitions) {
-            // inputs.add(new ReadEntity(partn)); // is this needed at all?
-            outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
-          }
+      TableSpec tblSpec = qbp.getTableSpec(alias);
+      Map<String, String> partSpec = tblSpec.getPartSpec();
+      if (partSpec != null) {
+        cols.addAll(partSpec.keySet());
+        tsDesc.setPartColumns(cols);
+      } else {
+        throw new SemanticException(ErrorMsg.NEED_PARTITION_SPECIFICATION.getMsg());
+      }
+      List<Partition> partitions = qbp.getTableSpec().partitions;
+      if (partitions != null) {
+        for (Partition partn : partitions) {
+          // inputs.add(new ReadEntity(partn)); // is this needed at all?
+          WriteEntity pwe = new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK);
+          pwe.setTxnAnalyze(true);
+          outputs.add(pwe);
         }
       }
     }
@@ -12956,7 +12971,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void validate() throws SemanticException {
-    LOG.debug("validation start");
     boolean wasAcidChecked = false;
     // Validate inputs and outputs have right protectmode to execute the query
     for (ReadEntity readEntity : getInputs()) {
@@ -15195,5 +15209,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       rewrittenQueryStr.append(")");
     }
+  }
+
+  @Override
+  public WriteEntity getAcidAnalyzeTable() {
+    return acidAnalyzeTable;
   }
 }
