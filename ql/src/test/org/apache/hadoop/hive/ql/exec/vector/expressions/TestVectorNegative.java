@@ -195,7 +195,7 @@ public class TestVectorNegative {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
 
     generationSpecList.add(
         GenerationSpec.createSameType(typeInfo));

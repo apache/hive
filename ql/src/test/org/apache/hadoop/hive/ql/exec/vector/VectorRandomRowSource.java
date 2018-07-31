@@ -118,6 +118,8 @@ public class VectorRandomRowSource {
 
   private List<ObjectInspector> primitiveObjectInspectorList;
 
+  private List<String> columnNames;
+
   private StructObjectInspector rowStructObjectInspector;
 
   private List<GenerationSpec> generationSpecList;
@@ -152,71 +154,28 @@ public class VectorRandomRowSource {
     }
   }
 
-  public static class GenerationSpec {
+  public static String getRandomTypeName(Random random, SupportedTypes supportedTypes,
+      Set<String> allowedTypeNameSet) {
 
-    public static enum GenerationKind {
-      SAME_TYPE,
-      OMIT_GENERATION,
-      STRING_FAMILY,
-      STRING_FAMILY_OTHER_TYPE_VALUE,
-      TIMESTAMP_MILLISECONDS
-    }
-
-    private final GenerationKind generationKind;
-    private final TypeInfo typeInfo;
-    private final TypeInfo sourceTypeInfo;
-    private final StringGenerationOption stringGenerationOption;
-
-    private GenerationSpec(GenerationKind generationKind, TypeInfo typeInfo,
-        TypeInfo sourceTypeInfo, StringGenerationOption stringGenerationOption) {
-      this.generationKind = generationKind;
-      this.typeInfo = typeInfo;
-      this.sourceTypeInfo = sourceTypeInfo;
-      this.stringGenerationOption = stringGenerationOption;
-    }
-
-    public GenerationKind getGenerationKind() {
-      return generationKind;
-    }
-
-    public TypeInfo getTypeInfo() {
-      return typeInfo;
-    }
-
-    public TypeInfo getSourceTypeInfo() {
-      return sourceTypeInfo;
-    }
-
-    public StringGenerationOption getStringGenerationOption() {
-      return stringGenerationOption;
-    }
-
-    public static GenerationSpec createSameType(TypeInfo typeInfo) {
-      return new GenerationSpec(
-          GenerationKind.SAME_TYPE, typeInfo, null, null);
-    }
-
-    public static GenerationSpec createOmitGeneration(TypeInfo typeInfo) {
-      return new GenerationSpec(
-          GenerationKind.OMIT_GENERATION, typeInfo, null, null);
-    }
-
-    public static GenerationSpec createStringFamily(TypeInfo typeInfo,
-        StringGenerationOption stringGenerationOption) {
-      return new GenerationSpec(
-          GenerationKind.STRING_FAMILY, typeInfo, null, stringGenerationOption);
-    }
-
-    public static GenerationSpec createStringFamilyOtherTypeValue(TypeInfo typeInfo,
-        TypeInfo otherTypeTypeInfo) {
-      return new GenerationSpec(
-          GenerationKind.STRING_FAMILY_OTHER_TYPE_VALUE, typeInfo, otherTypeTypeInfo, null);
-    }
-
-    public static GenerationSpec createTimestampMilliseconds(TypeInfo typeInfo) {
-      return new GenerationSpec(
-          GenerationKind.TIMESTAMP_MILLISECONDS, typeInfo, null, null);
-    }
+    String typeName = null;
+    do {
+      if (random.nextInt(10 ) != 0) {
+        typeName = possibleHivePrimitiveTypeNames[random.nextInt(possibleHivePrimitiveTypeNames.length)];
+      } else {
+        switch (supportedTypes) {
+        case PRIMITIVES:
+          typeName = possibleHivePrimitiveTypeNames[random.nextInt(possibleHivePrimitiveTypeNames.length)];
+          break;
+        case ALL_EXCEPT_MAP:
+          typeName = possibleHiveComplexTypeNames[random.nextInt(possibleHiveComplexTypeNames.length - 1)];
+          break;
+        case ALL:
+          typeName = possibleHiveComplexTypeNames[random.nextInt(possibleHiveComplexTypeNames.length)];
+          break;
+        }
+      }
+    } while (allowedTypeNameSet != null && !allowedTypeNameSet.contains(typeName));
+    return typeName;
   }
 
   public List<String> typeNames() {
@@ -241,6 +200,84 @@ public class VectorRandomRowSource {
 
   public PrimitiveTypeInfo[] primitiveTypeInfos() {
     return primitiveTypeInfos;
+  }
+
+  public static String getDecoratedTypeName(Random random, String typeName,
+      SupportedTypes supportedTypes, Set<String> allowedTypeNameSet, int depth, int maxDepth) {
+
+    depth++;
+    if (depth < maxDepth) {
+      supportedTypes = SupportedTypes.PRIMITIVES;
+    }
+    if (typeName.equals("char")) {
+      final int maxLength = 1 + random.nextInt(100);
+      typeName = String.format("char(%d)", maxLength);
+    } else if (typeName.equals("varchar")) {
+      final int maxLength = 1 + random.nextInt(100);
+      typeName = String.format("varchar(%d)", maxLength);
+    } else if (typeName.equals("decimal")) {
+      typeName =
+          String.format(
+              "decimal(%d,%d)",
+              HiveDecimal.SYSTEM_DEFAULT_PRECISION,
+              HiveDecimal.SYSTEM_DEFAULT_SCALE);
+    } else if (typeName.equals("array")) {
+      String elementTypeName = getRandomTypeName(random, supportedTypes, allowedTypeNameSet);
+      elementTypeName =
+          getDecoratedTypeName(random, elementTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+      typeName = String.format("array<%s>", elementTypeName);
+    } else if (typeName.equals("map")) {
+      String keyTypeName =
+          getRandomTypeName(
+              random, SupportedTypes.PRIMITIVES, allowedTypeNameSet);
+      keyTypeName =
+          getDecoratedTypeName(
+              random, keyTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+      String valueTypeName =
+          getRandomTypeName(
+              random, supportedTypes, allowedTypeNameSet);
+      valueTypeName =
+          getDecoratedTypeName(
+              random, valueTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+      typeName = String.format("map<%s,%s>", keyTypeName, valueTypeName);
+    } else if (typeName.equals("struct")) {
+      final int fieldCount = 1 + random.nextInt(10);
+      final StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < fieldCount; i++) {
+        String fieldTypeName =
+            getRandomTypeName(
+                random, supportedTypes, allowedTypeNameSet);
+        fieldTypeName =
+            getDecoratedTypeName(
+                random, fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+        if (i > 0) {
+          sb.append(",");
+        }
+        sb.append("field");
+        sb.append(i);
+        sb.append(":");
+        sb.append(fieldTypeName);
+      }
+      typeName = String.format("struct<%s>", sb.toString());
+    } else if (typeName.equals("struct") ||
+        typeName.equals("uniontype")) {
+      final int fieldCount = 1 + random.nextInt(10);
+      final StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < fieldCount; i++) {
+        String fieldTypeName =
+            getRandomTypeName(
+                random, supportedTypes, allowedTypeNameSet);
+        fieldTypeName =
+            getDecoratedTypeName(
+                random, fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+        if (i > 0) {
+          sb.append(",");
+        }
+        sb.append(fieldTypeName);
+      }
+      typeName = String.format("uniontype<%s>", sb.toString());
+    }
+    return typeName;
   }
 
   public StructObjectInspector rowStructObjectInspector() {
@@ -342,110 +379,76 @@ public class VectorRandomRowSource {
       "map"
   };
 
-  private static String getRandomTypeName(Random random, SupportedTypes supportedTypes,
-      Set<String> allowedTypeNameSet) {
+  public static Object getWritableObject(TypeInfo typeInfo,
+      ObjectInspector objectInspector, Object object) {
 
-    String typeName = null;
-    do {
-      if (random.nextInt(10 ) != 0) {
-        typeName = possibleHivePrimitiveTypeNames[random.nextInt(possibleHivePrimitiveTypeNames.length)];
-      } else {
-        switch (supportedTypes) {
-        case PRIMITIVES:
-          typeName = possibleHivePrimitiveTypeNames[random.nextInt(possibleHivePrimitiveTypeNames.length)];
-          break;
-        case ALL_EXCEPT_MAP:
-          typeName = possibleHiveComplexTypeNames[random.nextInt(possibleHiveComplexTypeNames.length - 1)];
-          break;
-        case ALL:
-          typeName = possibleHiveComplexTypeNames[random.nextInt(possibleHiveComplexTypeNames.length)];
-          break;
+    final Category category = typeInfo.getCategory();
+    switch (category) {
+    case PRIMITIVE:
+      return
+          getWritablePrimitiveObject(
+              (PrimitiveTypeInfo) typeInfo,
+              objectInspector, DataTypePhysicalVariation.NONE, object);
+    case STRUCT:
+      {
+        final StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        final StandardStructObjectInspector structInspector =
+            (StandardStructObjectInspector) objectInspector;
+        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        final int size = fieldTypeInfos.size();
+        final List<? extends StructField> structFields =
+            structInspector.getAllStructFieldRefs();
+
+        List<Object> input = (ArrayList<Object>) object;
+        List<Object> result = new ArrayList<Object>(size);
+        for (int i = 0; i < size; i++) {
+          final StructField structField = structFields.get(i);
+          final TypeInfo fieldTypeInfo = fieldTypeInfos.get(i);
+          result.add(
+              getWritableObject(
+                  fieldTypeInfo, structField.getFieldObjectInspector(), input.get(i)));
         }
+        return result;
       }
-    } while (allowedTypeNameSet != null && !allowedTypeNameSet.contains(typeName));
-    return typeName;
+    default:
+      throw new RuntimeException("Unexpected category " + category);
+    }
   }
 
   public static String getDecoratedTypeName(Random random, String typeName) {
     return getDecoratedTypeName(random, typeName, null, null, 0, 1);
   }
 
-  private static String getDecoratedTypeName(Random random, String typeName,
-      SupportedTypes supportedTypes, Set<String> allowedTypeNameSet, int depth, int maxDepth) {
+  public static Object getNonWritableObject(Object object, TypeInfo typeInfo,
+      ObjectInspector objectInspector) {
+    final Category category = typeInfo.getCategory();
+    switch (category) {
+    case PRIMITIVE:
+      return getNonWritablePrimitiveObject(object, typeInfo, objectInspector);
+    case STRUCT:
+      {
+        final StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        final StandardStructObjectInspector structInspector =
+            (StandardStructObjectInspector) objectInspector;
+        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        final int size = fieldTypeInfos.size();
+        final List<? extends StructField> structFields =
+            structInspector.getAllStructFieldRefs();
 
-    depth++;
-    if (depth < maxDepth) {
-      supportedTypes = SupportedTypes.PRIMITIVES;
-    }
-    if (typeName.equals("char")) {
-      final int maxLength = 1 + random.nextInt(100);
-      typeName = String.format("char(%d)", maxLength);
-    } else if (typeName.equals("varchar")) {
-      final int maxLength = 1 + random.nextInt(100);
-      typeName = String.format("varchar(%d)", maxLength);
-    } else if (typeName.equals("decimal")) {
-      typeName =
-          String.format(
-              "decimal(%d,%d)",
-              HiveDecimal.SYSTEM_DEFAULT_PRECISION,
-              HiveDecimal.SYSTEM_DEFAULT_SCALE);
-    } else if (typeName.equals("array")) {
-      String elementTypeName = getRandomTypeName(random, supportedTypes, allowedTypeNameSet);
-      elementTypeName =
-          getDecoratedTypeName(random, elementTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-      typeName = String.format("array<%s>", elementTypeName);
-    } else if (typeName.equals("map")) {
-      String keyTypeName =
-          getRandomTypeName(
-              random, SupportedTypes.PRIMITIVES, allowedTypeNameSet);
-      keyTypeName =
-          getDecoratedTypeName(
-              random, keyTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-      String valueTypeName =
-          getRandomTypeName(
-              random, supportedTypes, allowedTypeNameSet);
-      valueTypeName =
-          getDecoratedTypeName(
-              random, valueTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-      typeName = String.format("map<%s,%s>", keyTypeName, valueTypeName);
-    } else if (typeName.equals("struct")) {
-      final int fieldCount = 1 + random.nextInt(10);
-      final StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < fieldCount; i++) {
-        String fieldTypeName =
-            getRandomTypeName(
-                random, supportedTypes, allowedTypeNameSet);
-        fieldTypeName =
-            getDecoratedTypeName(
-                random, fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-        if (i > 0) {
-          sb.append(",");
+        List<Object> input = (ArrayList<Object>) object;
+        List<Object> result = new ArrayList<Object>(size);
+        for (int i = 0; i < size; i++) {
+          final StructField structField = structFields.get(i);
+          final TypeInfo fieldTypeInfo = fieldTypeInfos.get(i);
+          result.add(
+              getNonWritableObject(input.get(i), fieldTypeInfo,
+                  structField.getFieldObjectInspector()));
         }
-        sb.append("col");
-        sb.append(i);
-        sb.append(":");
-        sb.append(fieldTypeName);
+        return result;
       }
-      typeName = String.format("struct<%s>", sb.toString());
-    } else if (typeName.equals("struct") ||
-        typeName.equals("uniontype")) {
-      final int fieldCount = 1 + random.nextInt(10);
-      final StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < fieldCount; i++) {
-        String fieldTypeName =
-            getRandomTypeName(
-                random, supportedTypes, allowedTypeNameSet);
-        fieldTypeName =
-            getDecoratedTypeName(
-                random, fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-        if (i > 0) {
-          sb.append(",");
-        }
-        sb.append(fieldTypeName);
-      }
-      typeName = String.format("uniontype<%s>", sb.toString());
+    default:
+      throw new RuntimeException("Unexpected category " + category);
     }
-    return typeName;
   }
 
   private String getDecoratedTypeName(String typeName,
@@ -537,158 +540,10 @@ public class VectorRandomRowSource {
     return objectInspector;
   }
 
-  private void chooseSchema(SupportedTypes supportedTypes, Set<String> allowedTypeNameSet,
-      List<GenerationSpec> generationSpecList,
-      List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList,
-      int maxComplexDepth) {
-    HashSet<Integer> hashSet = null;
-    final boolean allTypes;
-    final boolean onlyOne;
-    if (generationSpecList != null) {
-      columnCount = generationSpecList.size();
-      allTypes = false;
-      onlyOne = false;
-    } else if (allowedTypeNameSet != null) {
-      columnCount = 1 + r.nextInt(20);
-      allTypes = false;
-      onlyOne = false;
-    } else {
-      onlyOne = (r.nextInt(100) == 7);
-      if (onlyOne) {
-        columnCount = 1;
-        allTypes = false;
-      } else {
-        allTypes = r.nextBoolean();
-        if (allTypes) {
-          switch (supportedTypes) {
-          case ALL:
-            columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length;
-            break;
-          case ALL_EXCEPT_MAP:
-            columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length - 1;
-            break;
-          case PRIMITIVES:
-            columnCount = possibleHivePrimitiveTypeNames.length;
-            break;
-          }
-          hashSet = new HashSet<Integer>();
-        } else {
-          columnCount = 1 + r.nextInt(20);
-        }
-      }
-    }
-    typeNames = new ArrayList<String>(columnCount);
-    categories = new Category[columnCount];
-    typeInfos = new TypeInfo[columnCount];
-    dataTypePhysicalVariations = new DataTypePhysicalVariation[columnCount];
-    objectInspectorList = new ArrayList<ObjectInspector>(columnCount);
-
-    primitiveCategories = new PrimitiveCategory[columnCount];
-    primitiveTypeInfos = new PrimitiveTypeInfo[columnCount];
-    primitiveObjectInspectorList = new ArrayList<ObjectInspector>(columnCount);
-    List<String> columnNames = new ArrayList<String>(columnCount);
-    for (int c = 0; c < columnCount; c++) {
-      columnNames.add(String.format("col%d", c));
-      final String typeName;
-      DataTypePhysicalVariation dataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
-
-      if (generationSpecList != null) {
-        typeName = generationSpecList.get(c).getTypeInfo().getTypeName();
-        dataTypePhysicalVariation = explicitDataTypePhysicalVariationList.get(c);
-      } else if (onlyOne || allowedTypeNameSet != null) {
-        typeName = getRandomTypeName(r, supportedTypes, allowedTypeNameSet);
-      } else {
-        int typeNum;
-        if (allTypes) {
-          int maxTypeNum = 0;
-          switch (supportedTypes) {
-          case PRIMITIVES:
-            maxTypeNum = possibleHivePrimitiveTypeNames.length;
-            break;
-          case ALL_EXCEPT_MAP:
-            maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length - 1;
-            break;
-          case ALL:
-            maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length;
-            break;
-          }
-          while (true) {
-
-            typeNum = r.nextInt(maxTypeNum);
-
-            Integer typeNumInteger = new Integer(typeNum);
-            if (!hashSet.contains(typeNumInteger)) {
-              hashSet.add(typeNumInteger);
-              break;
-            }
-          }
-        } else {
-          if (supportedTypes == SupportedTypes.PRIMITIVES || r.nextInt(10) != 0) {
-            typeNum = r.nextInt(possibleHivePrimitiveTypeNames.length);
-          } else {
-            typeNum = possibleHivePrimitiveTypeNames.length + r.nextInt(possibleHiveComplexTypeNames.length);
-            if (supportedTypes == SupportedTypes.ALL_EXCEPT_MAP) {
-              typeNum--;
-            }
-          }
-        }
-        if (typeNum < possibleHivePrimitiveTypeNames.length) {
-          typeName = possibleHivePrimitiveTypeNames[typeNum];
-        } else {
-          typeName = possibleHiveComplexTypeNames[typeNum - possibleHivePrimitiveTypeNames.length];
-        }
-
-      }
-
-      String decoratedTypeName =
-          getDecoratedTypeName(typeName, supportedTypes, allowedTypeNameSet, 0, maxComplexDepth);
-
-      final TypeInfo typeInfo;
-      try {
-        typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(decoratedTypeName);
-      } catch (Exception e) {
-        throw new RuntimeException("Cannot convert type name " + decoratedTypeName + " to a type " + e);
-      }
-
-      typeInfos[c] = typeInfo;
-      dataTypePhysicalVariations[c] = dataTypePhysicalVariation;
-      final Category category = typeInfo.getCategory();
-      categories[c] = category;
-
-      // Do not represent DECIMAL_64 to make ROW mode tests easier --
-      // make the VECTOR mode tests convert into the VectorizedRowBatch.
-      ObjectInspector objectInspector = getObjectInspector(typeInfo, DataTypePhysicalVariation.NONE);
-
-      switch (category) {
-      case PRIMITIVE:
-        {
-          final PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
-          primitiveTypeInfos[c] = primitiveTypeInfo;
-          PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
-          primitiveCategories[c] = primitiveCategory;
-          primitiveObjectInspectorList.add(objectInspector);
-        }
-        break;
-      case LIST:
-      case MAP:
-      case STRUCT:
-      case UNION:
-        primitiveObjectInspectorList.add(null);
-        break;
-      default:
-        throw new RuntimeException("Unexpected catagory " + category);
-      }
-      objectInspectorList.add(objectInspector);
-
-      if (category == Category.PRIMITIVE) {
-      }
-      typeNames.add(decoratedTypeName);
-    }
-    rowStructObjectInspector = ObjectInspectorFactory.
-        getStandardStructObjectInspector(columnNames, objectInspectorList);
-    alphabets = new String[columnCount];
-
-    this.generationSpecList = generationSpecList;
+  public static Object randomWritable(Random random, TypeInfo typeInfo,
+      ObjectInspector objectInspector) {
+    return randomWritable(
+        random, typeInfo, objectInspector, DataTypePhysicalVariation.NONE, false);
   }
 
   private static ThreadLocal<DateFormat> DATE_FORMAT =
@@ -846,69 +701,10 @@ public class VectorRandomRowSource {
     return result;
   }
 
-  public Object[] randomRow() {
-
-    final Object row[] = new Object[columnCount];
-
-    if (generationSpecList == null) {
-      for (int c = 0; c < columnCount; c++) {
-        row[c] = randomWritable(c);
-      }
-    } else {
-      for (int c = 0; c < columnCount; c++) {
-        GenerationSpec generationSpec = generationSpecList.get(c);
-        GenerationSpec.GenerationKind generationKind = generationSpec.getGenerationKind();
-        Object object;
-        switch (generationKind) {
-        case SAME_TYPE:
-          object = randomWritable(c);
-          break;
-        case OMIT_GENERATION:
-          object = null;
-          break;
-        case STRING_FAMILY:
-        {
-          TypeInfo typeInfo = generationSpec.getTypeInfo();
-          StringGenerationOption stringGenerationOption =
-              generationSpec.getStringGenerationOption();
-          object = randomStringFamily(
-              r, typeInfo, stringGenerationOption, true);
-        }
-        break;
-        case STRING_FAMILY_OTHER_TYPE_VALUE:
-          {
-            TypeInfo typeInfo = generationSpec.getTypeInfo();
-            TypeInfo otherTypeTypeInfo = generationSpec.getSourceTypeInfo();
-            object = randomStringFamilyOtherTypeValue(
-                r, typeInfo, otherTypeTypeInfo, true);
-          }
-          break;
-        case TIMESTAMP_MILLISECONDS:
-          {
-            LongWritable longWritable = (LongWritable) randomWritable(c);
-            if (longWritable != null) {
-
-              while (true) {
-                long longValue = longWritable.get();
-                if (longValue >= MIN_FOUR_DIGIT_YEAR_MILLIS &&
-                    longValue <= MAX_FOUR_DIGIT_YEAR_MILLIS) {
-                  break;
-                }
-                longWritable.set(
-                    (Long) VectorRandomRowSource.randomPrimitiveObject(
-                        r, (PrimitiveTypeInfo) TypeInfoFactory.longTypeInfo));
-              }
-            }
-            object = longWritable;
-          }
-          break;
-        default:
-          throw new RuntimeException("Unexpected generationKind " + generationKind);
-        }
-        row[c] = object;
-      }
-    }
-    return row;
+  public static Object randomWritable(Random random, TypeInfo typeInfo,
+      ObjectInspector objectInspector, boolean allowNull) {
+    return randomWritable(
+        random, typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
   }
 
   public Object[] randomRow(boolean allowNull) {
@@ -1180,6 +976,154 @@ public class VectorRandomRowSource {
     }
   }
 
+  public static Object randomWritable(Random random, TypeInfo typeInfo,
+      ObjectInspector objectInspector, DataTypePhysicalVariation dataTypePhysicalVariation,
+      boolean allowNull) {
+
+    switch (typeInfo.getCategory()) {
+    case PRIMITIVE:
+      {
+        if (allowNull && random.nextInt(20) == 0) {
+          return null;
+        }
+        final Object object = randomPrimitiveObject(random, (PrimitiveTypeInfo) typeInfo);
+        return getWritablePrimitiveObject(
+            (PrimitiveTypeInfo) typeInfo, objectInspector, dataTypePhysicalVariation, object);
+      }
+    case LIST:
+      {
+        if (allowNull && random.nextInt(20) == 0) {
+          return null;
+        }
+        // Always generate a list with at least 1 value?
+        final int elementCount = 1 + random.nextInt(100);
+        final StandardListObjectInspector listObjectInspector =
+            (StandardListObjectInspector) objectInspector;
+        final ObjectInspector elementObjectInspector =
+            listObjectInspector.getListElementObjectInspector();
+        final TypeInfo elementTypeInfo =
+            TypeInfoUtils.getTypeInfoFromObjectInspector(
+                elementObjectInspector);
+        boolean isStringFamily = false;
+        PrimitiveCategory primitiveCategory = null;
+        if (elementTypeInfo.getCategory() == Category.PRIMITIVE) {
+          primitiveCategory = ((PrimitiveTypeInfo) elementTypeInfo).getPrimitiveCategory();
+          if (primitiveCategory == PrimitiveCategory.STRING ||
+              primitiveCategory == PrimitiveCategory.BINARY ||
+              primitiveCategory == PrimitiveCategory.CHAR ||
+              primitiveCategory == PrimitiveCategory.VARCHAR) {
+            isStringFamily = true;
+          }
+        }
+        final Object listObj = listObjectInspector.create(elementCount);
+        for (int i = 0; i < elementCount; i++) {
+          final Object ele = randomWritable(
+              random, elementTypeInfo, elementObjectInspector, allowNull);
+          // UNDONE: For now, a 1-element list with a null element is a null list...
+          if (ele == null && elementCount == 1) {
+            return null;
+          }
+          if (isStringFamily && elementCount == 1) {
+            switch (primitiveCategory) {
+            case STRING:
+              if (((Text) ele).getLength() == 0) {
+                return null;
+              }
+              break;
+            case BINARY:
+              if (((BytesWritable) ele).getLength() == 0) {
+                return null;
+              }
+              break;
+            case CHAR:
+              if (((HiveCharWritable) ele).getHiveChar().getStrippedValue().isEmpty()) {
+                return null;
+              }
+              break;
+            case VARCHAR:
+              if (((HiveVarcharWritable) ele).getHiveVarchar().getValue().isEmpty()) {
+                return null;
+              }
+              break;
+            default:
+              throw new RuntimeException("Unexpected primitive category " + primitiveCategory);
+            }
+          }
+          listObjectInspector.set(listObj, i, ele);
+        }
+        return listObj;
+      }
+    case MAP:
+      {
+        if (allowNull && random.nextInt(20) == 0) {
+          return null;
+        }
+        final int keyPairCount = random.nextInt(100);
+        final StandardMapObjectInspector mapObjectInspector =
+            (StandardMapObjectInspector) objectInspector;
+        final ObjectInspector keyObjectInspector =
+            mapObjectInspector.getMapKeyObjectInspector();
+        final TypeInfo keyTypeInfo =
+            TypeInfoUtils.getTypeInfoFromObjectInspector(
+                keyObjectInspector);
+        final ObjectInspector valueObjectInspector =
+            mapObjectInspector.getMapValueObjectInspector();
+        final TypeInfo valueTypeInfo =
+            TypeInfoUtils.getTypeInfoFromObjectInspector(
+                valueObjectInspector);
+        final Object mapObj = mapObjectInspector.create();
+        for (int i = 0; i < keyPairCount; i++) {
+          Object key = randomWritable(random, keyTypeInfo, keyObjectInspector);
+          Object value = randomWritable(random, valueTypeInfo, valueObjectInspector);
+          mapObjectInspector.put(mapObj, key, value);
+        }
+        return mapObj;
+      }
+    case STRUCT:
+      {
+        if (allowNull && random.nextInt(20) == 0) {
+          return null;
+        }
+        final StandardStructObjectInspector structObjectInspector =
+            (StandardStructObjectInspector) objectInspector;
+        final List<? extends StructField> fieldRefsList = structObjectInspector.getAllStructFieldRefs();
+        final int fieldCount = fieldRefsList.size();
+        final Object structObj = structObjectInspector.create();
+        for (int i = 0; i < fieldCount; i++) {
+          final StructField fieldRef = fieldRefsList.get(i);
+          final ObjectInspector fieldObjectInspector =
+              fieldRef.getFieldObjectInspector();
+          final TypeInfo fieldTypeInfo =
+              TypeInfoUtils.getTypeInfoFromObjectInspector(
+                  fieldObjectInspector);
+          final Object fieldObj = randomWritable(random, fieldTypeInfo, fieldObjectInspector);
+          structObjectInspector.setStructFieldData(structObj, fieldRef, fieldObj);
+        }
+        return structObj;
+      }
+    case UNION:
+      {
+        final StandardUnionObjectInspector unionObjectInspector =
+            (StandardUnionObjectInspector) objectInspector;
+        final List<ObjectInspector> objectInspectorList = unionObjectInspector.getObjectInspectors();
+        final int unionCount = objectInspectorList.size();
+        final byte tag = (byte) random.nextInt(unionCount);
+        final ObjectInspector fieldObjectInspector =
+            objectInspectorList.get(tag);
+        final TypeInfo fieldTypeInfo =
+            TypeInfoUtils.getTypeInfoFromObjectInspector(
+                fieldObjectInspector);
+        final Object fieldObj = randomWritable(random, fieldTypeInfo, fieldObjectInspector, false);
+        if (fieldObj == null) {
+          throw new RuntimeException();
+        }
+        return new StandardUnion(tag, fieldObj);
+      }
+    default:
+      throw new RuntimeException("Unexpected category " + typeInfo.getCategory());
+    }
+  }
+
   public static Object getNonWritablePrimitiveObject(Object object, TypeInfo typeInfo,
       ObjectInspector objectInspector) {
 
@@ -1290,164 +1234,333 @@ public class VectorRandomRowSource {
     }
   }
 
+  public List<String> columnNames() {
+    return columnNames;
+  }
+
+  private void chooseSchema(SupportedTypes supportedTypes, Set<String> allowedTypeNameSet,
+      List<GenerationSpec> generationSpecList,
+      List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList,
+      int maxComplexDepth) {
+    HashSet<Integer> hashSet = null;
+    final boolean allTypes;
+    final boolean onlyOne;
+    if (generationSpecList != null) {
+      columnCount = generationSpecList.size();
+      allTypes = false;
+      onlyOne = false;
+    } else if (allowedTypeNameSet != null) {
+      columnCount = 1 + r.nextInt(allowedTypeNameSet.size());
+      allTypes = false;
+      onlyOne = false;
+    } else {
+      onlyOne = (r.nextInt(100) == 7);
+      if (onlyOne) {
+        columnCount = 1;
+        allTypes = false;
+      } else {
+        allTypes = r.nextBoolean();
+        if (allTypes) {
+          switch (supportedTypes) {
+          case ALL:
+            columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length;
+            break;
+          case ALL_EXCEPT_MAP:
+            columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length - 1;
+            break;
+          case PRIMITIVES:
+            columnCount = possibleHivePrimitiveTypeNames.length;
+            break;
+          }
+          hashSet = new HashSet<Integer>();
+        } else {
+          columnCount = 1 + r.nextInt(20);
+        }
+      }
+    }
+    typeNames = new ArrayList<String>(columnCount);
+    categories = new Category[columnCount];
+    typeInfos = new TypeInfo[columnCount];
+    dataTypePhysicalVariations = new DataTypePhysicalVariation[columnCount];
+    objectInspectorList = new ArrayList<ObjectInspector>(columnCount);
+
+    primitiveCategories = new PrimitiveCategory[columnCount];
+    primitiveTypeInfos = new PrimitiveTypeInfo[columnCount];
+    primitiveObjectInspectorList = new ArrayList<ObjectInspector>(columnCount);
+    columnNames = new ArrayList<String>(columnCount);
+    for (int c = 0; c < columnCount; c++) {
+      columnNames.add(String.format("col%d", c + 1));
+      final String typeName;
+      DataTypePhysicalVariation dataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
+
+      if (generationSpecList != null) {
+        typeName = generationSpecList.get(c).getTypeInfo().getTypeName();
+        dataTypePhysicalVariation = explicitDataTypePhysicalVariationList.get(c);
+      } else if (onlyOne || allowedTypeNameSet != null) {
+        typeName = getRandomTypeName(r, supportedTypes, allowedTypeNameSet);
+      } else {
+        int typeNum;
+        if (allTypes) {
+          int maxTypeNum = 0;
+          switch (supportedTypes) {
+          case PRIMITIVES:
+            maxTypeNum = possibleHivePrimitiveTypeNames.length;
+            break;
+          case ALL_EXCEPT_MAP:
+            maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length - 1;
+            break;
+          case ALL:
+            maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length;
+            break;
+          }
+          while (true) {
+
+            typeNum = r.nextInt(maxTypeNum);
+
+            Integer typeNumInteger = new Integer(typeNum);
+            if (!hashSet.contains(typeNumInteger)) {
+              hashSet.add(typeNumInteger);
+              break;
+            }
+          }
+        } else {
+          if (supportedTypes == SupportedTypes.PRIMITIVES || r.nextInt(10) != 0) {
+            typeNum = r.nextInt(possibleHivePrimitiveTypeNames.length);
+          } else {
+            typeNum = possibleHivePrimitiveTypeNames.length + r.nextInt(possibleHiveComplexTypeNames.length);
+            if (supportedTypes == SupportedTypes.ALL_EXCEPT_MAP) {
+              typeNum--;
+            }
+          }
+        }
+        if (typeNum < possibleHivePrimitiveTypeNames.length) {
+          typeName = possibleHivePrimitiveTypeNames[typeNum];
+        } else {
+          typeName = possibleHiveComplexTypeNames[typeNum - possibleHivePrimitiveTypeNames.length];
+        }
+
+      }
+
+      String decoratedTypeName =
+          getDecoratedTypeName(typeName, supportedTypes, allowedTypeNameSet, 0, maxComplexDepth);
+
+      final TypeInfo typeInfo;
+      try {
+        typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(decoratedTypeName);
+      } catch (Exception e) {
+        throw new RuntimeException("Cannot convert type name " + decoratedTypeName + " to a type " + e);
+      }
+
+      typeInfos[c] = typeInfo;
+      dataTypePhysicalVariations[c] = dataTypePhysicalVariation;
+      final Category category = typeInfo.getCategory();
+      categories[c] = category;
+
+      // Do not represent DECIMAL_64 to make ROW mode tests easier --
+      // make the VECTOR mode tests convert into the VectorizedRowBatch.
+      ObjectInspector objectInspector = getObjectInspector(typeInfo, DataTypePhysicalVariation.NONE);
+
+      switch (category) {
+      case PRIMITIVE:
+        {
+          final PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+          primitiveTypeInfos[c] = primitiveTypeInfo;
+          PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
+          primitiveCategories[c] = primitiveCategory;
+          primitiveObjectInspectorList.add(objectInspector);
+        }
+        break;
+      case LIST:
+      case MAP:
+      case STRUCT:
+      case UNION:
+        primitiveObjectInspectorList.add(null);
+        break;
+      default:
+        throw new RuntimeException("Unexpected catagory " + category);
+      }
+      objectInspectorList.add(objectInspector);
+
+      if (category == Category.PRIMITIVE) {
+      }
+      typeNames.add(decoratedTypeName);
+    }
+    rowStructObjectInspector = ObjectInspectorFactory.
+        getStandardStructObjectInspector(columnNames, objectInspectorList);
+    alphabets = new String[columnCount];
+
+    this.generationSpecList = generationSpecList;
+  }
+
+  public Object[] randomRow() {
+
+    final Object row[] = new Object[columnCount];
+
+    if (generationSpecList == null) {
+      for (int c = 0; c < columnCount; c++) {
+        row[c] = randomWritable(c);
+      }
+    } else {
+      for (int c = 0; c < columnCount; c++) {
+        GenerationSpec generationSpec = generationSpecList.get(c);
+        GenerationSpec.GenerationKind generationKind = generationSpec.getGenerationKind();
+        Object object;
+        switch (generationKind) {
+        case SAME_TYPE:
+          object = randomWritable(c);
+          break;
+        case OMIT_GENERATION:
+          object = null;
+          break;
+        case STRING_FAMILY:
+        {
+          TypeInfo typeInfo = generationSpec.getTypeInfo();
+          StringGenerationOption stringGenerationOption =
+              generationSpec.getStringGenerationOption();
+          object = randomStringFamily(
+              r, typeInfo, stringGenerationOption, true);
+        }
+        break;
+        case STRING_FAMILY_OTHER_TYPE_VALUE:
+          {
+            TypeInfo typeInfo = generationSpec.getTypeInfo();
+            TypeInfo otherTypeTypeInfo = generationSpec.getSourceTypeInfo();
+            object = randomStringFamilyOtherTypeValue(
+                r, typeInfo, otherTypeTypeInfo, true);
+          }
+          break;
+        case TIMESTAMP_MILLISECONDS:
+          {
+            LongWritable longWritable = (LongWritable) randomWritable(c);
+            if (longWritable != null) {
+
+              while (true) {
+                long longValue = longWritable.get();
+                if (longValue >= MIN_FOUR_DIGIT_YEAR_MILLIS &&
+                    longValue <= MAX_FOUR_DIGIT_YEAR_MILLIS) {
+                  break;
+                }
+                longWritable.set(
+                    (Long) VectorRandomRowSource.randomPrimitiveObject(
+                        r, (PrimitiveTypeInfo) TypeInfoFactory.longTypeInfo));
+              }
+            }
+            object = longWritable;
+          }
+          break;
+        case VALUE_LIST:
+          {
+            List<Object> valueList = generationSpec.getValueList();
+            final int valueCount = valueList.size();
+            object = valueList.get(r.nextInt(valueCount));
+          }
+          break;
+        default:
+          throw new RuntimeException("Unexpected generationKind " + generationKind);
+        }
+        row[c] = object;
+      }
+    }
+    return row;
+  }
+
   public Object randomWritable(int column) {
     return randomWritable(
-        typeInfos[column], objectInspectorList.get(column), dataTypePhysicalVariations[column],
+        r, typeInfos[column], objectInspectorList.get(column), dataTypePhysicalVariations[column],
         allowNull);
   }
 
   public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector) {
-    return randomWritable(typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
+    return randomWritable(r, typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
   }
 
   public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector,
       boolean allowNull) {
-    return randomWritable(typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
+    return randomWritable(r, typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
   }
 
   public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector,
       DataTypePhysicalVariation dataTypePhysicalVariation, boolean allowNull) {
+    return randomWritable(r, typeInfo, objectInspector, dataTypePhysicalVariation, allowNull);
+  }
 
-    switch (typeInfo.getCategory()) {
-    case PRIMITIVE:
-      {
-        if (allowNull && r.nextInt(20) == 0) {
-          return null;
-        }
-        final Object object = randomPrimitiveObject(r, (PrimitiveTypeInfo) typeInfo);
-        return getWritablePrimitiveObject(
-            (PrimitiveTypeInfo) typeInfo, objectInspector, dataTypePhysicalVariation, object);
-      }
-    case LIST:
-      {
-        if (allowNull && r.nextInt(20) == 0) {
-          return null;
-        }
-        // Always generate a list with at least 1 value?
-        final int elementCount = 1 + r.nextInt(100);
-        final StandardListObjectInspector listObjectInspector =
-            (StandardListObjectInspector) objectInspector;
-        final ObjectInspector elementObjectInspector =
-            listObjectInspector.getListElementObjectInspector();
-        final TypeInfo elementTypeInfo =
-            TypeInfoUtils.getTypeInfoFromObjectInspector(
-                elementObjectInspector);
-        boolean isStringFamily = false;
-        PrimitiveCategory primitiveCategory = null;
-        if (elementTypeInfo.getCategory() == Category.PRIMITIVE) {
-          primitiveCategory = ((PrimitiveTypeInfo) elementTypeInfo).getPrimitiveCategory();
-          if (primitiveCategory == PrimitiveCategory.STRING ||
-              primitiveCategory == PrimitiveCategory.BINARY ||
-              primitiveCategory == PrimitiveCategory.CHAR ||
-              primitiveCategory == PrimitiveCategory.VARCHAR) {
-            isStringFamily = true;
-          }
-        }
-        final Object listObj = listObjectInspector.create(elementCount);
-        for (int i = 0; i < elementCount; i++) {
-          final Object ele = randomWritable(elementTypeInfo, elementObjectInspector, allowNull);
-          // UNDONE: For now, a 1-element list with a null element is a null list...
-          if (ele == null && elementCount == 1) {
-            return null;
-          }
-          if (isStringFamily && elementCount == 1) {
-            switch (primitiveCategory) {
-            case STRING:
-              if (((Text) ele).getLength() == 0) {
-                return null;
-              }
-              break;
-            case BINARY:
-              if (((BytesWritable) ele).getLength() == 0) {
-                return null;
-              }
-              break;
-            case CHAR:
-              if (((HiveCharWritable) ele).getHiveChar().getStrippedValue().isEmpty()) {
-                return null;
-              }
-              break;
-            case VARCHAR:
-              if (((HiveVarcharWritable) ele).getHiveVarchar().getValue().isEmpty()) {
-                return null;
-              }
-              break;
-            default:
-              throw new RuntimeException("Unexpected primitive category " + primitiveCategory);
-            }
-          }
-          listObjectInspector.set(listObj, i, ele);
-        }
-        return listObj;
-      }
-    case MAP:
-      {
-        if (allowNull && r.nextInt(20) == 0) {
-          return null;
-        }
-        final int keyPairCount = r.nextInt(100);
-        final StandardMapObjectInspector mapObjectInspector =
-            (StandardMapObjectInspector) objectInspector;
-        final ObjectInspector keyObjectInspector =
-            mapObjectInspector.getMapKeyObjectInspector();
-        final TypeInfo keyTypeInfo =
-            TypeInfoUtils.getTypeInfoFromObjectInspector(
-                keyObjectInspector);
-        final ObjectInspector valueObjectInspector =
-            mapObjectInspector.getMapValueObjectInspector();
-        final TypeInfo valueTypeInfo =
-            TypeInfoUtils.getTypeInfoFromObjectInspector(
-                valueObjectInspector);
-        final Object mapObj = mapObjectInspector.create();
-        for (int i = 0; i < keyPairCount; i++) {
-          Object key = randomWritable(keyTypeInfo, keyObjectInspector);
-          Object value = randomWritable(valueTypeInfo, valueObjectInspector);
-          mapObjectInspector.put(mapObj, key, value);
-        }
-        return mapObj;
-      }
-    case STRUCT:
-      {
-        if (allowNull && r.nextInt(20) == 0) {
-          return null;
-        }
-        final StandardStructObjectInspector structObjectInspector =
-            (StandardStructObjectInspector) objectInspector;
-        final List<? extends StructField> fieldRefsList = structObjectInspector.getAllStructFieldRefs();
-        final int fieldCount = fieldRefsList.size();
-        final Object structObj = structObjectInspector.create();
-        for (int i = 0; i < fieldCount; i++) {
-          final StructField fieldRef = fieldRefsList.get(i);
-          final ObjectInspector fieldObjectInspector =
-              fieldRef.getFieldObjectInspector();
-          final TypeInfo fieldTypeInfo =
-              TypeInfoUtils.getTypeInfoFromObjectInspector(
-                  fieldObjectInspector);
-          final Object fieldObj = randomWritable(fieldTypeInfo, fieldObjectInspector);
-          structObjectInspector.setStructFieldData(structObj, fieldRef, fieldObj);
-        }
-        return structObj;
-      }
-    case UNION:
-      {
-        final StandardUnionObjectInspector unionObjectInspector =
-            (StandardUnionObjectInspector) objectInspector;
-        final List<ObjectInspector> objectInspectorList = unionObjectInspector.getObjectInspectors();
-        final int unionCount = objectInspectorList.size();
-        final byte tag = (byte) r.nextInt(unionCount);
-        final ObjectInspector fieldObjectInspector =
-            objectInspectorList.get(tag);
-        final TypeInfo fieldTypeInfo =
-            TypeInfoUtils.getTypeInfoFromObjectInspector(
-                fieldObjectInspector);
-        final Object fieldObj = randomWritable(fieldTypeInfo, fieldObjectInspector, false);
-        if (fieldObj == null) {
-          throw new RuntimeException();
-        }
-        return new StandardUnion(tag, fieldObj);
-      }
-    default:
-      throw new RuntimeException("Unexpected category " + typeInfo.getCategory());
+  public static class GenerationSpec {
+
+    private final List<Object> valueList;
+
+    private final GenerationKind generationKind;
+    private final TypeInfo typeInfo;
+    private final TypeInfo sourceTypeInfo;
+    private final StringGenerationOption stringGenerationOption;
+    private GenerationSpec(GenerationKind generationKind, TypeInfo typeInfo,
+        TypeInfo sourceTypeInfo, StringGenerationOption stringGenerationOption,
+        List<Object> valueList) {
+      this.generationKind = generationKind;
+      this.typeInfo = typeInfo;
+      this.sourceTypeInfo = sourceTypeInfo;
+      this.stringGenerationOption = stringGenerationOption;
+      this.valueList = valueList;
+    }
+
+    public static GenerationSpec createSameType(TypeInfo typeInfo) {
+      return new GenerationSpec(
+          GenerationKind.SAME_TYPE, typeInfo, null, null, null);
+    }
+
+    public GenerationKind getGenerationKind() {
+      return generationKind;
+    }
+
+    public TypeInfo getTypeInfo() {
+      return typeInfo;
+    }
+
+    public TypeInfo getSourceTypeInfo() {
+      return sourceTypeInfo;
+    }
+
+    public StringGenerationOption getStringGenerationOption() {
+      return stringGenerationOption;
+    }
+
+    public static GenerationSpec createOmitGeneration(TypeInfo typeInfo) {
+      return new GenerationSpec(
+          GenerationKind.OMIT_GENERATION, typeInfo, null, null, null);
+    }
+
+    public static GenerationSpec createStringFamily(TypeInfo typeInfo,
+        StringGenerationOption stringGenerationOption) {
+      return new GenerationSpec(
+          GenerationKind.STRING_FAMILY, typeInfo, null, stringGenerationOption, null);
+    }
+
+    public static GenerationSpec createStringFamilyOtherTypeValue(TypeInfo typeInfo,
+        TypeInfo otherTypeTypeInfo) {
+      return new GenerationSpec(
+          GenerationKind.STRING_FAMILY_OTHER_TYPE_VALUE, typeInfo, otherTypeTypeInfo, null, null);
+    }
+
+    public static GenerationSpec createTimestampMilliseconds(TypeInfo typeInfo) {
+      return new GenerationSpec(
+          GenerationKind.TIMESTAMP_MILLISECONDS, typeInfo, null, null, null);
+    }
+
+    public static GenerationSpec createValueList(TypeInfo typeInfo, List<Object> valueList) {
+      return new GenerationSpec(
+          GenerationKind.VALUE_LIST, typeInfo, null, null, valueList);
+    }
+
+    public List<Object> getValueList() {
+      return valueList;
+    }
+
+    public static enum GenerationKind {
+      SAME_TYPE,
+      OMIT_GENERATION,
+      STRING_FAMILY,
+      STRING_FAMILY_OTHER_TYPE_VALUE,
+      TIMESTAMP_MILLISECONDS,
+      VALUE_LIST
     }
   }
 

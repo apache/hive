@@ -102,7 +102,7 @@ public class TestVectorSubStr {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
     ExprNodeDesc col1Expr;
     StringGenerationOption stringGenerationOption =
         new StringGenerationOption(true, true);

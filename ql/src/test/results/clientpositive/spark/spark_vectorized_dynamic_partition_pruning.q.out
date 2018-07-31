@@ -1715,7 +1715,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumnNums: [7]
-                          keyExpressions: CastLongToDecimal(col 6:smallint)(children: col 6:int) -> 7:decimal(10,0)
+                          keyExpressions: CastLongToDecimal(col 6:smallint)(children: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int) -> 7:decimal(10,0)
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []

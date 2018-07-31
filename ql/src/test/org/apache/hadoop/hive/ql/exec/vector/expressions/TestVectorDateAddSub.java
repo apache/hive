@@ -181,7 +181,7 @@ public class TestVectorDateAddSub {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
     ExprNodeDesc col1Expr;
     if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
         columnScalarMode == ColumnScalarMode.COLUMN_SCALAR) {
@@ -253,8 +253,8 @@ public class TestVectorDateAddSub {
       // Fixup numbers to limit the range to 0 ... N-1.
       for (int i = 0; i < randomRows.length; i++) {
         Object[] row = randomRows[i];
-        if (row[columnNum - 1] != null) {
-          row[columnNum - 1] =
+        if (row[columnNum - 2] != null) {
+          row[columnNum - 2] =
               smallerRange(
                   random, integerPrimitiveCategory, /* wantWritable */ true);
         }
