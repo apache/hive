@@ -42,7 +42,7 @@ public class TestPluggableHiveSessionImpl {
         SampleHiveSessionImpl.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
 
-    CLIService cliService = new CLIService(null);
+    CLIService cliService = new CLIService(null, true);
     cliService.init(hiveConf);
     ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService, null);
     service.init(hiveConf);
@@ -68,7 +68,7 @@ public class TestPluggableHiveSessionImpl {
         SampleHiveSessionImplWithUGI.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
 
-    CLIService cliService = new CLIService(null);
+    CLIService cliService = new CLIService(null, true);
     cliService.init(hiveConf);
     ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService, null);
     service.init(hiveConf);

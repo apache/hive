@@ -32,7 +32,8 @@ import org.apache.hive.service.cli.ICLIService;
 public class EmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
 
   public EmbeddedThriftBinaryCLIService() {
-    super(new CLIService(null), null);
+    // The non-test path that allows connections for the embedded service.
+    super(new CLIService(null, true), null);
     isEmbedded = true;
     HiveConf.setLoadHiveServer2Config(true);
   }
