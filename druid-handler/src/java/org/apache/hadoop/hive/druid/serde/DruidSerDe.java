@@ -466,7 +466,13 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
       numberOfMillis = ((Number) value).longValue();
     } else {
       // it is an extraction fn need to be parsed
-      numberOfMillis = dateOptionalTimeParser().parseDateTime((String) value).getMillis();
+      try {
+        numberOfMillis = dateOptionalTimeParser().parseDateTime((String) value).getMillis();
+      } catch (IllegalArgumentException e) {
+        // we may not be able to parse the date if it already comes in Hive format,
+        // we retry and otherwise fail
+        numberOfMillis = Timestamp.valueOf((String) value).toEpochMilli();
+      }
     }
     return numberOfMillis;
   }
