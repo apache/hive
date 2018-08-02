@@ -1,5 +1,4 @@
 set hive.mapred.mode=nonstrict;
-set hive.optimize.shared.work.extended=false;
 -- SORT_QUERY_RESULTS
 
 -- data setup
@@ -155,4 +154,3 @@ having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' a
 
 DROP TABLE src_null_n4;
 DROP TABLE part_subq;
-reset hive.optimize.shared.work.extended;
