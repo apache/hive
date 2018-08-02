@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
+import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -150,7 +152,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final String cacheTag;
   private final FileSystem fs;
 
-  private volatile boolean isStopped = false;
+  private AtomicBoolean isStopped = new AtomicBoolean(false);
   private final Deserializer sourceSerDe;
   private final InputFormat<?, ?> sourceInputFormat;
   private final Reporter reporter;
@@ -245,7 +247,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   @Override
   public void stop() {
     LlapIoImpl.LOG.debug("Encoded reader is being stopped");
-    isStopped = true;
+    isStopped.set(true);
   }
 
   @Override
@@ -344,16 +346,18 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private final Map<StreamName, OutputReceiver> streams = new HashMap<>();
     private final Map<Integer, List<CacheOutputReceiver>> colStreams = new HashMap<>();
     private final boolean doesSourceHaveIncludes;
+    private final AtomicBoolean isStopped;
 
     public CacheWriter(BufferUsageManager bufferManager, List<Integer> columnIds,
         boolean[] writerIncludes, boolean doesSourceHaveIncludes,
-        Allocator.BufferObjectFactory bufferFactory) {
+        Allocator.BufferObjectFactory bufferFactory, AtomicBoolean isStopped) {
       this.bufferManager = bufferManager;
       assert writerIncludes != null; // Taken care of on higher level.
       this.writerIncludes = writerIncludes;
       this.doesSourceHaveIncludes = doesSourceHaveIncludes;
       this.columnIds = columnIds;
       this.bufferFactory = bufferFactory;
+      this.isStopped = isStopped;
       startStripe();
     }
 
@@ -440,7 +444,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         if (LlapIoImpl.LOG.isTraceEnabled()) {
           LlapIoImpl.LOG.trace("Creating cache receiver for " + name);
         }
-        CacheOutputReceiver cor = new CacheOutputReceiver(bufferManager, bufferFactory, name);
+        CacheOutputReceiver cor = new CacheOutputReceiver(bufferManager, name, bufferFactory, isStopped);
         or = cor;
         List<CacheOutputReceiver> list = colStreams.get(name.getColumn());
         if (list == null) {
@@ -597,12 +601,17 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private List<MemoryBuffer> buffers = null;
     private int lastBufferPos = -1;
     private boolean suppressed = false;
+    private final AtomicBoolean isStopped;
+    private final StoppableAllocator allocator;
 
     public CacheOutputReceiver(BufferUsageManager bufferManager,
-        BufferObjectFactory bufferFactory, StreamName name) {
+        StreamName name, BufferObjectFactory bufferFactory, AtomicBoolean isStopped) {
       this.bufferManager = bufferManager;
       this.bufferFactory = bufferFactory;
+      Allocator alloc = bufferManager.getAllocator();
+      this.allocator = alloc instanceof StoppableAllocator ? (StoppableAllocator) alloc : null;
       this.name = name;
+      this.isStopped = isStopped;
     }
 
     public void clear() {
@@ -616,6 +625,15 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       suppressed = true;
       lastBufferPos = -1;
     }
+
+    private void allocateMultiple(MemoryBuffer[] dest, int size) {
+      if (allocator != null) {
+        allocator.allocateMultiple(dest, size, bufferFactory, isStopped);
+      } else {
+        bufferManager.getAllocator().allocateMultiple(dest, size, bufferFactory);
+      }
+    }
+
 
     @Override
     public void output(ByteBuffer buffer) throws IOException {
@@ -640,7 +658,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       boolean isNewBuffer = (lastBufferPos == -1);
       if (isNewBuffer) {
         MemoryBuffer[] dest = new MemoryBuffer[1];
-        bufferManager.getAllocator().allocateMultiple(dest, size, bufferFactory);
+        allocateMultiple(dest, size);
         LlapSerDeDataBuffer newBuffer = (LlapSerDeDataBuffer)dest[0];
         bb = newBuffer.getByteBufferRaw();
         lastBufferPos = bb.position();
@@ -1417,7 +1435,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       // TODO: move this into ctor? EW would need to create CacheWriter then
       List<Integer> cwColIds = writer.isOnlyWritingIncludedColumns() ? splitColumnIds : columnIds;
       writer.init(new CacheWriter(bufferManager, cwColIds, splitIncludes,
-          writer.isOnlyWritingIncludedColumns(), bufferFactory), daemonConf, split.getPath());
+          writer.isOnlyWritingIncludedColumns(), bufferFactory, isStopped), daemonConf, split.getPath());
       if (writer instanceof VectorDeserializeOrcWriter) {
         VectorDeserializeOrcWriter asyncWriter = (VectorDeserializeOrcWriter)writer;
         asyncWriter.startAsync(new AsyncCacheDataCallback());
@@ -1673,7 +1691,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private boolean processStop() {
-    if (!isStopped) return false;
+    if (!isStopped.get()) return false;
     LlapIoImpl.LOG.info("SerDe-based data reader is stopping");
     cleanup(true);
     return true;
