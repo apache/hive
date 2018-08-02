@@ -9,7 +9,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>hive-standalone-metastore-registry-common</artifactId>
+  <artifactId>hive-standalone-metastore-registry-client</artifactId>
   <name>Hive Standalone Metastore Registry Common Code</name>
 
   <dependencies>
