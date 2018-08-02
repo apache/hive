@@ -19,6 +19,11 @@
       <artifactId>hive-standalone-metastore-common</artifactId>
       <version>4.0.0-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-registry-common</artifactId>
+      <version>4.0.0-SNAPSHOT</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.orc</groupId>
