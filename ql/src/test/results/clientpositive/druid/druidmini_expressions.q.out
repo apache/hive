@@ -1437,7 +1437,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc,vc0
             druid.fieldTypes date,date
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(timestamp_parse(\"date1\",'','US/Pacific'),'P1D','','US/Pacific')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_floor(timestamp_parse(\"datetime1\",'','US/Pacific'),'P1D','','US/Pacific')","outputType":"LONG"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(timestamp_parse(\"date1\",null,'UTC'),'P1D','','UTC')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_floor(timestamp_parse(\"datetime1\",null,'UTC'),'P1D','','UTC')","outputType":"LONG"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: date), vc0 (type: date)
@@ -1452,7 +1452,7 @@ POSTHOOK: query: SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31	1969-12-31
+NULL	NULL
 2004-04-04	2004-04-04
 2004-04-09	2004-04-09
 2004-04-11	2004-04-11
