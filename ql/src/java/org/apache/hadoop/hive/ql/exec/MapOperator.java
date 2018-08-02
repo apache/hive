@@ -677,6 +677,12 @@ public class MapOperator extends AbstractMapOperator {
   }
 
   @Override
+  public void closeOp(boolean abort) throws HiveException {
+    super.closeOp(abort);
+    LOG.info("{}: Total records read - {}. abort - {}", this, numRows, abort);
+  }
+
+  @Override
   public void process(Object row, int tag) throws HiveException {
     throw new HiveException("Hive 2 Internal error: should not be called!");
   }
