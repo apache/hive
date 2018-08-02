@@ -56,6 +56,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "disabled.query.files");
         excludesFrom(testConfigProps, "localSpark.only.query.files");
         excludesFrom(testConfigProps, "druid.query.files");
+        excludesFrom(testConfigProps, "druid.kafka.query.files");
 
         excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
 
