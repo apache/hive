@@ -233,7 +233,7 @@ public class MapJoinProcessor extends Transform {
     } catch (Exception e) {
       e.printStackTrace();
       throw new SemanticException("Failed to generate new mapJoin operator " +
-          "by exception : " + e.getMessage());
+          "by exception : ", e);
     }
   }
 
