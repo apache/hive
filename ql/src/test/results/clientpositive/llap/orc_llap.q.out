@@ -610,11 +610,11 @@ STAGE PLANS:
                         outputColumnNames: _col2, _col5
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 285509 Data size: 50948874 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 159130 Data size: 26936864 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: hash(_col2,_col5) (type: int)
                           outputColumnNames: _col0
-                          Statistics: Num rows: 285509 Data size: 50948874 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 159130 Data size: 26936864 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col0)
                             mode: hash
@@ -1077,11 +1077,11 @@ STAGE PLANS:
                   0 _col0 (type: smallint)
                   1 _col0 (type: smallint)
                 outputColumnNames: _col2, _col5
-                Statistics: Num rows: 1142036 Data size: 210391074 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 636522 Data size: 114343414 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: hash(_col2,_col5) (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1142036 Data size: 210391074 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 636522 Data size: 114343414 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: sum(_col0)
                     mode: hash

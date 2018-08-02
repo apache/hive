@@ -244,12 +244,12 @@ STAGE PLANS:
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -259,10 +259,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -95,13 +95,13 @@ POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: Input: default@x1_store_sales
 POSTHOOK: Output: default@x1_store_sales
 PREHOOK: query: alter table x1_date_dim update statistics set(
-'numRows'='56',
+'numRows'='28',
 'rawDataSize'='81449')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Output: default@x1_date_dim
 POSTHOOK: query: alter table x1_date_dim update statistics set(
-'numRows'='56',
+'numRows'='28',
 'rawDataSize'='81449')
 POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: Input: default@x1_date_dim
@@ -167,25 +167,25 @@ STAGE PLANS:
                 TableScan
                   alias: d
                   filterExpr: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
-                  Statistics: Num rows: 56 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 28 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_date_sk (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=4)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -205,7 +205,7 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col1
-                Statistics: Num rows: 86419 Data size: 345676 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 49382 Data size: 197528 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1)
                   mode: hash
@@ -234,7 +234,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=4)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -357,10 +357,10 @@ STAGE PLANS:
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: (RUNTIME) Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: (RUNTIME) Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -406,10 +406,10 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: (RUNTIME) Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: (RUNTIME) Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
 
   Stage: Stage-0

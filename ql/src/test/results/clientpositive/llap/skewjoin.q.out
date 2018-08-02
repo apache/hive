@@ -990,7 +990,7 @@ STAGE PLANS:
                   1 _col0 (type: string)
                   2 _col0 (type: string)
                 outputColumnNames: _col0, _col3
-                Statistics: Num rows: 135 Data size: 24030 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(hash(_col0)), sum(hash(_col3))
                   mode: hash
