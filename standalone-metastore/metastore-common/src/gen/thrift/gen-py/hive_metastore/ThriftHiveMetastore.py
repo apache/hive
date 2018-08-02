@@ -1620,11 +1620,10 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def map_schema_branch_to_schema_version(self, schemaBranchId, schemaVersionId):
+  def map_schema_branch_to_schema_version(self, rqst):
     """
     Parameters:
-     - schemaBranchId
-     - schemaVersionId
+     - rqst
     """
     pass
 
@@ -9235,20 +9234,18 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o3
     return
 
-  def map_schema_branch_to_schema_version(self, schemaBranchId, schemaVersionId):
+  def map_schema_branch_to_schema_version(self, rqst):
     """
     Parameters:
-     - schemaBranchId
-     - schemaVersionId
+     - rqst
     """
-    self.send_map_schema_branch_to_schema_version(schemaBranchId, schemaVersionId)
+    self.send_map_schema_branch_to_schema_version(rqst)
     self.recv_map_schema_branch_to_schema_version()
 
-  def send_map_schema_branch_to_schema_version(self, schemaBranchId, schemaVersionId):
+  def send_map_schema_branch_to_schema_version(self, rqst):
     self._oprot.writeMessageBegin('map_schema_branch_to_schema_version', TMessageType.CALL, self._seqid)
     args = map_schema_branch_to_schema_version_args()
-    args.schemaBranchId = schemaBranchId
-    args.schemaVersionId = schemaVersionId
+    args.rqst = rqst
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -15136,7 +15133,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = map_schema_branch_to_schema_version_result()
     try:
-      self._handler.map_schema_branch_to_schema_version(args.schemaBranchId, args.schemaVersionId)
+      self._handler.map_schema_branch_to_schema_version(args.rqst)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -50445,19 +50442,16 @@ class add_schema_branch_result:
 class map_schema_branch_to_schema_version_args:
   """
   Attributes:
-   - schemaBranchId
-   - schemaVersionId
+   - rqst
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.I64, 'schemaBranchId', None, None, ), # 1
-    (2, TType.I64, 'schemaVersionId', None, None, ), # 2
+    (1, TType.STRUCT, 'rqst', (MapSchemaBranchToSchemaVersionRqst, MapSchemaBranchToSchemaVersionRqst.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, schemaBranchId=None, schemaVersionId=None,):
-    self.schemaBranchId = schemaBranchId
-    self.schemaVersionId = schemaVersionId
+  def __init__(self, rqst=None,):
+    self.rqst = rqst
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -50469,13 +50463,9 @@ class map_schema_branch_to_schema_version_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.I64:
-          self.schemaBranchId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I64:
-          self.schemaVersionId = iprot.readI64()
+        if ftype == TType.STRUCT:
+          self.rqst = MapSchemaBranchToSchemaVersionRqst()
+          self.rqst.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -50488,13 +50478,9 @@ class map_schema_branch_to_schema_version_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('map_schema_branch_to_schema_version_args')
-    if self.schemaBranchId is not None:
-      oprot.writeFieldBegin('schemaBranchId', TType.I64, 1)
-      oprot.writeI64(self.schemaBranchId)
-      oprot.writeFieldEnd()
-    if self.schemaVersionId is not None:
-      oprot.writeFieldBegin('schemaVersionId', TType.I64, 2)
-      oprot.writeI64(self.schemaVersionId)
+    if self.rqst is not None:
+      oprot.writeFieldBegin('rqst', TType.STRUCT, 1)
+      self.rqst.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -50505,8 +50491,7 @@ class map_schema_branch_to_schema_version_args:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.schemaBranchId)
-    value = (value * 31) ^ hash(self.schemaVersionId)
+    value = (value * 31) ^ hash(self.rqst)
     return value
 
   def __repr__(self):

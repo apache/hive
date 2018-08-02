@@ -31214,6 +31214,104 @@ class FindSchemasByColsResp {
 
 }
 
+class MapSchemaBranchToSchemaVersionRqst {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $schemaBranchId = null;
+  /**
+   * @var int
+   */
+  public $schemaVersionId = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'schemaBranchId',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'schemaVersionId',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['schemaBranchId'])) {
+        $this->schemaBranchId = $vals['schemaBranchId'];
+      }
+      if (isset($vals['schemaVersionId'])) {
+        $this->schemaVersionId = $vals['schemaVersionId'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'MapSchemaBranchToSchemaVersionRqst';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->schemaBranchId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->schemaVersionId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('MapSchemaBranchToSchemaVersionRqst');
+    if ($this->schemaBranchId !== null) {
+      $xfer += $output->writeFieldBegin('schemaBranchId', TType::I64, 1);
+      $xfer += $output->writeI64($this->schemaBranchId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->schemaVersionId !== null) {
+      $xfer += $output->writeFieldBegin('schemaVersionId', TType::I64, 2);
+      $xfer += $output->writeI64($this->schemaVersionId);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class MapSchemaVersionToSerdeRequest {
   static $_TSPEC;
 

@@ -5022,6 +5022,24 @@ class FindSchemasByColsResp
   ::Thrift::Struct.generate_accessors self
 end
 
+class MapSchemaBranchToSchemaVersionRqst
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMABRANCHID = 1
+  SCHEMAVERSIONID = 2
+
+  FIELDS = {
+    SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId'},
+    SCHEMAVERSIONID => {:type => ::Thrift::Types::I64, :name => 'schemaVersionId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class MapSchemaVersionToSerdeRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   SCHEMAVERSION = 1

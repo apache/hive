@@ -1586,6 +1586,11 @@ struct FindSchemasByColsResp {
   1: list<ISchemaVersionDescriptor> schemaVersions
 }
 
+struct MapSchemaBranchToSchemaVersionRqst {
+  1: i64 schemaBranchId,
+  2: i64 schemaVersionId
+}
+
 struct MapSchemaVersionToSerdeRequest {
   1: ISchemaVersionDescriptor schemaVersion,
   2: string serdeName
@@ -2338,7 +2343,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_schema_branch(1:ISchemaBranch schemaBranch)
         throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:MetaException o3)
 
-  void map_schema_branch_to_schema_version(1: i64 schemaBranchId, 2: i64 schemaVersionId)
+  void map_schema_branch_to_schema_version(1: MapSchemaBranchToSchemaVersionRqst rqst)
         throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:MetaException o3)
 
   ISchemaBranch get_schema_branch(1: i64 schemaBranchId)

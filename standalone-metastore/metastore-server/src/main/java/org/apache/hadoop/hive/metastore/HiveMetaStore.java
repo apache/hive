@@ -8989,30 +8989,30 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
 
     @Override
-    public void map_schema_branch_to_schema_version(long schemaBranchId, long schemaVersionId)
+    public void map_schema_branch_to_schema_version(MapSchemaBranchToSchemaVersionRqst rqst)
             throws TException {
       startFunction("map_schema_branch_to_schema_version");
       boolean success = false;
       Exception ex = null;
       RawStore ms = getMS();
       try {
-        firePreEvent(new PreMapSchemaBranchToSchemaVersionEvent(this, schemaBranchId, schemaVersionId));
+        firePreEvent(new PreMapSchemaBranchToSchemaVersionEvent(this, rqst.getSchemaBranchId(), rqst.getSchemaVersionId()));
         Map<String, String> transactionalListenersResponses = Collections.emptyMap();
         ms.openTransaction();
         try {
-          ms.mapSchemaBranchToSchemaVersion(schemaBranchId, schemaVersionId);
+          ms.mapSchemaBranchToSchemaVersion(rqst.getSchemaBranchId(), rqst.getSchemaVersionId());
           if (!transactionalListeners.isEmpty()) {
             transactionalListenersResponses =
                     MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                             EventType.MAP_SCHEMA_BRANCH_TO_SCHEMA_VERSION, new MapSchemaBranchToSchemaVersionEvent(true, this,
-                                    schemaBranchId, schemaVersionId));
+                                    rqst.getSchemaBranchId(), rqst.getSchemaVersionId()));
           }
           success = ms.commitTransaction();
         } finally {
           if (!success) ms.rollbackTransaction();
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_SCHEMA_VERSION,
-                    new MapSchemaBranchToSchemaVersionEvent(success, this, schemaBranchId, schemaVersionId), null,
+                    new MapSchemaBranchToSchemaVersionEvent(success, this, rqst.getSchemaBranchId(), rqst.getSchemaVersionId()), null,
                     transactionalListenersResponses, ms);
           }
         }

@@ -1588,13 +1588,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    */
   public function add_schema_branch(\metastore\ISchemaBranch $schemaBranch);
   /**
-   * @param int $schemaBranchId
-   * @param int $schemaVersionId
+   * @param \metastore\MapSchemaBranchToSchemaVersionRqst $rqst
    * @throws \metastore\AlreadyExistsException
    * @throws \metastore\NoSuchObjectException
    * @throws \metastore\MetaException
    */
-  public function map_schema_branch_to_schema_version($schemaBranchId, $schemaVersionId);
+  public function map_schema_branch_to_schema_version(\metastore\MapSchemaBranchToSchemaVersionRqst $rqst);
   /**
    * @param int $schemaBranchId
    * @return \metastore\ISchemaBranch
@@ -13622,17 +13621,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     return;
   }
 
-  public function map_schema_branch_to_schema_version($schemaBranchId, $schemaVersionId)
+  public function map_schema_branch_to_schema_version(\metastore\MapSchemaBranchToSchemaVersionRqst $rqst)
   {
-    $this->send_map_schema_branch_to_schema_version($schemaBranchId, $schemaVersionId);
+    $this->send_map_schema_branch_to_schema_version($rqst);
     $this->recv_map_schema_branch_to_schema_version();
   }
 
-  public function send_map_schema_branch_to_schema_version($schemaBranchId, $schemaVersionId)
+  public function send_map_schema_branch_to_schema_version(\metastore\MapSchemaBranchToSchemaVersionRqst $rqst)
   {
     $args = new \metastore\ThriftHiveMetastore_map_schema_branch_to_schema_version_args();
-    $args->schemaBranchId = $schemaBranchId;
-    $args->schemaVersionId = $schemaVersionId;
+    $args->rqst = $rqst;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -61570,33 +61568,23 @@ class ThriftHiveMetastore_map_schema_branch_to_schema_version_args {
   static $_TSPEC;
 
   /**
-   * @var int
+   * @var \metastore\MapSchemaBranchToSchemaVersionRqst
    */
-  public $schemaBranchId = null;
-  /**
-   * @var int
-   */
-  public $schemaVersionId = null;
+  public $rqst = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'schemaBranchId',
-          'type' => TType::I64,
-          ),
-        2 => array(
-          'var' => 'schemaVersionId',
-          'type' => TType::I64,
+          'var' => 'rqst',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\MapSchemaBranchToSchemaVersionRqst',
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['schemaBranchId'])) {
-        $this->schemaBranchId = $vals['schemaBranchId'];
-      }
-      if (isset($vals['schemaVersionId'])) {
-        $this->schemaVersionId = $vals['schemaVersionId'];
+      if (isset($vals['rqst'])) {
+        $this->rqst = $vals['rqst'];
       }
     }
   }
@@ -61621,15 +61609,9 @@ class ThriftHiveMetastore_map_schema_branch_to_schema_version_args {
       switch ($fid)
       {
         case 1:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->schemaBranchId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->schemaVersionId);
+          if ($ftype == TType::STRUCT) {
+            $this->rqst = new \metastore\MapSchemaBranchToSchemaVersionRqst();
+            $xfer += $this->rqst->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -61647,14 +61629,12 @@ class ThriftHiveMetastore_map_schema_branch_to_schema_version_args {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_map_schema_branch_to_schema_version_args');
-    if ($this->schemaBranchId !== null) {
-      $xfer += $output->writeFieldBegin('schemaBranchId', TType::I64, 1);
-      $xfer += $output->writeI64($this->schemaBranchId);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->schemaVersionId !== null) {
-      $xfer += $output->writeFieldBegin('schemaVersionId', TType::I64, 2);
-      $xfer += $output->writeI64($this->schemaVersionId);
+    if ($this->rqst !== null) {
+      if (!is_object($this->rqst)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('rqst', TType::STRUCT, 1);
+      $xfer += $this->rqst->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

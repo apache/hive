@@ -3519,13 +3519,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def map_schema_branch_to_schema_version(schemaBranchId, schemaVersionId)
-      send_map_schema_branch_to_schema_version(schemaBranchId, schemaVersionId)
+    def map_schema_branch_to_schema_version(rqst)
+      send_map_schema_branch_to_schema_version(rqst)
       recv_map_schema_branch_to_schema_version()
     end
 
-    def send_map_schema_branch_to_schema_version(schemaBranchId, schemaVersionId)
-      send_message('map_schema_branch_to_schema_version', Map_schema_branch_to_schema_version_args, :schemaBranchId => schemaBranchId, :schemaVersionId => schemaVersionId)
+    def send_map_schema_branch_to_schema_version(rqst)
+      send_message('map_schema_branch_to_schema_version', Map_schema_branch_to_schema_version_args, :rqst => rqst)
     end
 
     def recv_map_schema_branch_to_schema_version()
@@ -6386,7 +6386,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Map_schema_branch_to_schema_version_args)
       result = Map_schema_branch_to_schema_version_result.new()
       begin
-        @handler.map_schema_branch_to_schema_version(args.schemaBranchId, args.schemaVersionId)
+        @handler.map_schema_branch_to_schema_version(args.rqst)
       rescue ::AlreadyExistsException => o1
         result.o1 = o1
       rescue ::NoSuchObjectException => o2
@@ -14334,12 +14334,10 @@ module ThriftHiveMetastore
 
   class Map_schema_branch_to_schema_version_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    SCHEMABRANCHID = 1
-    SCHEMAVERSIONID = 2
+    RQST = 1
 
     FIELDS = {
-      SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId'},
-      SCHEMAVERSIONID => {:type => ::Thrift::Types::I64, :name => 'schemaVersionId'}
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::MapSchemaBranchToSchemaVersionRqst}
     }
 
     def struct_fields; FIELDS; end
