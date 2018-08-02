@@ -201,6 +201,21 @@
         <version>${bonecp.version}</version>
       </dependency>
       <dependency>
+        <groupId>com.smoketurner</groupId>
+        <artifactId>dropwizard-swagger</artifactId>
+        <version>${dropwizard.swagger.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
         <version>${hikaricp.version}</version>
@@ -264,6 +279,11 @@
         <groupId>org.antlr</groupId>
         <artifactId>antlr-runtime</artifactId>
         <version>${antlr.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro</artifactId>
+        <version>${avro.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -475,6 +495,7 @@
         <version>${sqlline.version}</version>
       </dependency>
       <!-- registry dependencies -->
+      <!--
       <dependency>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-maven-plugin</artifactId>
@@ -519,26 +540,6 @@
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP-java6</artifactId>
         <version>${hikari.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro</artifactId>
-        <version>${avro.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.smoketurner</groupId>
-        <artifactId>dropwizard-swagger</artifactId>
-        <version>${dropwizard.swagger.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>annotations</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
@@ -610,6 +611,7 @@
         <artifactId>jetty-setuid-java</artifactId>
         <version>1.0.3</version>
       </dependency>
+      -->
 
       <!-- test scope dependencies -->
 

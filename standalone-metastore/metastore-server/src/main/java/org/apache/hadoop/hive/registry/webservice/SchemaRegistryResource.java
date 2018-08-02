@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.registry.SchemaVersionKey;
 import org.apache.hadoop.hive.registry.common.errors.IncompatibleSchemaException;
 import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaBranchDeletionException;
 import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaException;
-import org.apache.hadoop.hive.registry.common.errors.SchemaBranchAlreadyExistsException;
 import org.apache.hadoop.hive.registry.common.errors.SchemaBranchNotFoundException;
 import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
 import org.apache.hadoop.hive.registry.common.errors.UnsupportedSchemaTypeException;
