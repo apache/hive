@@ -519,10 +519,11 @@ public class SharedWorkOptimizer extends Transform {
         Entry<String, TableScanOperator> e = it.next();
         for (Operator<?> op : OperatorUtils.findOperators(e.getValue(), Operator.class)) {
           if (!visited.contains(op)) {
-            if (!findWorkOperators(optimizerCache, op).equals(
-                findWorkOperators(op, new HashSet<Operator<?>>()))) {
-              throw new SemanticException("Error in shared work optimizer: operator cache contents"
-                  + "and actual plan differ");
+            Set<Operator<?>> workCachedOps = findWorkOperators(optimizerCache, op);
+            Set<Operator<?>> workPlanOps = findWorkOperators(op, new HashSet<>());
+            if (!workCachedOps.equals(workPlanOps)) {
+              throw new SemanticException("Error in shared work optimizer: operator cache contents "
+                  + "and actual plan differ\nIn cache: " + workCachedOps + "\nIn plan: " + workPlanOps);
             }
             visited.add(op);
           }
@@ -799,7 +800,7 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     return extractSharedOptimizationInfo(pctx, optimizerCache, equalOp1, equalOp2,
-        currentOp1, currentOp2, retainableOps, discardableOps, discardableInputOps, false);
+        currentOp1, currentOp2, retainableOps, discardableOps, discardableInputOps);
   }
 
   private static SharedResult extractSharedOptimizationInfo(ParseContext pctx,
@@ -810,7 +811,7 @@ public class SharedWorkOptimizer extends Transform {
       Operator<?> discardableOp) throws SemanticException {
     return extractSharedOptimizationInfo(pctx, optimizerCache,
         retainableOpEqualParent, discardableOpEqualParent, retainableOp, discardableOp,
-        new LinkedHashSet<>(), new LinkedHashSet<>(), new HashSet<>(), true);
+        new LinkedHashSet<>(), new LinkedHashSet<>(), new HashSet<>());
   }
 
   private static SharedResult extractSharedOptimizationInfo(ParseContext pctx,
@@ -821,8 +822,7 @@ public class SharedWorkOptimizer extends Transform {
       Operator<?> discardableOp,
       LinkedHashSet<Operator<?>> retainableOps,
       LinkedHashSet<Operator<?>> discardableOps,
-      Set<Operator<?>> discardableInputOps,
-      boolean removeInputBranch) throws SemanticException {
+      Set<Operator<?>> discardableInputOps) throws SemanticException {
     Operator<?> equalOp1 = retainableOpEqualParent;
     Operator<?> equalOp2 = discardableOpEqualParent;
     Operator<?> currentOp1 = retainableOp;
@@ -847,7 +847,7 @@ public class SharedWorkOptimizer extends Transform {
         for (; idx < currentOp1.getParentOperators().size(); idx++) {
           Operator<?> parentOp1 = currentOp1.getParentOperators().get(idx);
           Operator<?> parentOp2 = currentOp2.getParentOperators().get(idx);
-          if (parentOp1 == equalOp1 && parentOp2 == equalOp2 && !removeInputBranch) {
+          if (parentOp1 == equalOp1 && parentOp2 == equalOp2) {
             continue;
           }
           if ((parentOp1 == equalOp1 && parentOp2 != equalOp2) ||
