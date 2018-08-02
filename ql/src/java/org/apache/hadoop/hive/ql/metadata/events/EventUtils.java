@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hadoop.hive.metastore.messaging;
+package org.apache.hadoop.hive.ql.metadata.events;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
@@ -43,11 +44,11 @@ public class EventUtils {
   // MetaStoreClient-based impl of NotificationFetcher
   public static class MSClientNotificationFetcher implements  NotificationFetcher{
 
-    private IMetaStoreClient msc = null;
+    private Hive hiveDb = null;
     private Integer batchSize = null;
 
-    public MSClientNotificationFetcher(IMetaStoreClient msc){
-      this.msc = msc;
+    public MSClientNotificationFetcher(Hive hiveDb){
+      this.hiveDb = hiveDb;
     }
 
     @Override
@@ -55,7 +56,7 @@ public class EventUtils {
       if (batchSize == null){
         try {
           batchSize = Integer.parseInt(
-            msc.getConfigValue(MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX.toString(), "50"));
+                  hiveDb.getMSC().getConfigValue(MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX.toString(), "50"));
           // TODO: we're asking the metastore what its configuration for this var is - we may
           // want to revisit to pull from client side instead. The reason I have it this way
           // is because the metastore is more likely to have a reasonable config for this than
@@ -70,7 +71,7 @@ public class EventUtils {
     @Override
     public long getCurrentNotificationEventId() throws IOException {
       try {
-        return msc.getCurrentNotificationEventId().getEventId();
+        return hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
       } catch (TException e) {
         throw new IOException(e);
       }
@@ -81,7 +82,7 @@ public class EventUtils {
       try {
         NotificationEventsCountRequest rqst
                 = new NotificationEventsCountRequest(fromEventId, dbName);
-        return msc.getNotificationEventsCount(rqst).getEventsCount();
+        return hiveDb.getMSC().getNotificationEventsCount(rqst).getEventsCount();
       } catch (TException e) {
         throw new IOException(e);
       }
@@ -91,7 +92,7 @@ public class EventUtils {
     public List<NotificationEvent> getNextNotificationEvents(
         long pos, IMetaStoreClient.NotificationFilter filter) throws IOException {
       try {
-        return msc.getNextNotification(pos,getBatchSize(), filter).getEvents();
+        return hiveDb.getMSC().getNextNotification(pos,getBatchSize(), filter).getEvents();
       } catch (TException e) {
         throw new IOException(e.getMessage(), e);
       }
