@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 
 public class AnnotateStatsProcCtx implements NodeProcessorCtx {
@@ -28,6 +32,8 @@ public class AnnotateStatsProcCtx implements NodeProcessorCtx {
   private ParseContext pctx;
   private HiveConf conf;
   private Statistics andExprStats = null;
+  private Set<String> affectedColumns;
+
 
   public AnnotateStatsProcCtx(ParseContext pctx) {
     this.setParseContext(pctx);
@@ -36,6 +42,7 @@ public class AnnotateStatsProcCtx implements NodeProcessorCtx {
     } else {
       this.setConf(null);
     }
+    affectedColumns = new HashSet<>();
   }
 
   public HiveConf getConf() {
@@ -60,6 +67,18 @@ public class AnnotateStatsProcCtx implements NodeProcessorCtx {
 
   public void setAndExprStats(Statistics andExprStats) {
     this.andExprStats = andExprStats;
+  }
+
+  public void clearAffectedColumns() {
+    affectedColumns.clear();
+  }
+
+  public void addAffectedColumn(ExprNodeColumnDesc column) {
+    affectedColumns.add(column.getColumn());
+  }
+
+  public Set<String> getAffectedColumns() {
+    return affectedColumns;
   }
 
 }

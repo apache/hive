@@ -298,7 +298,7 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_28] (rows=262/0 width=8)
+            Merge Join Operator [MERGEJOIN_28] (rows=166/0 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]
@@ -347,7 +347,7 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_28] (rows=262/1019 width=8)
+            Merge Join Operator [MERGEJOIN_28] (rows=166/1019 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]

@@ -1307,7 +1307,7 @@ STAGE PLANS:
                   outputColumnNames: _col1
                   input vertices:
                     1 Reducer 6
-                  Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     keys: _col1 (type: string)
@@ -1533,7 +1533,7 @@ STAGE PLANS:
                   outputColumnNames: _col1
                   input vertices:
                     1 Reducer 6
-                  Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     keys: _col1 (type: string)

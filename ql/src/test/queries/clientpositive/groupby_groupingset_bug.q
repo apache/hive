@@ -43,12 +43,14 @@ alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
 'rawDataSize'='1234567');
 
 alter table x1_date_dim update statistics set(
-'numRows'='56',
+'numRows'='28',
 'rawDataSize'='81449');
 
 alter table x1_item update statistics set(
 'numRows'='18',
 'rawDataSize'='32710');
+
+-- note: it is important that the below query uses DPP!
 
 explain 
 select   count(*) cnt
