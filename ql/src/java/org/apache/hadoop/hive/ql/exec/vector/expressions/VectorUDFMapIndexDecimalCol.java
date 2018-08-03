@@ -18,30 +18,30 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Returns value of Map.
- * Extends {@link VectorUDFMapIndexBaseScalar}
+ * Extends {@link VectorUDFMapIndexBaseCol}
  */
-public class VectorUDFMapIndexStringScalar extends VectorUDFMapIndexBaseScalar {
+public class VectorUDFMapIndexDecimalCol extends VectorUDFMapIndexBaseCol {
 
-  private byte[] key;
-
-  public VectorUDFMapIndexStringScalar() {
+  public VectorUDFMapIndexDecimalCol() {
     super();
   }
 
-  public VectorUDFMapIndexStringScalar(int mapColumnNum, byte[] key, int outputColumnNum) {
-    super(mapColumnNum, outputColumnNum);
-    this.key = key;
+  public VectorUDFMapIndexDecimalCol(int mapColumnNum, int indexColumnNum, int outputColumnNum) {
+    super(mapColumnNum, indexColumnNum, outputColumnNum);
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, getMapColumnNum()) + ", key: " + new String(key);
+    return getColumnParamString(0, getMapColumnNum()) + ", key: "
+        + getColumnParamString(1, getIndexColumnNum());
   }
 
   @Override
@@ -52,24 +52,22 @@ public class VectorUDFMapIndexStringScalar extends VectorUDFMapIndexBaseScalar {
         .setNumArguments(2)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.MAP,
-            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
+            VectorExpressionDescriptor.ArgumentType.DECIMAL)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
-            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }
 
   @Override
-  public int findScalarInMap(MapColumnVector mapColumnVector, int mapBatchIndex) {
+  public int findInMap(ColumnVector indexColumnVector, int indexBatchIndex,
+      MapColumnVector mapColumnVector, int mapBatchIndex) {
     final int offset = (int) mapColumnVector.offsets[mapBatchIndex];
     final int count = (int) mapColumnVector.lengths[mapBatchIndex];
-    BytesColumnVector keyColVector = (BytesColumnVector) mapColumnVector.keys;
-    byte[][] keyVector = keyColVector.vector;
-    int[] keyStart = keyColVector.start;
-    int[] keyLength = keyColVector.length;
+    HiveDecimalWritable[] keys = ((DecimalColumnVector) mapColumnVector.keys).vector;
+    final HiveDecimalWritable index =
+        ((DecimalColumnVector) indexColumnVector).vector[indexBatchIndex];
     for (int i = 0; i < count; i++) {
-      final int keyOffset = offset + i;
-      if (StringExpr.equal(key, 0, key.length,
-          keyVector[keyOffset], keyStart[keyOffset], keyLength[keyOffset])) {
+      if (index.compareTo(keys[offset + i]) == 0) {
         return offset + i;
       }
     }
