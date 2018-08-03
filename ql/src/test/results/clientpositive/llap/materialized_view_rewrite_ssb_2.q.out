@@ -707,10 +707,10 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -786,10 +786,10 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -867,10 +867,10 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -960,10 +960,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col2 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -981,7 +981,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -1070,10 +1070,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col2 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1091,7 +1091,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -1180,10 +1180,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1201,7 +1201,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: int), 'MFGR#2239' (type: string)
@@ -1294,10 +1294,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1315,7 +1315,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double)
@@ -1406,10 +1406,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1427,7 +1427,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double)
@@ -1518,10 +1518,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1539,7 +1539,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double)
@@ -1630,10 +1630,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1651,7 +1651,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double)
@@ -1746,10 +1746,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col2 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1763,7 +1763,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double)
@@ -1860,10 +1860,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1877,7 +1877,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col0 (type: double)
@@ -1974,10 +1974,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1991,7 +1991,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col0 (type: double)
