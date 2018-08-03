@@ -18,30 +18,38 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Returns value of Map.
  * Extends {@link VectorUDFMapIndexBaseScalar}
  */
-public class VectorUDFMapIndexStringScalar extends VectorUDFMapIndexBaseScalar {
+public class VectorUDFMapIndexDecimalScalar extends VectorUDFMapIndexBaseScalar {
 
-  private byte[] key;
+  private static final long serialVersionUID = 1L;
 
-  public VectorUDFMapIndexStringScalar() {
+  private HiveDecimal key;
+  private double doubleKey;
+
+  public VectorUDFMapIndexDecimalScalar() {
     super();
   }
 
-  public VectorUDFMapIndexStringScalar(int mapColumnNum, byte[] key, int outputColumnNum) {
+  public VectorUDFMapIndexDecimalScalar(int mapColumnNum, HiveDecimal key, int outputColumnNum) {
     super(mapColumnNum, outputColumnNum);
     this.key = key;
+    doubleKey = key.doubleValue();
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, getMapColumnNum()) + ", key: " + new String(key);
+    return getColumnParamString(0, getMapColumnNum()) + ", key: " + key;
   }
 
   @Override
@@ -52,7 +60,7 @@ public class VectorUDFMapIndexStringScalar extends VectorUDFMapIndexBaseScalar {
         .setNumArguments(2)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.MAP,
-            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
+            VectorExpressionDescriptor.ArgumentType.DECIMAL)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
@@ -62,17 +70,27 @@ public class VectorUDFMapIndexStringScalar extends VectorUDFMapIndexBaseScalar {
   public int findScalarInMap(MapColumnVector mapColumnVector, int mapBatchIndex) {
     final int offset = (int) mapColumnVector.offsets[mapBatchIndex];
     final int count = (int) mapColumnVector.lengths[mapBatchIndex];
-    BytesColumnVector keyColVector = (BytesColumnVector) mapColumnVector.keys;
-    byte[][] keyVector = keyColVector.vector;
-    int[] keyStart = keyColVector.start;
-    int[] keyLength = keyColVector.length;
-    for (int i = 0; i < count; i++) {
-      final int keyOffset = offset + i;
-      if (StringExpr.equal(key, 0, key.length,
-          keyVector[keyOffset], keyStart[keyOffset], keyLength[keyOffset])) {
-        return offset + i;
+
+    ColumnVector keys =  mapColumnVector.keys;
+    if (keys instanceof DecimalColumnVector) {
+      HiveDecimalWritable[] decimalKeyVector = ((DecimalColumnVector) keys).vector;
+      for (int i = 0; i < count; i++) {
+        if (decimalKeyVector[offset + i].compareTo(key) == 0) {
+          return offset + i;
+        }
+      }
+    } else {
+
+      // For some strange reason we receive a double column vector...
+      // The way we do VectorExpressionDescriptor may be inadequate in this case...
+      double[] doubleKeyVector = ((DoubleColumnVector) keys).vector;
+      for (int i = 0; i < count; i++) {
+        if (doubleKeyVector[offset + i] == doubleKey) {
+          return offset + i;
+        }
       }
     }
     return -1;
   }
+
 }
