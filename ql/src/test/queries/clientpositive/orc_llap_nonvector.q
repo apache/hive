@@ -39,5 +39,16 @@ explain
 select cint, cstring1 from orc_llap_nonvector limit 1025;
 select cint, cstring1 from orc_llap_nonvector limit 1025;
 
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+
+create table orc_llap_nonvector_2 stored as orc tblproperties('transactional'='true') as
+select *, rand(1234) rdm from alltypesorc order by rdm;
+
+explain
+select ROW__ID from orc_llap_nonvector_2 limit 10;
+select ROW__ID from orc_llap_nonvector_2 limit 10;
+
 DROP TABLE orc_create_staging_n3;
 DROP TABLE orc_llap_nonvector;
+DROP TABLE orc_llap_nonvector_2;
