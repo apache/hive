@@ -22,8 +22,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -925,7 +927,60 @@ public class VectorRandomRowSource {
           {
             List<Object> valueList = generationSpec.getValueList();
             final int valueCount = valueList.size();
-            object = valueList.get(r.nextInt(valueCount));
+
+            TypeInfo typeInfo = generationSpec.getTypeInfo();
+            Category category = typeInfo.getCategory();
+            switch (category) {
+            case PRIMITIVE:
+            case STRUCT:
+              object = valueList.get(r.nextInt(valueCount));
+              break;
+            case LIST:
+              {
+                final int elementCount = r.nextInt(valueCount);
+
+                ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
+                TypeInfo elementTypeInfo = listTypeInfo.getListElementTypeInfo();
+                final ObjectInspector elementObjectInspector =
+                    TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+                        elementTypeInfo); 
+                List<Object> list = new ArrayList<Object>(elementCount);
+                for (int i = 0; i < elementCount; i++) {
+                  Object elementWritable =
+                      randomWritable(elementTypeInfo, elementObjectInspector,
+                          allowNull);
+                  list.add(elementWritable);
+                }
+                object = list;
+              }
+              break;
+            case MAP:
+              {
+                final int elementCount = r.nextInt(valueCount);
+
+                MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
+                TypeInfo valueTypeInfo = mapTypeInfo.getMapValueTypeInfo();
+                final ObjectInspector valueObjectInspector =
+                    TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+                        valueTypeInfo);
+                Map<Object,Object> map = new HashMap<Object,Object>(elementCount);
+                for (int i = 0; i < elementCount; i++) {
+                  Object key = valueList.get(r.nextInt(valueCount));
+                  Object valueWritable =
+                      randomWritable(valueTypeInfo, valueObjectInspector,
+                          allowNull);
+                  if (!map.containsKey(key)) {
+                    map.put(
+                        key,
+                        valueWritable);
+                  }
+                }
+                object = map;
+              }
+              break;
+            default:
+              throw new RuntimeException("Unexpected category " + category);
+            }
           }
           break;
         default:

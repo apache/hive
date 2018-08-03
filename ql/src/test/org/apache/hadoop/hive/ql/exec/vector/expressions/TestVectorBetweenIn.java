@@ -342,9 +342,9 @@ public class TestVectorBetweenIn {
     List<Object> sortedList = new ArrayList<Object>(valueCount);
     sortedList.addAll(valueList);
 
-    Object object = valueList.get(0);
+    Object exampleObject = valueList.get(0);
     WritableComparator writableComparator =
-        WritableComparator.get((Class<? extends WritableComparable>) object.getClass());
+        WritableComparator.get((Class<? extends WritableComparable>) exampleObject.getClass());
     sortedList.sort(writableComparator);
 
     final boolean isInvert;
