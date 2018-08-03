@@ -1292,6 +1292,92 @@ NULL	NULL
 1053814436	By4JbbLm4g1Kyq67Er
 528534767	cvLH6Eat2yFsyy7p
 NULL	NULL
+PREHOOK: query: create table orc_llap_nonvector_2 stored as orc tblproperties('transactional'='true') as
+select *, rand(1234) rdm from alltypesorc order by rdm
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_llap_nonvector_2
+POSTHOOK: query: create table orc_llap_nonvector_2 stored as orc tblproperties('transactional'='true') as
+select *, rand(1234) rdm from alltypesorc order by rdm
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_llap_nonvector_2
+POSTHOOK: Lineage: orc_llap_nonvector_2.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_nonvector_2.rdm EXPRESSION []
+PREHOOK: query: explain
+select ROW__ID from orc_llap_nonvector_2 limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select ROW__ID from orc_llap_nonvector_2 limit 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orc_llap_nonvector_2
+                  Statistics: Num rows: 12288 Data size: 4468050 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 12288 Data size: 933888 Basic stats: COMPLETE Column stats: COMPLETE
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 10 Data size: 760 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 10 Data size: 760 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ROW__ID from orc_llap_nonvector_2 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_nonvector_2
+#### A masked pattern was here ####
+POSTHOOK: query: select ROW__ID from orc_llap_nonvector_2 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_nonvector_2
+#### A masked pattern was here ####
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":2}
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":3}
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":4}
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":5}
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":6}
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":7}
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":8}
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":9}
 PREHOOK: query: DROP TABLE orc_create_staging_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_staging_n3
@@ -1308,3 +1394,11 @@ POSTHOOK: query: DROP TABLE orc_llap_nonvector
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap_nonvector
 POSTHOOK: Output: default@orc_llap_nonvector
+PREHOOK: query: DROP TABLE orc_llap_nonvector_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_llap_nonvector_2
+PREHOOK: Output: default@orc_llap_nonvector_2
+POSTHOOK: query: DROP TABLE orc_llap_nonvector_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_llap_nonvector_2
+POSTHOOK: Output: default@orc_llap_nonvector_2
