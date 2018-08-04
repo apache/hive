@@ -24,7 +24,6 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.security.UserGroupInformation;
 
 /**
  * Authenticator that returns the userName set in SessionState. For use when authorizing with HS2
@@ -36,14 +35,10 @@ public class SessionStateUserAuthenticator implements HiveAuthenticationProvider
 
   protected Configuration conf;
   private SessionState sessionState;
-  private List<String> groups;
 
   @Override
   public List<String> getGroupNames() {
-    if (groups == null) {
-      groups = UserGroupInformation.createRemoteUser(sessionState.getUserName()).getGroups();
-    }
-    return groups;
+    return groupNames;
   }
 
   @Override
