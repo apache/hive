@@ -2234,6 +2234,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         planner.addRule(HiveMaterializedViewRule.INSTANCE_JOIN);
         planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_AGGREGATE);
         planner.addRule(HiveMaterializedViewRule.INSTANCE_AGGREGATE);
+        // Partition pruner rule
+        planner.addRule(HiveFilterProjectTSTransposeRule.INSTANCE);
+        planner.addRule(new HivePartitionPruneRule(conf));
+
         // Optimize plan
         planner.setRoot(basePlan);
         basePlan = planner.findBestExp();
