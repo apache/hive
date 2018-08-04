@@ -735,4 +735,8 @@ public class RelOptHiveTable implements RelOptTable {
         ? super.hashCode() : this.getHiveTableMD().hashCode();
   }
 
+  public String getPartitionListKey() {
+    return partitionList != null ? partitionList.getKey() : null;
+  }
+
 }
