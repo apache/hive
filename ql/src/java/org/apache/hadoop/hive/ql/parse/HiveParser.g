@@ -796,6 +796,7 @@ explainOption
     | KW_AUTHORIZATION
     | KW_ANALYZE
     | KW_REOPTIMIZATION
+    | KW_LOCKS
     | (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
     ;
 
