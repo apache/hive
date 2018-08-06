@@ -75,7 +75,7 @@ public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<GroupB
 
   @Override public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
+    DruidWritable value = new DruidWritable(false);
     // 1) The timestamp column
     value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
         currentRow.getTimestamp() == null ? null : currentRow.getTimestamp().getMillis()

@@ -134,7 +134,7 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
 
   @Override
   public DruidWritable createValue() {
-    return new DruidWritable();
+    return new DruidWritable(false);
   }
 
   @Override

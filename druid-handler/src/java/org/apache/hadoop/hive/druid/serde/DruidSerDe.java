@@ -19,21 +19,6 @@ package org.apache.hadoop.hive.druid.serde;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Function;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.druid.query.Druids;
@@ -51,7 +36,6 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -98,6 +82,20 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
 
@@ -387,7 +385,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
     final DruidWritable input = (DruidWritable) writable;
     final List<Object> output = Lists.newArrayListWithExpectedSize(columns.length);
     for (int i = 0; i < columns.length; i++) {
-      final Object value = input.getValue().get(columns[i]);
+      final Object value = input.isCompacted() ? input.getCompactedValue().get(i) : input.getValue().get(columns[i]);
       if (value == null) {
         output.add(null);
         continue;

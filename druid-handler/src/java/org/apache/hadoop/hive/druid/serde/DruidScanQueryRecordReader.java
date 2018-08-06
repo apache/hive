@@ -69,13 +69,16 @@ public class DruidScanQueryRecordReader
   }
 
   @Override
+  public DruidWritable createValue()
+  {
+    return new DruidWritable(true);
+  }
+
+  @Override
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
-    List<Object> e = compactedValues.next();
-    for (int i = 0; i < current.getColumns().size(); i++) {
-      value.getValue().put(current.getColumns().get(i), e.get(i));
-    }
+    DruidWritable value = new DruidWritable(true);
+    value.setCompactedValue(compactedValues.next());
     return value;
   }
 
@@ -83,11 +86,7 @@ public class DruidScanQueryRecordReader
   public boolean next(NullWritable key, DruidWritable value) throws IOException {
     if (nextKeyValue()) {
       // Update value
-      value.getValue().clear();
-      List<Object> e = compactedValues.next();
-      for (int i = 0; i < current.getColumns().size(); i++) {
-        value.getValue().put(current.getColumns().get(i), e.get(i));
-      }
+      value.setCompactedValue(compactedValues.next());
       return true;
     }
     return false;

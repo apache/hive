@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import io.druid.query.scan.ScanResultValue;
+import io.druid.query.select.EventHolder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -146,6 +148,7 @@ public class TestDruidSerDe {
   private byte[] groupByTimeExtractQueryResults;
   private byte[] selectQueryResults;
   private byte[] groupByMonthExtractQueryResults;
+  private byte[] scanQueryResults;
 
 
   // Timeseries query results as records
@@ -584,6 +587,30 @@ public class TestDruidSerDe {
                   new FloatWritable(68.0F), new FloatWritable(0.0F) }
   };
 
+  // Scan query
+  private static final String SCAN_QUERY =
+          "{   \"queryType\": \"scan\",  "
+                  + " \"dataSource\": \"wikipedia\",   \"descending\": \"false\",  "
+                  + " \"columns\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\",\"newpage\",\"user\",\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
+                  + " \"granularity\": \"all\",  "
+                  + " \"intervals\": [     \"2013-01-01/2013-01-02\"   ],"
+                  + " \"resultFormat\": \"compactedList\","
+                  + " \"limit\": 5"
+                  + "}";
+
+  private static final String SCAN_QUERY_RESULTS = "[{"
+          + "\"segmentId\":\"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\","
+          + "\"columns\":[\"__time\",\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\","
+          + "\"newpage\",\"user\",\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],"
+          + "\"events\":["
+          + "[\"2013-01-01T00:00:00.000Z\", 1,\"article\",\"0\",\"0\",\"11._korpus_(NOVJ)\",\"sl\",\"0\",\"EmausBot\",1.0,39.0,39.0,39.0,0.0],"
+          + "[\"2013-01-01T00:00:00.000Z\", 0,\"article\",\"0\",\"0\",\"112_U.S._580\",\"en\",\"1\",\"MZMcBride\",1.0,70.0,70.0,70.0,0.0],"
+          + "[\"2013-01-01T00:00:12.000Z\", 0,\"article\",\"0\",\"0\",\"113_U.S._243\",\"en\",\"1\",\"MZMcBride\",1.0,77.0,77.0,77.0,0.0],"
+          + "[\"2013-01-01T00:00:12.000Z\", 0,\"article\",\"0\",\"0\",\"113_U.S._73\",\"en\",\"1\",\"MZMcBride\",1.0,70.0,70.0,70.0,0.0],"
+          + "[\"2013-01-01T00:00:12.000Z\", 0,\"article\",\"0\",\"0\",\"113_U.S._756\",\"en\",\"1\",\"MZMcBride\",1.0,68.0,68.0,68.0,0.0]"
+          + "]}]";
+
+
   @Before
   public void setup() throws IOException {
     tsQueryResults = DruidStorageHandlerUtils.SMILE_MAPPER.writeValueAsBytes(DruidStorageHandlerUtils.JSON_MAPPER.readValue(TIMESERIES_QUERY_RESULTS, new TypeReference<List<Result<TimeseriesResultValue>>>() {
@@ -604,6 +631,10 @@ public class TestDruidSerDe {
             }));
     selectQueryResults = DruidStorageHandlerUtils.SMILE_MAPPER
             .writeValueAsBytes(DruidStorageHandlerUtils.JSON_MAPPER.readValue(SELECT_QUERY_RESULTS, new TypeReference<List<Result<SelectResultValue>>>() {
+            }));
+
+    scanQueryResults = DruidStorageHandlerUtils.SMILE_MAPPER
+            .writeValueAsBytes(DruidStorageHandlerUtils.JSON_MAPPER.readValue(SCAN_QUERY_RESULTS, new TypeReference<List<ScanResultValue>>() {
             }));
   }
 
@@ -677,6 +708,15 @@ public class TestDruidSerDe {
     deserializeQueryResults(serDe, Query.SELECT, SELECT_QUERY, selectQueryResults,
         SELECT_QUERY_RESULTS_RECORDS
     );
+
+    // Scan query -- results should be same as select query
+    tbl = createPropertiesQuery("wikipedia", Query.SCAN, SCAN_QUERY, SELECT_COLUMN_NAMES,
+            SELECT_COLUMN_TYPES
+    );
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    deserializeQueryResults(serDe, Query.SCAN, SCAN_QUERY, scanQueryResults,
+            SELECT_QUERY_RESULTS_RECORDS
+    );
   }
 
   private static Properties createPropertiesQuery(String dataSource, String queryType,
@@ -719,7 +759,7 @@ public class TestDruidSerDe {
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
 
     // Check mapred
-    DruidWritable writable = new DruidWritable();
+    DruidWritable writable = reader.createValue();
     int pos = 0;
     while (reader.next(NullWritable.get(), writable)) {
       List<Object> row = (List<Object>) serDe.deserialize(writable);
@@ -920,4 +960,5 @@ public class TestDruidSerDe {
       assertEquals(rowObject[i], object.get(i));
     }
   }
+
 }
