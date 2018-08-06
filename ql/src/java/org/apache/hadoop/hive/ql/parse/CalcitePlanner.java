@@ -1795,7 +1795,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
             calcitePreCboPlan, mdProvider.getMetadataProvider(), executorProvider);
       }
 
-      // 4. Apply join order optimizations: reordering MST algorithm
+      // Get rid of sq_count_check if group by key is constant
+      if (conf.getBoolVar(ConfVars.HIVE_REMOVE_SQ_COUNT_CHECK)) {
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        calcitePreCboPlan =
+            hepPlan(calcitePreCboPlan, false, mdProvider.getMetadataProvider(), null,
+                    HiveRemoveSqCountCheck.INSTANCE);
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+                              "Calcite: Removing sq_count_check UDF ");
+      }
+      //  4.1 Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin.
+      //    Don't run this rule if hive is to remove sq_count_check since that rule expects to have project b/w join.
+        calcitePreCboPlan = hepPlan(calcitePreCboPlan, true, mdProvider.getMetadataProvider(), executorProvider,
+                                    HepMatchOrder.BOTTOM_UP, HiveJoinProjectTransposeRule.LEFF_PROJECT_BTW_JOIN,
+                                    HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN);
+
+      // 4.2 Apply join order optimizations: reordering MST algorithm
       //    If join optimizations failed because of missing stats, we continue with
       //    the rest of optimizations
       if (profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING)) {
@@ -1884,17 +1899,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveRemoveGBYSemiJoinRule.INSTANCE);
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Removal of gby from semijoin");
 
-      // 9. Get rid of sq_count_check if group by key is constant (HIVE-)
-      if (conf.getBoolVar(ConfVars.HIVE_REMOVE_SQ_COUNT_CHECK)) {
-        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        calciteOptimizedPlan =
-            hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-                HiveRemoveSqCountCheck.INSTANCE);
-        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
-            "Calcite: Removing sq_count_check UDF ");
-      }
 
-      // 10. Run rule to fix windowing issue when it is done over
+      // 9. Run rule to fix windowing issue when it is done over
       // aggregation columns (HIVE-10627)
       if (profilesCBO.contains(ExtendedCBOProfile.WINDOWING_POSTPROCESSING)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
@@ -1903,7 +1909,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Window fixing rule");
       }
 
-      // 11. Apply Druid transformation rules
+      // 10. Apply Druid transformation rules
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
           HepMatchOrder.BOTTOM_UP,
@@ -1934,7 +1940,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
       );
 
-      // 12. Run rules to aid in translation from Calcite tree to Hive tree
+      // 11. Run rules to aid in translation from Calcite tree to Hive tree
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
         // 12.1. Merge join into multijoin operators (if possible)
@@ -1955,7 +1961,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
                 HiveProjectFilterPullUpConstantsRule.INSTANCE);
 
-        // 12.2.  Introduce exchange operators below join/multijoin operators
+        // 11.2.  Introduce exchange operators below join/multijoin operators
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
                 HepMatchOrder.BOTTOM_UP, HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN,
                 HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);
@@ -2143,6 +2149,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveProjectFilterPullUpConstantsRule.INSTANCE);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, Rerun PPD");
+
 
       return basePlan;
     }

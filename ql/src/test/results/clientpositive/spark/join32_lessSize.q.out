@@ -1053,17 +1053,16 @@ SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT `t5`.`key`, `t0`.`value`, `t5`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t4`.`value` AS `value1`
 FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `t4`.`key`, `t4`.`value`
-FROM (SELECT `key`
+INNER JOIN ((SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t2`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) AS `t5` ON `t0`.`value` = `t5`.`value`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -1075,84 +1074,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: z
-                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: value (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col1 (type: string)
-                        Position of Big Table: 1
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: hr=11
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    ds 2008-04-08
-                    hr 11
-                  properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 'default','default'
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.srcpart
-                    numFiles 1
-                    numRows 500
-                    partition_columns ds/hr
-                    partition_columns.types string:string
-                    rawDataSize 5312
-                    serialization.ddl struct srcpart { string key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 5812
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count -1
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 'default','default'
-                      columns.types string:string
-#### A masked pattern was here ####
-                      name default.srcpart
-                      partition_columns ds/hr
-                      partition_columns.types string:string
-                      serialization.ddl struct srcpart { string key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.srcpart
-                  name: default.srcpart
-            Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:z]
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: x
@@ -1227,13 +1149,90 @@ STAGE PLANS:
                     name: default.src1
                   name: default.src1
             Truncated Path -> Alias:
-              /src1 [$hdt$_1:$hdt$_2:x]
+              /src1 [$hdt$_2:x]
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: z
+                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col2 (type: string)
+                          1 _col0 (type: string)
+                        Position of Big Table: 0
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+                    bucket_count -1
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.comments 'default','default'
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    numFiles 1
+                    numRows 500
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    rawDataSize 5312
+                    serialization.ddl struct srcpart { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.ddl struct srcpart { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:z]
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: y
@@ -1256,61 +1255,57 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Map 3
+                          1 Map 2
                         Position of Big Table: 0
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col1 (type: string), _col2 (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col0 (type: string)
-                              1 _col1 (type: string)
-                            outputColumnNames: _col0, _col3, _col4
-                            input vertices:
-                              0 Map 1
-                            Position of Big Table: 1
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col2 (type: string)
+                            1 _col0 (type: string)
+                          outputColumnNames: _col1, _col2, _col3
+                          input vertices:
+                            1 Map 3
+                          Position of Big Table: 0
+                          Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col1 (type: string), _col3 (type: string), _col2 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
                             Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                            Select Operator
-                              expressions: _col3 (type: string), _col0 (type: string), _col4 (type: string)
-                              outputColumnNames: _col0, _col1, _col2
+                            File Output Operator
+                              compressed: false
+                              GlobalTableId: 1
+#### A masked pattern was here ####
+                              NumFilesPerFileSink: 1
                               Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                              File Output Operator
-                                compressed: false
-                                GlobalTableId: 1
 #### A masked pattern was here ####
-                                NumFilesPerFileSink: 1
-                                Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  properties:
+                                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
+                                    bucket_count -1
+                                    bucketing_version 2
+                                    column.name.delimiter ,
+                                    columns key,value,val2
+                                    columns.comments 
+                                    columns.types string:string:string
 #### A masked pattern was here ####
-                                table:
-                                    input format: org.apache.hadoop.mapred.TextInputFormat
-                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                    properties:
-                                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
-                                      bucket_count -1
-                                      bucketing_version 2
-                                      column.name.delimiter ,
-                                      columns key,value,val2
-                                      columns.comments 
-                                      columns.types string:string:string
+                                    name default.dest_j2_n1
+                                    numFiles 0
+                                    numRows 0
+                                    rawDataSize 0
+                                    serialization.ddl struct dest_j2_n1 { string key, string value, string val2}
+                                    serialization.format 1
+                                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                    totalSize 0
 #### A masked pattern was here ####
-                                      name default.dest_j2_n1
-                                      numFiles 0
-                                      numRows 0
-                                      rawDataSize 0
-                                      serialization.ddl struct dest_j2_n1 { string key, string value, string val2}
-                                      serialization.format 1
-                                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                      totalSize 0
-#### A masked pattern was here ####
-                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                    name: default.dest_j2_n1
-                                TotalFiles: 1
-                                GatherStats: true
-                                MultiFileSpray: false
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                  name: default.dest_j2_n1
+                              TotalFiles: 1
+                              GatherStats: true
+                              MultiFileSpray: false
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -1366,7 +1361,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [$hdt$_1:$hdt$_1:y]
+              /src [$hdt$_1:y]
 
   Stage: Stage-0
     Move Operator
@@ -1530,16 +1525,15 @@ SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x LEFT OUTER JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t4`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t2`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `t3`.`key`, `t3`.`value`
-FROM (SELECT `key`
-FROM `default`.`src`) AS `t1`
-RIGHT JOIN (SELECT `key`, `value`
+INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` IS NOT NULL) AS `t3` ON `t1`.`key` = `t3`.`key`) AS `t4` ON `t0`.`value` = `t4`.`value`
+WHERE `value` IS NOT NULL) AS `t2`
+LEFT JOIN (SELECT `key`
+FROM `default`.`src`) AS `t3` ON `t2`.`key` = `t3`.`key`) ON `t0`.`value` = `t2`.`value`
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -1551,7 +1545,78 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: y
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
+                      Position of Big Table: 0
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.comments 'default','default'
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src
+                    numFiles 1
+                    numRows 500
+                    rawDataSize 5312
+                    serialization.ddl struct src { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src
+                      numFiles 1
+                      numRows 500
+                      rawDataSize 5312
+                      serialization.ddl struct src { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 5812
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              /src [$hdt$_2:y]
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: z
@@ -1568,9 +1633,9 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col0 (type: string)
-                          1 _col1 (type: string)
-                        Position of Big Table: 1
+                          0 _col1 (type: string)
+                          1 _col0 (type: string)
+                        Position of Big Table: 0
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -1628,83 +1693,12 @@ STAGE PLANS:
                   name: default.srcpart
             Truncated Path -> Alias:
               /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:z]
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: y
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  GatherStats: false
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col0 (type: string)
-                      Position of Big Table: 1
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: src
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
-                    bucketing_version 2
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 'default','default'
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.src
-                    numFiles 1
-                    numRows 500
-                    rawDataSize 5312
-                    serialization.ddl struct src { string key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 5812
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                      bucket_count -1
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 'default','default'
-                      columns.types string:string
-#### A masked pattern was here ####
-                      name default.src
-                      numFiles 1
-                      numRows 500
-                      rawDataSize 5312
-                      serialization.ddl struct src { string key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 5812
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src
-                  name: default.src
-            Truncated Path -> Alias:
-              /src [$hdt$_1:$hdt$_1:y]
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: x
@@ -1721,67 +1715,63 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Right Outer Join 0 to 1
+                             Left Outer Join 0 to 1
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
-                        outputColumnNames: _col1, _col2
+                        outputColumnNames: _col0, _col1
                         input vertices:
-                          0 Map 2
-                        Position of Big Table: 1
+                          1 Map 2
+                        Position of Big Table: 0
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col1 (type: string), _col2 (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col0 (type: string)
-                              1 _col1 (type: string)
-                            outputColumnNames: _col0, _col3, _col4
-                            input vertices:
-                              0 Map 1
-                            Position of Big Table: 1
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: string)
+                            1 _col0 (type: string)
+                          outputColumnNames: _col0, _col1, _col3
+                          input vertices:
+                            1 Map 3
+                          Position of Big Table: 0
+                          Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col0 (type: string), _col3 (type: string), _col1 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
                             Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                            Select Operator
-                              expressions: _col3 (type: string), _col0 (type: string), _col4 (type: string)
-                              outputColumnNames: _col0, _col1, _col2
+                            File Output Operator
+                              compressed: false
+                              GlobalTableId: 1
+#### A masked pattern was here ####
+                              NumFilesPerFileSink: 1
                               Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                              File Output Operator
-                                compressed: false
-                                GlobalTableId: 1
 #### A masked pattern was here ####
-                                NumFilesPerFileSink: 1
-                                Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  properties:
+                                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                                    bucket_count -1
+                                    bucketing_version 2
+                                    column.name.delimiter ,
+                                    columns key,value,val2
+                                    columns.comments 
+                                    columns.types string:string:string
 #### A masked pattern was here ####
-                                table:
-                                    input format: org.apache.hadoop.mapred.TextInputFormat
-                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                    properties:
-                                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
-                                      bucket_count -1
-                                      bucketing_version 2
-                                      column.name.delimiter ,
-                                      columns key,value,val2
-                                      columns.comments 
-                                      columns.types string:string:string
+                                    name default.dest_j2_n1
+                                    numFiles 1
+                                    numRows 85
+                                    rawDataSize 1600
+                                    serialization.ddl struct dest_j2_n1 { string key, string value, string val2}
+                                    serialization.format 1
+                                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                    totalSize 1685
 #### A masked pattern was here ####
-                                      name default.dest_j2_n1
-                                      numFiles 1
-                                      numRows 85
-                                      rawDataSize 1600
-                                      serialization.ddl struct dest_j2_n1 { string key, string value, string val2}
-                                      serialization.format 1
-                                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                      totalSize 1685
-#### A masked pattern was here ####
-                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                    name: default.dest_j2_n1
-                                TotalFiles: 1
-                                GatherStats: true
-                                MultiFileSpray: false
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                  name: default.dest_j2_n1
+                              TotalFiles: 1
+                              GatherStats: true
+                              MultiFileSpray: false
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -1837,7 +1827,7 @@ STAGE PLANS:
                     name: default.src1
                   name: default.src1
             Truncated Path -> Alias:
-              /src1 [$hdt$_1:$hdt$_2:x]
+              /src1 [$hdt$_1:x]
 
   Stage: Stage-0
     Move Operator
@@ -2024,27 +2014,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: x
-                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: value (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col1 (type: string)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: x
@@ -2064,12 +2034,32 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col2 (type: string)
+                          1 _col0 (type: string)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: y
@@ -2090,34 +2080,30 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Map 3
+                          1 Map 2
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col1 (type: string), _col2 (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col0 (type: string)
-                              1 _col1 (type: string)
-                            outputColumnNames: _col0, _col3, _col4
-                            input vertices:
-                              0 Map 1
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col2 (type: string)
+                            1 _col0 (type: string)
+                          outputColumnNames: _col1, _col2, _col3
+                          input vertices:
+                            1 Map 3
+                          Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col1 (type: string), _col3 (type: string), _col2 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
                             Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                            Select Operator
-                              expressions: _col3 (type: string), _col0 (type: string), _col4 (type: string)
-                              outputColumnNames: _col0, _col1, _col2
+                            File Output Operator
+                              compressed: false
                               Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                              File Output Operator
-                                compressed: false
-                                Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                                table:
-                                    input format: org.apache.hadoop.mapred.TextInputFormat
-                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                    name: default.dest_j2_n1
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                  name: default.dest_j2_n1
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -2275,27 +2261,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: y
-                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: value (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col1 (type: string)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: x
@@ -2315,12 +2281,32 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: y
+                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col2 (type: string)
+                          1 _col0 (type: string)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: y
@@ -2341,34 +2327,30 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Map 3
+                          1 Map 2
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col1 (type: string), _col2 (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col0 (type: string)
-                              1 _col1 (type: string)
-                            outputColumnNames: _col0, _col3, _col4
-                            input vertices:
-                              0 Map 1
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col2 (type: string)
+                            1 _col0 (type: string)
+                          outputColumnNames: _col1, _col2, _col3
+                          input vertices:
+                            1 Map 3
+                          Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col1 (type: string), _col3 (type: string), _col2 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
                             Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                            Select Operator
-                              expressions: _col3 (type: string), _col0 (type: string), _col4 (type: string)
-                              outputColumnNames: _col0, _col1, _col2
+                            File Output Operator
+                              compressed: false
                               Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                              File Output Operator
-                                compressed: false
-                                Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                                table:
-                                    input format: org.apache.hadoop.mapred.TextInputFormat
-                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                    name: default.dest_j2_n1
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                  name: default.dest_j2_n1
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
