@@ -230,6 +230,10 @@ public class CliConfigs {
         excludeQuery("union_fast_stats.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
+        excludeQuery("druid_timestamptz.q"); // Disabled in HIVE-20322
+        excludeQuery("druidmini_joins.q"); // Disabled in HIVE-20322
+        excludeQuery("druidmini_masking.q"); // Disabled in HIVE-20322
+        excludeQuery("druidmini_test1.q"); // Disabled in HIVE-20322
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
