@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RawStoreProxy;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -155,9 +156,11 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onCreateTable(CreateTableEvent tableEvent) throws MetaException {
     Table t = tableEvent.getTable();
+    FileIterator fileIter = t.getTableType().equals(TableType.EXTERNAL_TABLE.toString())
+                              ? null : new FileIterator(t.getSd().getLocation());
     NotificationEvent event =
-        new NotificationEvent(0, now(), EventType.CREATE_TABLE.toString(), msgFactory
-            .buildCreateTableMessage(t, new FileIterator(t.getSd().getLocation())).toString());
+        new NotificationEvent(0, now(), EventType.CREATE_TABLE.toString(),
+                msgFactory.buildCreateTableMessage(t, fileIter).toString());
     event.setCatName(t.isSetCatName() ? t.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
@@ -301,9 +304,10 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onAddPartition(AddPartitionEvent partitionEvent) throws MetaException {
     Table t = partitionEvent.getTable();
+    PartitionFilesIterator fileIter = t.getTableType().equals(TableType.EXTERNAL_TABLE.toString())
+            ? null : new PartitionFilesIterator(partitionEvent.getPartitionIterator(), t);
     String msg = msgFactory
-        .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator(),
-            new PartitionFilesIterator(partitionEvent.getPartitionIterator(), t)).toString();
+        .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator(), fileIter).toString();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ADD_PARTITION.toString(), msg);
     event.setCatName(t.isSetCatName() ? t.getCatName() : DEFAULT_CATALOG_NAME);
