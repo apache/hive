@@ -121,14 +121,14 @@ Stage-0
                                   SHUFFLE [RS_46]
                                     PartitionCols:_col0
                                     Group By Operator [GBY_45] (rows=174243235 width=135)
-                                      Output:["_col0"],keys:_col1
+                                      Output:["_col0"],keys:_col14
                                       Merge Join Operator [MERGEJOIN_227] (rows=174243235 width=135)
-                                        Conds:RS_41._col0=RS_255._col0(Inner),Output:["_col1"]
+                                        Conds:RS_41._col0=RS_255._col13(Inner),Output:["_col14"]
                                       <-Map 22 [SIMPLE_EDGE] vectorized
                                         PARTITION_ONLY_SHUFFLE [RS_255]
-                                          PartitionCols:_col0
+                                          PartitionCols:_col13
                                           Select Operator [SEL_254] (rows=14398467 width=92)
-                                            Output:["_col0"]
+                                            Output:["_col13"]
                                             Filter Operator [FIL_253] (rows=14398467 width=92)
                                               predicate:wr_order_number is not null
                                               TableScan [TS_38] (rows=14398467 width=92)
