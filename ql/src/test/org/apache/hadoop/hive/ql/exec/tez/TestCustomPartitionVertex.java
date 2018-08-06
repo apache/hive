@@ -33,7 +33,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TestCustomPartitionVertex {
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     public void testGetBytePayload() throws IOException {
         int numBuckets = 10;
         VertexManagerPluginContext context = mock(VertexManagerPluginContext.class);

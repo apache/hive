@@ -125,7 +125,7 @@ public class TestDynamicPartitionPruner {
     }
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 10000)
   public void testSingleSourceMultipleFiltersOrdering1() throws InterruptedException, SerDeException {
     InputInitializerContext mockInitContext = mock(InputInitializerContext.class);
     doReturn(2).when(mockInitContext).getVertexNumTasks("v1");
