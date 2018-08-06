@@ -59,7 +59,7 @@ public class DruidTimeseriesQueryRecordReader
   @Override
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
+    DruidWritable value = new DruidWritable(false);
     value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
         current.getTimestamp() == null ? null : current.getTimestamp().getMillis()
     );
