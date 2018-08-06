@@ -91,7 +91,6 @@ import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -753,6 +752,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(),
                   Collections.singletonList(sourceTxnId), stmt);
           if (targetTxnIds.isEmpty()) {
+            // Idempotent case where txn was already closed or abort txn event received without
+            // corresponding open txn event.
             LOG.info("Target txn id is missing for source txn id : " + sourceTxnId +
                     " and repl policy " + rqst.getReplPolicy());
             return;
@@ -894,6 +895,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(),
                   Collections.singletonList(sourceTxnId), stmt);
           if (targetTxnIds.isEmpty()) {
+            // Idempotent case where txn was already closed or commit txn event received without
+            // corresponding open txn event.
             LOG.info("Target txn id is missing for source txn id : " + sourceTxnId +
                     " and repl policy " + rqst.getReplPolicy());
             return;
@@ -936,9 +939,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           conflictSQLSuffix = "from TXN_COMPONENTS where tc_txnid=" + txnid + " and tc_operation_type IN(" +
                   quoteChar(OpertaionType.UPDATE.sqlConst) + "," + quoteChar(OpertaionType.DELETE.sqlConst) + ")";
           rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,
-                   "tc_operation_type " + conflictSQLSuffix));
+                  "tc_operation_type " + conflictSQLSuffix));
         }
-
         if (rs != null && rs.next()) {
           isUpdateDelete = 'Y';
           close(rs);
@@ -1404,9 +1406,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           txnIds = getTargetTxnIdList(rqst.getReplPolicy(), srcTxnIds, stmt);
           if (srcTxnIds.size() != txnIds.size()) {
-            LOG.warn("Target txn id is missing for source txn id : " + srcTxnIds.toString() +
+            // Idempotent case where txn was already closed but gets allocate write id event.
+            // So, just ignore it and return empty list.
+            LOG.info("Target txn id is missing for source txn id : " + srcTxnIds.toString() +
                     " and repl policy " + rqst.getReplPolicy());
-            throw new RuntimeException("This should never happen for txnIds: " + txnIds);
+            return new AllocateTableWriteIdsResponse(txnToWriteIds);
           }
         } else {
           assert (!rqst.isSetSrcTxnToWriteIdList());
