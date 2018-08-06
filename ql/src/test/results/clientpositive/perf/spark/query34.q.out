@@ -85,6 +85,7 @@ STAGE PLANS:
                         keys:
                           0 _col2 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 9 
