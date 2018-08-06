@@ -3250,9 +3250,43 @@ public class VectorizationContext {
   private VectorExpression getIfExpression(GenericUDFIf genericUDFIf, List<ExprNodeDesc> childExpr,
       VectorExpressionDescriptor.Mode mode, TypeInfo returnType) throws HiveException {
 
-    if (mode != VectorExpressionDescriptor.Mode.PROJECTION) {
+    boolean isFilter = false;    // Assume.
+    if (mode == VectorExpressionDescriptor.Mode.FILTER) {
+
+      // Is output type a BOOLEAN?
+      if (returnType.getCategory() == Category.PRIMITIVE &&
+          ((PrimitiveTypeInfo) returnType).getPrimitiveCategory() == PrimitiveCategory.BOOLEAN) {
+        isFilter = true;
+      } else {
+        return null;
+      }
+    }
+
+    // Get a PROJECTION IF expression.
+    VectorExpression ve = doGetIfExpression(genericUDFIf, childExpr, returnType);
+
+    if (ve == null) {
       return null;
     }
+
+    if (isFilter) {
+
+      // Wrap the PROJECTION IF expression output with a filter.
+      SelectColumnIsTrue filterVectorExpr = new SelectColumnIsTrue(ve.getOutputColumnNum());
+
+      filterVectorExpr.setChildExpressions(new VectorExpression[] {ve});
+
+      filterVectorExpr.setInputTypeInfos(ve.getOutputTypeInfo());
+      filterVectorExpr.setInputDataTypePhysicalVariations(ve.getOutputDataTypePhysicalVariation());
+
+      return filterVectorExpr;
+    } else {
+      return ve;
+    }
+  }
+
+  private VectorExpression doGetIfExpression(GenericUDFIf genericUDFIf, List<ExprNodeDesc> childExpr,
+      TypeInfo returnType) throws HiveException {
 
     // Add HiveConf variable with 3 modes:
     //   1) adaptor: Always use VectorUDFAdaptor for IF statements.
@@ -3300,8 +3334,10 @@ public class VectorizationContext {
     final boolean isOnlyGood = (hiveVectorIfStmtMode == HiveVectorIfStmtMode.GOOD);
 
     if (isThenNullConst) {
-      final VectorExpression whenExpr = getVectorExpression(ifDesc, mode);
-      final VectorExpression elseExpr = getVectorExpression(elseDesc, mode);
+      final VectorExpression whenExpr =
+          getVectorExpression(ifDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+      final VectorExpression elseExpr =
+          getVectorExpression(elseDesc, VectorExpressionDescriptor.Mode.PROJECTION);
 
       final int outputColumnNum = ocm.allocateOutputColumn(returnType);
 
@@ -3338,8 +3374,10 @@ public class VectorizationContext {
     }
 
     if (isElseNullConst) {
-      final VectorExpression whenExpr = getVectorExpression(ifDesc, mode);
-      final VectorExpression thenExpr = getVectorExpression(thenDesc, mode);
+      final VectorExpression whenExpr =
+          getVectorExpression(ifDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+      final VectorExpression thenExpr =
+          getVectorExpression(thenDesc, VectorExpressionDescriptor.Mode.PROJECTION);
 
       final int outputColumnNum = ocm.allocateOutputColumn(returnType);
 
@@ -3376,9 +3414,12 @@ public class VectorizationContext {
     }
 
     if ((isThenCondExpr || isElseCondExpr) && !isOnlyGood) {
-      final VectorExpression whenExpr = getVectorExpression(ifDesc, mode);
-      final VectorExpression thenExpr = getVectorExpression(thenDesc, mode);
-      final VectorExpression elseExpr = getVectorExpression(elseDesc, mode);
+      final VectorExpression whenExpr =
+          getVectorExpression(ifDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+      final VectorExpression thenExpr =
+          getVectorExpression(thenDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+      final VectorExpression elseExpr =
+          getVectorExpression(elseDesc, VectorExpressionDescriptor.Mode.PROJECTION);
 
       // Only proceed if the THEN/ELSE types were aligned.
       if (thenExpr.getOutputColumnVectorType() == elseExpr.getOutputColumnVectorType()) {
@@ -3429,15 +3470,12 @@ public class VectorizationContext {
 
     Class<?> udfClass = genericUDFIf.getClass();
     return getVectorExpressionForUdf(
-        genericUDFIf, udfClass, childExpr, mode, returnType);
+        genericUDFIf, udfClass, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
   }
 
   private VectorExpression getWhenExpression(List<ExprNodeDesc> childExpr,
       VectorExpressionDescriptor.Mode mode, TypeInfo returnType) throws HiveException {
 
-    if (mode != VectorExpressionDescriptor.Mode.PROJECTION) {
-      return null;
-    }
     final int size = childExpr.size();
 
     final ExprNodeDesc whenDesc = childExpr.get(0);
