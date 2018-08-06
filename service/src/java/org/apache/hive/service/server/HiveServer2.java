@@ -1221,9 +1221,9 @@ public class HiveServer2 extends CompositeService {
               "hive.root.logger".equals(propKey)) {
             throw new IllegalArgumentException("Logs will be split in two "
                 + "files if the commandline argument " + propKey + " is "
-                + "used. To prevent this use to HADOOP_CLIENT_OPTS -D"
+                + "used. To prevent this use HADOOP_CLIENT_OPTS=-D"
                 + propKey + "=" + confProps.getProperty(propKey)
-                + " or use the set the value in the configuration file"
+                + " or set the value in the configuration file"
                 + " (see HIVE-19886)");
           }
           System.setProperty(propKey, confProps.getProperty(propKey));

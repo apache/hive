@@ -95,8 +95,13 @@ public class CommonCliOptions {
         System.err.println(
             "hiveconf: " + propKey + "=" + confProps.getProperty(propKey));
       }
-      if (propKey.equalsIgnoreCase("hive.root.logger")) {
-        splitAndSetLogger(propKey, confProps);
+      if ("hive.log.file".equals(propKey) ||
+          "hive.log.dir".equals(propKey) ||
+          "hive.root.logger".equals(propKey)) {
+        throw new IllegalArgumentException("Logs will be split in two "
+            + "files if the commandline argument " + propKey + " is "
+            + "used. Set instead the appropriate value in "
+            + "hive-log4j2.properties (see HIVE-20283)");
       } else {
         System.setProperty(propKey, confProps.getProperty(propKey));
       }
