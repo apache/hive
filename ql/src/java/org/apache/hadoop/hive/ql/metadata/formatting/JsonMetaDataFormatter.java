@@ -28,9 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -56,6 +58,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
+
+import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 
 /**
  * Format table and index information for machine readability using
@@ -106,6 +110,50 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
   public void showTables(DataOutputStream out, Set<String> tables)
       throws HiveException {
     asJson(out, MapBuilder.create().put("tables", tables).build());
+  }
+
+  /**
+   * Show a list of materialized views.
+   */
+  @Override
+  public void showMaterializedViews(DataOutputStream out, List<Table> materializedViews)
+      throws HiveException {
+    if (materializedViews.isEmpty()) {
+      // Nothing to do
+      return;
+    }
+
+    MapBuilder builder = MapBuilder.create();
+    ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
+    for (Table mv : materializedViews) {
+      final String mvName = mv.getTableName();
+      final String rewriteEnabled = mv.isRewriteEnabled() ? "Yes" : "No";
+      // Currently, we only support manual refresh
+      // TODO: Update whenever we have other modes
+      final String refreshMode = "Manual refresh";
+      final String timeWindowString = mv.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+      final String mode;
+      if (!org.apache.commons.lang.StringUtils.isEmpty(timeWindowString)) {
+        long time = HiveConf.toTime(timeWindowString,
+            HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
+            TimeUnit.MINUTES);
+        if (time > 0L) {
+          mode = refreshMode + " (Valid for " + time + "min)";
+        } else if (time == 0L) {
+          mode = refreshMode + " (Valid until source tables modified)";
+        } else {
+          mode = refreshMode + " (Valid always)";
+        }
+      } else {
+        mode = refreshMode;
+      }
+      res.add(builder
+          .put("MV Name", mvName)
+          .put("Rewriting Enabled", rewriteEnabled)
+          .put("Mode", mode)
+          .build());
+    }
+    asJson(out, builder.put("materialized views", res).build());
   }
 
   /**
