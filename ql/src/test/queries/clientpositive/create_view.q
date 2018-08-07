@@ -42,6 +42,7 @@ EXPLAIN
 SELECT * from view2 where key=18;
 
 SHOW TABLES 'view.*';
+SHOW VIEWS 'view.*';
 DESCRIBE view1;
 DESCRIBE EXTENDED view1;
 DESCRIBE FORMATTED view1;

@@ -269,16 +269,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	No                  	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
@@ -493,16 +494,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
@@ -799,16 +801,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)

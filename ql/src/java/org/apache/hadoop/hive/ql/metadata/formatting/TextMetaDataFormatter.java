@@ -27,9 +27,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
+import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +60,8 @@ import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 
 /**
  * Format table and index information for human readability using
@@ -106,14 +111,14 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     } catch (Exception e) {
       throw new HiveException(e);
     }
-      }
+  }
+
   /**
    * Show a list of tables.
    */
   @Override
   public void showTables(DataOutputStream out, Set<String> tables)
-      throws HiveException
-      {
+      throws HiveException {
     Iterator<String> iterTbls = tables.iterator();
 
     try {
@@ -125,7 +130,54 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     } catch (IOException e) {
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * Show a list of materialized views.
+   */
+  @Override
+  public void showMaterializedViews(DataOutputStream out, List<Table> materializedViews)
+      throws HiveException {
+    if (materializedViews.isEmpty()) {
+      // Nothing to do
+      return;
+    }
+
+    try {
+      TextMetaDataTable mdt = new TextMetaDataTable();
+      mdt.addRow("# MV Name", "Rewriting Enabled", "Mode");
+      for (Table mv : materializedViews) {
+        final String mvName = mv.getTableName();
+        final String rewriteEnabled = mv.isRewriteEnabled() ? "Yes" : "No";
+        // Currently, we only support manual refresh
+        // TODO: Update whenever we have other modes
+        final String refreshMode = "Manual refresh";
+        final String timeWindowString = mv.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+        final String mode;
+        if (!org.apache.commons.lang.StringUtils.isEmpty(timeWindowString)) {
+          long time = HiveConf.toTime(timeWindowString,
+              HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
+              TimeUnit.MINUTES);
+          if (time > 0L) {
+            mode = refreshMode + " (Valid for " + time + "min)";
+          } else if (time == 0L) {
+            mode = refreshMode + " (Valid until source tables modified)";
+          } else {
+            mode = refreshMode + " (Valid always)";
+          }
+        } else {
+          mode = refreshMode;
+        }
+        mdt.addRow(mvName, rewriteEnabled, mode);
       }
+      // In case the query is served by HiveServer2, don't pad it with spaces,
+      // as HiveServer2 output is consumed by JDBC/ODBC clients.
+      out.write(mdt.renderTable(!SessionState.get().isHiveServerQuery()).getBytes("UTF-8"));
+      out.write(terminator);
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+  }
 
   @Override
   public void describeTable(DataOutputStream outStream,  String colPath,

@@ -1425,82 +1425,21 @@ public class Hive {
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL);
     final boolean tryIncrementalRebuild =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL);
-    final long defaultDiff =
+    final long defaultTimeWindow =
         HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW,
             TimeUnit.MILLISECONDS);
-    final long currentTime = System.currentTimeMillis();
     try {
       // Final result
       List<RelOptMaterialization> result = new ArrayList<>();
       List<Table> materializedViewTables = getTableObjects(dbName, materializedViewNames);
       for (Table materializedViewTable : materializedViewTables) {
-        // Check if materialization defined its own invalidation time window
-        String timeWindowString = materializedViewTable.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
-        long diff = org.apache.commons.lang.StringUtils.isEmpty(timeWindowString) ? defaultDiff :
-            HiveConf.toTime(timeWindowString,
-                HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
-                TimeUnit.MILLISECONDS);
-        CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
-        boolean outdated = false;
-        if (diff < 0L) {
-          // We only consider the materialized view to be outdated if forceOutdated = true, i.e.,
-          // if it is a rebuild. Otherwise, it passed the test and we use it as it is.
-          outdated = forceMVContentsUpToDate;
-        } else {
-          // Check whether the materialized view is invalidated
-          if (forceMVContentsUpToDate || diff == 0L || creationMetadata.getMaterializationTime() < currentTime - diff) {
-            if (currentTxnWriteIds == null) {
-              LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                  " ignored for rewriting as we could not obtain current txn ids");
-              continue;
-            }
-            if (creationMetadata.getValidTxnList() == null ||
-                creationMetadata.getValidTxnList().isEmpty()) {
-              LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                  " ignored for rewriting as we could not obtain materialization txn ids");
-              continue;
-            }
-            boolean ignore = false;
-            ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
-                creationMetadata.getValidTxnList());
-            for (String qName : tablesUsed) {
-              // Note. If the materialized view does not contain a table that is contained in the query,
-              // we do not need to check whether that specific table is outdated or not. If a rewriting
-              // is produced in those cases, it is because that additional table is joined with the
-              // existing tables with an append-columns only join, i.e., PK-FK + not null.
-              if (!creationMetadata.getTablesUsed().contains(qName)) {
-                continue;
-              }
-              ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(qName);
-              if (tableCurrentWriteIds == null) {
-                // Uses non-transactional table, cannot be considered
-                LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                    " ignored for rewriting as it is outdated and cannot be considered for " +
-                    " rewriting because it uses non-transactional table " + qName);
-                ignore = true;
-                break;
-              }
-              ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(qName);
-              if (tableWriteIds == null) {
-                // This should not happen, but we ignore for safety
-                LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                    " ignored for rewriting as details about txn ids for table " + qName +
-                    " could not be found in " + mvTxnWriteIds);
-                ignore = true;
-                break;
-              }
-              if (!outdated && !TxnIdUtils.checkEquivalentWriteIds(tableCurrentWriteIds, tableWriteIds)) {
-                LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                    " contents are outdated");
-                outdated = true;
-              }
-            }
-            if (ignore) {
-              continue;
-            }
-          }
+        final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, currentTxnWriteIds,
+            defaultTimeWindow, tablesUsed, forceMVContentsUpToDate);
+        if (outdated == null) {
+          continue;
         }
 
+        final CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
         if (outdated) {
           // The MV is outdated, see whether we should consider it for rewriting or not
           boolean ignore = false;
@@ -1584,6 +1523,82 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * Utility method that returns whether a materialized view is outdated (true), not outdated
+   * (false), or it cannot be determined (null). The latest case may happen e.g. when the
+   * materialized view definition uses external tables.
+   */
+  public static Boolean isOutdatedMaterializedView(Table materializedViewTable, final ValidTxnWriteIdList currentTxnWriteIds,
+      long defaultTimeWindow, List<String> tablesUsed, boolean forceMVContentsUpToDate) {
+    // Check if materialization defined its own invalidation time window
+    String timeWindowString = materializedViewTable.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+    long timeWindow = org.apache.commons.lang.StringUtils.isEmpty(timeWindowString) ? defaultTimeWindow :
+        HiveConf.toTime(timeWindowString,
+            HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
+            TimeUnit.MILLISECONDS);
+    CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
+    boolean outdated = false;
+    if (timeWindow < 0L) {
+      // We only consider the materialized view to be outdated if forceOutdated = true, i.e.,
+      // if it is a rebuild. Otherwise, it passed the test and we use it as it is.
+      outdated = forceMVContentsUpToDate;
+    } else {
+      // Check whether the materialized view is invalidated
+      if (forceMVContentsUpToDate || timeWindow == 0L || creationMetadata.getMaterializationTime() < System.currentTimeMillis() - timeWindow) {
+        if (currentTxnWriteIds == null) {
+          LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+              " ignored for rewriting as we could not obtain current txn ids");
+          return null;
+        }
+        if (creationMetadata.getValidTxnList() == null ||
+            creationMetadata.getValidTxnList().isEmpty()) {
+          LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+              " ignored for rewriting as we could not obtain materialization txn ids");
+          return null;
+        }
+        boolean ignore = false;
+        ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
+            creationMetadata.getValidTxnList());
+        for (String qName : tablesUsed) {
+          // Note. If the materialized view does not contain a table that is contained in the query,
+          // we do not need to check whether that specific table is outdated or not. If a rewriting
+          // is produced in those cases, it is because that additional table is joined with the
+          // existing tables with an append-columns only join, i.e., PK-FK + not null.
+          if (!creationMetadata.getTablesUsed().contains(qName)) {
+            continue;
+          }
+          ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(qName);
+          if (tableCurrentWriteIds == null) {
+            // Uses non-transactional table, cannot be considered
+            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " ignored for rewriting as it is outdated and cannot be considered for " +
+                " rewriting because it uses non-transactional table " + qName);
+            ignore = true;
+            break;
+          }
+          ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(qName);
+          if (tableWriteIds == null) {
+            // This should not happen, but we ignore for safety
+            LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " ignored for rewriting as details about txn ids for table " + qName +
+                " could not be found in " + mvTxnWriteIds);
+            ignore = true;
+            break;
+          }
+          if (!outdated && !TxnIdUtils.checkEquivalentWriteIds(tableCurrentWriteIds, tableWriteIds)) {
+            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " contents are outdated");
+            outdated = true;
+          }
+        }
+        if (ignore) {
+          return null;
+        }
+      }
+    }
+    return outdated;
   }
 
   /**
