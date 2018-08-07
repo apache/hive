@@ -1672,7 +1672,7 @@ public class TestTxnHandler {
     } catch (IllegalStateException e) {
       failed = true;
     }
-    assertTrue(failed);
+    assertFalse(failed);
 
     replAbortTxnForTest(srcTxnIdList, "destdb.*");
 

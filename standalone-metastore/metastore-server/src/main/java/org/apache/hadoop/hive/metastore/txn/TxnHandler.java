@@ -1404,7 +1404,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (srcTxnIds.size() != txnIds.size()) {
             // Idempotent case where txn was already closed but gets allocate write id event.
             // So, just ignore it and return empty list.
-            LOG.info("Target txn id is missing for source txn id : " + srcTxnIds.toString() +
+            LOG.info("Idempotent case: Target txn id is missing for source txn id : " + srcTxnIds.toString() +
                     " and repl policy " + rqst.getReplPolicy());
             return new AllocateTableWriteIdsResponse(txnToWriteIds);
           }
@@ -1422,10 +1422,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throw new RuntimeException("This should never happen for txnIds: " + txnIds);
         }
 
-        long writeId;
-        String s;
-        long allocatedTxnsCount = 0;
-        long txnId;
         List<String> queries = new ArrayList<>();
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
@@ -1440,6 +1436,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         suffix.append("");
         TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
                 txnIds, "t2w_txnid", false, false);
+
+        long allocatedTxnsCount = 0;
+        long txnId;
+        long writeId = 0;
         for (String query : queries) {
           LOG.debug("Going to execute query <" + query + ">");
           rs = stmt.executeQuery(query);
@@ -1464,10 +1464,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         handle = getMutexAPI().acquireLock(MUTEX_KEY.WriteIdAllocator.name());
 
+        assert((writeId == 0) && txnToWriteIds.isEmpty());
+        if (rqst.isSetReplPolicy()) {
+          // In replication flow, we always need to allocate write ID equal to that of source.
+          assert(srcTxnToWriteIds != null);
+          writeId = srcTxnToWriteIds.get(0).getWriteId();
+        }
+
         // There are some txns in the list which does not have write id allocated and hence go ahead and do it.
         // Get the next write id for the given table and update it with new next write id.
         // This is select for update query which takes a lock if the table entry is already there in NEXT_WRITE_ID
-        s = sqlGenerator.addForUpdateClause(
+        String s = sqlGenerator.addForUpdateClause(
                 "select nwi_next from NEXT_WRITE_ID where nwi_database = " + quoteString(dbName)
                         + " and nwi_table = " + quoteString(tblName));
         LOG.debug("Going to execute query <" + s + ">");
@@ -1475,13 +1482,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (!rs.next()) {
           // First allocation of write id should add the table to the next_write_id meta table
           // The initial value for write id should be 1 and hence we add 1 with number of write ids allocated here
-          writeId = 1;
+          writeId = (writeId <= 0) ? 1 : writeId;
           s = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
-                  + quoteString(dbName) + "," + quoteString(tblName) + "," + Long.toString(numOfWriteIds + 1) + ")";
+                  + quoteString(dbName) + "," + quoteString(tblName) + "," + (writeId + numOfWriteIds) + ")";
           LOG.debug("Going to execute insert <" + s + ">");
           stmt.execute(s);
         } else {
-          writeId = rs.getLong(1);
+          writeId = (writeId <= 0) ? rs.getLong(1) : writeId;
+
           // Update the NEXT_WRITE_ID for the given table after incrementing by number of write ids allocated
           s = "update NEXT_WRITE_ID set nwi_next = " + (writeId + numOfWriteIds)
                   + " where nwi_database = " + quoteString(dbName)
@@ -1498,16 +1506,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           txnToWriteIds.add(new TxnToWriteId(txn, writeId));
           LOG.info("Allocated writeID: " + writeId + " for txnId: " + txn);
           writeId++;
-        }
-
-        if (rqst.isSetReplPolicy()) {
-          int lastIdx = txnToWriteIds.size()-1;
-          if ((txnToWriteIds.get(0).getWriteId() != srcTxnToWriteIds.get(0).getWriteId()) ||
-              (txnToWriteIds.get(lastIdx).getWriteId() != srcTxnToWriteIds.get(lastIdx).getWriteId())) {
-            LOG.error("Allocated write id range {} is not matching with the input write id range {}.",
-                    txnToWriteIds, srcTxnToWriteIds);
-            throw new IllegalStateException("Write id allocation failed for: " + srcTxnToWriteIds);
-          }
         }
 
         // Insert entries to TXN_TO_WRITE_ID for newly allocated write ids
