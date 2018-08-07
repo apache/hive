@@ -203,10 +203,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT value, key FROM src_txn where key > 200 and key < 250	 
-View Expanded Text: 	SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250	 
-View Rewrite Enabled:	Yes                 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT value, key FROM src_txn where key > 200 and key < 250	 
+Expanded Query:     	SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_mv_1 where key = 238
 PREHOOK: type: QUERY

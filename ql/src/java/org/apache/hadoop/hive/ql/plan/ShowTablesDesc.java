@@ -32,25 +32,38 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Show Tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowTablesDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  String pattern;
-  String dbName;
-  String resFile;
-  TableType type;
+
   /**
    * table name for the result of show tables.
    */
   private static final String table = "show";
+
   /**
    * thrift ddl for the result of show tables.
    */
-  private static final String schema = "tab_name#string";
+  private static final String TABLES_VIEWS_SCHEMA = "tab_name#string";
+
+  /**
+   * thrift ddl for the result of show tables.
+   */
+  private static final String MATERIALIZED_VIEWS_SCHEMA =
+      "mv_name,rewrite_enabled,mode#string:string:string";
+
+
+  String pattern;
+  String dbName;
+  String resFile;
+  TableType type;
 
   public String getTable() {
     return table;
   }
 
   public String getSchema() {
-    return schema;
+    if (type != null && type == TableType.MATERIALIZED_VIEW) {
+      return MATERIALIZED_VIEWS_SCHEMA;
+    }
+    return TABLES_VIEWS_SCHEMA;
   }
 
   public ShowTablesDesc() {

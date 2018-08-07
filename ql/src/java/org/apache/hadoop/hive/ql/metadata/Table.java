@@ -105,6 +105,10 @@ public class Table implements Serializable {
 
   private transient boolean materializedTable;
 
+  /** Note: This is set only for describe table purposes, it cannot be used to verify whether
+   * a materialization is up-to-date or not. */
+  private transient Boolean outdatedForRewritingMaterializedView;
+
   /**
    * Used only for serialization.
    */
@@ -1090,5 +1094,15 @@ public class Table implements Serializable {
 
   public String getCatalogName() {
     return this.tTable.getCatName();
+  }
+
+  public void setOutdatedForRewriting(Boolean validForRewritingMaterializedView) {
+    this.outdatedForRewritingMaterializedView = validForRewritingMaterializedView;
+  }
+
+  /** Note: This is set only for describe table purposes, it cannot be used to verify whether
+   * a materialization is up-to-date or not. */
+  public Boolean isOutdatedForRewriting() {
+    return outdatedForRewritingMaterializedView;
   }
 };

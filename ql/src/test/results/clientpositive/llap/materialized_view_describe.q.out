@@ -85,10 +85,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	select a, c from cmv_basetable_n8	 
-View Expanded Text: 	select `cmv_basetable_n8`.`a`, `cmv_basetable_n8`.`c` from `default`.`cmv_basetable_n8`	 
-View Rewrite Enabled:	No                  	 
+# Materialized View Information	 	 
+Original Query:     	select a, c from cmv_basetable_n8	 
+Expanded Query:     	select `cmv_basetable_n8`.`a`, `cmv_basetable_n8`.`c` from `default`.`cmv_basetable_n8`	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	Unknown             	 
 PREHOOK: query: show tblproperties cmv_mat_view_n8
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view_n8
@@ -175,10 +176,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	select a from cmv_basetable_n8	 
-View Expanded Text: 	select `cmv_basetable_n8`.`a` from `default`.`cmv_basetable_n8`	 
-View Rewrite Enabled:	No                  	 
+# Materialized View Information	 	 
+Original Query:     	select a from cmv_basetable_n8	 
+Expanded Query:     	select `cmv_basetable_n8`.`a` from `default`.`cmv_basetable_n8`	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	Unknown             	 
 PREHOOK: query: select a from cmv_mat_view2_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2_n3
@@ -254,10 +256,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	select * from cmv_basetable_n8	 
-View Expanded Text: 	select `cmv_basetable_n8`.`a`, `cmv_basetable_n8`.`b`, `cmv_basetable_n8`.`c` from `default`.`cmv_basetable_n8`	 
-View Rewrite Enabled:	No                  	 
+# Materialized View Information	 	 
+Original Query:     	select * from cmv_basetable_n8	 
+Expanded Query:     	select `cmv_basetable_n8`.`a`, `cmv_basetable_n8`.`b`, `cmv_basetable_n8`.`c` from `default`.`cmv_basetable_n8`	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	Unknown             	 
 PREHOOK: query: select a, b, c from cmv_mat_view3_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view3_n0
@@ -344,10 +347,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	select a from cmv_basetable_n8	 
-View Expanded Text: 	select `cmv_basetable_n8`.`a` from `default`.`cmv_basetable_n8`	 
-View Rewrite Enabled:	No                  	 
+# Materialized View Information	 	 
+Original Query:     	select a from cmv_basetable_n8	 
+Expanded Query:     	select `cmv_basetable_n8`.`a` from `default`.`cmv_basetable_n8`	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	Unknown             	 
 PREHOOK: query: select a from cmv_mat_view4_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view4_n0

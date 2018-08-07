@@ -38,25 +38,29 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test1@shtb_test1
 POSTHOOK: Output: database:test1
 POSTHOOK: Output: test1@shtb_test1_view1
-PREHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view2 AS
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view2 
+TBLPROPERTIES ('rewriting.time.window' = '-1min') AS
 SELECT * FROM shtb_test1 where KEY > 100 and KEY < 200
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: test1@shtb_test1
 PREHOOK: Output: database:test1
 PREHOOK: Output: test1@shtb_test1_view2
-POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view2 AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view2 
+TBLPROPERTIES ('rewriting.time.window' = '-1min') AS
 SELECT * FROM shtb_test1 where KEY > 100 and KEY < 200
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test1@shtb_test1
 POSTHOOK: Output: database:test1
 POSTHOOK: Output: test1@shtb_test1_view2
-PREHOOK: query: CREATE MATERIALIZED VIEW shtb_full_view2 AS
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_full_view2
+TBLPROPERTIES ('rewriting.time.window' = '5min') AS
 SELECT * FROM shtb_test1
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: test1@shtb_test1
 PREHOOK: Output: database:test1
 PREHOOK: Output: test1@shtb_full_view2
-POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_full_view2 AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_full_view2
+TBLPROPERTIES ('rewriting.time.window' = '5min') AS
 SELECT * FROM shtb_test1
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test1@shtb_test1
@@ -122,23 +126,38 @@ PREHOOK: query: SHOW MATERIALIZED VIEWS
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
-shtb_full_view2
-shtb_test1_view1
-shtb_test1_view2
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
+	 	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS 'test_*'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS 'test_*'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
+	 	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS '*view2'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS '*view2'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
-shtb_full_view2
-shtb_test1_view2
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
+	 	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS LIKE 'test_view1|test_view2'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS LIKE 'test_view1|test_view2'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
+	 	 
 PREHOOK: query: USE test2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:test2
@@ -149,8 +168,10 @@ PREHOOK: query: SHOW MATERIALIZED VIEWS 'shtb_*'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS 'shtb_*'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
-shtb_test1_view1
-shtb_test2_view2
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test2_view2    	No                  	Manual refresh      
+	 	 
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -161,22 +182,28 @@ PREHOOK: query: SHOW MATERIALIZED VIEWS FROM test1
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test1
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
-shtb_full_view2
-shtb_test1_view1
-shtb_test1_view2
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
+	 	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
-shtb_test1_view1
-shtb_test2_view2
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test2_view2    	No                  	Manual refresh      
+	 	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN test1
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
-shtb_full_view2
-shtb_test1_view1
-shtb_test1_view2
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
+	 	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN default
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN default
@@ -185,10 +212,141 @@ PREHOOK: query: SHOW MATERIALIZED VIEWS IN test1 "shtb_test_*"
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1 "shtb_test_*"
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)
+	 	 
+PREHOOK: query: DESCRIBE FORMATTED test1.shtb_full_view2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test1@shtb_full_view2
+POSTHOOK: query: DESCRIBE FORMATTED test1.shtb_full_view2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test1@shtb_full_view2
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	test1               	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	rewriting.time.window	5min                
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT * FROM shtb_test1	 
+Expanded Query:     	SELECT `shtb_test1`.`key`, `shtb_test1`.`value`, `shtb_test1`.`ds` FROM `test1`.`shtb_test1`	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+PREHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test1@shtb_test1_view1
+POSTHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test1@shtb_test1_view1
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	test1               	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT * FROM shtb_test1 where KEY > 1000 and KEY < 2000	 
+Expanded Query:     	SELECT `shtb_test1`.`key`, `shtb_test1`.`value`, `shtb_test1`.`ds` FROM `test1`.`shtb_test1` where `shtb_test1`.`key` > 1000 and `shtb_test1`.`key` < 2000	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
+PREHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test1@shtb_test1_view2
+POSTHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test1@shtb_test1_view2
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	test1               	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	rewriting.time.window	-1min               
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT * FROM shtb_test1 where KEY > 100 and KEY < 200	 
+Expanded Query:     	SELECT `shtb_test1`.`key`, `shtb_test1`.`value`, `shtb_test1`.`ds` FROM `test1`.`shtb_test1` where `shtb_test1`.`key` > 100 and `shtb_test1`.`key` < 200	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN test2 LIKE "nomatch"
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test2 LIKE "nomatch"
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                
+shtb_test1_view1    	No                  	Manual refresh      
+shtb_test2_view2    	No                  	Manual refresh      
+	 	 
 PREHOOK: query: CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:database
@@ -202,26 +360,29 @@ POSTHOOK: query: USE `database`
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:database
 PREHOOK: query: CREATE TABLE foo_n0(a INT)
+STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:database
 PREHOOK: Output: database@foo_n0
 POSTHOOK: query: CREATE TABLE foo_n0(a INT)
+STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:database
 POSTHOOK: Output: database@foo_n0
-PREHOOK: query: CREATE VIEW fooview AS
+PREHOOK: query: CREATE MATERIALIZED VIEW fooview
+TBLPROPERTIES ('rewriting.time.window' = '0min') AS
 SELECT * FROM foo_n0
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: database@foo_n0
 PREHOOK: Output: database:database
 PREHOOK: Output: database@fooview
-POSTHOOK: query: CREATE VIEW fooview AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW fooview
+TBLPROPERTIES ('rewriting.time.window' = '0min') AS
 SELECT * FROM foo_n0
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: database@foo_n0
 POSTHOOK: Output: database:database
 POSTHOOK: Output: database@fooview
-POSTHOOK: Lineage: fooview.a SIMPLE [(foo_n0)foo_n0.FieldSchema(name:a, type:int, comment:null), ]
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -232,6 +393,48 @@ PREHOOK: query: SHOW MATERIALIZED VIEWS FROM `database` LIKE "fooview"
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM `database` LIKE "fooview"
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                
+fooview             	Yes                 	Manual refresh (Valid until source tables modified)
+	 	 
+PREHOOK: query: DESCRIBE FORMATTED `database`.`fooview`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: database@fooview
+POSTHOOK: query: DESCRIBE FORMATTED `database`.`fooview`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: database@fooview
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	database            	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	rewriting.time.window	0min                
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT * FROM foo_n0	 
+Expanded Query:     	SELECT `foo_n0`.`a` FROM `database`.`foo_n0`	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: DROP MATERIALIZED VIEW fooview
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: query: DROP MATERIALIZED VIEW fooview

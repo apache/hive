@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -229,6 +231,46 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     combinedTableNames.addAll(tableNames);
     tableNames = new ArrayList<String>(combinedTableNames);
     Collections.sort(tableNames);
+    return tableNames;
+  }
+
+  @Override
+  public List<String> getTables(String dbname, String tablePattern, TableType tableType) throws MetaException {
+    List<String> tableNames = super.getTables(dbname, tablePattern, tableType);
+
+    if (tableType == TableType.MANAGED_TABLE || tableType == TableType.EXTERNAL_TABLE) {
+      // May need to merge with list of temp tables
+      dbname = dbname.toLowerCase();
+      tablePattern = tablePattern.toLowerCase();
+      Map<String, Table> tables = getTempTablesForDatabase(dbname, tablePattern);
+      if (tables == null || tables.size() == 0) {
+        return tableNames;
+      }
+      tablePattern = tablePattern.replaceAll("\\*", ".*");
+      Pattern pattern = Pattern.compile(tablePattern);
+      Matcher matcher = pattern.matcher("");
+      Set<String> combinedTableNames = new HashSet<String>();
+      combinedTableNames.addAll(tableNames);
+      for (Entry<String, Table> tableData : tables.entrySet()) {
+        matcher.reset(tableData.getKey());
+        if (matcher.matches()) {
+          if (tableData.getValue().getTableType() == tableType) {
+            // If tableType is the same that we are requesting,
+            // add table the the list
+            combinedTableNames.add(tableData.getKey());
+          } else {
+            // If tableType is not the same that we are requesting,
+            // remove it in case it was added before, as temp table
+            // overrides original table
+            combinedTableNames.remove(tableData.getKey());
+          }
+        }
+      }
+      // Combine/sort temp and normal table results
+      tableNames = new ArrayList<>(combinedTableNames);
+      Collections.sort(tableNames);
+    }
+
     return tableNames;
   }
 
