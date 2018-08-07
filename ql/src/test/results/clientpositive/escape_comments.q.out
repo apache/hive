@@ -168,9 +168,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select col1 from escape_comments_tbl1	 
-View Expanded Text: 	SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_db.escape_comments_view1`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select col1 from escape_comments_tbl1	 
+Expanded Query:     	SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_db.escape_comments_view1`	 
 PREHOOK: query: drop database escape_comments_db cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:escape_comments_db

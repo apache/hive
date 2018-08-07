@@ -49,9 +49,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
@@ -143,9 +142,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -240,9 +238,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select value, ds, hr from srcpart	 
-View Expanded Text: 	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select value, ds, hr from srcpart	 
+Expanded Query:     	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -314,9 +311,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select key, value, ds, hr from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select key, value, ds, hr from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -411,9 +407,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: drop view vt.v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: vt@v

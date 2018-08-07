@@ -284,16 +284,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
 	                    	  FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
-View Expanded Text: 	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
+Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
 	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
-View Rewrite Enabled:	No                  	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -513,16 +514,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
 	                    	  FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
-View Expanded Text: 	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
+Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
 	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	Yes                 	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -964,16 +966,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
 	                    	  FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
-View Expanded Text: 	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
+Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
 	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)

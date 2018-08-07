@@ -49,9 +49,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT * FROM srcpart	 
-View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT * FROM srcpart	 
+Expanded Query:     	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`	 
 PREHOOK: query: ALTER VIEW tv.testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
@@ -90,9 +89,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT value FROM src WHERE key=86	 
-View Expanded Text: 	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT value FROM src WHERE key=86	 
+Expanded Query:     	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
 PREHOOK: query: ALTER VIEW tv.testView AS
 SELECT * FROM src
 WHERE key > 80 AND key < 100
@@ -140,15 +138,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT * FROM src   	 
+Original Query:     	SELECT * FROM src   	 
 	                    	WHERE key > 80 AND key < 100
 	                    	ORDER BY key, value 
 	                    	LIMIT 10            
-View Expanded Text: 	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
+Expanded Query:     	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
 	                    	WHERE `src`.`key` > 80 AND `src`.`key` < 100
 	                    	ORDER BY `src`.`key`, `src`.`value`
 	                    	LIMIT 10            
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: DROP VIEW tv.testView
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: tv@testview
