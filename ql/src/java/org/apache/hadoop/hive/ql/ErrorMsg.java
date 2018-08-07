@@ -502,7 +502,8 @@ public enum ErrorMsg {
   //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
   //method in HiveMetaStoreClient
   REPL_EVENTS_MISSING_IN_METASTORE(20016, "Notification events are missing in the meta store."),
-  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20017, "Target database is bootstrapped from some other path."),
+  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20017, "Load path {0} not valid as target database is bootstrapped " +
+          "from some other path : {1}."),
   REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20018, "File is missing from both source and cm path."),
   REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
   REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,

@@ -77,6 +77,7 @@ public class WarehouseInstance implements Closeable {
   HiveConf hiveConf;
   MiniDFSCluster miniDFSCluster;
   private HiveMetaStoreClient client;
+  public final Path warehouseRoot;
 
   private static int uniqueIdentifier = 0;
 
@@ -90,7 +91,7 @@ public class WarehouseInstance implements Closeable {
     assert miniDFSCluster.isDataNodeUp();
     DistributedFileSystem fs = miniDFSCluster.getFileSystem();
 
-    Path warehouseRoot = mkDir(fs, "/warehouse" + uniqueIdentifier);
+    warehouseRoot = mkDir(fs, "/warehouse" + uniqueIdentifier);
     if (StringUtils.isNotEmpty(keyNameForEncryptedZone)) {
       fs.createEncryptionZone(warehouseRoot, keyNameForEncryptedZone);
     }
@@ -197,6 +198,10 @@ public class WarehouseInstance implements Closeable {
       throw ret.getException();
     }
     return this;
+  }
+
+  public CommandProcessorResponse runCommand(String command) throws Throwable {
+    return driver.run(command);
   }
 
   WarehouseInstance runFailure(String command) throws Throwable {
