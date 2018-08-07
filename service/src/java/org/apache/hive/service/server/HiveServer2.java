@@ -1037,6 +1037,7 @@ public class HiveServer2 extends CompositeService {
           + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "privilege_synchonizer";
       privilegeSynchonizerLatch = new LeaderLatch(zKClientForPrivSync, path);
       privilegeSynchonizerLatch.start();
+      LOG.info("Find " + policyContainer.size() + " policy to synchronize, start PrivilegeSynchonizer");
       Thread privilegeSynchonizerThread = new Thread(
           new PrivilegeSynchonizer(privilegeSynchonizerLatch, policyContainer, hiveConf), "PrivilegeSynchonizer");
       privilegeSynchonizerThread.start();
