@@ -2252,7 +2252,7 @@ relySpecification
 @init { pushMsg("rely specification", state); }
 @after { popMsg(state); }
     :  KW_RELY -> ^(TOK_RELY)
-    |  (KW_NORELY)? -> ^(TOK_NORELY)
+    |  KW_NORELY -> ^(TOK_NORELY)
     ;
 
 createConstraint
@@ -2508,11 +2508,11 @@ tableConstraintType
     ;
 
 constraintOptsCreate
-    : enableValidateSpecification relySpecification
+    : enableValidateSpecification relySpecification?
     ;
 
 constraintOptsAlter
-    : enableValidateSpecification relySpecification
+    : enableValidateSpecification relySpecification?
     ;
 
 columnNameColonType

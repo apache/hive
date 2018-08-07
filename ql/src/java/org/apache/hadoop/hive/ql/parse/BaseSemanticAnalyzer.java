@@ -998,10 +998,10 @@ public abstract class BaseSemanticAnalyzer {
     // Default values
     String constraintName = null;
     //by default if user hasn't provided any optional constraint properties
-    // it will be considered ENABLE and NOVALIDATE and RELY=false
+    // it will be considered ENABLE and NOVALIDATE and RELY=true
     boolean enable = true;
     boolean validate = false;
-    boolean rely = false;
+    boolean rely = true;
     String checkOrDefaultValue = null;
     for (int i = 0; i < child.getChildCount(); i++) {
       ASTNode grandChild = (ASTNode) child.getChild(i);
@@ -1018,6 +1018,7 @@ public abstract class BaseSemanticAnalyzer {
         enable = false;
         // validate is false by default if we disable the constraint
         validate = false;
+        rely = false;
       } else if (type == HiveParser.TOK_VALIDATE) {
         validate = true;
       } else if (type == HiveParser.TOK_NOVALIDATE) {
