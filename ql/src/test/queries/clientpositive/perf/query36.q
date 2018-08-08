@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query36.tpl and seed 1544728811
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query36.tpl and seed 1544728811
+explain vectorization expression
 select  
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category

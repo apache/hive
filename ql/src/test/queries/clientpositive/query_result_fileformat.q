@@ -7,7 +7,7 @@ http://asdf' value from src limit 1;
 select * from nzhang_test1;
 select count(*) from nzhang_test1;
 
-explain
+explain vectorization detail
 select * from nzhang_test1 where key='key1';
 
 select * from nzhang_test1 where key='key1';
@@ -18,7 +18,7 @@ select * from nzhang_test1;
 
 select count(*) from nzhang_test1;
 
-explain
+explain vectorization detail
 select * from nzhang_test1 where key='key1';
 
 select * from nzhang_test1 where key='key1';

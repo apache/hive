@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query74.tpl and seed 1556717815
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query74.tpl and seed 1556717815
+explain vectorization expression
 with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name

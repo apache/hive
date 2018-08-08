@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query89.tpl and seed 1719819282
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query89.tpl and seed 1719819282
+explain vectorization expression
 select  *
 from(
 select i_category, i_class, i_brand,

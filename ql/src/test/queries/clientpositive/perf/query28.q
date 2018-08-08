@@ -1,8 +1,11 @@
 set hive.mapred.mode=nonstrict;
 set hive.optimize.metadataonly=true;
 
--- start query 1 in stream 0 using template query28.tpl and seed 444293455
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query28.tpl and seed 444293455
+explain vectorization expression
 select  *
 from (select avg(ss_list_price) B1_LP
             ,count(ss_list_price) B1_CNT
