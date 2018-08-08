@@ -32,6 +32,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
@@ -174,6 +176,16 @@ public class PreUpgradeTool {
       throw ex;
     }
   }
+  private static HiveMetaHookLoader getHookLoader() {
+    return new HiveMetaHookLoader() {
+      @Override
+      public HiveMetaHook getHook(
+          org.apache.hadoop.hive.metastore.api.Table tbl) {
+        return null;
+      }
+    };
+  }
+
   private static IMetaStoreClient getHMS(HiveConf conf) {
     UserGroupInformation loggedInUser = null;
     try {
@@ -187,7 +199,13 @@ public class PreUpgradeTool {
     }
     try {
       LOG.info("Creating metastore client for {}", "PreUpgradeTool");
-      return RetryingMetaStoreClient.getProxy(conf, true);
+      /* I'd rather call return RetryingMetaStoreClient.getProxy(conf, true)
+      which calls HiveMetaStoreClient(HiveConf, Boolean) which exists in
+       (at least) 2.1.0.2.6.5.0-292 and later but not in 2.1.0.2.6.0.3-8 (the HDP 2.6 release)
+       i.e. RetryingMetaStoreClient.getProxy(conf, true) is broken in 2.6.0*/
+      return RetryingMetaStoreClient.getProxy(conf,
+          new Class[]{HiveConf.class, HiveMetaHookLoader.class, Boolean.class},
+          new Object[]{conf, getHookLoader(), Boolean.TRUE}, null, HiveMetaStoreClient.class.getName());
     } catch (MetaException e) {
       throw new RuntimeException("Error connecting to Hive Metastore URI: "
           + conf.getVar(HiveConf.ConfVars.METASTOREURIS) + ". " + e.getMessage(), e);
