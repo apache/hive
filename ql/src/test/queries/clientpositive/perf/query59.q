@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query59.tpl and seed 1819994127
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query59.tpl and seed 1819994127
+explain vectorization expression
 with wss as 
  (select d_week_seq,
         ss_store_sk,

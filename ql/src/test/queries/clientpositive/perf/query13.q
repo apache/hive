@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query13.tpl and seed 622697896
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query13.tpl and seed 622697896
+explain vectorization expression
 select avg(ss_quantity)
        ,avg(ss_ext_sales_price)
        ,avg(ss_ext_wholesale_cost)

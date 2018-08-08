@@ -181,7 +181,7 @@ STAGE PLANS:
                           0 _col0 (type: decimal(9,2))
                           1 _col1 (type: decimal(9,2))
                         Map Join Vectorization:
-                            bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 3:decimal(9,2)/DECIMAL_64) -> 20:decimal(9,2)
+                            bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 3:decimal(9,2)/DECIMAL_64) -> 21:decimal(9,2)
                             className: VectorMapJoinOperator
                             native: false
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
@@ -229,7 +229,7 @@ STAGE PLANS:
                     includeColumns: [3]
                     dataColumns: float_col_1:float, varchar0037_col_2:varchar(37), decimal2912_col_3:decimal(29,12), decimal0801_col_4:decimal(8,1)/DECIMAL_64, timestamp_col_5:timestamp, boolean_col_6:boolean, string_col_7:string, tinyint_col_8:tinyint, boolean_col_9:boolean, decimal1614_col_10:decimal(16,14)/DECIMAL_64, boolean_col_11:boolean, float_col_12:float, char0116_col_13:char(116), boolean_col_14:boolean, string_col_15:string, double_col_16:double, string_col_17:string, bigint_col_18:bigint, int_col_19:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(9,2), bigint]
+                    scratchColumnTypeNames: [bigint, decimal(9,2)]
         Map 3 
             Map Operator Tree:
                 TableScan

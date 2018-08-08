@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query54.tpl and seed 1930872976
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query54.tpl and seed 1930872976
+explain vectorization expression
 with my_customers as (
  select distinct c_customer_sk
         , c_current_addr_sk

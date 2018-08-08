@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query27.tpl and seed 2017787633
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query27.tpl and seed 2017787633
+explain vectorization expression
 select  i_item_id,
         s_state, grouping(s_state) g_state,
         avg(ss_quantity) agg1,

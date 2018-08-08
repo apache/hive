@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query73.tpl and seed 1971067816
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query73.tpl and seed 1971067816
+explain vectorization expression
 select c_last_name
        ,c_first_name
        ,c_salutation

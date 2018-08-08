@@ -1,5 +1,5 @@
-Warning: Shuffle Join MERGEJOIN[290][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
-PREHOOK: query: explain
+Warning: Map Join MAPJOIN[290][bigTable=?] in task 'Reducer 6' is a cross product
+PREHOOK: query: explain vectorization expression
 with ssales as
 (select c_last_name
       ,c_first_name
@@ -48,7 +48,7 @@ group by c_last_name
 having sum(netpaid) > (select 0.05*avg(netpaid)
                                  from ssales)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 with ssales as
 (select c_last_name
       ,c_first_name
@@ -97,321 +97,1273 @@ group by c_last_name
 having sum(netpaid) > (select 0.05*avg(netpaid)
                                  from ssales)
 POSTHOOK: type: QUERY
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Vertex dependency in root stage
-Map 1 <- Reducer 10 (BROADCAST_EDGE), Reducer 18 (BROADCAST_EDGE), Reducer 23 (BROADCAST_EDGE), Reducer 26 (BROADCAST_EDGE), Reducer 27 (BROADCAST_EDGE)
-Map 31 <- Reducer 16 (BROADCAST_EDGE), Reducer 21 (BROADCAST_EDGE), Reducer 24 (BROADCAST_EDGE), Reducer 28 (BROADCAST_EDGE), Reducer 29 (BROADCAST_EDGE)
-Reducer 10 <- Map 9 (CUSTOM_SIMPLE_EDGE)
-Reducer 11 <- Map 9 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE)
-Reducer 12 <- Map 25 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
-Reducer 13 <- Map 30 (SIMPLE_EDGE), Reducer 12 (SIMPLE_EDGE)
-Reducer 14 <- Reducer 13 (SIMPLE_EDGE)
-Reducer 15 <- Reducer 14 (CUSTOM_SIMPLE_EDGE)
-Reducer 16 <- Map 9 (CUSTOM_SIMPLE_EDGE)
-Reducer 18 <- Map 17 (CUSTOM_SIMPLE_EDGE)
-Reducer 19 <- Map 17 (SIMPLE_EDGE), Map 31 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
-Reducer 20 <- Map 22 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
-Reducer 21 <- Map 17 (CUSTOM_SIMPLE_EDGE)
-Reducer 23 <- Map 22 (CUSTOM_SIMPLE_EDGE)
-Reducer 24 <- Map 22 (CUSTOM_SIMPLE_EDGE)
-Reducer 26 <- Map 25 (CUSTOM_SIMPLE_EDGE)
-Reducer 27 <- Map 25 (CUSTOM_SIMPLE_EDGE)
-Reducer 28 <- Map 25 (CUSTOM_SIMPLE_EDGE)
-Reducer 29 <- Map 25 (CUSTOM_SIMPLE_EDGE)
-Reducer 3 <- Map 17 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Map 22 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Map 25 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-Reducer 6 <- Map 30 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
-Reducer 8 <- Reducer 15 (CUSTOM_SIMPLE_EDGE), Reducer 7 (CUSTOM_SIMPLE_EDGE)
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Reducer 8
-      File Output Operator [FS_91]
-        Select Operator [SEL_90] (rows=77303902 width=321)
-          Output:["_col0","_col1","_col2","_col3"]
-          Filter Operator [FIL_89] (rows=77303902 width=321)
-            predicate:(_col3 > _col4)
-            Merge Join Operator [MERGEJOIN_290] (rows=231911707 width=321)
-              Conds:(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
-            <-Reducer 15 [CUSTOM_SIMPLE_EDGE] vectorized
-              PARTITION_ONLY_SHUFFLE [RS_380]
-                Select Operator [SEL_379] (rows=1 width=232)
-                  Output:["_col0"]
-                  Group By Operator [GBY_378] (rows=1 width=232)
-                    Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"]
-                  <-Reducer 14 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_377]
-                      Group By Operator [GBY_376] (rows=1 width=232)
-                        Output:["_col0","_col1"],aggregations:["sum(_col10)","count(_col10)"]
-                        Select Operator [SEL_375] (rows=463823414 width=88)
-                          Output:["_col10"]
-                          Group By Operator [GBY_374] (rows=463823414 width=88)
-                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4, KEY._col5, KEY._col6, KEY._col7, KEY._col8, KEY._col9
-                          <-Reducer 13 [SIMPLE_EDGE]
-                            SHUFFLE [RS_78]
-                              PartitionCols:_col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                              Group By Operator [GBY_77] (rows=927646829 width=88)
-                                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["sum(_col4)"],keys:_col11, _col12, _col6, _col8, _col15, _col16, _col17, _col18, _col19, _col22
-                                Merge Join Operator [MERGEJOIN_289] (rows=927646829 width=88)
-                                  Conds:RS_73._col9, _col13=RS_355._col1, upper(_col2)(Inner),Output:["_col4","_col6","_col8","_col11","_col12","_col15","_col16","_col17","_col18","_col19","_col22"]
-                                <-Map 30 [SIMPLE_EDGE] vectorized
-                                  SHUFFLE [RS_355]
-                                    PartitionCols:_col1, upper(_col2)
-                                    Select Operator [SEL_353] (rows=40000000 width=1014)
-                                      Output:["_col0","_col1","_col2"]
-                                      Filter Operator [FIL_352] (rows=40000000 width=1014)
-                                        predicate:(ca_zip is not null and upper(ca_country) is not null)
-                                        TableScan [TS_15] (rows=40000000 width=1014)
-                                          default@customer_address,customer_address,Tbl:COMPLETE,Col:NONE,Output:["ca_state","ca_zip","ca_country"]
-                                <-Reducer 12 [SIMPLE_EDGE]
-                                  SHUFFLE [RS_73]
-                                    PartitionCols:_col9, _col13
-                                    Merge Join Operator [MERGEJOIN_288] (rows=843315281 width=88)
-                                      Conds:RS_70._col0, _col3=RS_334._col0, _col1(Inner),Output:["_col4","_col6","_col8","_col9","_col11","_col12","_col13","_col15","_col16","_col17","_col18","_col19"]
-                                    <-Map 25 [SIMPLE_EDGE] vectorized
-                                      SHUFFLE [RS_334]
-                                        PartitionCols:_col0, _col1
-                                        Select Operator [SEL_330] (rows=57591150 width=77)
-                                          Output:["_col0","_col1"]
-                                          Filter Operator [FIL_329] (rows=57591150 width=77)
-                                            predicate:(sr_item_sk is not null and sr_ticket_number is not null)
-                                            TableScan [TS_12] (rows=57591150 width=77)
-                                              default@store_returns,store_returns,Tbl:COMPLETE,Col:NONE,Output:["sr_item_sk","sr_ticket_number"]
-                                    <-Reducer 11 [SIMPLE_EDGE]
-                                      SHUFFLE [RS_70]
-                                        PartitionCols:_col0, _col3
-                                        Merge Join Operator [MERGEJOIN_287] (rows=766650239 width=88)
-                                          Conds:RS_67._col0=RS_297._col0(Inner),Output:["_col0","_col3","_col4","_col6","_col8","_col9","_col11","_col12","_col13","_col15","_col16","_col17","_col18","_col19"]
-                                        <-Map 9 [SIMPLE_EDGE] vectorized
-                                          SHUFFLE [RS_297]
-                                            PartitionCols:_col0
-                                            Select Operator [SEL_294] (rows=462000 width=1436)
-                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                                              Filter Operator [FIL_292] (rows=462000 width=1436)
-                                                predicate:i_item_sk is not null
-                                                TableScan [TS_3] (rows=462000 width=1436)
-                                                  default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_current_price","i_size","i_color","i_units","i_manager_id"]
-                                        <-Reducer 20 [SIMPLE_EDGE]
-                                          SHUFFLE [RS_67]
-                                            PartitionCols:_col0
-                                            Merge Join Operator [MERGEJOIN_286] (rows=696954748 width=88)
-                                              Conds:RS_64._col1=RS_321._col0(Inner),Output:["_col0","_col3","_col4","_col6","_col8","_col9","_col11","_col12","_col13"]
-                                            <-Map 22 [SIMPLE_EDGE] vectorized
-                                              SHUFFLE [RS_321]
-                                                PartitionCols:_col0
-                                                Select Operator [SEL_318] (rows=80000000 width=860)
-                                                  Output:["_col0","_col1","_col2","_col3"]
-                                                  Filter Operator [FIL_317] (rows=80000000 width=860)
-                                                    predicate:(c_birth_country is not null and c_customer_sk is not null)
-                                                    TableScan [TS_9] (rows=80000000 width=860)
-                                                      default@customer,customer,Tbl:COMPLETE,Col:NONE,Output:["c_customer_sk","c_first_name","c_last_name","c_birth_country"]
-                                            <-Reducer 19 [SIMPLE_EDGE]
-                                              SHUFFLE [RS_64]
-                                                PartitionCols:_col1
-                                                Merge Join Operator [MERGEJOIN_285] (rows=633595212 width=88)
-                                                  Conds:RS_373._col2=RS_309._col0(Inner),Output:["_col0","_col1","_col3","_col4","_col6","_col8","_col9"]
-                                                <-Map 17 [SIMPLE_EDGE] vectorized
-                                                  SHUFFLE [RS_309]
-                                                    PartitionCols:_col0
-                                                    Select Operator [SEL_306] (rows=852 width=1910)
-                                                      Output:["_col0","_col1","_col3","_col4"]
-                                                      Filter Operator [FIL_305] (rows=852 width=1910)
-                                                        predicate:((s_market_id = 7) and s_store_sk is not null and s_zip is not null)
-                                                        TableScan [TS_6] (rows=1704 width=1910)
-                                                          default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name","s_market_id","s_state","s_zip"]
-                                                <-Map 31 [SIMPLE_EDGE] vectorized
-                                                  SHUFFLE [RS_373]
-                                                    PartitionCols:_col2
-                                                    Select Operator [SEL_372] (rows=575995635 width=88)
-                                                      Output:["_col0","_col1","_col2","_col3","_col4"]
-                                                      Filter Operator [FIL_371] (rows=575995635 width=88)
-                                                        predicate:((ss_customer_sk BETWEEN DynamicValue(RS_65_customer_c_customer_sk_min) AND DynamicValue(RS_65_customer_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_65_customer_c_customer_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_68_item_i_item_sk_min) AND DynamicValue(RS_68_item_i_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_68_item_i_item_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_71_store_returns_sr_item_sk_min) AND DynamicValue(RS_71_store_returns_sr_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_71_store_returns_sr_item_sk_bloom_filter))) and (ss_store_sk BETWEEN DynamicValue(RS_62_store_s_store_sk_min) AND DynamicValue(RS_62_store_s_store_sk_max) and in_bloom_filter(ss_store_sk, DynamicValue(RS_62_store_s_store_sk_bloom_filter))) and (ss_ticket_number BETWEEN DynamicValue(RS_71_store_returns_sr_ticket_number_min) AND DynamicValue(RS_71_store_returns_sr_ticket_number_max) and in_bloom_filter(ss_ticket_number, DynamicValue(RS_71_store_returns_sr_ticket_number_bloom_filter))) and ss_customer_sk is not null and ss_item_sk is not null and ss_store_sk is not null and ss_ticket_number is not null)
-                                                        TableScan [TS_43] (rows=575995635 width=88)
-                                                          default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_item_sk","ss_customer_sk","ss_store_sk","ss_ticket_number","ss_sales_price"]
-                                                        <-Reducer 16 [BROADCAST_EDGE] vectorized
-                                                          BROADCAST [RS_366]
-                                                            Group By Operator [GBY_365] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                                            <-Map 9 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                              SHUFFLE [RS_302]
-                                                                Group By Operator [GBY_300] (rows=1 width=12)
-                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                                  Select Operator [SEL_298] (rows=462000 width=1436)
-                                                                    Output:["_col0"]
-                                                                     Please refer to the previous Select Operator [SEL_294]
-                                                        <-Reducer 21 [BROADCAST_EDGE] vectorized
-                                                          BROADCAST [RS_362]
-                                                            Group By Operator [GBY_361] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                                            <-Map 17 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                              SHUFFLE [RS_314]
-                                                                Group By Operator [GBY_312] (rows=1 width=12)
-                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                                  Select Operator [SEL_310] (rows=852 width=1910)
-                                                                    Output:["_col0"]
-                                                                     Please refer to the previous Select Operator [SEL_306]
-                                                        <-Reducer 24 [BROADCAST_EDGE] vectorized
-                                                          BROADCAST [RS_364]
-                                                            Group By Operator [GBY_363] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=80000000)"]
-                                                            <-Map 22 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                              SHUFFLE [RS_326]
-                                                                Group By Operator [GBY_324] (rows=1 width=12)
-                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=80000000)"]
-                                                                  Select Operator [SEL_322] (rows=80000000 width=860)
-                                                                    Output:["_col0"]
-                                                                     Please refer to the previous Select Operator [SEL_318]
-                                                        <-Reducer 28 [BROADCAST_EDGE] vectorized
-                                                          BROADCAST [RS_368]
-                                                            Group By Operator [GBY_367] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=57591152)"]
-                                                            <-Map 25 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                              SHUFFLE [RS_343]
-                                                                Group By Operator [GBY_339] (rows=1 width=12)
-                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=57591152)"]
-                                                                  Select Operator [SEL_335] (rows=57591150 width=77)
-                                                                    Output:["_col0"]
-                                                                     Please refer to the previous Select Operator [SEL_330]
-                                                        <-Reducer 29 [BROADCAST_EDGE] vectorized
-                                                          BROADCAST [RS_370]
-                                                            Group By Operator [GBY_369] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=57591152)"]
-                                                            <-Map 25 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                              SHUFFLE [RS_344]
-                                                                Group By Operator [GBY_340] (rows=1 width=12)
-                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=57591152)"]
-                                                                  Select Operator [SEL_336] (rows=57591150 width=77)
-                                                                    Output:["_col0"]
-                                                                     Please refer to the previous Select Operator [SEL_330]
-            <-Reducer 7 [CUSTOM_SIMPLE_EDGE] vectorized
-              PARTITION_ONLY_SHUFFLE [RS_360]
-                Select Operator [SEL_359] (rows=231911707 width=88)
-                  Output:["_col0","_col1","_col2","_col3"]
-                  Group By Operator [GBY_358] (rows=231911707 width=88)
-                    Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(_col9)"],keys:_col1, _col2, _col7
-                    Select Operator [SEL_357] (rows=463823414 width=88)
-                      Output:["_col1","_col2","_col7","_col9"]
-                      Group By Operator [GBY_356] (rows=463823414 width=88)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4, KEY._col5, KEY._col6, KEY._col7, KEY._col8
-                      <-Reducer 6 [SIMPLE_EDGE]
-                        SHUFFLE [RS_35]
-                          PartitionCols:_col0, _col1, _col2
-                          Group By Operator [GBY_34] (rows=927646829 width=88)
-                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["sum(_col4)"],keys:_col17, _col18, _col12, _col22, _col6, _col7, _col9, _col10, _col14
-                            Merge Join Operator [MERGEJOIN_284] (rows=927646829 width=88)
-                              Conds:RS_30._col15, _col19=RS_354._col1, upper(_col2)(Inner),Output:["_col4","_col6","_col7","_col9","_col10","_col12","_col14","_col17","_col18","_col22"]
-                            <-Map 30 [SIMPLE_EDGE] vectorized
-                              SHUFFLE [RS_354]
-                                PartitionCols:_col1, upper(_col2)
-                                 Please refer to the previous Select Operator [SEL_353]
-                            <-Reducer 5 [SIMPLE_EDGE]
-                              SHUFFLE [RS_30]
-                                PartitionCols:_col15, _col19
-                                Merge Join Operator [MERGEJOIN_283] (rows=843315281 width=88)
-                                  Conds:RS_27._col0, _col3=RS_331._col0, _col1(Inner),Output:["_col4","_col6","_col7","_col9","_col10","_col12","_col14","_col15","_col17","_col18","_col19"]
-                                <-Map 25 [SIMPLE_EDGE] vectorized
-                                  SHUFFLE [RS_331]
-                                    PartitionCols:_col0, _col1
-                                     Please refer to the previous Select Operator [SEL_330]
-                                <-Reducer 4 [SIMPLE_EDGE]
-                                  SHUFFLE [RS_27]
-                                    PartitionCols:_col0, _col3
-                                    Merge Join Operator [MERGEJOIN_282] (rows=766650239 width=88)
-                                      Conds:RS_24._col1=RS_319._col0(Inner),Output:["_col0","_col3","_col4","_col6","_col7","_col9","_col10","_col12","_col14","_col15","_col17","_col18","_col19"]
-                                    <-Map 22 [SIMPLE_EDGE] vectorized
-                                      SHUFFLE [RS_319]
-                                        PartitionCols:_col0
-                                         Please refer to the previous Select Operator [SEL_318]
-                                    <-Reducer 3 [SIMPLE_EDGE]
-                                      SHUFFLE [RS_24]
-                                        PartitionCols:_col1
-                                        Merge Join Operator [MERGEJOIN_281] (rows=696954748 width=88)
-                                          Conds:RS_21._col2=RS_307._col0(Inner),Output:["_col0","_col1","_col3","_col4","_col6","_col7","_col9","_col10","_col12","_col14","_col15"]
-                                        <-Map 17 [SIMPLE_EDGE] vectorized
-                                          SHUFFLE [RS_307]
-                                            PartitionCols:_col0
-                                             Please refer to the previous Select Operator [SEL_306]
-                                        <-Reducer 2 [SIMPLE_EDGE]
-                                          SHUFFLE [RS_21]
-                                            PartitionCols:_col2
-                                            Merge Join Operator [MERGEJOIN_280] (rows=633595212 width=88)
-                                              Conds:RS_351._col0=RS_295._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col6","_col7","_col9","_col10"]
-                                            <-Map 9 [SIMPLE_EDGE] vectorized
-                                              SHUFFLE [RS_295]
-                                                PartitionCols:_col0
-                                                Select Operator [SEL_293] (rows=231000 width=1436)
-                                                  Output:["_col0","_col1","_col2","_col4","_col5"]
-                                                  Filter Operator [FIL_291] (rows=231000 width=1436)
-                                                    predicate:((i_color = 'orchid') and i_item_sk is not null)
-                                                     Please refer to the previous TableScan [TS_3]
-                                            <-Map 1 [SIMPLE_EDGE] vectorized
-                                              SHUFFLE [RS_351]
-                                                PartitionCols:_col0
-                                                Select Operator [SEL_350] (rows=575995635 width=88)
-                                                  Output:["_col0","_col1","_col2","_col3","_col4"]
-                                                  Filter Operator [FIL_349] (rows=575995635 width=88)
-                                                    predicate:((ss_customer_sk BETWEEN DynamicValue(RS_25_customer_c_customer_sk_min) AND DynamicValue(RS_25_customer_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_25_customer_c_customer_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_19_item_i_item_sk_min) AND DynamicValue(RS_19_item_i_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_19_item_i_item_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_28_store_returns_sr_item_sk_min) AND DynamicValue(RS_28_store_returns_sr_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_28_store_returns_sr_item_sk_bloom_filter))) and (ss_store_sk BETWEEN DynamicValue(RS_22_store_s_store_sk_min) AND DynamicValue(RS_22_store_s_store_sk_max) and in_bloom_filter(ss_store_sk, DynamicValue(RS_22_store_s_store_sk_bloom_filter))) and (ss_ticket_number BETWEEN DynamicValue(RS_28_store_returns_sr_ticket_number_min) AND DynamicValue(RS_28_store_returns_sr_ticket_number_max) and in_bloom_filter(ss_ticket_number, DynamicValue(RS_28_store_returns_sr_ticket_number_bloom_filter))) and ss_customer_sk is not null and ss_item_sk is not null and ss_store_sk is not null and ss_ticket_number is not null)
-                                                    TableScan [TS_0] (rows=575995635 width=88)
-                                                      default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_item_sk","ss_customer_sk","ss_store_sk","ss_ticket_number","ss_sales_price"]
-                                                    <-Reducer 10 [BROADCAST_EDGE] vectorized
-                                                      BROADCAST [RS_304]
-                                                        Group By Operator [GBY_303] (rows=1 width=12)
-                                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                                        <-Map 9 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                          SHUFFLE [RS_301]
-                                                            Group By Operator [GBY_299] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                              Select Operator [SEL_296] (rows=231000 width=1436)
-                                                                Output:["_col0"]
-                                                                 Please refer to the previous Select Operator [SEL_293]
-                                                    <-Reducer 18 [BROADCAST_EDGE] vectorized
-                                                      BROADCAST [RS_316]
-                                                        Group By Operator [GBY_315] (rows=1 width=12)
-                                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                                        <-Map 17 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                          SHUFFLE [RS_313]
-                                                            Group By Operator [GBY_311] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                              Select Operator [SEL_308] (rows=852 width=1910)
-                                                                Output:["_col0"]
-                                                                 Please refer to the previous Select Operator [SEL_306]
-                                                    <-Reducer 23 [BROADCAST_EDGE] vectorized
-                                                      BROADCAST [RS_328]
-                                                        Group By Operator [GBY_327] (rows=1 width=12)
-                                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=80000000)"]
-                                                        <-Map 22 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                          SHUFFLE [RS_325]
-                                                            Group By Operator [GBY_323] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=80000000)"]
-                                                              Select Operator [SEL_320] (rows=80000000 width=860)
-                                                                Output:["_col0"]
-                                                                 Please refer to the previous Select Operator [SEL_318]
-                                                    <-Reducer 26 [BROADCAST_EDGE] vectorized
-                                                      BROADCAST [RS_346]
-                                                        Group By Operator [GBY_345] (rows=1 width=12)
-                                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=57591152)"]
-                                                        <-Map 25 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                          SHUFFLE [RS_341]
-                                                            Group By Operator [GBY_337] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=57591152)"]
-                                                              Select Operator [SEL_332] (rows=57591150 width=77)
-                                                                Output:["_col0"]
-                                                                 Please refer to the previous Select Operator [SEL_330]
-                                                    <-Reducer 27 [BROADCAST_EDGE] vectorized
-                                                      BROADCAST [RS_348]
-                                                        Group By Operator [GBY_347] (rows=1 width=12)
-                                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=57591152)"]
-                                                        <-Map 25 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                          SHUFFLE [RS_342]
-                                                            Group By Operator [GBY_338] (rows=1 width=12)
-                                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=57591152)"]
-                                                              Select Operator [SEL_333] (rows=57591150 width=77)
-                                                                Output:["_col0"]
-                                                                 Please refer to the previous Select Operator [SEL_330]
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Reducer 16 (BROADCAST_EDGE), Reducer 18 (BROADCAST_EDGE), Reducer 22 (BROADCAST_EDGE), Reducer 23 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE)
+        Map 27 <- Map 15 (BROADCAST_EDGE), Reducer 14 (BROADCAST_EDGE), Reducer 20 (BROADCAST_EDGE), Reducer 24 (BROADCAST_EDGE), Reducer 25 (BROADCAST_EDGE)
+        Reducer 10 <- Map 21 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 11 <- Map 26 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
+        Reducer 12 <- Reducer 11 (SIMPLE_EDGE)
+        Reducer 13 <- Reducer 12 (CUSTOM_SIMPLE_EDGE)
+        Reducer 14 <- Map 7 (CUSTOM_SIMPLE_EDGE)
+        Reducer 16 <- Map 15 (CUSTOM_SIMPLE_EDGE)
+        Reducer 18 <- Map 17 (CUSTOM_SIMPLE_EDGE)
+        Reducer 19 <- Map 17 (SIMPLE_EDGE), Map 27 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 15 (CUSTOM_SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 20 <- Map 17 (CUSTOM_SIMPLE_EDGE)
+        Reducer 22 <- Map 21 (CUSTOM_SIMPLE_EDGE)
+        Reducer 23 <- Map 21 (CUSTOM_SIMPLE_EDGE)
+        Reducer 24 <- Map 21 (CUSTOM_SIMPLE_EDGE)
+        Reducer 25 <- Map 21 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Map 17 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Map 21 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Map 26 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 13 (BROADCAST_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE)
+        Reducer 9 <- Map 7 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  filterExpr: (ss_ticket_number is not null and ss_item_sk is not null and ss_store_sk is not null and ss_customer_sk is not null and (ss_item_sk BETWEEN DynamicValue(RS_19_item_i_item_sk_min) AND DynamicValue(RS_19_item_i_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_19_item_i_item_sk_bloom_filter))) and (ss_store_sk BETWEEN DynamicValue(RS_22_store_s_store_sk_min) AND DynamicValue(RS_22_store_s_store_sk_max) and in_bloom_filter(ss_store_sk, DynamicValue(RS_22_store_s_store_sk_bloom_filter))) and (ss_customer_sk BETWEEN DynamicValue(RS_25_customer_c_customer_sk_min) AND DynamicValue(RS_25_customer_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_25_customer_c_customer_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_28_store_returns_sr_item_sk_min) AND DynamicValue(RS_28_store_returns_sr_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_28_store_returns_sr_item_sk_bloom_filter))) and (ss_ticket_number BETWEEN DynamicValue(RS_28_store_returns_sr_ticket_number_min) AND DynamicValue(RS_28_store_returns_sr_ticket_number_max) and in_bloom_filter(ss_ticket_number, DynamicValue(RS_28_store_returns_sr_ticket_number_bloom_filter)))) (type: boolean)
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 9:int), SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 7:int), SelectColumnIsNotNull(col 3:int), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), VectorInBloomFilterColDynamicValue), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 7:int, left 0, right 0), VectorInBloomFilterColDynamicValue), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 3:int, left 0, right 0), VectorInBloomFilterColDynamicValue), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), VectorInBloomFilterColDynamicValue), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 9:int, left 0, right 0), VectorInBloomFilterColDynamicValue))
+                    predicate: ((ss_customer_sk BETWEEN DynamicValue(RS_25_customer_c_customer_sk_min) AND DynamicValue(RS_25_customer_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_25_customer_c_customer_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_19_item_i_item_sk_min) AND DynamicValue(RS_19_item_i_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_19_item_i_item_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_28_store_returns_sr_item_sk_min) AND DynamicValue(RS_28_store_returns_sr_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_28_store_returns_sr_item_sk_bloom_filter))) and (ss_store_sk BETWEEN DynamicValue(RS_22_store_s_store_sk_min) AND DynamicValue(RS_22_store_s_store_sk_max) and in_bloom_filter(ss_store_sk, DynamicValue(RS_22_store_s_store_sk_bloom_filter))) and (ss_ticket_number BETWEEN DynamicValue(RS_28_store_returns_sr_ticket_number_min) AND DynamicValue(RS_28_store_returns_sr_ticket_number_max) and in_bloom_filter(ss_ticket_number, DynamicValue(RS_28_store_returns_sr_ticket_number_bloom_filter))) and ss_customer_sk is not null and ss_item_sk is not null and ss_store_sk is not null and ss_ticket_number is not null) (type: boolean)
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_item_sk (type: int), ss_customer_sk (type: int), ss_store_sk (type: int), ss_ticket_number (type: int), ss_sales_price (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [2, 3, 7, 9, 13]
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2))
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Map 15 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  filterExpr: ((s_market_id = 7) and s_store_sk is not null and s_zip is not null) (type: boolean)
+                  Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 10:int, val 7), SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 25:string))
+                    predicate: ((s_market_id = 7) and s_store_sk is not null and s_zip is not null) (type: boolean)
+                    Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: s_store_sk (type: int), s_store_name (type: string), s_state (type: string), s_zip (type: string)
+                      outputColumnNames: _col0, _col1, _col3, _col4
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 5, 24, 25]
+                      Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col3 (type: string), _col4 (type: string)
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: _col0
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [0]
+                        Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1000000)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFBloomFilter(col 0:int) -> binary
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0, 1, 2]
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkEmptyKeyOperator
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col3 (type: string), _col4 (type: string)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Map 17 
+            Map Operator Tree:
+                TableScan
+                  alias: customer
+                  filterExpr: (c_customer_sk is not null and c_birth_country is not null) (type: boolean)
+                  Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 14:string))
+                    predicate: (c_birth_country is not null and c_customer_sk is not null) (type: boolean)
+                    Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c_customer_sk (type: int), c_first_name (type: string), c_last_name (type: string), c_birth_country (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 8, 9, 14]
+                      Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: _col0
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [0]
+                        Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=80000000)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFBloomFilter(col 0:int) -> binary
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0, 1, 2]
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkEmptyKeyOperator
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: _col0
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [0]
+                        Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=80000000)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFBloomFilter(col 0:int) -> binary
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0, 1, 2]
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkEmptyKeyOperator
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Map 21 
+            Map Operator Tree:
+                TableScan
+                  alias: store_returns
+                  filterExpr: (sr_ticket_number is not null and sr_item_sk is not null) (type: boolean)
+                  Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 9:int), SelectColumnIsNotNull(col 2:int))
+                    predicate: (sr_item_sk is not null and sr_ticket_number is not null) (type: boolean)
+                    Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: sr_item_sk (type: int), sr_ticket_number (type: int)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [2, 9]
+                      Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: _col0
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [2]
+                        Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=57591152)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFBloomFilter(col 2:int) -> binary
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0, 1, 2]
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkEmptyKeyOperator
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+                      Select Operator
+                        expressions: _col1 (type: int)
+                        outputColumnNames: _col0
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [9]
+                        Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=57591152)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFMinLong(col 9:int) -> int, VectorUDAFMaxLong(col 9:int) -> int, VectorUDAFBloomFilter(col 9:int) -> binary
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0, 1, 2]
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkEmptyKeyOperator
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: _col0
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [2]
+                        Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=57591152)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFBloomFilter(col 2:int) -> binary
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0, 1, 2]
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkEmptyKeyOperator
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+                      Select Operator
+                        expressions: _col1 (type: int)
+                        outputColumnNames: _col0
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [9]
+                        Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=57591152)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFMinLong(col 9:int) -> int, VectorUDAFMaxLong(col 9:int) -> int, VectorUDAFBloomFilter(col 9:int) -> binary
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0, 1, 2]
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkEmptyKeyOperator
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Map 26 
+            Map Operator Tree:
+                TableScan
+                  alias: customer_address
+                  filterExpr: (upper(ca_country) is not null and ca_zip is not null) (type: boolean)
+                  Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 14:string)(children: StringUpper(col 10:string) -> 14:string), SelectColumnIsNotNull(col 9:string))
+                    predicate: (ca_zip is not null and upper(ca_country) is not null) (type: boolean)
+                    Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ca_state (type: string), ca_zip (type: string), ca_country (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [8, 9, 10]
+                      Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string), upper(_col2) (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: string), upper(_col2) (type: string)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyExpressions: StringUpper(col 10:string) -> 14:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string)
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string), upper(_col2) (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: string), upper(_col2) (type: string)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyExpressions: StringUpper(col 10:string) -> 15:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Map 27 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  filterExpr: (ss_ticket_number is not null and ss_item_sk is not null and ss_store_sk is not null and ss_customer_sk is not null and (ss_customer_sk BETWEEN DynamicValue(RS_65_customer_c_customer_sk_min) AND DynamicValue(RS_65_customer_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_65_customer_c_customer_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_68_item_i_item_sk_min) AND DynamicValue(RS_68_item_i_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_68_item_i_item_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_71_store_returns_sr_item_sk_min) AND DynamicValue(RS_71_store_returns_sr_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_71_store_returns_sr_item_sk_bloom_filter))) and (ss_ticket_number BETWEEN DynamicValue(RS_71_store_returns_sr_ticket_number_min) AND DynamicValue(RS_71_store_returns_sr_ticket_number_max) and in_bloom_filter(ss_ticket_number, DynamicValue(RS_71_store_returns_sr_ticket_number_bloom_filter)))) (type: boolean)
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 9:int), SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 7:int), SelectColumnIsNotNull(col 3:int), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 3:int, left 0, right 0), VectorInBloomFilterColDynamicValue), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), VectorInBloomFilterColDynamicValue), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), VectorInBloomFilterColDynamicValue), FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 9:int, left 0, right 0), VectorInBloomFilterColDynamicValue))
+                    predicate: ((ss_customer_sk BETWEEN DynamicValue(RS_65_customer_c_customer_sk_min) AND DynamicValue(RS_65_customer_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_65_customer_c_customer_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_68_item_i_item_sk_min) AND DynamicValue(RS_68_item_i_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_68_item_i_item_sk_bloom_filter))) and (ss_item_sk BETWEEN DynamicValue(RS_71_store_returns_sr_item_sk_min) AND DynamicValue(RS_71_store_returns_sr_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_71_store_returns_sr_item_sk_bloom_filter))) and (ss_ticket_number BETWEEN DynamicValue(RS_71_store_returns_sr_ticket_number_min) AND DynamicValue(RS_71_store_returns_sr_ticket_number_max) and in_bloom_filter(ss_ticket_number, DynamicValue(RS_71_store_returns_sr_ticket_number_bloom_filter))) and ss_customer_sk is not null and ss_item_sk is not null and ss_store_sk is not null and ss_ticket_number is not null) (type: boolean)
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_item_sk (type: int), ss_customer_sk (type: int), ss_store_sk (type: int), ss_ticket_number (type: int), ss_sales_price (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [2, 3, 7, 9, 13]
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col2 (type: int)
+                          1 _col0 (type: int)
+                        Map Join Vectorization:
+                            className: VectorMapJoinInnerLongOperator
+                            native: true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        outputColumnNames: _col0, _col1, _col3, _col4, _col6, _col8, _col9
+                        input vertices:
+                          1 Map 15
+                        Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Reduce Output Operator
+                          key expressions: _col1 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col1 (type: int)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkLongOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: int), _col3 (type: int), _col4 (type: decimal(7,2)), _col6 (type: string), _col8 (type: string), _col9 (type: string)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: item
+                  filterExpr: (((i_color = 'orchid') and i_item_sk is not null) or i_item_sk is not null) (type: boolean)
+                  Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 17:string, val orchid), SelectColumnIsNotNull(col 0:int))
+                    predicate: ((i_color = 'orchid') and i_item_sk is not null) (type: boolean)
+                    Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: i_item_sk (type: int), i_current_price (type: decimal(7,2)), i_size (type: string), i_units (type: string), i_manager_id (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col4, _col5
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 5, 15, 18, 20]
+                      Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: decimal(7,2)), _col2 (type: string), _col4 (type: string), _col5 (type: int)
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: _col0
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [0]
+                        Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1000000)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFBloomFilter(col 0:int) -> binary
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0, 1, 2]
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkEmptyKeyOperator
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:int)
+                    predicate: i_item_sk is not null (type: boolean)
+                    Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: i_item_sk (type: int), i_current_price (type: decimal(7,2)), i_size (type: string), i_color (type: string), i_units (type: string), i_manager_id (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 5, 15, 17, 18, 20]
+                      Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: decimal(7,2)), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int)
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: _col0
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [0]
+                        Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1000000)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFBloomFilter(col 0:int) -> binary
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0, 1, 2]
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkEmptyKeyOperator
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 10 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int), _col3 (type: int)
+                  1 _col0 (type: int), _col1 (type: int)
+                outputColumnNames: _col4, _col6, _col8, _col9, _col11, _col12, _col13, _col15, _col16, _col17, _col18, _col19
+                Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col9 (type: string), _col13 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col9 (type: string), _col13 (type: string)
+                  Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col4 (type: decimal(7,2)), _col6 (type: string), _col8 (type: string), _col11 (type: string), _col12 (type: string), _col15 (type: decimal(7,2)), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: int)
+        Reducer 11 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col9 (type: string), _col13 (type: string)
+                  1 _col1 (type: string), upper(_col2) (type: string)
+                outputColumnNames: _col4, _col6, _col8, _col11, _col12, _col15, _col16, _col17, _col18, _col19, _col22
+                Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_col4)
+                  keys: _col11 (type: string), _col12 (type: string), _col6 (type: string), _col8 (type: string), _col15 (type: decimal(7,2)), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: int), _col22 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                  Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: decimal(7,2)), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: string)
+                    sort order: ++++++++++
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: decimal(7,2)), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: string)
+                    Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col10 (type: decimal(17,2))
+        Reducer 12 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 10:decimal(17,2)) -> decimal(17,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string, col 4:decimal(7,2), col 5:string, col 6:string, col 7:string, col 8:int, col 9:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: string), KEY._col4 (type: decimal(7,2)), KEY._col5 (type: string), KEY._col6 (type: string), KEY._col7 (type: string), KEY._col8 (type: int), KEY._col9 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 463823414 Data size: 40918636268 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col10 (type: decimal(17,2))
+                  outputColumnNames: _col10
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [10]
+                  Statistics: Num rows: 463823414 Data size: 40918636268 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col10), count(_col10)
+                    Group By Vectorization:
+                        aggregators: VectorUDAFSumDecimal(col 10:decimal(17,2)) -> decimal(27,2), VectorUDAFCount(col 10:decimal(17,2)) -> bigint
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: [0, 1]
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkEmptyKeyOperator
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(27,2)), _col1 (type: bigint)
+        Reducer 13 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 0:decimal(27,2)) -> decimal(27,2), VectorUDAFCountMerge(col 1:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: (0.05 * (_col0 / _col1)) (type: decimal(38,12))
+                  outputColumnNames: _col0
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [4]
+                      selectExpressions: DecimalScalarMultiplyDecimalColumn(val 0.05, col 3:decimal(38,13))(children: DecimalColDivideDecimalColumn(col 0:decimal(27,2), col 2:decimal(19,0))(children: CastLongToDecimal(col 1:bigint) -> 2:decimal(19,0)) -> 3:decimal(38,13)) -> 4:decimal(38,12)
+                  Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkEmptyKeyOperator
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: decimal(38,12))
+        Reducer 14 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000000)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: FINAL
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkEmptyKeyOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 16 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000000)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: FINAL
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkEmptyKeyOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 18 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=80000000)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: FINAL
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkEmptyKeyOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 19 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col3, _col4, _col6, _col8, _col9, _col11, _col12, _col13
+                Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col3 (type: int), _col4 (type: decimal(7,2)), _col6 (type: string), _col8 (type: string), _col9 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col6, _col7, _col9, _col10
+                Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col2 (type: int)
+                    1 _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col3, _col4, _col6, _col7, _col9, _col10, _col12, _col14, _col15
+                  input vertices:
+                    1 Map 15
+                  Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
+                  Reduce Output Operator
+                    key expressions: _col1 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: int)
+                    Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: int), _col3 (type: int), _col4 (type: decimal(7,2)), _col6 (type: decimal(7,2)), _col7 (type: string), _col9 (type: string), _col10 (type: int), _col12 (type: string), _col14 (type: string), _col15 (type: string)
+        Reducer 20 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=80000000)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: FINAL
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkEmptyKeyOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 22 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=57591152)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: FINAL
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkEmptyKeyOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 23 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=57591152)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: FINAL
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkEmptyKeyOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 24 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=57591152)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: FINAL
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkEmptyKeyOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 25 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=57591152)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: FINAL
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkEmptyKeyOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 3 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col3, _col4, _col6, _col7, _col9, _col10, _col12, _col14, _col15, _col17, _col18, _col19
+                Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col3 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col3 (type: int)
+                  Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col4 (type: decimal(7,2)), _col6 (type: decimal(7,2)), _col7 (type: string), _col9 (type: string), _col10 (type: int), _col12 (type: string), _col14 (type: string), _col15 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: string)
+        Reducer 4 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int), _col3 (type: int)
+                  1 _col0 (type: int), _col1 (type: int)
+                outputColumnNames: _col4, _col6, _col7, _col9, _col10, _col12, _col14, _col15, _col17, _col18, _col19
+                Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col15 (type: string), _col19 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col15 (type: string), _col19 (type: string)
+                  Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col4 (type: decimal(7,2)), _col6 (type: decimal(7,2)), _col7 (type: string), _col9 (type: string), _col10 (type: int), _col12 (type: string), _col14 (type: string), _col17 (type: string), _col18 (type: string)
+        Reducer 5 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col15 (type: string), _col19 (type: string)
+                  1 _col1 (type: string), upper(_col2) (type: string)
+                outputColumnNames: _col4, _col6, _col7, _col9, _col10, _col12, _col14, _col17, _col18, _col22
+                Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_col4)
+                  keys: _col17 (type: string), _col18 (type: string), _col12 (type: string), _col22 (type: string), _col6 (type: decimal(7,2)), _col7 (type: string), _col9 (type: string), _col10 (type: int), _col14 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                  Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: decimal(7,2)), _col5 (type: string), _col6 (type: string), _col7 (type: int), _col8 (type: string)
+                    sort order: +++++++++
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                    Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col9 (type: decimal(17,2))
+        Reducer 6 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 9:decimal(17,2)) -> decimal(17,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string, col 4:decimal(7,2), col 5:string, col 6:string, col 7:int, col 8:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: string), KEY._col4 (type: decimal(7,2)), KEY._col5 (type: string), KEY._col6 (type: string), KEY._col7 (type: int), KEY._col8 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 463823414 Data size: 40918636268 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col9 (type: decimal(17,2))
+                  outputColumnNames: _col1, _col2, _col7, _col9
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 1, 2, 9]
+                  Statistics: Num rows: 463823414 Data size: 40918636268 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col9)
+                    Group By Vectorization:
+                        aggregators: VectorUDAFSumDecimal(col 9:decimal(17,2)) -> decimal(27,2)
+                        className: VectorGroupByOperator
+                        groupByMode: COMPLETE
+                        keyExpressions: col 0:string, col 1:string, col 2:string
+                        native: false
+                        vectorProcessingMode: STREAMING
+                        projectedOutputColumnNums: [0]
+                    keys: _col1 (type: string), _col2 (type: string), _col7 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 231911707 Data size: 20459318134 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string), _col3 (type: decimal(27,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [1, 0, 2, 3]
+                      Statistics: Num rows: 231911707 Data size: 20459318134 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 
+                          1 
+                        Map Join Vectorization:
+                            className: VectorMapJoinInnerMultiKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        input vertices:
+                          1 Reducer 13
+                        Statistics: Num rows: 231911707 Data size: 74494745865 Basic stats: COMPLETE Column stats: NONE
+                        Filter Operator
+                          Filter Vectorization:
+                              className: VectorFilterOperator
+                              native: true
+                              predicateExpression: FilterDecimalColGreaterDecimalColumn(col 3:decimal(27,2), col 4:decimal(38,12))
+                          predicate: (_col3 > _col4) (type: boolean)
+                          Statistics: Num rows: 77303902 Data size: 24831581847 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: decimal(27,2))
+                            outputColumnNames: _col0, _col1, _col2, _col3
+                            Select Vectorization:
+                                className: VectorSelectOperator
+                                native: true
+                                projectedOutputColumnNums: [1, 0, 2, 3]
+                            Statistics: Num rows: 77303902 Data size: 24831581847 Basic stats: COMPLETE Column stats: NONE
+                            File Output Operator
+                              compressed: false
+                              File Sink Vectorization:
+                                  className: VectorFileSinkOperator
+                                  native: false
+                              Statistics: Num rows: 77303902 Data size: 24831581847 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 8 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000000)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: FINAL
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkEmptyKeyOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 9 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col3, _col4, _col6, _col8, _col9, _col11, _col12, _col13, _col15, _col16, _col17, _col18, _col19
+                Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col3 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col3 (type: int)
+                  Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col4 (type: decimal(7,2)), _col6 (type: string), _col8 (type: string), _col9 (type: string), _col11 (type: string), _col12 (type: string), _col13 (type: string), _col15 (type: decimal(7,2)), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: int)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 

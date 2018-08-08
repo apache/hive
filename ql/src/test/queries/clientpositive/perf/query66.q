@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query66.tpl and seed 2042478054
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query66.tpl and seed 2042478054
+explain vectorization expression
 select   
          w_warehouse_name
  	,w_warehouse_sq_ft

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -877,10 +878,12 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
 
     final int size = keyExpressions.length;
     TypeInfo[] typeInfos = new TypeInfo[size];
+    DataTypePhysicalVariation[] dataTypePhysicalVariations = new DataTypePhysicalVariation[size];
     for (int i = 0; i < size; i++) {
       typeInfos[i] = keyExpressions[i].getOutputTypeInfo();
+      dataTypePhysicalVariations[i] = keyExpressions[i].getOutputDataTypePhysicalVariation();
     }
-    return compileKeyWrapperBatch(keyExpressions, typeInfos);
+    return compileKeyWrapperBatch(keyExpressions, typeInfos, dataTypePhysicalVariations);
   }
 
   /**
@@ -890,7 +893,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * will be used to generate proper individual VectorKeyHashWrapper objects.
    */
   public static VectorHashKeyWrapperBatch compileKeyWrapperBatch(VectorExpression[] keyExpressions,
-      TypeInfo[] typeInfos)
+      TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations)
     throws HiveException {
     VectorHashKeyWrapperBatch compiledKeyWrapperBatch = new VectorHashKeyWrapperBatch(keyExpressions.length);
     compiledKeyWrapperBatch.keyExpressions = keyExpressions;
@@ -899,7 +902,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
 
     // Inspect the output type of each key expression.
     for(int i=0; i < typeInfos.length; ++i) {
-      compiledKeyWrapperBatch.addKey(typeInfos[i]);
+      compiledKeyWrapperBatch.addKey(typeInfos[i], dataTypePhysicalVariations[i]);
     }
     compiledKeyWrapperBatch.finishAdding();
 
@@ -962,6 +965,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
 
     switch (columnVectorType) {
     case LONG:
+    case DECIMAL_64:
       return keyOutputWriter.writeValue(
           kw.getLongValue(columnTypeSpecificIndex));
     case DOUBLE:
@@ -975,8 +979,6 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     case DECIMAL:
       return keyOutputWriter.writeValue(
           kw.getDecimal(columnTypeSpecificIndex));
-    case DECIMAL_64:
-      throw new RuntimeException("Getting writable for DECIMAL_64 not supported");
     case TIMESTAMP:
       return keyOutputWriter.writeValue(
           kw.getTimestamp(columnTypeSpecificIndex));
