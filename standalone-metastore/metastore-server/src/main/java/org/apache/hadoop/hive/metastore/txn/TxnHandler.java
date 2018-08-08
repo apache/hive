@@ -1462,14 +1462,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           return new AllocateTableWriteIdsResponse(txnToWriteIds);
         }
 
-        handle = getMutexAPI().acquireLock(MUTEX_KEY.WriteIdAllocator.name());
-
-        assert((writeId == 0) && txnToWriteIds.isEmpty());
+        long srcWriteId = 0;
         if (rqst.isSetReplPolicy()) {
           // In replication flow, we always need to allocate write ID equal to that of source.
           assert(srcTxnToWriteIds != null);
-          writeId = srcTxnToWriteIds.get(0).getWriteId();
+          srcWriteId = srcTxnToWriteIds.get(0).getWriteId();
         }
+
+        handle = getMutexAPI().acquireLock(MUTEX_KEY.WriteIdAllocator.name());
 
         // There are some txns in the list which does not have write id allocated and hence go ahead and do it.
         // Get the next write id for the given table and update it with new next write id.
@@ -1482,13 +1482,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (!rs.next()) {
           // First allocation of write id should add the table to the next_write_id meta table
           // The initial value for write id should be 1 and hence we add 1 with number of write ids allocated here
-          writeId = (writeId <= 0) ? 1 : writeId;
+          // For repl flow, we need to force set the incoming write id.
+          writeId = (srcWriteId > 0) ? srcWriteId : 1;
           s = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
                   + quoteString(dbName) + "," + quoteString(tblName) + "," + (writeId + numOfWriteIds) + ")";
           LOG.debug("Going to execute insert <" + s + ">");
           stmt.execute(s);
         } else {
-          writeId = (writeId <= 0) ? rs.getLong(1) : writeId;
+          long nextWriteId = rs.getLong(1);
+          writeId = (srcWriteId > 0) ? srcWriteId : nextWriteId;
 
           // Update the NEXT_WRITE_ID for the given table after incrementing by number of write ids allocated
           s = "update NEXT_WRITE_ID set nwi_next = " + (writeId + numOfWriteIds)
@@ -1496,6 +1498,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   + " and nwi_table = " + quoteString(tblName);
           LOG.debug("Going to execute update <" + s + ">");
           stmt.executeUpdate(s);
+
+          // For repl flow, if the source write id is mismatching with target next write id, then current
+          // metadata in TXN_TO_WRITE_ID is stale for this table and hence need to clean-up TXN_TO_WRITE_ID.
+          // This is possible in case of first incremental repl after bootstrap where concurrent write
+          // and drop table was performed at source during bootstrap dump.
+          if ((srcWriteId > 0) && (srcWriteId != nextWriteId)) {
+            s = "delete from TXN_TO_WRITE_ID where t2w_database = " + quoteString(dbName)
+                    + " and t2w_table = " + quoteString(tblName);
+            LOG.debug("Going to execute delete <" + s + ">");
+            stmt.executeUpdate(s);
+          }
         }
 
         // Map the newly allocated write ids against the list of txns which doesn't have pre-allocated
