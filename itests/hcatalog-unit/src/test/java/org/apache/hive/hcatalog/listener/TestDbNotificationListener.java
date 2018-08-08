@@ -428,7 +428,7 @@ public class TestDbNotificationListener {
     // a failed event should not create a new notification
     table =
         new Table(tblName2, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            emptyParameters, null, null, null);
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
       msClient.createTable(table);
@@ -456,14 +456,14 @@ public class TestDbNotificationListener {
             emptyParameters);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd,
-            new ArrayList<FieldSchema>(), emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            new ArrayList<FieldSchema>(), emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
     cols.add(col2);
     table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd,
-            new ArrayList<FieldSchema>(), emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            new ArrayList<FieldSchema>(), emptyParameters, null, null, null);
     // Event 2
     msClient.alter_table(defaultDbName, tblName, table);
 
@@ -514,7 +514,7 @@ public class TestDbNotificationListener {
             emptyParameters);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
@@ -551,7 +551,7 @@ public class TestDbNotificationListener {
     // a failed event should not create a new notification
     table =
         new Table(tblName2, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            emptyParameters, null, null, null);
     msClient.createTable(table);
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
@@ -584,7 +584,7 @@ public class TestDbNotificationListener {
     partCols.add(partCol1);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
-            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
@@ -652,7 +652,7 @@ public class TestDbNotificationListener {
     partCols.add(partCol1);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
-            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
@@ -720,7 +720,7 @@ public class TestDbNotificationListener {
     partCols.add(partCol1);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
-            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            emptyParameters, null, null, null);
 
     // Event 1
     msClient.createTable(table);
@@ -786,7 +786,7 @@ public class TestDbNotificationListener {
     StorageDescriptor sd1 = new StorageDescriptor(cols, "file:/tmp/1", "input", "output", false, 0,
         serde, null, null, emptyParameters);
     Table tab1 = new Table("tab1", dbName, "me", startTime, startTime, 0, sd1, partCols,
-        emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+        emptyParameters, null, null, null);
     msClient.createTable(tab1);
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize()); // add_table
@@ -794,7 +794,7 @@ public class TestDbNotificationListener {
     StorageDescriptor sd2 = new StorageDescriptor(cols, "file:/tmp/2", "input", "output", false, 0,
         serde, null, null, emptyParameters);
     Table tab2 = new Table("tab2", dbName, "me", startTime, startTime, 0, sd2, partCols,
-        emptyParameters, null, null, TableType.MANAGED_TABLE.toString()); // add_table
+        emptyParameters, null, null, null); // add_table
     msClient.createTable(tab2);
     rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
     assertEquals(1, rsp.getEventsSize());
@@ -994,7 +994,7 @@ public class TestDbNotificationListener {
             emptyParameters);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            emptyParameters, null, null, null);
     // Event 1
     msClient.createTable(table);
 
@@ -1056,7 +1056,7 @@ public class TestDbNotificationListener {
     partCols.add(partCol1);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
-            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
+            emptyParameters, null, null, null);
     // Event 1
     msClient.createTable(table);
     Partition partition =

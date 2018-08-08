@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RawStoreProxy;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -85,6 +84,7 @@ import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,7 +156,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onCreateTable(CreateTableEvent tableEvent) throws MetaException {
     Table t = tableEvent.getTable();
-    FileIterator fileIter = t.getTableType().equals(TableType.EXTERNAL_TABLE.toString())
+    FileIterator fileIter = MetaStoreUtils.isExternalTable(t)
                               ? null : new FileIterator(t.getSd().getLocation());
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.CREATE_TABLE.toString(),
@@ -304,7 +304,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onAddPartition(AddPartitionEvent partitionEvent) throws MetaException {
     Table t = partitionEvent.getTable();
-    PartitionFilesIterator fileIter = t.getTableType().equals(TableType.EXTERNAL_TABLE.toString())
+    PartitionFilesIterator fileIter = MetaStoreUtils.isExternalTable(t)
             ? null : new PartitionFilesIterator(partitionEvent.getPartitionIterator(), t);
     String msg = msgFactory
         .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator(), fileIter).toString();
