@@ -142,7 +142,10 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
 
   @Override
   public long getPos() {
-    return 0;
+    // HiveContextAwareRecordReader uses this position to track the block position and check
+    // whether to skip header and footer. return -1 to since we need not skip any header and
+    // footer rows for druid.
+    return -1;
   }
 
   @Override
