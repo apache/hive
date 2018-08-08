@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query94.tpl and seed 2031708268
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query94.tpl and seed 2031708268
+explain vectorization expression
 select  
    count(distinct ws_order_number) as `order count`
   ,sum(ws_ext_ship_cost) as `total shipping cost`

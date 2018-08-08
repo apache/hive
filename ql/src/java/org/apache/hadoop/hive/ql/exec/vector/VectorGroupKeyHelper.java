@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -49,7 +50,9 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       VectorExpression keyExpression = keyExpressions[i];
 
       TypeInfo typeInfo = keyExpression.getOutputTypeInfo();
-      addKey(typeInfo);
+      DataTypePhysicalVariation dataTypePhysicalVariation =
+          keyExpression.getOutputDataTypePhysicalVariation();
+      addKey(typeInfo, dataTypePhysicalVariation);
 
       // The output of the key expression is the input column.
       final int inputColumnNum = keyExpression.getOutputColumnNum();

@@ -1,6 +1,9 @@
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query37.tpl and seed 301843662
-explain
+set hive.explain.user=false;
+set hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
+-- start query  1 in stream 0 using template query37.tpl and seed 301843662
+explain vectorization expression
 select  i_item_id
        ,i_item_desc
        ,i_current_price

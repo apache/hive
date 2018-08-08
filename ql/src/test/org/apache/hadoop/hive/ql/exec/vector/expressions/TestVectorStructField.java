@@ -18,12 +18,17 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -36,7 +41,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
-import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.StringGenerationOption;
+import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.SupportedTypes;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -44,58 +49,63 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.IntWritable;
 
 import junit.framework.Assert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestVectorSubStr {
+public class TestVectorStructField {
 
   @Test
-  public void testString() throws Exception {
-    Random random = new Random(83221);
+  public void testStructField() throws Exception {
+    Random random = new Random(7743);
 
-    doTests(random);
+    for (int i = 0; i < 5; i++) {
+      doStructFieldTests(random);
+    }
   }
 
-  public enum SubStrTestMode {
+  public enum StructFieldTestMode {
     ROW_MODE,
-    ADAPTOR,
     VECTOR_EXPRESSION;
 
     static final int count = values().length;
   }
 
-  private void doTests(Random random)
-      throws Exception {
+  private void doStructFieldTests(Random random) throws Exception {
+    String structTypeName =
+        VectorRandomRowSource.getDecoratedTypeName(
+            random, "struct", SupportedTypes.ALL, /* allowedTypeNameSet */ null,
+            /* depth */ 0, /* maxDepth */ 2);
+    StructTypeInfo structTypeInfo =
+        (StructTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(structTypeName);
 
-    for (int i = 0; i < 50; i++) {
-      doTests(random, false);
-      doTests(random, true);
+    List<String> fieldNameList = structTypeInfo.getAllStructFieldNames();
+    final int fieldCount = fieldNameList.size();
+    for (int fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++) {
+      doOneStructFieldTest(random, structTypeInfo, structTypeName, fieldIndex);
     }
   }
 
-  private void doTests(Random random, boolean useLength)
-      throws Exception {
-
-    String typeName = "string";
-    TypeInfo typeInfo = TypeInfoFactory.stringTypeInfo;
-    TypeInfo targetTypeInfo = typeInfo;
-    String functionName = "substr";
+  private void doOneStructFieldTest(Random random, StructTypeInfo structTypeInfo,
+      String structTypeName, int fieldIndex)
+          throws Exception {
 
     List<GenerationSpec> generationSpecList = new ArrayList<GenerationSpec>();
     List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList =
@@ -103,17 +113,27 @@ public class TestVectorSubStr {
 
     List<String> columns = new ArrayList<String>();
     int columnNum = 1;
-    ExprNodeDesc col1Expr;
-    StringGenerationOption stringGenerationOption =
-        new StringGenerationOption(true, true);
+
     generationSpecList.add(
-        GenerationSpec.createStringFamily(
-            typeInfo, stringGenerationOption));
+        GenerationSpec.createSameType(structTypeInfo));
     explicitDataTypePhysicalVariationList.add(DataTypePhysicalVariation.NONE);
 
+    ExprNodeDesc col1Expr;
     String columnName = "col" + (columnNum++);
-    col1Expr = new ExprNodeColumnDesc(typeInfo, columnName, "table", false);
+    col1Expr = new ExprNodeColumnDesc(structTypeInfo, columnName, "table", false);
     columns.add(columnName);
+
+    ObjectInspector structObjectInspector =
+        VectorRandomRowSource.getObjectInspector(structTypeInfo);
+    List<ObjectInspector> objectInspectorList = new ArrayList<ObjectInspector>();
+    objectInspectorList.add(structObjectInspector);
+
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+    children.add(col1Expr);
+
+    //----------------------------------------------------------------------------------------------
+
+    String[] columnNames = columns.toArray(new String[0]);
 
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
@@ -121,42 +141,6 @@ public class TestVectorSubStr {
         random, generationSpecList, /* maxComplexDepth */ 0,
         /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
-
-    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
-    children.add(col1Expr);
-
-    final int position = 10 - random.nextInt(21);
-    Object scalar2Object =
-        Integer.valueOf(position);
-    ExprNodeDesc col2Expr = new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, scalar2Object);
-    children.add(col2Expr);
-
-    if (useLength) {
-
-      Object scalar3Object = random.nextInt(12);
-      ExprNodeDesc col3Expr = new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, scalar3Object);
-      children.add(col3Expr);
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    String[] columnNames = columns.toArray(new String[0]);
-
-    String[] outputScratchTypeNames = new String[] { targetTypeInfo.getTypeName() };
-    DataTypePhysicalVariation[] outputDataTypePhysicalVariations =
-        new DataTypePhysicalVariation[] { DataTypePhysicalVariation.NONE };
-
-    VectorizedRowBatchCtx batchContext =
-        new VectorizedRowBatchCtx(
-            columnNames,
-            rowSource.typeInfos(),
-            rowSource.dataTypePhysicalVariations(),
-            /* dataColumnNums */ null,
-            /* partitionColumnCount */ 0,
-            /* virtualColumnCount */ 0,
-            /* neededVirtualColumns */ null,
-            outputScratchTypeNames,
-            outputDataTypePhysicalVariations);
 
     Object[][] randomRows = rowSource.randomRows(100000);
 
@@ -167,47 +151,52 @@ public class TestVectorSubStr {
             randomRows,
             null);
 
-    GenericUDF genericUdf;
-    FunctionInfo funcInfo = null;
-    try {
-      funcInfo = FunctionRegistry.getFunctionInfo(functionName);
-    } catch (SemanticException e) {
-      Assert.fail("Failed to load " + functionName + " " + e);
-    }
-    genericUdf = funcInfo.getGenericUDF();
+    List<String> fieldNameList = structTypeInfo.getAllStructFieldNames();
+    List<TypeInfo> fieldTypeInfoList = structTypeInfo.getAllStructFieldTypeInfos();
+
+    String randomFieldName = fieldNameList.get(fieldIndex);
+    TypeInfo outputTypeInfo = fieldTypeInfoList.get(fieldIndex);
+
+    ExprNodeFieldDesc exprNodeFieldDesc =
+        new ExprNodeFieldDesc(outputTypeInfo, col1Expr, randomFieldName, /* isList */ false);
 
     final int rowCount = randomRows.length;
-    Object[][] resultObjectsArray = new Object[SubStrTestMode.count][];
-    for (int i = 0; i < SubStrTestMode.count; i++) {
+    Object[][] resultObjectsArray = new Object[StructFieldTestMode.count][];
+    for (int i = 0; i < StructFieldTestMode.count; i++) {
 
       Object[] resultObjects = new Object[rowCount];
       resultObjectsArray[i] = resultObjects;
 
-      SubStrTestMode subStrTestMode = SubStrTestMode.values()[i];
-      switch (subStrTestMode) {
+      StructFieldTestMode negativeTestMode = StructFieldTestMode.values()[i];
+      switch (negativeTestMode) {
       case ROW_MODE:
-        doRowIfTest(
-            typeInfo, targetTypeInfo,
-            columns, children, randomRows, rowSource.rowStructObjectInspector(),
-            genericUdf, resultObjects);
-        break;
-      case ADAPTOR:
-      case VECTOR_EXPRESSION:
-        doVectorIfTest(
-            typeInfo,
-            targetTypeInfo,
+        doRowStructFieldTest(
+            structTypeInfo,
             columns,
+            children,
+            exprNodeFieldDesc,
+            randomRows,
+            rowSource.rowStructObjectInspector(),
+            outputTypeInfo,
+            resultObjects);
+        break;
+      case VECTOR_EXPRESSION:
+        doVectorStructFieldTest(
+            structTypeInfo,
+            columns,
+            columnNames,
             rowSource.typeInfos(),
             rowSource.dataTypePhysicalVariations(),
             children,
-            subStrTestMode,
+            exprNodeFieldDesc,
+            negativeTestMode,
             batchSource,
-            batchContext,
-            genericUdf,
+            exprNodeFieldDesc.getWritableObjectInspector(),
+            outputTypeInfo,
             resultObjects);
         break;
       default:
-        throw new RuntimeException("Unexpected STRING Unary test mode " + subStrTestMode);
+        throw new RuntimeException("Unexpected Negative operator test mode " + negativeTestMode);
       }
     }
 
@@ -215,16 +204,17 @@ public class TestVectorSubStr {
       // Row-mode is the expected value.
       Object expectedResult = resultObjectsArray[0][i];
 
-      for (int v = 1; v < SubStrTestMode.count; v++) {
+      for (int v = 1; v < StructFieldTestMode.count; v++) {
         Object vectorResult = resultObjectsArray[v][i];
         if (expectedResult == null || vectorResult == null) {
           if (expectedResult != null || vectorResult != null) {
             Assert.fail(
                 "Row " + i +
-                " " + SubStrTestMode.values()[v] +
-                " result is NULL " + (vectorResult == null ? "YES" : "NO result " + vectorResult.toString()) +
-                " does not match row-mode expected result is NULL " +
-                (expectedResult == null ? "YES" : "NO result " + expectedResult.toString()) +
+                " structTypeName " + structTypeName +
+                " outputTypeName " + outputTypeInfo.getTypeName() +
+                " " + StructFieldTestMode.values()[v] +
+               " result is NULL " + (vectorResult == null) +
+                " does not match row-mode expected result is NULL " + (expectedResult == null) +
                 " row values " + Arrays.toString(randomRows[i]));
           }
         } else {
@@ -232,7 +222,9 @@ public class TestVectorSubStr {
           if (!expectedResult.equals(vectorResult)) {
             Assert.fail(
                 "Row " + i +
-                " " + SubStrTestMode.values()[v] +
+                " structTypeName " + structTypeName +
+                " outputTypeName " + outputTypeInfo.getTypeName() +
+                " " + StructFieldTestMode.values()[v] +
                 " result " + vectorResult.toString() +
                 " (" + vectorResult.getClass().getSimpleName() + ")" +
                 " does not match row-mode expected result " + expectedResult.toString() +
@@ -244,50 +236,54 @@ public class TestVectorSubStr {
     }
   }
 
-  private void doRowIfTest(TypeInfo typeInfo, TypeInfo targetTypeInfo,
+  private void doRowStructFieldTest(TypeInfo typeInfo,
       List<String> columns, List<ExprNodeDesc> children,
-      Object[][] randomRows, ObjectInspector rowInspector,
-      GenericUDF genericUdf, Object[] resultObjects) throws Exception {
+      ExprNodeFieldDesc exprNodeFieldDesc,
+      Object[][] randomRows,
+      ObjectInspector rowInspector,
+      TypeInfo outputTypeInfo, Object[] resultObjects) throws Exception {
 
-    ExprNodeGenericFuncDesc exprDesc =
-        new ExprNodeGenericFuncDesc(typeInfo, genericUdf, children);
+    /*
+    System.out.println(
+        "*DEBUG* typeInfo " + typeInfo.toString() +
+        " negativeTestMode ROW_MODE" +
+        " exprDesc " + exprDesc.toString());
+    */
 
     HiveConf hiveConf = new HiveConf();
     ExprNodeEvaluator evaluator =
-        ExprNodeEvaluatorFactory.get(exprDesc, hiveConf);
+        ExprNodeEvaluatorFactory.get(exprNodeFieldDesc, hiveConf);
     evaluator.initialize(rowInspector);
 
-    ObjectInspector objectInspector = TypeInfoUtils
-        .getStandardWritableObjectInspectorFromTypeInfo(targetTypeInfo);
+    ObjectInspector objectInspector =
+        TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+            outputTypeInfo);
 
     final int rowCount = randomRows.length;
     for (int i = 0; i < rowCount; i++) {
       Object[] row = randomRows[i];
       Object result = evaluator.evaluate(row);
-      Object copyResult =
-          ObjectInspectorUtils.copyToStandardObject(
-              result, objectInspector, ObjectInspectorCopyOption.WRITABLE);
+      Object copyResult = null;
+      try {
+        copyResult =
+            ObjectInspectorUtils.copyToStandardObject(
+                result, objectInspector, ObjectInspectorCopyOption.WRITABLE);
+      } catch (Exception e) {
+        System.out.println("here");
+      }
       resultObjects[i] = copyResult;
     }
   }
 
   private void extractResultObjects(VectorizedRowBatch batch, int rowIndex,
       VectorExtractRow resultVectorExtractRow, Object[] scrqtchRow,
-      TypeInfo targetTypeInfo, Object[] resultObjects) {
-
-    ObjectInspector objectInspector = TypeInfoUtils
-        .getStandardWritableObjectInspectorFromTypeInfo(targetTypeInfo);
+      ObjectInspector objectInspector, Object[] resultObjects) {
 
     boolean selectedInUse = batch.selectedInUse;
     int[] selected = batch.selected;
     for (int logicalIndex = 0; logicalIndex < batch.size; logicalIndex++) {
       final int batchIndex = (selectedInUse ? selected[logicalIndex] : logicalIndex);
-
-      try {
-        resultVectorExtractRow.extractRow(batch, batchIndex, scrqtchRow);
-      } catch (Exception e) {
-        Assert.fail(e.toString());
-      }
+      resultVectorExtractRow.extractRow(batch, batchIndex, scrqtchRow);
 
       Object copyResult =
           ObjectInspectorUtils.copyToStandardObject(
@@ -296,22 +292,19 @@ public class TestVectorSubStr {
     }
   }
 
-  private void doVectorIfTest(TypeInfo typeInfo, TypeInfo targetTypeInfo,
+  private void doVectorStructFieldTest(TypeInfo typeInfo,
       List<String> columns,
+      String[] columnNames,
       TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
       List<ExprNodeDesc> children,
-      SubStrTestMode subStrTestMode,
-      VectorRandomBatchSource batchSource, VectorizedRowBatchCtx batchContext,
-      GenericUDF genericUdf, Object[] resultObjects)
+      ExprNodeFieldDesc exprNodeFieldDesc,
+      StructFieldTestMode negativeTestMode,
+      VectorRandomBatchSource batchSource,
+      ObjectInspector objectInspector,
+      TypeInfo outputTypeInfo, Object[] resultObjects)
           throws Exception {
 
-    ExprNodeGenericFuncDesc exprDesc =
-        new ExprNodeGenericFuncDesc(targetTypeInfo, genericUdf, children);
-
     HiveConf hiveConf = new HiveConf();
-    if (subStrTestMode == SubStrTestMode.ADAPTOR) {
-      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
-    }
 
     VectorizationContext vectorizationContext =
         new VectorizationContext(
@@ -320,20 +313,37 @@ public class TestVectorSubStr {
             Arrays.asList(typeInfos),
             Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
-    VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
+    VectorExpression vectorExpression =
+        vectorizationContext.getVectorExpression(exprNodeFieldDesc);
+    vectorExpression.transientInit();
 
-    if (subStrTestMode == SubStrTestMode.VECTOR_EXPRESSION &&
+    if (negativeTestMode == StructFieldTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {
       System.out.println(
           "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
-          " subStrTestMode " + subStrTestMode +
+          " negativeTestMode " + negativeTestMode +
           " vectorExpression " + vectorExpression.toString());
     }
+
+    String[] outputScratchTypeNames= vectorizationContext.getScratchColumnTypeNames();
+
+    VectorizedRowBatchCtx batchContext =
+        new VectorizedRowBatchCtx(
+            columnNames,
+            typeInfos,
+            dataTypePhysicalVariations,
+            /* dataColumnNums */ null,
+            /* partitionColumnCount */ 0,
+            /* virtualColumnCount */ 0,
+            /* neededVirtualColumns */ null,
+            outputScratchTypeNames,
+            null);
 
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorExtractRow resultVectorExtractRow = new VectorExtractRow();
-    resultVectorExtractRow.init(new TypeInfo[] { targetTypeInfo }, new int[] { columns.size() });
+    resultVectorExtractRow.init(
+        new TypeInfo[] { outputTypeInfo }, new int[] { vectorExpression.getOutputColumnNum() });
     Object[] scrqtchRow = new Object[1];
 
     // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
@@ -341,9 +351,8 @@ public class TestVectorSubStr {
     /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
-        " targetTypeInfo " + targetTypeInfo.toString() +
-        " subStrTestMode " + subStrTestMode +
-        " vectorExpression " + vectorExpression.getClass().getSimpleName());
+        " negativeTestMode " + negativeTestMode +
+        " vectorExpression " + vectorExpression.toString());
     */
 
     batchSource.resetBatchIteration();
@@ -354,7 +363,7 @@ public class TestVectorSubStr {
       }
       vectorExpression.evaluate(batch);
       extractResultObjects(batch, rowIndex, resultVectorExtractRow, scrqtchRow,
-          targetTypeInfo, resultObjects);
+          objectInspector, resultObjects);
       rowIndex += batch.size;
     }
   }
