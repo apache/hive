@@ -11985,30 +11985,36 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
 
-        String replacementText = null;
-        Table table = null;
-        try {
-          if (!tabNameToTabObject.containsKey(tabIdName)) {
-            table = db.getTable(tabIdName, true);
-            tabNameToTabObject.put(tabIdName, table);
-          } else {
-            table = tabNameToTabObject.get(tabIdName);
-          }
-        } catch (HiveException e) {
+        Table table = getTable(db, tabIdName, tabNameToTabObject);
+        if (table == null) {
           // Table may not be found when materialization of CTE is on.
-          STATIC_LOG.debug("Table " + tabIdName + " is not found in walkASTMarkTABREF.");
           continue;
         }
 
-        List<String> colNames = new ArrayList<>();
-        List<String> colTypes = new ArrayList<>();
-        for (FieldSchema col : table.getAllCols()) {
-          colNames.add(col.getName());
-          colTypes.add(col.getType());
-        }
+        if (table.isMaterializedView()) {
+          // When we are querying a materialized view directly, we check whether the source tables
+          // do not apply any policies.
+          for (String qName : table.getCreationMetadata().getTablesUsed()) {
+            table = getTable(db, qName, tabNameToTabObject);
+            if (table == null) {
+              // This should not happen
+              throw new SemanticException("Table " + qName + " not found when trying to obtain it to check masking/filtering " +
+                  "policies");
+            }
 
-        basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames),
-            new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView(), table.isNonNative()));
+            List<String> colNames = new ArrayList<>();
+            extractColumnInfos(table, colNames, new ArrayList<>());
+
+            basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames), null);
+          }
+        } else {
+          List<String> colNames = new ArrayList<>();
+          List<String> colTypes = new ArrayList<>();
+          extractColumnInfos(table, colNames, colTypes);
+
+          basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames),
+              new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView(), table.isNonNative()));
+        }
       }
       if (astNode.getChildCount() > 0 && !ignoredTokens.contains(astNode.getToken().getType())) {
         for (Node child : astNode.getChildren()) {
@@ -12023,17 +12029,49 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (needRewritePrivObjs != null && !needRewritePrivObjs.isEmpty()) {
       for (HivePrivilegeObject privObj : needRewritePrivObjs) {
         MaskAndFilterInfo info = basicInfos.get(privObj);
-        String replacementText = tableMask.create(privObj, info);
-        if (replacementText != null) {
-          // We don't support masking/filtering against ACID query at the moment
-          if (ctx.getIsUpdateDeleteMerge()) {
-            throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_ACID_NOT_SUPPORTED,
+        // First we check whether entity actually needs masking or filtering
+        if (tableMask.needsMaskingOrFiltering(privObj)) {
+          if (info == null) {
+            // This is a table used by a materialized view
+            // Currently we do not support querying directly a materialized view
+            // when mask/filter should be applied on source tables
+            throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES,
                 privObj.getDbname(), privObj.getObjectName());
+          } else {
+            String replacementText = tableMask.create(privObj, info);
+            // We don't support masking/filtering against ACID query at the moment
+            if (ctx.getIsUpdateDeleteMerge()) {
+              throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_ACID_NOT_SUPPORTED,
+                  privObj.getDbname(), privObj.getObjectName());
+            }
+            tableMask.setNeedsRewrite(true);
+            tableMask.addTranslation(info.astNode, replacementText);
           }
-          tableMask.setNeedsRewrite(true);
-          tableMask.addTranslation(info.astNode, replacementText);
         }
       }
+    }
+  }
+
+  private static Table getTable(Hive db, String tabIdName, Map<String, Table> tabNameToTabObject) {
+    Table table = null;
+    try {
+      if (!tabNameToTabObject.containsKey(tabIdName)) {
+        table = db.getTable(tabIdName, true);
+        tabNameToTabObject.put(tabIdName, table);
+      } else {
+        table = tabNameToTabObject.get(tabIdName);
+      }
+    } catch (HiveException e) {
+      // Table may not be found when materialization of CTE is on.
+      STATIC_LOG.debug("Table " + tabIdName + " is not found in walkASTMarkTABREF.");
+    }
+    return table;
+  }
+
+  private static void extractColumnInfos(Table table, List<String> colNames, List<String> colTypes) {
+    for (FieldSchema col : table.getAllCols()) {
+      colNames.add(col.getName());
+      colTypes.add(col.getType());
     }
   }
 

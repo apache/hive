@@ -1,0 +1,119 @@
+PREHOOK: query: create table `masking_test_n_mv` stored as orc TBLPROPERTIES ('transactional'='true') as
+select cast(key as int) as key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_n_mv
+POSTHOOK: query: create table `masking_test_n_mv` stored as orc TBLPROPERTIES ('transactional'='true') as
+select cast(key as int) as key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_n_mv
+POSTHOOK: Lineage: masking_test_n_mv.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n_mv.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+create materialized view `masking_test_view_n_mv` as
+select key from `masking_test_n_mv`
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: query: explain
+create materialized view `masking_test_view_n_mv` as
+select key from `masking_test_n_mv`
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-8 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-8
+  Stage-9 depends on stages: Stage-2
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: masking_test_n_mv
+            Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.masking_test_view_n_mv
+      Execution mode: vectorized
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-8
+      Create View Operator:
+        Create View
+          columns: key int
+          expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
+          name: default.masking_test_view_n_mv
+          original text: select key from masking_test_n_mv
+          rewrite enabled: true
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-9
+    Materialized View Work
+
+  Stage: Stage-3
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
+      merge level: stripe
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+
+  Stage: Stage-5
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
+      merge level: stripe
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: create materialized view `masking_test_view_n_mv` as
+select key from `masking_test_n_mv`
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: query: create materialized view `masking_test_view_n_mv` as
+select key from `masking_test_n_mv`
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view_n_mv
+FAILED: SemanticException [Error 10288]: Querying directly materialized view contents is not supported since we detected default.masking_test_n_mv used by materialized view has row masking/column filtering enabled
