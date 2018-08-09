@@ -1258,18 +1258,21 @@ public class CachedStore implements RawStore, Configurable {
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
-      return rawStore.getPartitionsByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts,
-          result);
+      return rawStore.getPartitionsByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts, result);
     }
     List<String> partNames = new LinkedList<>();
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (table == null) {
       // The table is not yet loaded in cache
-      return rawStore.getPartitionsByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts,
-          result);
+      return rawStore.getPartitionsByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts, result);
     }
-    boolean hasUnknownPartitions = getPartitionNamesPrunedByExprNoTxn(table, expr,
-        defaultPartitionName, maxParts, partNames, sharedCache);
+    boolean hasUnknownPartitions =
+        getPartitionNamesPrunedByExprNoTxn(table, expr, defaultPartitionName, maxParts, partNames, sharedCache);
+    for (String partName : partNames) {
+      Partition part = sharedCache.getPartitionFromCache(catName, dbName, tblName, partNameToVals(partName));
+      part.unsetPrivileges();
+      result.add(part);
+    }
     return hasUnknownPartitions;
   }
 
