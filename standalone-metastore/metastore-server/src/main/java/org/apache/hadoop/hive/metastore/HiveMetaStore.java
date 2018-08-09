@@ -1573,9 +1573,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               drop_table(MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
                   table.getTableName(), false);
             }
-
-            startIndex = endIndex;
           }
+
+          startIndex = endIndex;
         }
 
         if (ms.dropDatabase(catName, name)) {
