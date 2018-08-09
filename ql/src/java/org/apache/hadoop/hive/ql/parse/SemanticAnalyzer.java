@@ -6847,12 +6847,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       sortOrders = getSortOrders(dest, qb, dest_tab, input);
       if (!enforceBucketing) {
         throw new SemanticException(ErrorMsg.TBL_SORTED_NOT_BUCKETED.getErrorCodedMsg(dest_tab.getCompleteName()));
-      } else {
-        if (!enforceBucketing) {
-          partnCols = sortCols;
-        }
       }
-      enforceBucketing = true;
     }
 
     if (enforceBucketing) {
@@ -7185,7 +7180,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isLocal = false;
     SortBucketRSCtx rsCtx = new SortBucketRSCtx();
     DynamicPartitionCtx dpCtx = null;
-    Table partitionedCTASOrMVTable = null; // destination partitioned CTAS or MV table if any
     LoadTableDesc ltd = null;
     ListBucketingCtx lbCtx = null;
     Map<String, String> partSpec = null;
@@ -7578,6 +7572,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             new SelectDesc(columnExprs, colNames), new RowSchema(rowResolver
                 .getColumnInfos()), input), rowResolver);
         input.setColumnExprMap(colExprMap);
+
+        try {
+          destinationTable = tblDesc != null ? tblDesc.toTable(conf) : viewDesc.toTable(conf);
+        } catch (HiveException e) {
+          throw new SemanticException(e);
+        }
+
         // If this is a partitioned CTAS or MV statement, we are going to create a LoadTableDesc
         // object. Although the table does not exist in metastore, we will swamp the CreateTableTask
         // and MoveTask resulting from this LoadTable so in this specific case, first we create
@@ -7605,15 +7606,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ltd.setInsertOverwrite(false);
           ltd.setLoadFileType(LoadFileType.KEEP_EXISTING);
         }
-        try {
-          partitionedCTASOrMVTable = tblDesc != null ? tblDesc.toTable(conf) : viewDesc.toTable(conf);
-          ltd.setMdTable(partitionedCTASOrMVTable);
-          WriteEntity output = generateTableWriteEntity(
-              dest, partitionedCTASOrMVTable, dpCtx.getPartSpec(), ltd, dpCtx, isNonNativeTable);
-          ctx.getLoadTableOutputMap().put(ltd, output);
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
+        ltd.setMdTable(destinationTable);
+        WriteEntity output = generateTableWriteEntity(
+            dest, destinationTable, dpCtx.getPartSpec(), ltd, dpCtx, isNonNativeTable);
+        ctx.getLoadTableOutputMap().put(ltd, output);
       } else {
         // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be used for stats.
         loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, destinationPath, isDfsDir, cols,
