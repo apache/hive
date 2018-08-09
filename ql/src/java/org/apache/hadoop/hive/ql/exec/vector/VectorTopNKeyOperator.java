@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.primitives.Ints;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
@@ -160,7 +161,11 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
         binarySortableSerDe = new BinarySortableSerDe();
         Properties properties = new Properties();
         Joiner joiner = Joiner.on(',');
-        properties.setProperty(serdeConstants.LIST_COLUMNS, joiner.join(conf.getKeyColumnNames()));
+        String[] names = new String[keyTypeInfos.length];
+        for (int i = 0; i < keyTypeInfos.length; i++) {
+          names[i] = HiveConf.getColumnInternalName(i);
+        }
+        properties.setProperty(serdeConstants.LIST_COLUMNS, joiner.join(names));
         properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, joiner.join(keyTypeInfos));
         properties.setProperty(serdeConstants.SERIALIZATION_SORT_ORDER,
             conf.getColumnSortOrder());

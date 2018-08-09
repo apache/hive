@@ -837,15 +837,15 @@ STAGE PLANS:
                 Filter Operator
                   predicate: (_col12 is not null or _col14 is not null) (type: boolean)
                   Statistics: Num rows: 2090864244 Data size: 184456650574 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)
-                    outputColumnNames: _col4, _col6, _col7, _col8, _col9, _col10
+                  Top N Key Operator
+                    sort order: ++++++
+                    keys: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)
                     Statistics: Num rows: 2090864244 Data size: 184456650574 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: ++++++
-                      keys: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)
+                    top n: 100
+                    Select Operator
+                      expressions: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)
+                      outputColumnNames: _col4, _col6, _col7, _col8, _col9, _col10
                       Statistics: Num rows: 2090864244 Data size: 184456650574 Basic stats: COMPLETE Column stats: NONE
-                      top n: 100
                       Group By Operator
                         aggregations: count(), sum(_col8), count(_col8), max(_col8), sum(_col9), count(_col9), max(_col9), sum(_col10), count(_col10), max(_col10)
                         keys: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)

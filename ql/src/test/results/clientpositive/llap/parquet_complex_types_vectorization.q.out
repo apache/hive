@@ -78,11 +78,11 @@ POSTHOOK: Lineage: parquet_complex_types.st1 SIMPLE [(parquet_complex_types_stag
 PREHOOK: query: select count(*) from parquet_complex_types
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from parquet_complex_types
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1023
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
@@ -154,11 +154,11 @@ STAGE PLANS:
 PREHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 [100,101]	100	101	100	0
 [102,103]	102	103	103	1
 [104,105]	104	105	104	0
@@ -205,31 +205,31 @@ STAGE PLANS:
                         predicateExpression: FilterLongColGreaterLongScalar(col 6:int, val 1000)(children: ListIndexColScalar(col 2:array<int>, col 0:int) -> 6:int)
                     predicate: (l1[0] > 1000) (type: boolean)
                     Statistics: Num rows: 341 Data size: 38920 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: l1[1] (type: int), l1[0] (type: int)
-                      outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [6, 7]
-                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int
+                    Top N Key Operator
+                      sort order: +
+                      keys: l1[1] (type: int)
                       Statistics: Num rows: 341 Data size: 38920 Basic stats: COMPLETE Column stats: NONE
-                      Top N Key Operator
-                        sort order: +
-                        keys: _col0 (type: int)
-                        Statistics: Num rows: 341 Data size: 38920 Basic stats: COMPLETE Column stats: NONE
-                        top n: 10
-                        Top N Key Vectorization:
-                            className: VectorTopNKeyOperator
-                            keyExpressions: col 6:int
+                      top n: 10
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int
+                          native: true
+                      Select Operator
+                        expressions: l1[1] (type: int), l1[0] (type: int)
+                        outputColumnNames: _col0, _col1
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+                            projectedOutputColumnNums: [7, 8]
+                            selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
+                        Statistics: Num rows: 341 Data size: 38920 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 7:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 8:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 6:int
+                              keyExpressions: col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
@@ -343,11 +343,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2144	2145
 2142	2143
 2140	2141
@@ -376,11 +376,11 @@ POSTHOOK: Lineage: parquet_complex_types.st1 SIMPLE [(parquet_complex_types_stag
 PREHOOK: query: select count(*) from parquet_complex_types
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from parquet_complex_types
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1024
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
@@ -452,11 +452,11 @@ STAGE PLANS:
 PREHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 [100,101]	100	101	100	0
 [102,103]	102	103	103	1
 [104,105]	104	105	104	0
@@ -503,31 +503,31 @@ STAGE PLANS:
                         predicateExpression: FilterLongColGreaterLongScalar(col 6:int, val 1000)(children: ListIndexColScalar(col 2:array<int>, col 0:int) -> 6:int)
                     predicate: (l1[0] > 1000) (type: boolean)
                     Statistics: Num rows: 341 Data size: 38921 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: l1[1] (type: int), l1[0] (type: int)
-                      outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [6, 7]
-                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int
+                    Top N Key Operator
+                      sort order: +
+                      keys: l1[1] (type: int)
                       Statistics: Num rows: 341 Data size: 38921 Basic stats: COMPLETE Column stats: NONE
-                      Top N Key Operator
-                        sort order: +
-                        keys: _col0 (type: int)
-                        Statistics: Num rows: 341 Data size: 38921 Basic stats: COMPLETE Column stats: NONE
-                        top n: 10
-                        Top N Key Vectorization:
-                            className: VectorTopNKeyOperator
-                            keyExpressions: col 6:int
+                      top n: 10
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int
+                          native: true
+                      Select Operator
+                        expressions: l1[1] (type: int), l1[0] (type: int)
+                        outputColumnNames: _col0, _col1
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+                            projectedOutputColumnNums: [7, 8]
+                            selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
+                        Statistics: Num rows: 341 Data size: 38921 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 7:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 8:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 6:int
+                              keyExpressions: col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
@@ -641,11 +641,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2146	2147
 2144	2145
 2142	2143
@@ -674,11 +674,11 @@ POSTHOOK: Lineage: parquet_complex_types.st1 SIMPLE [(parquet_complex_types_stag
 PREHOOK: query: select count(*) from parquet_complex_types
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from parquet_complex_types
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1025
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
@@ -750,11 +750,11 @@ STAGE PLANS:
 PREHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 [100,101]	100	101	100	0
 [102,103]	102	103	103	1
 [104,105]	104	105	104	0
@@ -801,31 +801,31 @@ STAGE PLANS:
                         predicateExpression: FilterLongColGreaterLongScalar(col 6:int, val 1000)(children: ListIndexColScalar(col 2:array<int>, col 0:int) -> 6:int)
                     predicate: (l1[0] > 1000) (type: boolean)
                     Statistics: Num rows: 341 Data size: 38923 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: l1[1] (type: int), l1[0] (type: int)
-                      outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [6, 7]
-                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int
+                    Top N Key Operator
+                      sort order: +
+                      keys: l1[1] (type: int)
                       Statistics: Num rows: 341 Data size: 38923 Basic stats: COMPLETE Column stats: NONE
-                      Top N Key Operator
-                        sort order: +
-                        keys: _col0 (type: int)
-                        Statistics: Num rows: 341 Data size: 38923 Basic stats: COMPLETE Column stats: NONE
-                        top n: 10
-                        Top N Key Vectorization:
-                            className: VectorTopNKeyOperator
-                            keyExpressions: col 6:int
+                      top n: 10
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int
+                          native: true
+                      Select Operator
+                        expressions: l1[1] (type: int), l1[0] (type: int)
+                        outputColumnNames: _col0, _col1
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+                            projectedOutputColumnNums: [7, 8]
+                            selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
+                        Statistics: Num rows: 341 Data size: 38923 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 7:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 8:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 6:int
+                              keyExpressions: col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
@@ -939,11 +939,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2148	2149
 2146	2147
 2144	2145

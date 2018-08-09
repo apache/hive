@@ -24,8 +24,29 @@ SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5;
 
 SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5;
 
-explain vectorization detail
-SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5;
+explain
+SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;
 
-SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5;
+SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;
 
+explain
+SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;
+
+SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;
+
+explain
+SELECT src1.key, src2.value FROM src src1 RIGHT OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;
+
+SELECT src1.key, src2.value FROM src src1 RIGHT OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;
+
+explain
+SELECT src1.key, src2.value FROM src src1 FULL OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;
+
+SELECT src1.key, src2.value FROM src src1 FULL OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;
+
+set hive.optimize.topnkey=false;
+
+explain
+SELECT src1.key, src2.value FROM src src1 FULL OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;
+
+SELECT src1.key, src2.value FROM src src1 FULL OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5;

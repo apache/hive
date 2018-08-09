@@ -315,15 +315,15 @@ STAGE PLANS:
                 Filter Operator
                   predicate: ((_col3 = 'CA') or (_col3 = 'GA') or (_col3 = 'WA') or (_col7 > 500) or (substr(_col4, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792')) (type: boolean)
                   Statistics: Num rows: 348467716 Data size: 47189528877 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col4 (type: string), _col7 (type: decimal(7,2))
-                    outputColumnNames: _col4, _col7
+                  Top N Key Operator
+                    sort order: +
+                    keys: _col4 (type: string)
                     Statistics: Num rows: 348467716 Data size: 47189528877 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col4 (type: string)
+                    top n: 100
+                    Select Operator
+                      expressions: _col4 (type: string), _col7 (type: decimal(7,2))
+                      outputColumnNames: _col4, _col7
                       Statistics: Num rows: 348467716 Data size: 47189528877 Basic stats: COMPLETE Column stats: NONE
-                      top n: 100
                       Group By Operator
                         aggregations: sum(_col7)
                         keys: _col4 (type: string)
