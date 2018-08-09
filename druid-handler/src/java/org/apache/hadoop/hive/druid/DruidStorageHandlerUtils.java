@@ -38,6 +38,8 @@ import com.metamx.emitter.core.NoopEmitter;
 import com.metamx.emitter.service.ServiceEmitter;
 import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.Request;
+import com.metamx.http.client.response.FullResponseHandler;
+import com.metamx.http.client.response.FullResponseHolder;
 import com.metamx.http.client.response.InputStreamResponseHandler;
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.StringDimensionSchema;
@@ -100,6 +102,7 @@ import org.apache.hadoop.io.retry.RetryProxy;
 import org.apache.hadoop.util.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.chrono.ISOChronology;
@@ -120,6 +123,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -275,6 +279,43 @@ public final class DruidStorageHandlerUtils {
             DruidStorageHandlerUtils.submitRequest(client, new Request(HttpMethod.GET, url)))) {
       return CharStreams.toString(reader);
     }
+  }
+
+  public static FullResponseHolder getResponseFromCurrentLeader(HttpClient client, Request request,
+          FullResponseHandler fullResponseHandler)
+          throws ExecutionException, InterruptedException {
+    FullResponseHolder responseHolder = client.go(request,
+            fullResponseHandler).get();
+    if (HttpResponseStatus.TEMPORARY_REDIRECT.equals(responseHolder.getStatus())) {
+      String redirectUrlStr = responseHolder.getResponse().headers().get("Location");
+      LOG.debug("Request[%s] received redirect response to location [%s].", request.getUrl(),
+              redirectUrlStr);
+      final URL redirectUrl;
+      try {
+        redirectUrl = new URL(redirectUrlStr);
+      } catch (MalformedURLException ex) {
+        throw new ExecutionException(
+                String.format(
+                        "Malformed redirect location is found in response from url[%s], new location[%s].",
+                        request.getUrl(),
+                        redirectUrlStr),
+                ex
+        );
+      }
+      responseHolder = client.go(withUrl(request, redirectUrl),
+              fullResponseHandler).get();
+    }
+    return responseHolder;
+  }
+
+  private static Request withUrl(Request old, URL url)
+  {
+    Request req = new Request(old.getMethod(), url);
+    req.addHeaderValues(old.getHeaders());
+    if (old.hasContent()) {
+      req.setContent(old.getContent());
+    }
+    return req;
   }
 
   /**
