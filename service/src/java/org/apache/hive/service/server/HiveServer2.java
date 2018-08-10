@@ -980,15 +980,18 @@ public class HiveServer2 extends CompositeService {
 
   public void startPrivilegeSynchonizer(HiveConf hiveConf) throws Exception {
 
+    if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER)) {
+      return;
+    }
     PolicyProviderContainer policyContainer = new PolicyProviderContainer();
     HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
     if (authorizer.getHivePolicyProvider() != null) {
       policyContainer.addAuthorizer(authorizer);
     }
-    if (hiveConf.get(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname()) != null &&
-        hiveConf.get(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname()).contains(
+    if (MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.PRE_EVENT_LISTENERS) != null &&
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.PRE_EVENT_LISTENERS).contains(
         "org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener") &&
-        hiveConf.get(MetastoreConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.getVarname())!= null) {
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_AUTHORIZATION_MANAGER)!= null) {
       List<HiveMetastoreAuthorizationProvider> providers = HiveUtils.getMetaStoreAuthorizeProviderManagers(
           hiveConf, HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER, SessionState.get().getAuthenticator());
       for (HiveMetastoreAuthorizationProvider provider : providers) {
