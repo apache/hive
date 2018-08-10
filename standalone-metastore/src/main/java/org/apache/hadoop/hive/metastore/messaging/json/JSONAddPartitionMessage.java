@@ -88,7 +88,8 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
-    this.partitionFiles = Lists.newArrayList(partitionFileIter);
+    this.partitionFiles = (partitionFileIter != null) ? Lists.newArrayList(partitionFileIter)
+                                                      : Lists.newArrayList();
     checkValid();
   }
 

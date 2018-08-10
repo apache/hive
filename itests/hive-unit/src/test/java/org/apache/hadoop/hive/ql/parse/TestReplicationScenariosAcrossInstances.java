@@ -1387,6 +1387,7 @@ public class TestReplicationScenariosAcrossInstances {
     tuple = primary.run("use " + primaryDbName)
             .run("create external table t3 (id int)")
             .run("insert into table t3 values (10)")
+            .run("create external table t4 as select id from t3")
             .dump("repl dump " + primaryDbName + " from " + tuple.lastReplicationId
                     + " with ('hive.repl.include.external.tables'='true')");
 
@@ -1395,6 +1396,8 @@ public class TestReplicationScenariosAcrossInstances {
             .run("show tables like 't3'")
             .verifyResult("t3")
             .run("select id from t3")
-            .verifyResult("10");
+            .verifyResult("10")
+            .run("select id from t4")
+            .verifyResult(null); // Returns null as create table event doesn't list files
   }
 }
