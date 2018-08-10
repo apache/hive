@@ -821,3 +821,77 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1
             ListSink
 
+PREHOOK: query: explain select substring(to_date(`__time`), 4) from druid_table_n3 limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select substring(to_date(`__time`), 4) from druid_table_n3 limit 5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n3
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes string
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n3","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"substring(timestamp_format(timestamp_floor(\"__time\",'P1D','','US/Pacific'),'yyyy-MM-dd','UTC'), 3, -1)","outputType":"STRING"}],"columns":["vc"],"resultFormat":"compactedList","limit":5}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select substring(to_date(`__time`), 4) from druid_table_n3 limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select substring(to_date(`__time`), 4) from druid_table_n3 limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9-12-31
+9-12-31
+9-12-31
+9-12-31
+9-12-31
+PREHOOK: query: explain select substring(cast(to_date(`__time`) as string), 4) from druid_table_n3 limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select substring(cast(to_date(`__time`) as string), 4) from druid_table_n3 limit 5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n3
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes string
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n3","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"substring(timestamp_format(timestamp_floor(\"__time\",'P1D','','US/Pacific'),'yyyy-MM-dd','UTC'), 3, -1)","outputType":"STRING"}],"columns":["vc"],"resultFormat":"compactedList","limit":5}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select substring(cast(to_date(`__time`) as string), 4) from druid_table_n3 limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select substring(cast(to_date(`__time`) as string), 4) from druid_table_n3 limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9-12-31
+9-12-31
+9-12-31
+9-12-31
+9-12-31

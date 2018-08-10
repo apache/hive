@@ -38,7 +38,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -934,5 +936,19 @@ public class ExprNodeDescUtils {
       }
     }
     return true;
+  }
+
+  // Given an expression this method figures out of the type for the expression belongs to string group
+  // e.g. (String, Char, Varchar etc)
+  public static boolean isStringType(ExprNodeDesc expr) {
+    TypeInfo typeInfo = expr.getTypeInfo();
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory) ==
+          PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP) {
+        return true;
+      }
+    }
+    return false;
   }
 }
