@@ -128,3 +128,10 @@ WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
 -- this patch https://github.com/druid-io/druid/commit/219e77aeac9b07dc20dd9ab2dd537f3f17498346
 
 explain select (cstring1 is null ) AS is_null, (cint is not null ) as isnotnull FROM druid_table_n3;
+
+explain select substring(to_date(`__time`), 4) from druid_table_n3 limit 5;
+select substring(to_date(`__time`), 4) from druid_table_n3 limit 5;
+
+explain select substring(cast(to_date(`__time`) as string), 4) from druid_table_n3 limit 5;
+select substring(cast(to_date(`__time`) as string), 4) from druid_table_n3 limit 5;
+
