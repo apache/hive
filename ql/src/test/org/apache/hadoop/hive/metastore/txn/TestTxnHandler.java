@@ -1667,12 +1667,15 @@ public class TestTxnHandler {
     allocMsg = new AllocateTableWriteIdsRequest("destdb", "tbl2");
     allocMsg.setReplPolicy("destdb.*");
     allocMsg.setSrcTxnToWriteIdList(srcTxnToWriteId);
+
+    // This is an idempotent case when repl flow forcefully allocate write id if it doesn't match
+    // the next write id.
     try {
       txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
     } catch (IllegalStateException e) {
       failed = true;
     }
-    assertTrue(failed);
+    assertFalse(failed);
 
     replAbortTxnForTest(srcTxnIdList, "destdb.*");
 
