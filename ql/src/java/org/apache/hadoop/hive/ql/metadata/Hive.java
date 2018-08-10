@@ -1832,7 +1832,7 @@ public class Hive {
         }
       } else {
         newPartPath = oldPartPath == null
-          ? newPartPath = genPartPathFromTable(tbl, partSpec, tblDataLocationPath) : oldPartPath;
+          ? genPartPathFromTable(tbl, partSpec, tblDataLocationPath) : oldPartPath;
       }
       List<Path> newFiles = Collections.synchronizedList(new ArrayList<Path>());
 
