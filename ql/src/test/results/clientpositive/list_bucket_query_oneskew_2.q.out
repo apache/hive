@@ -134,7 +134,7 @@ PREHOOK: query: explain extended select x from (select x from fact_daily_n5 wher
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x`
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n5`
 WHERE `ds` = '1' AND `x` = 484
 STAGE DEPENDENCIES:
