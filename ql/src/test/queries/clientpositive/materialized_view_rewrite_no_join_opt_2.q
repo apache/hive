@@ -1,11 +1,10 @@
 -- SORT_QUERY_RESULTS
 
-set hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.stats.fetch.column.stats=true;
-set hive.materializedview.rewriting=true;
+set hive.optimize.constraints.join=false;
 
 create table emps_n30 (
   empid int,
