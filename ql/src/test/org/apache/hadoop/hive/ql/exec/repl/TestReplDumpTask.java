@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.junit.Test;
@@ -32,6 +34,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
@@ -43,10 +48,18 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ Utils.class })
 @PowerMockIgnore({ "javax.management.*" })
-public class ReplDumpTaskTest {
+public class TestReplDumpTask {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(TestReplDumpTask.class);
 
   @Mock
   private Hive hive;
+
+  @Mock
+  private HiveConf conf;
+
+  @Mock
+  private QueryState queryState;
 
   class StubReplDumpTask extends ReplDumpTask {
 
@@ -96,6 +109,8 @@ public class ReplDumpTaskTest {
 
 
     when(hive.getAllFunctions()).thenReturn(Collections.emptyList());
+    when(queryState.getConf()).thenReturn(conf);
+    when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
 
     ReplDumpTask task = new StubReplDumpTask() {
       private int tableDumpCount = 0;
@@ -110,6 +125,7 @@ public class ReplDumpTaskTest {
       }
     };
 
+    task.initialize(queryState, null, null, null);
     task.setWork(
         new ReplDumpWork("default", "",
             Long.MAX_VALUE, Long.MAX_VALUE, "",
