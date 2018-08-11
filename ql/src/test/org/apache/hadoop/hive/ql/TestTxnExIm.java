@@ -39,7 +39,7 @@ public class TestTxnExIm extends TxnCommandsBaseForTests {
   ).getPath().replaceAll("\\\\", "/");
 
   @Override
-  String getTestDataDir() {
+  protected String getTestDataDir() {
     return TEST_DATA_DIR;
   }
 

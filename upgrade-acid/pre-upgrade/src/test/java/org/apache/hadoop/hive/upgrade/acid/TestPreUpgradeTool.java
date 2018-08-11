@@ -52,10 +52,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class TestUpgradeTool {
-  private static final Logger LOG = LoggerFactory.getLogger(TestUpgradeTool.class);
+public class TestPreUpgradeTool {
+  private static final Logger LOG = LoggerFactory.getLogger(TestPreUpgradeTool.class);
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
-      File.separator + TestUpgradeTool.class.getCanonicalName() + "-" + System.currentTimeMillis()
+      File.separator + TestPreUpgradeTool.class.getCanonicalName() + "-" + System.currentTimeMillis()
   ).getPath().replaceAll("\\\\", "/");
 
   private String getTestDataDir() {
@@ -78,6 +78,7 @@ public class TestUpgradeTool {
     runStatementOnDriver("create table TAcid (a int, b int) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table TAcidPart (a int, b int) partitioned by (p tinyint)  clustered by (b) into 2 buckets  stored" +
         " as orc TBLPROPERTIES ('transactional'='true')");
+    //on 2.x these are guaranteed to not be acid
     runStatementOnDriver("create table TFlat (a int, b int) stored as orc tblproperties('transactional'='false')");
     runStatementOnDriver("create table TFlatText (a int, b int) stored as textfile tblproperties('transactional'='false')");
 
@@ -99,19 +100,19 @@ public class TestUpgradeTool {
     //todo: add partitioned table that needs conversion to MM/Acid
 
     //todo: rename files case
-    String[] args = {"-location", getTestDataDir(), "-preUpgrade", "-execute"};
-    UpgradeTool.callback = new UpgradeTool.Callback() {
+    String[] args = {"-location", getTestDataDir(), "-execute"};
+    PreUpgradeTool.callback = new PreUpgradeTool.Callback() {
       @Override
       void onWaitForCompaction() throws MetaException {
         runWorker(hiveConf);
       }
     };
-    UpgradeTool.pollIntervalMs = 1;
-    UpgradeTool.hiveConf = hiveConf;
-    UpgradeTool.main(args);
+    PreUpgradeTool.pollIntervalMs = 1;
+    PreUpgradeTool.hiveConf = hiveConf;
+    PreUpgradeTool.main(args);
     /*
     todo: parse
-    target/tmp/org.apache.hadoop.hive.upgrade.acid.TestUpgradeTool-1527286256834/compacts_1527286277624.sql
+    target/tmp/org.apache.hadoop.hive.upgrade.acid.TestPreUpgradeTool-1527286256834/compacts_1527286277624.sql
     make sure it's the only 'compacts' file and contains
     ALTER TABLE default.tacid COMPACT 'major';
 ALTER TABLE default.tacidpart PARTITION(p=10Y) COMPACT 'major';
@@ -125,68 +126,13 @@ ALTER TABLE default.tacidpart PARTITION(p=10Y) COMPACT 'major';
       Assert.assertEquals(e.toString(), TxnStore.CLEANING_RESPONSE, e.getState());
     }
 
-    String[] args2 = {"-location", getTestDataDir(), "-postUpgrade"};
-    UpgradeTool.main(args2);
+    String[] args2 = {"-location", getTestDataDir()};
+    PreUpgradeTool.main(args2);
     /*
-    * todo: parse
-    * convertToAcid_1527286288784.sql make sure it has
-    * ALTER TABLE default.tflat SET TBLPROPERTIES ('transactional'='true');
-    * convertToMM_1527286288784.sql make sure it has
-    * ALTER TABLE default.tflattext SET TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only');
+    * todo: parse compacts script - make sure there is nothing in it
     * */
   }
 
-  /**
-   * includes 'execute' for postUpgrade
-   * @throws Exception
-   */
-  @Test
-  public void testPostUpgrade() throws Exception {
-    int[][] dataPart = {{1, 2, 10}, {3, 4, 11}, {5, 6, 12}};
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "dynamic");
-    runStatementOnDriver("drop table if exists TAcid");
-    runStatementOnDriver("drop table if exists TAcidPart");
-    runStatementOnDriver("drop table if exists TFlat");
-    runStatementOnDriver("drop table if exists TFlatText");
-
-    runStatementOnDriver("create table TAcid (a int, b int) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='false')");
-    runStatementOnDriver("create table TAcidPart (a int, b int) partitioned by (p int)  clustered by (b) into 2 buckets  stored" +
-        " as orc TBLPROPERTIES ('transactional'='false')");
-    //to create some partitions
-    runStatementOnDriver("insert into TAcidPart partition(p)" + makeValuesClause(dataPart));
-
-
-    //todo: to test these need to link against 3.x libs - maven profiles?
-    //runStatementOnDriver("create table TFlat (a int, b int) stored as orc tblproperties('transactional'='false')");
-    //runStatementOnDriver("create table TFlatText (a int, b int) stored as textfile tblproperties('transactional'='false')");
-
-    Hive db = Hive.get(hiveConf);
-    Table tacid = db.getTable("default", "tacid");
-    Assert.assertEquals("Expected TAcid to become full acid", false, AcidUtils.isAcidTable(tacid));
-    Table tacidpart = db.getTable("default", "tacidpart");
-    Assert.assertEquals("Expected TAcidPart to become full acid", false,
-        AcidUtils.isAcidTable(tacidpart));
-
-
-    String[] args2 = {"-location", getTestDataDir(), "-postUpgrade", "-execute"};
-    UpgradeTool.isTestMode = true;
-    UpgradeTool.hiveConf = hiveConf;
-    UpgradeTool.main(args2);
-
-    tacid = db.getTable("default", "tacid");
-    Assert.assertEquals("Expected TAcid to become full acid", true, AcidUtils.isAcidTable(tacid));
-    tacidpart = db.getTable("default", "tacidpart");
-    Assert.assertEquals("Expected TAcidPart to become full acid", true,
-        AcidUtils.isAcidTable(tacidpart));
-
-    /**
-    todo: parse
-     target/tmp/org.apache.hadoop.hive.upgrade.acid.TestUpgradeTool-1527286026461/convertToAcid_1527286063065.sql
-     make sure it has:
-    ALTER TABLE default.tacid SET TBLPROPERTIES ('transactional'='true');
-    ALTER TABLE default.tacidpart SET TBLPROPERTIES ('transactional'='true');
-     */
-  }
   private static void runWorker(HiveConf hiveConf) throws MetaException {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
