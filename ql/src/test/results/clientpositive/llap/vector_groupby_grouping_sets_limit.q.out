@@ -222,11 +222,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT a, b, count(*) from T1_n110 group by a, b with cube order by a, b LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a, b, count(*) from T1_n110 group by a, b with cube order by a, b LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 a	b	_c2
 1	1	1
 1	NULL	1
@@ -432,11 +432,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) order by a, b LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) order by a, b LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 a	b	_c2
 1	1	1
 1	NULL	1
@@ -642,11 +642,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b GROUPING SETS (a, (a, b)) order by a, b LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b GROUPING SETS (a, (a, b)) order by a, b LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 a	b	_c2
 1	1	1
 1	NULL	1
@@ -846,11 +846,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT a FROM T1_n110 GROUP BY a, b, c GROUPING SETS (a, b, c) order by a LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a FROM T1_n110 GROUP BY a, b, c GROUPING SETS (a, b, c) order by a LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 a
 1
 NULL
@@ -1041,11 +1041,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT a FROM T1_n110 GROUP BY a GROUPING SETS ((a), (a)) order by a LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a FROM T1_n110 GROUP BY a GROUPING SETS ((a), (a)) order by a LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 a
 1
 2
@@ -1238,11 +1238,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT a + b ab, count(*) FROM T1_n110 GROUP BY a + b GROUPING SETS (a+b) order by ab LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a + b ab, count(*) FROM T1_n110 GROUP BY a + b GROUPING SETS (a+b) order by ab LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n110
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 ab	_c1
 2.0	1
 4.0	1
