@@ -307,7 +307,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from list_bucketing_static_part_n4 where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484'
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, CAST('val_484' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`, CAST('val_484' AS STRING) AS `$f1`, CAST('2008-04-08' AS STRING) AS `$f2`, CAST('11' AS STRING) AS `$f3`
 FROM `default`.`list_bucketing_static_part_n4`
 WHERE `ds` = '2008-04-08' AND `hr` = '11' AND `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:

@@ -19,12 +19,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps_n9
 PREHOOK: query: insert into emps_n9 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250)
+  (150, 10, 'Sebastian', 7000, null), (120, 10, 'Theodore', 10000, 250)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps_n9
 POSTHOOK: query: insert into emps_n9 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250)
+  (150, 10, 'Sebastian', 7000, null), (120, 10, 'Theodore', 10000, 250)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps_n9
@@ -94,11 +94,11 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dependents_n5
-PREHOOK: query: insert into dependents_n5 values (10, 'Michael'), (10, 'Jane')
+PREHOOK: query: insert into dependents_n5 values (10, 'Michael'), (20, 'Jane')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dependents_n5
-POSTHOOK: query: insert into dependents_n5 values (10, 'Michael'), (10, 'Jane')
+POSTHOOK: query: insert into dependents_n5 values (10, 'Michael'), (20, 'Jane')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dependents_n5
@@ -128,11 +128,11 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@locations_n5
-PREHOOK: query: insert into locations_n5 values (10, 'San Francisco'), (10, 'San Diego')
+PREHOOK: query: insert into locations_n5 values (10, 'San Francisco'), (20, 'San Diego')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@locations_n5
-POSTHOOK: query: insert into locations_n5 values (10, 'San Francisco'), (10, 'San Diego')
+POSTHOOK: query: insert into locations_n5 values (10, 'San Francisco'), (20, 'San Diego')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@locations_n5
@@ -290,11 +290,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_n5
-          filterExpr: (UDFToInteger(_c0) > 1) (type: boolean)
+          filterExpr: (UDFToInteger(empid) > 1) (type: boolean)
           Filter Operator
-            predicate: (UDFToInteger(_c0) > 1) (type: boolean)
+            predicate: (UDFToInteger(empid) > 1) (type: boolean)
             Select Operator
-              expressions: UDFToInteger(_c0) (type: int)
+              expressions: UDFToInteger(empid) (type: int)
               outputColumnNames: _col0
               ListSink
 
@@ -313,7 +313,7 @@ POSTHOOK: Input: default@emps_n9
 POSTHOOK: Input: default@mv1_n5
 #### A masked pattern was here ####
 100
-110
+120
 150
 200
 PREHOOK: query: drop materialized view mv1_n5
@@ -368,9 +368,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_n5
-          filterExpr: (UDFToInteger(_c0) = 1) (type: boolean)
+          filterExpr: (UDFToInteger(empid) = 1) (type: boolean)
           Filter Operator
-            predicate: (UDFToInteger(_c0) = 1) (type: boolean)
+            predicate: (UDFToInteger(empid) = 1) (type: boolean)
             Select Operator
               expressions: 1 (type: int)
               outputColumnNames: _col0

@@ -253,7 +253,7 @@ PREHOOK: query: explain extended SELECT key FROM fact_daily_n2 WHERE ds='1' and 
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT key FROM fact_daily_n2 WHERE ds='1' and hr='4' and key= '406'
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('406' AS STRING) AS `key`
+OPTIMIZED SQL: SELECT CAST('406' AS STRING) AS `$f0`
 FROM `default`.`fact_daily_n2`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '406'
 STAGE DEPENDENCIES:

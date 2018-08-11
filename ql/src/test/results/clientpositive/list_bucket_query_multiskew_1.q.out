@@ -80,7 +80,7 @@ PREHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and h
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (key='484' and value= 'val_484')
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:
@@ -203,7 +203,7 @@ PREHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and (key='238' and value= 'val_238')
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('238' AS STRING) AS `key`, CAST('val_238' AS STRING) AS `value`
+OPTIMIZED SQL: SELECT CAST('238' AS STRING) AS `$f0`, CAST('val_238' AS STRING) AS `$f1`
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '238' AND `value` = 'val_238'
 STAGE DEPENDENCIES:

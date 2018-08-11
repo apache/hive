@@ -245,7 +245,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col4 (type: int)
                         Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: varchar(256)), _col2 (type: float), _col3 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
@@ -277,7 +277,7 @@ STAGE PLANS:
                           Partition key expr: deptno
                           Statistics: Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
                           Target Vertex: Map 1
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -388,20 +388,90 @@ from emps_n30
 join depts_n20 using (deptno)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv1_part_n2
+                  filterExpr: deptno is not null (type: boolean)
+                  Statistics: Num rows: 5 Data size: 505 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: name (type: varchar(256)), salary (type: float), commission (type: int), deptno (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 5 Data size: 505 Basic stats: COMPLETE Column stats: PARTIAL
+                    Reduce Output Operator
+                      key expressions: _col3 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col3 (type: int)
+                      Statistics: Num rows: 5 Data size: 505 Basic stats: COMPLETE Column stats: PARTIAL
+                      value expressions: _col0 (type: varchar(256)), _col1 (type: float), _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: depts_n20
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: deptno (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Dynamic Partitioning Event Operator
+                          Target column: deptno (int)
+                          Target Input: default.mv1_part_n2
+                          Partition key expr: deptno
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                          Target Vertex: Map 1
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col3 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 5 Data size: 485 Basic stats: COMPLETE Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5 Data size: 485 Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        TableScan
-          alias: default.mv1_part_n2
-          filterExpr: deptno is not null (type: boolean)
-          Select Operator
-            expressions: name (type: varchar(256)), salary (type: float), commission (type: int)
-            outputColumnNames: _col0, _col1, _col2
-            ListSink
+        ListSink
 
 PREHOOK: query: select emps_n30.name, emps_n30.salary, emps_n30.commission
 from emps_n30
@@ -509,7 +579,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 3 
             Map Operator Tree:
@@ -531,7 +601,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Union 2 
             Vertex: Union 2
@@ -751,10 +821,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 2 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: varchar(256))
@@ -883,10 +953,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: varchar(256))
@@ -1028,10 +1098,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
                         Statistics: Num rows: 2 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: varchar(256))
