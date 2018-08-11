@@ -100,7 +100,6 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
-import org.apache.calcite.sql.SqlSampleSpec;
 import org.apache.calcite.sql.SqlWindow;
 import org.apache.calcite.sql.dialect.HiveSqlDialect;
 import org.apache.calcite.sql.parser.SqlParserPos;
@@ -114,8 +113,6 @@ import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -192,6 +189,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveIntersectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveIntersectRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinCommuteRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinPushTransitivePredicatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
@@ -199,6 +197,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectFilterPullUpConstantsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectOverIntersectRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectSortTransposeRule;
@@ -1663,7 +1662,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   private enum ExtendedCBOProfile {
     JOIN_REORDERING,
-    WINDOWING_POSTPROCESSING;
+    WINDOWING_POSTPROCESSING,
+    REFERENTIAL_CONSTRAINTS;
   }
 
   /**
@@ -2053,6 +2053,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
         rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
         rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
       }
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_CONSTRAINTS_JOIN) &&
+          profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
+        rules.add(HiveProjectJoinTransposeRule.INSTANCE);
+        rules.add(HiveJoinConstraintsRule.INSTANCE);
+      }
       rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
       rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
       rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN);
@@ -2112,21 +2117,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, Projection Pruning");
 
-      // 8. Merge, remove and reduce Project if possible
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-      basePlan = hepPlan(basePlan, false, mdProvider, executorProvider,
-           HiveProjectMergeRule.INSTANCE, ProjectRemoveRule.INSTANCE, HiveSortMergeRule.INSTANCE);
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
-          "Calcite: Prejoin ordering transformation, Merge Project-Project, Merge Sort-Sort");
-
-      // 9. Rerun PPD through Project as column pruning would have introduced
+      // 8. Rerun PPD through Project as column pruning would have introduced
       // DT above scans; By pushing filter just above TS, Hive can push it into
       // storage (incase there are filters on non partition cols). This only
       // matches FIL-PROJ-TS
+      // Also merge, remove and reduce Project if possible
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = hepPlan(basePlan, true, mdProvider, executorProvider,
           HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
-          HiveProjectFilterPullUpConstantsRule.INSTANCE);
+          HiveProjectFilterPullUpConstantsRule.INSTANCE, HiveProjectMergeRule.INSTANCE,
+          ProjectRemoveRule.INSTANCE, HiveSortMergeRule.INSTANCE);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, Rerun PPD");
 
@@ -2815,6 +2815,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         // 4. Build operator
+        RelOptHiveTable optTable;
         if (tableType == TableType.DRUID ||
                 (tableType == TableType.JDBC && tabMetaData.getProperty(Constants.JDBC_TABLE) != null)) {
           // Create case sensitive columns list
@@ -2870,7 +2871,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
                 dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
                 intervals, null, null);
-            RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
+            optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                 rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
                 partitionCache, colStatsCache, noColsMissingStats);
             final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
@@ -2880,11 +2881,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
                     || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
             tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
                 optTable, druidTable, ImmutableList.of(scan), DruidSqlOperatorConverter.getDefaultMap());
-          } else if (tableType == TableType.JDBC) {
-            RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
+          } else {
+            optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                   rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
                   partitionCache, colStatsCache, noColsMissingStats);
-
             final HiveTableScan hts = new HiveTableScan(cluster,
                   cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
                   null == tableAlias ? tabMetaData.getTableName() : tableAlias,
@@ -2927,7 +2927,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             fullyQualifiedTabName.add(tabMetaData.getDbName());
           }
           fullyQualifiedTabName.add(tabMetaData.getTableName());
-          RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
+          optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
               partitionCache, colStatsCache, noColsMissingStats);
           // Build Hive Table Scan Rel
@@ -2936,6 +2936,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
               getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
                   HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
                   || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
+        }
+
+        if (!optTable.getReferentialConstraints().isEmpty()) {
+          profilesCBO.add(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS);
         }
 
         // 6. Add Schema(RR) to RelNode-Schema map

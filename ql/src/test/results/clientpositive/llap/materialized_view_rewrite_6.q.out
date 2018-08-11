@@ -19,12 +19,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps
 PREHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps
 POSTHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps
@@ -94,11 +94,11 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dependents
-PREHOOK: query: insert into dependents values (10, 'Michael'), (10, 'Jane')
+PREHOOK: query: insert into dependents values (10, 'Michael'), (20, 'Jane')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dependents
-POSTHOOK: query: insert into dependents values (10, 'Michael'), (10, 'Jane')
+POSTHOOK: query: insert into dependents values (10, 'Michael'), (20, 'Jane')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dependents
@@ -128,11 +128,11 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@locations
-PREHOOK: query: insert into locations values (10, 'San Francisco'), (10, 'San Diego')
+PREHOOK: query: insert into locations values (10, 'San Francisco'), (20, 'San Diego')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@locations
-POSTHOOK: query: insert into locations values (10, 'San Francisco'), (10, 'San Diego')
+POSTHOOK: query: insert into locations values (10, 'San Francisco'), (20, 'San Diego')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@locations
@@ -832,8 +832,7 @@ POSTHOOK: Input: default@emps
 POSTHOOK: Input: default@mv1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
