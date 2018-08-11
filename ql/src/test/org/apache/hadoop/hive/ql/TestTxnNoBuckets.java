@@ -54,7 +54,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
   @Rule
   public TestName testName = new TestName();
   @Override
-  String getTestDataDir() {
+  protected String getTestDataDir() {
     return TEST_DATA_DIR;
   }
 

@@ -82,7 +82,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
   ).getPath().replaceAll("\\\\", "/");
   protected static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   @Override
-  String getTestDataDir() {
+  protected String getTestDataDir() {
     return TEST_DATA_DIR;
   }
 

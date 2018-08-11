@@ -47,7 +47,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
   public TemporaryFolder folder= new TemporaryFolder();
 
   @Override
-  String getTestDataDir() {
+  protected String getTestDataDir() {
     return TEST_DATA_DIR;
   }
 
