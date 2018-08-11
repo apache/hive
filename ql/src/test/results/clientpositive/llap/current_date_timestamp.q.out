@@ -43,7 +43,7 @@ PREHOOK: query: explain extended select current_timestamp() from alltypesorc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select current_timestamp() from alltypesorc
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CURRENT_TIMESTAMP() AS `_o__c0`
+OPTIMIZED SQL: SELECT CURRENT_TIMESTAMP() AS `$f0`
 FROM `default`.`alltypesorc`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

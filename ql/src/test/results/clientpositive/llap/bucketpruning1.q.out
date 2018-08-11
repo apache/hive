@@ -410,7 +410,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' and value='One'
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`, CAST('One' AS STRING) AS `$f1`, CAST('2008-04-08' AS STRING) AS `$f2`
 FROM `default`.`srcbucket_pruned`
 WHERE `key` = 1 AND `ds` = '2008-04-08' AND `value` = 'One'
 STAGE DEPENDENCIES:
@@ -475,7 +475,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key = 1 and ds='2008-04-08'
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`, CAST('One' AS STRING) AS `$f1`, CAST('2008-04-08' AS STRING) AS `$f2`
 FROM `default`.`srcbucket_pruned`
 WHERE `value` = 'One' AND `key` = 1 AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:

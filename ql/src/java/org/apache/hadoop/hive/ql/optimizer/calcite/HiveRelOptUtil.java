@@ -17,17 +17,26 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import com.google.common.collect.Multimap;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Map.Entry;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories;
+import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -35,6 +44,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -459,5 +469,59 @@ public class HiveRelOptUtil extends RelOptUtil {
     }
 
     return aggregateFactory.createAggregate(rel, false, ImmutableBitSet.of(), null, aggCalls);
+  }
+
+  /**
+   * Given a RelNode, it checks whether there is any filtering condition
+   * below. Basically we check whether the operators
+   * below altered the PK cardinality in any way
+   */
+  public static boolean isRowFilteringPlan(final RelMetadataQuery mq, RelNode operator) {
+    final Multimap<Class<? extends RelNode>, RelNode> nodesBelowNonFkInput =
+        mq.getNodeTypes(operator);
+    for (Entry<Class<? extends RelNode>, Collection<RelNode>> e :
+        nodesBelowNonFkInput.asMap().entrySet()) {
+      if (e.getKey() == TableScan.class) {
+        if (e.getValue().size() > 1) {
+          // Bail out as we may not have more than one TS on non-FK side
+          return true;
+        }
+      } else if (e.getKey() == Project.class) {
+        // We check there is no windowing expression
+        for (RelNode node : e.getValue()) {
+          Project p = (Project) node;
+          for (RexNode expr : p.getChildExps()) {
+            if (expr instanceof RexOver) {
+              // Bail out as it may change cardinality
+              return true;
+            }
+          }
+        }
+      } else if (e.getKey() == Aggregate.class) {
+        // We check there is are not grouping sets
+        for (RelNode node : e.getValue()) {
+          Aggregate a = (Aggregate) node;
+          if (a.getGroupType() != Group.SIMPLE) {
+            // Bail out as it may change cardinality
+            return true;
+          }
+        }
+      } else if (e.getKey() == Sort.class) {
+        // We check whether there is a limit clause
+        for (RelNode node : e.getValue()) {
+          Sort s = (Sort) node;
+          if (s.fetch != null || s.offset != null) {
+            // Bail out as it may change cardinality
+            return true;
+          }
+        }
+      } else {
+        // Bail out, we cannot rewrite the expression if non-fk side cardinality
+        // is being altered
+        return true;
+      }
+    }
+    // It passed all the tests
+    return false;
   }
 }

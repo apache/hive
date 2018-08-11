@@ -131,7 +131,7 @@ PREHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=484
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x`
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n4`
 WHERE `ds` = '1' AND `x` = 484
 STAGE DEPENDENCIES:
@@ -251,7 +251,7 @@ PREHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=495
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(495 AS INTEGER) AS `x`
+OPTIMIZED SQL: SELECT CAST(495 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n4`
 WHERE `ds` = '1' AND `x` = 495
 STAGE DEPENDENCIES:
@@ -371,7 +371,7 @@ PREHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=1
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `x`
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n4`
 WHERE `ds` = '1' AND `x` = 1
 STAGE DEPENDENCIES:
