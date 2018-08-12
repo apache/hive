@@ -888,11 +888,20 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     ASTNode onClause = (ASTNode) tree.getChild(2);
     String onClauseAsText = getMatchedText(onClause);
 
+    int whenClauseBegins = 3;
+    boolean hasHint = false;
+    // query hint
+    ASTNode qHint = (ASTNode) tree.getChild(3);
+    if (qHint.getType() == HiveParser.QUERY_HINT) {
+      hasHint = true;
+      whenClauseBegins++;
+    }
     Table targetTable = getTargetTable(target);
     validateTargetTable(targetTable);
-    List<ASTNode> whenClauses = findWhenClauses(tree);
+    List<ASTNode> whenClauses = findWhenClauses(tree, whenClauseBegins);
 
     StringBuilder rewrittenQueryStr = new StringBuilder("FROM\n");
+
     rewrittenQueryStr.append(Indent).append(getFullTableNameForSQL(target));
     if(isAliased(target)) {
       rewrittenQueryStr.append(" ").append(targetName);
@@ -912,6 +921,12 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     rewrittenQueryStr.append('\n');
     rewrittenQueryStr.append(Indent).append("ON ").append(onClauseAsText).append('\n');
 
+    // Add the hint if any
+    String hintStr = null;
+    if (hasHint) {
+      hintStr = " /*+ " + qHint.getText() + " */ ";
+    }
+
     /**
      * We allow at most 2 WHEN MATCHED clause, in which case 1 must be Update the other Delete
      * If we have both update and delete, the 1st one (in SQL code) must have "AND <extra predicate>"
@@ -921,22 +936,29 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     String extraPredicate = null;
     int numWhenMatchedUpdateClauses = 0, numWhenMatchedDeleteClauses = 0;
     int numInsertClauses = 0;
+    boolean hintProcessed = false;
     for(ASTNode whenClause : whenClauses) {
       switch (getWhenClauseOperation(whenClause).getType()) {
         case HiveParser.TOK_INSERT:
           numInsertClauses++;
-          handleInsert(whenClause, rewrittenQueryStr, target, onClause, targetTable, targetName, onClauseAsText);
+          handleInsert(whenClause, rewrittenQueryStr, target, onClause,
+                  targetTable, targetName, onClauseAsText, hintProcessed ? null : hintStr);
+          hintProcessed = true;
           break;
         case HiveParser.TOK_UPDATE:
           numWhenMatchedUpdateClauses++;
-          String s = handleUpdate(whenClause, rewrittenQueryStr, target, onClauseAsText, targetTable, extraPredicate);
+          String s = handleUpdate(whenClause, rewrittenQueryStr, target,
+                  onClauseAsText, targetTable, extraPredicate, hintProcessed ? null : hintStr);
+          hintProcessed = true;
           if(numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
             extraPredicate = s;//i.e. it's the 1st WHEN MATCHED
           }
           break;
         case HiveParser.TOK_DELETE:
           numWhenMatchedDeleteClauses++;
-          String s1 = handleDelete(whenClause, rewrittenQueryStr, target, onClauseAsText, targetTable, extraPredicate);
+          String s1 = handleDelete(whenClause, rewrittenQueryStr, target,
+                  onClauseAsText, targetTable, extraPredicate, hintProcessed ? null : hintStr);
+          hintProcessed = true;
           if(numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
             extraPredicate = s1;//i.e. it's the 1st WHEN MATCHED
           }
@@ -956,6 +978,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     if(numWhenMatchedDeleteClauses + numWhenMatchedUpdateClauses == 2 && extraPredicate == null) {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());
     }
+
     boolean validating = handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText,
       targetTable, numWhenMatchedDeleteClauses == 0 && numWhenMatchedUpdateClauses == 0);
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
@@ -987,6 +1010,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       //here means the last branch of the multi-insert is Cardinality Validation
       rewrittenCtx.addDestNamePrefix(rewrittenTree.getChildCount() - 1, Context.DestClausePrefix.INSERT);
     }
+
     try {
       useSuper = true;
       super.analyze(rewrittenTree, rewrittenCtx);
@@ -1153,13 +1177,17 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    */
   private String handleUpdate(ASTNode whenMatchedUpdateClause, StringBuilder rewrittenQueryStr,
                               ASTNode target, String onClauseAsString, Table targetTable,
-                              String deleteExtraPredicate) throws SemanticException {
+                              String deleteExtraPredicate, String hintStr) throws SemanticException {
     assert whenMatchedUpdateClause.getType() == HiveParser.TOK_MATCHED;
     assert getWhenClauseOperation(whenMatchedUpdateClause).getType() == HiveParser.TOK_UPDATE;
     String targetName = getSimpleTableName(target);
     rewrittenQueryStr.append("INSERT INTO ").append(getFullTableNameForSQL(target));
     addPartitionColsToInsert(targetTable.getPartCols(), rewrittenQueryStr);
-    rewrittenQueryStr.append("    -- update clause\n select ").append(targetName).append(".ROW__ID");
+    rewrittenQueryStr.append("    -- update clause\n select ");
+    if (hintStr != null) {
+      rewrittenQueryStr.append(hintStr);
+    }
+    rewrittenQueryStr.append(targetName).append(".ROW__ID");
 
     ASTNode setClause = (ASTNode)getWhenClauseOperation(whenMatchedUpdateClause).getChild(0);
     //columns being updated -> update expressions; "setRCols" (last param) is null because we use actual expressions
@@ -1211,7 +1239,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    * @param updateExtraPredicate - see notes at caller
    */
   private String handleDelete(ASTNode whenMatchedDeleteClause, StringBuilder rewrittenQueryStr, ASTNode target,
-                            String onClauseAsString, Table targetTable, String updateExtraPredicate) throws SemanticException {
+                            String onClauseAsString, Table targetTable, String updateExtraPredicate, String hintStr) throws SemanticException {
     assert whenMatchedDeleteClause.getType() == HiveParser.TOK_MATCHED;
     assert getWhenClauseOperation(whenMatchedDeleteClause).getType() == HiveParser.TOK_DELETE;
     List<FieldSchema> partCols = targetTable.getPartCols();
@@ -1219,7 +1247,11 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     rewrittenQueryStr.append("INSERT INTO ").append(getFullTableNameForSQL(target));
     addPartitionColsToInsert(partCols, rewrittenQueryStr);
 
-    rewrittenQueryStr.append("    -- delete clause\n select ").append(targetName).append(".ROW__ID ");
+    rewrittenQueryStr.append("    -- delete clause\n select ");
+    if (hintStr != null) {
+      rewrittenQueryStr.append(hintStr);
+    }
+    rewrittenQueryStr.append(targetName).append(".ROW__ID ");
     addPartitionColsToSelect(partCols, rewrittenQueryStr, target);
     rewrittenQueryStr.append("\n   WHERE ").append(onClauseAsString);
     String extraPredicate = getWhenClausePredicate(whenMatchedDeleteClause);
@@ -1291,10 +1323,10 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
   /**
    * Collect WHEN clauses from Merge statement AST
    */
-  private List<ASTNode> findWhenClauses(ASTNode tree) throws SemanticException {
+  private List<ASTNode> findWhenClauses(ASTNode tree, int start) throws SemanticException {
     assert tree.getType() == HiveParser.TOK_MERGE;
     List<ASTNode> whenClauses = new ArrayList<>();
-    for(int idx = 3; idx < tree.getChildCount(); idx++) {
+    for(int idx = start; idx < tree.getChildCount(); idx++) {
       ASTNode whenClause = (ASTNode)tree.getChild(idx);
       assert whenClause.getType() == HiveParser.TOK_MATCHED ||
         whenClause.getType() == HiveParser.TOK_NOT_MATCHED :
@@ -1333,7 +1365,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    */
   private void handleInsert(ASTNode whenNotMatchedClause, StringBuilder rewrittenQueryStr, ASTNode target,
                             ASTNode onClause, Table targetTable,
-                            String targetTableNameInSourceQuery, String onClauseAsString) throws SemanticException {
+                            String targetTableNameInSourceQuery, String onClauseAsString, String hintStr) throws SemanticException {
     assert whenNotMatchedClause.getType() == HiveParser.TOK_NOT_MATCHED;
     assert getWhenClauseOperation(whenNotMatchedClause).getType() == HiveParser.TOK_INSERT;
     List<FieldSchema> partCols = targetTable.getPartCols();
@@ -1347,8 +1379,11 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     OnClauseAnalyzer oca = new OnClauseAnalyzer(onClause, targetTable, targetTableNameInSourceQuery,
       conf, onClauseAsString);
     oca.analyze();
-    rewrittenQueryStr.append("    -- insert clause\n  select ")
-      .append(valuesClause).append("\n   WHERE ").append(oca.getPredicate());
+    rewrittenQueryStr.append("    -- insert clause\n  select ");
+    if (hintStr != null) {
+      rewrittenQueryStr.append(hintStr);
+    }
+    rewrittenQueryStr.append(valuesClause).append("\n   WHERE ").append(oca.getPredicate());
     String extraPredicate = getWhenClausePredicate(whenNotMatchedClause);
     if(extraPredicate != null) {
       //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
