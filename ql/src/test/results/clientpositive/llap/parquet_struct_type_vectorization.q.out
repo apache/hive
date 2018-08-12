@@ -66,11 +66,11 @@ POSTHOOK: Lineage: parquet_struct_type.st2 SIMPLE [(parquet_struct_type_staging)
 PREHOOK: query: select count(*) from parquet_struct_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from parquet_struct_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1023
 PREHOOK: query: explain vectorization expression select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
@@ -142,11 +142,11 @@ STAGE PLANS:
 PREHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from parquet_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 {"f1":1,"f2":"str1"}	1	str1	{"f1":2001,"f3":"str2001"}	2001	str2001
 {"f1":2,"f2":"str2"}	2	str2	{"f1":2002,"f3":"str2002"}	2002	str2002
 {"f1":3,"f2":"str3"}	3	str3	{"f1":2003,"f3":"str2003"}	2003	str2003
@@ -160,11 +160,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select st1.f1, st2.f1, st2.f3 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select st1.f1, st2.f1, st2.f3 from parquet_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	2001	str2001
 2	2002	str2002
 3	2003	str2003
@@ -178,11 +178,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select st1.f1, st2.f1 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select st1.f1, st2.f1 from parquet_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	2001
 2	2002
 3	2003
@@ -340,11 +340,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(st1.f1), st1.f1 from parquet_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(st1.f1), st1.f1 from parquet_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 501	501
 502	502
 503	503
@@ -371,20 +371,20 @@ POSTHOOK: Lineage: parquet_struct_type.st2 SIMPLE [(parquet_struct_type_staging)
 PREHOOK: query: select count(*) from parquet_struct_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from parquet_struct_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1024
 PREHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from parquet_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 {"f1":1,"f2":"str1"}	1	str1	{"f1":2001,"f3":"str2001"}	2001	str2001
 {"f1":2,"f2":"str2"}	2	str2	{"f1":2002,"f3":"str2002"}	2002	str2002
 {"f1":3,"f2":"str3"}	3	str3	{"f1":2003,"f3":"str2003"}	2003	str2003
@@ -398,11 +398,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select st1.f1, st2.f1, st2.f3 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select st1.f1, st2.f1, st2.f3 from parquet_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	2001	str2001
 2	2002	str2002
 3	2003	str2003
@@ -416,11 +416,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select st1.f1, st2.f1 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select st1.f1, st2.f1 from parquet_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	2001
 2	2002
 3	2003
@@ -434,11 +434,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select sum(st1.f1), st1.f1 from parquet_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(st1.f1), st1.f1 from parquet_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 501	501
 502	502
 503	503
@@ -465,20 +465,20 @@ POSTHOOK: Lineage: parquet_struct_type.st2 SIMPLE [(parquet_struct_type_staging)
 PREHOOK: query: select count(*) from parquet_struct_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from parquet_struct_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1025
 PREHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from parquet_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 {"f1":1,"f2":"str1"}	1	str1	{"f1":2001,"f3":"str2001"}	2001	str2001
 {"f1":2,"f2":"str2"}	2	str2	{"f1":2002,"f3":"str2002"}	2002	str2002
 {"f1":3,"f2":"str3"}	3	str3	{"f1":2003,"f3":"str2003"}	2003	str2003
@@ -492,11 +492,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select st1.f1, st2.f1, st2.f3 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select st1.f1, st2.f1, st2.f3 from parquet_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	2001	str2001
 2	2002	str2002
 3	2003	str2003
@@ -510,11 +510,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select st1.f1, st2.f1 from parquet_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select st1.f1, st2.f1 from parquet_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	2001
 2	2002
 3	2003
@@ -528,11 +528,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select sum(st1.f1), st1.f1 from parquet_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_struct_type
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(st1.f1), st1.f1 from parquet_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_struct_type
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 501	501
 502	502
 503	503

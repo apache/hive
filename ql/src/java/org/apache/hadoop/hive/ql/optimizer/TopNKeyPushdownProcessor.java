@@ -103,10 +103,6 @@ public class TopNKeyPushdownProcessor implements NodeProcessor {
             case JoinDesc.RIGHT_OUTER_JOIN:
               pushdownThroughRightOuterJoin(topNKey);
               break;
-
-            case JoinDesc.INNER_JOIN:
-              pushdownThroughInnerJoin(topNKey);
-              break;
           }
         }
         break;
@@ -291,32 +287,6 @@ public class TopNKeyPushdownProcessor implements NodeProcessor {
     // If all columns are mapped, remove from top
     if (topNKeyDesc.getKeyColumns().size() == mappedColumns.size()) {
       join.removeChildAndAdoptItsChildren(topNKey);
-    }
-  }
-
-  private void pushdownThroughInnerJoin(TopNKeyOperator topNKey) throws SemanticException {
-
-    final CommonJoinOperator<? extends JoinDesc> join =
-        (CommonJoinOperator<? extends JoinDesc>) topNKey.getParentOperators().get(0);
-    final List<Operator<? extends OperatorDesc>> joinInputs = join.getParentOperators();
-    final TopNKeyDesc topNKeyDesc = topNKey.getConf();
-
-    // For each join input,
-    for (Operator<? extends OperatorDesc> joinInput : joinInputs) {
-
-      // Map columns
-      final List<ExprNodeDesc> mappedColumns = mapColumns(mapColumns(topNKeyDesc.getKeyColumns(),
-          join.getColumnExprMap()), joinInput.getColumnExprMap());
-      if (mappedColumns.isEmpty()) {
-        continue;
-      }
-
-      // Copy down
-      final String mappedOrder = mapOrder(topNKeyDesc.getColumnSortOrder(),
-          ((ReduceSinkOperator) joinInput).getConf().getKeyCols(), mappedColumns);
-      final TopNKeyDesc newTopNKeyDesc = new TopNKeyDesc(topNKeyDesc.getTopN(), mappedOrder,
-          mappedColumns);
-      pushdown(copyDown(joinInput, newTopNKeyDesc));
     }
   }
 
