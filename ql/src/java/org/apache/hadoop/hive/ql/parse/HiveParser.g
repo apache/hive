@@ -2967,8 +2967,8 @@ mergeStatement
 @init { pushMsg("MERGE statement", state); }
 @after { popMsg(state); }
    :
-   KW_MERGE KW_INTO tableName (KW_AS? identifier)? KW_USING joinSourcePart KW_ON expression whenClauses ->
-    ^(TOK_MERGE ^(TOK_TABREF tableName identifier?) joinSourcePart expression whenClauses)
+   KW_MERGE QUERY_HINT? KW_INTO tableName (KW_AS? identifier)? KW_USING joinSourcePart KW_ON expression whenClauses
+     -> ^(TOK_MERGE ^(TOK_TABREF tableName identifier?) joinSourcePart expression QUERY_HINT? whenClauses)
    ;
 /*
 Allow 0,1 or 2 WHEN MATCHED clauses and 0 or 1 WHEN NOT MATCHED
