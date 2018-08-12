@@ -1569,19 +1569,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qbp.setSelExprForClause(ctx_1.dest, ast);
 
         int posn = 0;
-        if (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.QUERY_HINT) {
-          ParseDriver pd = new ParseDriver();
-          String queryHintStr = ast.getChild(0).getText();
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("QUERY HINT: "+queryHintStr);
-          }
-          try {
-            ASTNode hintNode = pd.parseHint(queryHintStr);
-            qbp.setHints(hintNode);
-            posn++;
-          } catch (ParseException e) {
-            throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
-          }
+        if (((ASTNode) ast.getChild(0)).getType() == HiveParser.QUERY_HINT) {
+          posn = processQueryHint((ASTNode)ast.getChild(0), qbp, posn);
         }
 
         if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM)) {
@@ -1881,6 +1870,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_CTE:
         processCTE(qb, ast);
         break;
+      case HiveParser.QUERY_HINT:
+          processQueryHint(ast, qbp, 0);
       default:
         skipRecursion = false;
         break;
@@ -1897,6 +1888,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return phase1Result;
+  }
+
+  private int processQueryHint(ASTNode ast, QBParseInfo qbp, int posn) throws SemanticException{
+    ParseDriver pd = new ParseDriver();
+    String queryHintStr = ast.getText();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("QUERY HINT: "+queryHintStr);
+    }
+    try {
+      ASTNode hintNode = pd.parseHint(queryHintStr);
+      qbp.setHints(hintNode);
+    } catch (ParseException e) {
+      throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
+    }
+    return posn + 1;
   }
 
   /**
