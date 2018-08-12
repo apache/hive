@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
@@ -46,7 +47,20 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
   // Priority queue that holds occurred keys
   private transient PriorityQueue<KeyWrapper> priorityQueue;
 
+  // Fast key wrapper in input format for fast comparison
   private transient KeyWrapper keyWrapper;
+
+  // Standard key wrapper in standard format for output
+  private transient KeyWrapper standardKeyWrapper;
+
+  // Maximum number of rows
+  private transient int rowLimit;
+
+  // Current number of rows
+  private transient int rowSize;
+
+  // Rows
+  private transient Object[] rows;
 
   /** Kryo ctor. */
   public TopNKeyOperator() {
@@ -82,16 +96,14 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
 
     this.topN = conf.getTopN();
 
-    final String columnSortOrder = conf.getColumnSortOrder();
-    final boolean[] columnSortOrderIsDesc = new boolean[columnSortOrder.length()];
+    String columnSortOrder = conf.getColumnSortOrder();
+    boolean[] columnSortOrderIsDesc = new boolean[columnSortOrder.length()];
     for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
       columnSortOrderIsDesc[i] = (columnSortOrder.charAt(i) == '-');
     }
 
-    final ObjectInspector rowInspector = inputObjInspectors[0];
-    outputObjInspector = rowInspector;
-    final ObjectInspector standardObjInspector =
-        ObjectInspectorUtils.getStandardObjectInspector(rowInspector);
+    ObjectInspector rowInspector = inputObjInspectors[0];
+    outputObjInspector = ObjectInspectorUtils.getStandardObjectInspector(rowInspector);
 
     // init keyFields
     int numKeys = conf.getKeyColumns().size();
@@ -105,15 +117,20 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
       keyFields[i] = ExprNodeEvaluatorFactory.get(key, hconf);
       keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
       standardKeyFields[i] = ExprNodeEvaluatorFactory.get(key, hconf);
-      standardKeyObjectInspectors[i] = standardKeyFields[i].initialize(standardObjInspector);
+      standardKeyObjectInspectors[i] = standardKeyFields[i].initialize(outputObjInspector);
     }
 
     priorityQueue = new PriorityQueue<>(topN + 1, new TopNKeyOperator.KeyWrapperComparator(
         standardKeyObjectInspectors, standardKeyObjectInspectors, columnSortOrderIsDesc));
 
-    final KeyWrapperFactory keyWrapperFactory = new KeyWrapperFactory(keyFields, keyObjectInspectors,
-        standardKeyObjectInspectors);
-    keyWrapper = keyWrapperFactory.getKeyWrapper();
+    keyWrapper = new KeyWrapperFactory(keyFields, keyObjectInspectors,
+        standardKeyObjectInspectors).getKeyWrapper();
+    standardKeyWrapper = new KeyWrapperFactory(standardKeyFields, standardKeyObjectInspectors,
+        standardKeyObjectInspectors).getKeyWrapper();
+
+    rowLimit = VectorizedRowBatch.DEFAULT_SIZE;
+    rows = new Object[rowLimit];
+    rowSize = 0;
   }
 
   @Override
@@ -127,13 +144,33 @@ public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializab
     if (priorityQueue.size() > topN) {
       priorityQueue.poll();
     }
-    if (priorityQueue.contains(keyWrapper)) {
-      forward(row, outputObjInspector);
+
+    rows[rowSize] = ObjectInspectorUtils.copyToStandardObject(row, inputObjInspectors[0]);
+    rowSize++;
+
+    if (rowSize % rowLimit == 0) {
+      processRows();
     }
+  }
+
+  private void processRows() throws HiveException {
+    for (int i = 0; i < rowSize; i++) {
+      Object row = rows[i];
+
+      standardKeyWrapper.getNewKey(row, outputObjInspector);
+      standardKeyWrapper.setHashKey();
+
+      if (priorityQueue.contains(standardKeyWrapper)) {
+        forward(row, outputObjInspector);
+      }
+    }
+    priorityQueue.clear();
+    rowSize = 0;
   }
 
   @Override
   protected final void closeOp(boolean abort) throws HiveException {
+    processRows();
     super.closeOp(abort);
   }
 
