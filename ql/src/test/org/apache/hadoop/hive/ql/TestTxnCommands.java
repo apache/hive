@@ -91,7 +91,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     + "-" + System.currentTimeMillis()
   ).getPath().replaceAll("\\\\", "/");
   @Override
-  String getTestDataDir() {
+  protected String getTestDataDir() {
     return TEST_DATA_DIR;
   }
 

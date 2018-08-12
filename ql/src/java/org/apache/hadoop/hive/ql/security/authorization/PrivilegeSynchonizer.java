@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
@@ -193,16 +194,21 @@ public class PrivilegeSynchonizer implements Runnable {
 
               HiveObjectRef tableOfColumnsToRefresh = getObjToRefresh(HiveObjectType.COLUMN, dbName, tblName);
               PrivilegeBag grantColumnBag = new PrivilegeBag();
-              Table tbl = hiveClient.getTable(dbName, tblName);
-              for (FieldSchema fs : tbl.getPartitionKeys()) {
-                addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                    dbName, tblName, fs.getName(), authorizer);
+              Table tbl = null;
+              try {
+                tbl = hiveClient.getTable(dbName, tblName);
+                for (FieldSchema fs : tbl.getPartitionKeys()) {
+                  addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
+                          dbName, tblName, fs.getName(), authorizer);
+                }
+                for (FieldSchema fs : tbl.getSd().getCols()) {
+                  addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
+                          dbName, tblName, fs.getName(), authorizer);
+                }
+                hiveClient.refresh_privileges(tableOfColumnsToRefresh, authorizer, grantColumnBag);
+              } catch (MetaException e) {
+                LOG.debug("Unable to synchronize " + tblName + ":" + e.getMessage());
               }
-              for (FieldSchema fs : tbl.getSd().getCols()) {
-                addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                    dbName, tblName, fs.getName(), authorizer);
-              }
-              hiveClient.refresh_privileges(tableOfColumnsToRefresh, authorizer, grantColumnBag);
             }
           }
           LOG.info("Success synchronize privilege " + policyProvider.getClass().getName() + ":" + numDb + " databases, "

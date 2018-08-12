@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.HiveStrictManagedUtils;
 import org.slf4j.Logger;
@@ -460,7 +461,9 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       }
       FileSystem fs = wh.getFs(tablePath);
       //FileSystem fs = FileSystem.get(getConf());
-      RemoteIterator<LocatedFileStatus> iterator = fs.listFiles(tablePath, true);
+      FileUtils.RemoteIteratorWithFilter iterator =
+          new FileUtils.RemoteIteratorWithFilter(fs.listFiles(tablePath, true), FileUtils
+              .RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER);
       while (iterator.hasNext()) {
         LocatedFileStatus fileStatus = iterator.next();
         if (!fileStatus.isFile()) {
