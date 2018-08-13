@@ -52822,7 +52822,7 @@ class ThriftHiveMetastore_add_write_notification_log_args {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'rqst',
           'type' => TType::STRUCT,
           'class' => '\metastore\WriteNotificationLogRequest',
@@ -52855,7 +52855,7 @@ class ThriftHiveMetastore_add_write_notification_log_args {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRUCT) {
             $this->rqst = new \metastore\WriteNotificationLogRequest();
             $xfer += $this->rqst->read($input);
@@ -52880,7 +52880,7 @@ class ThriftHiveMetastore_add_write_notification_log_args {
       if (!is_object($this->rqst)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('rqst', TType::STRUCT, -1);
+      $xfer += $output->writeFieldBegin('rqst', TType::STRUCT, 1);
       $xfer += $this->rqst->write($output);
       $xfer += $output->writeFieldEnd();
     }
