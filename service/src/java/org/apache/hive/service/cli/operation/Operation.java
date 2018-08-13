@@ -417,4 +417,8 @@ public abstract class Operation {
   public String getQueryTag() {
     return queryState.getQueryTag();
   }
+
+  public String getQueryId() {
+    return queryState.getQueryId();
+  }
 }

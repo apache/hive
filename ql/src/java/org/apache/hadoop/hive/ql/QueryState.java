@@ -55,10 +55,8 @@ public class QueryState {
    */
   private long numModifiedRows = 0;
 
-  /**
-   * Holds the query Id string. Its set by query analyzer if query id is passed as part of query. If its not passed,
-   * then stores the auto generted query id.
-   */
+  // Holds the tag supplied by user to uniquely identify the query. Can be used to kill the query if the query
+  // id cannot be queried for some reason like hive server restart.
   private String queryTag = null;
 
   /**
@@ -69,6 +67,7 @@ public class QueryState {
     this.queryConf = conf;
   }
 
+  // Get the query id stored in query specific config.
   public String getQueryId() {
     return (queryConf.getVar(HiveConf.ConfVars.HIVEQUERYID));
   }
