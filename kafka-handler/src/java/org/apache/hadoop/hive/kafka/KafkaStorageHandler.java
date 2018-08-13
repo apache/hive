@@ -34,12 +34,9 @@ import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.apache.hadoop.hive.kafka.KafkaPullerInputFormat.CONSUMER_CONFIGURATION_PREFIX;
-import static org.apache.hadoop.hive.kafka.KafkaPullerInputFormat.HIVE_KAFKA_BOOTSTRAP_SERVERS;
-import static org.apache.hadoop.hive.kafka.KafkaPullerInputFormat.HIVE_KAFKA_TOPIC;
 
 public class KafkaStorageHandler implements HiveStorageHandler
 {
@@ -48,6 +45,11 @@ public class KafkaStorageHandler implements HiveStorageHandler
   public static final String __PARTITION = "__partition";
   public static final String __OFFSET = "__offset";
   public static final String SERDE_CLASS_NAME = "kafka.serde.class";
+  public static final String HIVE_KAFKA_TOPIC = "kafka.topic";
+  public static final String CONSUMER_CONFIGURATION_PREFIX = "kafka.consumer";
+  public static final String HIVE_KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
+  public static final String HIVE_KAFKA_POLL_TIMEOUT = "hive.kafka.poll.timeout.ms";
+  public static final long DEFAULT_CONSUMER_POLL_TIMEOUT_MS = 5000l; // 5 seconds
 
   private static final Logger log = LoggerFactory.getLogger(KafkaStorageHandler.class);
 
@@ -121,7 +123,7 @@ public class KafkaStorageHandler implements HiveStorageHandler
                String key = entry.getKey().toString().substring(CONSUMER_CONFIGURATION_PREFIX.length() + 1);
                String value = entry.getValue().toString();
                jobProperties.put(key, value);
-               log.info("Setting extra job properties: key [{}] -> value [{}]", key, value );
+               log.info("Setting extra job properties: key [{}] -> value [{}]", key, value);
 
              });
   }
@@ -156,10 +158,15 @@ public class KafkaStorageHandler implements HiveStorageHandler
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf)
   {
-
     Map<String, String> properties = new HashMap<>();
     configureInputJobProperties(tableDesc, properties);
     properties.forEach((key, value) -> jobConf.set(key, value));
+    try {
+      KafkaStreamingUtils.copyDependencyJars(jobConf, KafkaStorageHandler.class);
+    }
+    catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

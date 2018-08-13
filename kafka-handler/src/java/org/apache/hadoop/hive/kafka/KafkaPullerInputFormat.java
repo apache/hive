@@ -60,11 +60,6 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
     implements org.apache.hadoop.mapred.InputFormat<NullWritable, KafkaRecordWritable>
 {
 
-  public static final String HIVE_KAFKA_TOPIC = "kafka.topic";
-  public static final String CONSUMER_CONFIGURATION_PREFIX = "kafka.consumer";
-  public static final String HIVE_KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
-  public static final String GENERATION_TIMEOUT_MS = "hive.kafka.split.generation.timeout.ms";
-
   private static final Logger log = LoggerFactory.getLogger(KafkaPullerInputFormat.class);
 
 
@@ -135,8 +130,11 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
     // this will be used to harness some KAFKA blocking calls
     final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
     try (KafkaConsumer consumer = new KafkaConsumer(KafkaStreamingUtils.consumerProperties(configuration))) {
-      final String topic = configuration.get(HIVE_KAFKA_TOPIC);
-      final long timeoutMs = configuration.getLong(GENERATION_TIMEOUT_MS, 5000);
+      final String topic = configuration.get(KafkaStorageHandler.HIVE_KAFKA_TOPIC);
+      final long timeoutMs = configuration.getLong(
+          KafkaStorageHandler.HIVE_KAFKA_POLL_TIMEOUT,
+          KafkaStorageHandler.DEFAULT_CONSUMER_POLL_TIMEOUT_MS
+      );
       // hive depends on FileSplits
       JobConf jobConf = new JobConf(configuration);
       Path[] tablePaths = org.apache.hadoop.mapred.FileInputFormat.getInputPaths(jobConf);

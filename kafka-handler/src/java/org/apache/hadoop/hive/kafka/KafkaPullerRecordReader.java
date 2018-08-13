@@ -36,11 +36,10 @@ import java.util.Iterator;
 import java.util.Properties;
 
 public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRecordWritable>
-    implements org.apache.hadoop.mapred.RecordReader<NullWritable, KafkaRecordWritable> {
+    implements org.apache.hadoop.mapred.RecordReader<NullWritable, KafkaRecordWritable>
+{
 
   private static final Logger log = LoggerFactory.getLogger(KafkaPullerRecordReader.class);
-  public static final String HIVE_KAFKA_POLL_TIMEOUT = "hive.kafka.poll.timeout.ms";
-  public static final long DEFAULT_CONSUMER_POLL_TIMEOUT_MS = 5000l;
 
   private final Closer closer = Closer.create();
   private KafkaConsumer<byte[], byte[]> consumer = null;
@@ -58,10 +57,12 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
   private long pollTimeout;
   private volatile boolean started = false;
 
-  public KafkaPullerRecordReader() {
+  public KafkaPullerRecordReader()
+  {
   }
 
-  private void initConsumer() {
+  private void initConsumer()
+  {
     if (consumer == null) {
       log.info("Initializing Kafka Consumer");
       final Properties properties = KafkaStreamingUtils.consumerProperties(config);
@@ -73,23 +74,29 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
     }
   }
 
-  public KafkaPullerRecordReader(KafkaPullerInputSplit inputSplit, Configuration jobConf) {
+  public KafkaPullerRecordReader(KafkaPullerInputSplit inputSplit, Configuration jobConf)
+  {
     initialize(inputSplit, jobConf);
   }
 
-  synchronized private void initialize(KafkaPullerInputSplit inputSplit, Configuration jobConf) {
+  synchronized private void initialize(KafkaPullerInputSplit inputSplit, Configuration jobConf)
+  {
     if (!started) {
       this.config = jobConf;
       computeTopicPartitionOffsets(inputSplit);
       initConsumer();
-      pollTimeout = config.getLong(HIVE_KAFKA_POLL_TIMEOUT, DEFAULT_CONSUMER_POLL_TIMEOUT_MS);
+      pollTimeout = config.getLong(
+          KafkaStorageHandler.HIVE_KAFKA_POLL_TIMEOUT,
+          KafkaStorageHandler.DEFAULT_CONSUMER_POLL_TIMEOUT_MS
+      );
       log.debug("Consumer poll timeout [{}] ms", pollTimeout);
       recordsCursor = new KafkaRecordIterator(consumer, topicPartition, startOffset, endOffset, pollTimeout);
       started = true;
     }
   }
 
-  private void computeTopicPartitionOffsets(KafkaPullerInputSplit split) {
+  private void computeTopicPartitionOffsets(KafkaPullerInputSplit split)
+  {
     String topic = split.getTopic();
     int partition = split.getPartition();
     startOffset = split.getStartOffset();
@@ -104,11 +111,15 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
     totalNumberRecords += endOffset - startOffset;
   }
 
-  @Override synchronized public void initialize(org.apache.hadoop.mapreduce.InputSplit inputSplit, TaskAttemptContext context) {
+  @Override
+  synchronized public void initialize(org.apache.hadoop.mapreduce.InputSplit inputSplit, TaskAttemptContext context)
+  {
     initialize((KafkaPullerInputSplit) inputSplit, context.getConfiguration());
   }
 
-  @Override public boolean next(NullWritable nullWritable, KafkaRecordWritable bytesWritable) {
+  @Override
+  public boolean next(NullWritable nullWritable, KafkaRecordWritable bytesWritable)
+  {
     if (started && recordsCursor.hasNext()) {
       ConsumerRecord<byte[], byte[]> record = recordsCursor.next();
       bytesWritable.set(record);
@@ -119,20 +130,28 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
     return false;
   }
 
-  @Override public NullWritable createKey() {
+  @Override
+  public NullWritable createKey()
+  {
     return NullWritable.get();
   }
 
-  @Override public KafkaRecordWritable createValue() {
+  @Override
+  public KafkaRecordWritable createValue()
+  {
     return new KafkaRecordWritable();
   }
 
-  @Override public long getPos() throws IOException {
+  @Override
+  public long getPos() throws IOException
+  {
 
     return consumedRecords;
   }
 
-  @Override public boolean nextKeyValue() throws IOException {
+  @Override
+  public boolean nextKeyValue() throws IOException
+  {
     currentWritableValue = new KafkaRecordWritable();
     if (next(NullWritable.get(), currentWritableValue)) {
       return true;
@@ -141,15 +160,21 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
     return false;
   }
 
-  @Override public NullWritable getCurrentKey() throws IOException, InterruptedException {
+  @Override
+  public NullWritable getCurrentKey() throws IOException, InterruptedException
+  {
     return NullWritable.get();
   }
 
-  @Override public KafkaRecordWritable getCurrentValue() throws IOException, InterruptedException {
+  @Override
+  public KafkaRecordWritable getCurrentValue() throws IOException, InterruptedException
+  {
     return Preconditions.checkNotNull(currentWritableValue);
   }
 
-  @Override public float getProgress() throws IOException {
+  @Override
+  public float getProgress() throws IOException
+  {
     if (consumedRecords == 0) {
       return 0f;
     }
@@ -159,7 +184,9 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
     return consumedRecords * 1.0f / totalNumberRecords;
   }
 
-  @Override public void close() throws IOException {
+  @Override
+  public void close() throws IOException
+  {
     if (!started) {
       return;
     }
