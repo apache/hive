@@ -172,12 +172,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable_n10
-<<<<<<< HEAD
-            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (a = 3) (type: boolean)
             Statistics: Num rows: 5 Data size: 9740 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 788daf609f... HIVE-20115 : Acid tables should not use footer scan for analyze (Sergey Shelukhin, reviewed by Eugene Koifman)
             Filter Operator
               predicate: (a = 3) (type: boolean)
               Statistics: Num rows: 2 Data size: 3896 Basic stats: COMPLETE Column stats: NONE
@@ -191,12 +186,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: decimal(10,2))
           TableScan
             alias: cmv_basetable_n10
-<<<<<<< HEAD
-            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: ((d = 3) and (a = 3)) (type: boolean)
             Statistics: Num rows: 5 Data size: 9740 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 788daf609f... HIVE-20115 : Acid tables should not use footer scan for analyze (Sergey Shelukhin, reviewed by Eugene Koifman)
             Filter Operator
               predicate: ((a = 3) and (d = 3)) (type: boolean)
               Statistics: Num rows: 1 Data size: 1948 Basic stats: COMPLETE Column stats: NONE
@@ -303,12 +293,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable_n10
-<<<<<<< HEAD
-            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: ((a = 3) and (d = 3)) (type: boolean)
             Statistics: Num rows: 5 Data size: 9740 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 788daf609f... HIVE-20115 : Acid tables should not use footer scan for analyze (Sergey Shelukhin, reviewed by Eugene Koifman)
             Filter Operator
               predicate: ((a = 3) and (d = 3)) (type: boolean)
               Statistics: Num rows: 1 Data size: 1948 Basic stats: COMPLETE Column stats: NONE
@@ -408,12 +393,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable_n10
-<<<<<<< HEAD
-            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (a = 3) (type: boolean)
             Statistics: Num rows: 5 Data size: 9740 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 788daf609f... HIVE-20115 : Acid tables should not use footer scan for analyze (Sergey Shelukhin, reviewed by Eugene Koifman)
             Filter Operator
               predicate: (a = 3) (type: boolean)
               Statistics: Num rows: 2 Data size: 3896 Basic stats: COMPLETE Column stats: NONE
@@ -427,12 +407,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: decimal(10,2))
           TableScan
             alias: cmv_basetable_n10
-<<<<<<< HEAD
-            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: ((d = 3) and (a = 3)) (type: boolean)
             Statistics: Num rows: 5 Data size: 9740 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 788daf609f... HIVE-20115 : Acid tables should not use footer scan for analyze (Sergey Shelukhin, reviewed by Eugene Koifman)
             Filter Operator
               predicate: ((a = 3) and (d = 3)) (type: boolean)
               Statistics: Num rows: 1 Data size: 1948 Basic stats: COMPLETE Column stats: NONE
