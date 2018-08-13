@@ -83,32 +83,25 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
   {
     if (!started) {
       this.config = jobConf;
-      computeTopicPartitionOffsets(inputSplit);
+      this.startOffset = inputSplit.getStartOffset();
+      this.endOffset = inputSplit.getEndOffset();
+      this.topicPartition = new TopicPartition(inputSplit.getTopic(), inputSplit.getPartition());
+      Preconditions.checkState(
+          startOffset >= 0 && startOffset <= endOffset,
+          "Start [%s] has to be positive and less or equal than End [%s]",
+          startOffset,
+          endOffset
+      );
+      totalNumberRecords += endOffset - startOffset;
       initConsumer();
       pollTimeout = config.getLong(
           KafkaStorageHandler.HIVE_KAFKA_POLL_TIMEOUT,
           KafkaStorageHandler.DEFAULT_CONSUMER_POLL_TIMEOUT_MS
       );
       log.debug("Consumer poll timeout [{}] ms", pollTimeout);
-      recordsCursor = new KafkaRecordIterator(consumer, topicPartition, startOffset, endOffset, pollTimeout);
+      this.recordsCursor = new KafkaRecordIterator(consumer, topicPartition, startOffset, endOffset, pollTimeout);
       started = true;
     }
-  }
-
-  private void computeTopicPartitionOffsets(KafkaPullerInputSplit split)
-  {
-    String topic = split.getTopic();
-    int partition = split.getPartition();
-    startOffset = split.getStartOffset();
-    endOffset = split.getEndOffset();
-    topicPartition = new TopicPartition(topic, partition);
-    Preconditions.checkState(
-        startOffset >= 0 && startOffset <= endOffset,
-        "Start [%s] has to be positive and less or equal than End [%s]",
-        startOffset,
-        endOffset
-    );
-    totalNumberRecords += endOffset - startOffset;
   }
 
   @Override
@@ -145,7 +138,6 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
   @Override
   public long getPos() throws IOException
   {
-
     return consumedRecords;
   }
 

@@ -43,6 +43,8 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * When provided with an end offset it will return records up to the record with offset == endOffset - 1,
  * Else If end offsets is null it will read up to the current end see {@link org.apache.kafka.clients.consumer.Consumer#endOffsets(Collection)}
+ * <p>
+ * Current implementation of this Iterator will throw and exception if can not poll up to the endOffset - 1
  */
 public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte[]>>
 {
@@ -52,39 +54,41 @@ public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte
   private final TopicPartition topicPartition;
   private long endOffset;
   private long startOffset;
-  private final long pollTimeout;
+  private final long pollTimeoutMs;
   private final Stopwatch stopwatch = Stopwatch.createUnstarted();
   private ConsumerRecords<byte[], byte[]> records;
   private long currentOffset;
   private ConsumerRecord<byte[], byte[]> nextRecord;
   private boolean hasMore = true;
-  private Iterator<ConsumerRecord<byte[], byte[]>> cursor = null;
+
+  //Kafka consumer poll method return an iterator of records.
+  private Iterator<ConsumerRecord<byte[], byte[]>> consumerRecordIterator = null;
 
   /**
    * @param consumer       functional kafka consumer
    * @param topicPartition kafka topic partition
    * @param startOffset    start position of stream.
    * @param endOffset      requested end position. If null will read up to current last
-   * @param pollTimeout    poll time out in ms
+   * @param pollTimeoutMs  poll time out in ms
    */
   public KafkaRecordIterator(
       Consumer<byte[], byte[]> consumer, TopicPartition topicPartition,
-      @Nullable Long startOffset, @Nullable Long endOffset, long pollTimeout
+      @Nullable Long startOffset, @Nullable Long endOffset, long pollTimeoutMs
   )
   {
     this.consumer = Preconditions.checkNotNull(consumer, "Consumer can not be null");
     this.topicPartition = Preconditions.checkNotNull(topicPartition, "Topic partition can not be null");
-    this.pollTimeout = pollTimeout;
-    Preconditions.checkState(pollTimeout > 0, "poll timeout has to be positive number");
+    this.pollTimeoutMs = pollTimeoutMs;
+    Preconditions.checkState(this.pollTimeoutMs > 0, "poll timeout has to be positive number");
     this.startOffset = startOffset == null ? -1l : startOffset;
     this.endOffset = endOffset == null ? -1l : endOffset;
   }
 
   public KafkaRecordIterator(
-      Consumer consumer, TopicPartition tp, long pollTimeout
+      Consumer consumer, TopicPartition tp, long pollTimeoutMs
   )
   {
-    this(consumer, tp, null, null, pollTimeout);
+    this(consumer, tp, null, null, pollTimeoutMs);
   }
 
   private void assignAndSeek()
@@ -142,19 +146,25 @@ public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte
     if (log.isTraceEnabled()) {
       stopwatch.reset().start();
     }
-    records = consumer.poll(pollTimeout);
+    records = consumer.poll(pollTimeoutMs);
     if (log.isTraceEnabled()) {
       stopwatch.stop();
       log.trace("Pulled [{}] records in [{}] ms", records.count(),
                 stopwatch.elapsed(TimeUnit.MILLISECONDS)
       );
     }
-    Preconditions.checkState(!records.isEmpty() || currentOffset == endOffset,
-                             "Current read offset [%s]-TopicPartition:[%s], End offset[%s]."
-                             + "Consumer returned 0 record due to exhausted poll timeout [%s] ms",
-                             currentOffset, topicPartition.toString(), endOffset, pollTimeout
+    // Fail if we can not poll within one lap of pollTimeoutMs.
+    Preconditions.checkState(
+        !records.isEmpty() || currentOffset == endOffset,
+        "Current offset: [%s]-TopicPartition:[%s], target End offset:[%s]."
+        + "Consumer returned 0 record due to exhausted poll timeout [%s]ms, try increasing[%s] ",
+        currentOffset,
+        topicPartition.toString(),
+        endOffset,
+        pollTimeoutMs,
+        KafkaStorageHandler.HIVE_KAFKA_POLL_TIMEOUT
     );
-    cursor = records.iterator();
+    consumerRecordIterator = records.iterator();
   }
 
   @Override
@@ -168,8 +178,8 @@ public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte
 
   private void findNext()
   {
-    if (cursor.hasNext()) {
-      nextRecord = cursor.next();
+    if (consumerRecordIterator.hasNext()) {
+      nextRecord = consumerRecordIterator.next();
       hasMore = true;
       if (nextRecord.offset() < endOffset) {
         currentOffset = nextRecord.offset();

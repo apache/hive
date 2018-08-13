@@ -128,7 +128,7 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
       throws IOException, InterruptedException
   {
     // this will be used to harness some KAFKA blocking calls
-    final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+    final ExecutorService execService = Executors.newSingleThreadExecutor();
     try (KafkaConsumer consumer = new KafkaConsumer(KafkaStreamingUtils.consumerProperties(configuration))) {
       final String topic = configuration.get(KafkaStorageHandler.HIVE_KAFKA_TOPIC);
       final long timeoutMs = configuration.getLong(
@@ -139,7 +139,7 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
       JobConf jobConf = new JobConf(configuration);
       Path[] tablePaths = org.apache.hadoop.mapred.FileInputFormat.getInputPaths(jobConf);
 
-      Future<List<KafkaPullerInputSplit>> futureFullHouse = EXECUTOR.submit(() -> buildFullScanFromKafka(
+      Future<List<KafkaPullerInputSplit>> futureFullHouse = execService.submit(() -> buildFullScanFromKafka(
           topic,
           consumer,
           tablePaths
@@ -156,13 +156,13 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
       }
 
 
-      final ImmutableMap.Builder<TopicPartition, KafkaPullerInputSplit> builder = new ImmutableMap.Builder();
-      fullHouse.stream().forEach(input -> builder.put(new TopicPartition(
+      final ImmutableMap.Builder<TopicPartition, KafkaPullerInputSplit> fullHouseMapBuilder = new ImmutableMap.Builder();
+      fullHouse.stream().forEach(input -> fullHouseMapBuilder.put(new TopicPartition(
           input.getTopic(),
           input.getPartition()
       ), input));
 
-      final KafkaScanTrimmer kafkaScanTrimmer = new KafkaScanTrimmer(builder.build(), consumer);
+      final KafkaScanTrimmer kafkaScanTrimmer = new KafkaScanTrimmer(fullHouseMapBuilder.build(), consumer);
       final String filterExprSerialized = configuration.get(TableScanDesc.FILTER_EXPR_CONF_STR);
 
       if (filterExprSerialized != null && !filterExprSerialized.isEmpty()) {
@@ -174,7 +174,7 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
                                                                                     .map(entry -> entry.getValue())
                                                                                     .collect(Collectors.toList());
 
-        Future<List<KafkaPullerInputSplit>> futureTinyHouse = EXECUTOR.submit(trimmerWorker);
+        Future<List<KafkaPullerInputSplit>> futureTinyHouse = execService.submit(trimmerWorker);
         try {
           return futureTinyHouse.get(timeoutMs, TimeUnit.MILLISECONDS);
         }
@@ -188,7 +188,7 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
       return fullHouse;
     }
     finally {
-      EXECUTOR.shutdown();
+      execService.shutdown();
     }
   }
 
