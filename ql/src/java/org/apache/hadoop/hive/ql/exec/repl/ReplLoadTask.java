@@ -72,6 +72,12 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   @Override
   protected int execute(DriverContext driverContext) {
+    Task<? extends Serializable> rootTask = work.getRootTask();
+    if (rootTask != null) {
+      rootTask.setChildTasks(null);
+    }
+    work.setRootTask(this);
+    this.parentTasks = null;
     if (work.isIncrementalLoad()) {
       return executeIncrementalLoad(driverContext);
     } else {
