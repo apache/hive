@@ -56,7 +56,6 @@ public class TestMiniDruidKafkaCliDriver {
     this.qfile = qfile;
   }
 
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testCliDriver() throws Exception {
     adapter.runTest(name, qfile);

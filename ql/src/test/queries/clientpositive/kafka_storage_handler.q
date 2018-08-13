@@ -14,7 +14,8 @@ TBLPROPERTIES
 
 DESCRIBE EXTENDED kafka_table;
 
-Select * FROM kafka_table;
+Select `__partition` , `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta FROM kafka_table;
 
 Select count(*) FROM kafka_table;
 
