@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIter
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
+import org.apache.hadoop.hive.ql.exec.Task;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -42,6 +43,7 @@ public class ReplLoadWork implements Serializable {
   private int loadTaskRunCount = 0;
   private DatabaseEvent.State state = null;
   private final transient IncrementalLoadTasksBuilder incrementalLoad;
+  private transient Task<? extends Serializable> rootTask;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -56,6 +58,7 @@ public class ReplLoadWork implements Serializable {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
+    rootTask = null;
     if (isIncrementalDump) {
       incrementalIterator = new IncrementalLoadEventsIterator(dumpDirectory, hiveConf);
       this.bootstrapIterator = null;
@@ -109,5 +112,13 @@ public class ReplLoadWork implements Serializable {
 
   public IncrementalLoadTasksBuilder getIncrementalLoadTaskBuilder() {
     return incrementalLoad;
+  }
+
+  public Task<? extends Serializable> getRootTask() {
+    return rootTask;
+  }
+
+  public void setRootTask(Task<? extends Serializable> rootTask) {
+    this.rootTask = rootTask;
   }
 }
