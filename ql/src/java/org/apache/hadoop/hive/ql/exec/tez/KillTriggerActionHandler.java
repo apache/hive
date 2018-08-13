@@ -42,7 +42,8 @@ public class KillTriggerActionHandler implements TriggerActionHandler<TezSession
             KillQuery killQuery = sessionState.getKillQuery();
             // if kill query is null then session might have been released to pool or closed already
             if (killQuery != null) {
-              sessionState.getKillQuery().killQuery(queryId, entry.getValue().getViolationMsg());
+              sessionState.getKillQuery().killQuery(queryId, entry.getValue().getViolationMsg(),
+                      sessionState.getConf());
             }
           } catch (HiveException e) {
             LOG.warn("Unable to kill query {} for trigger violation");

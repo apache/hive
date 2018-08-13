@@ -29,18 +29,56 @@ import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.io.NullWritable;
 import org.junit.BeforeClass;
 
+import org.junit.AfterClass;
+import org.junit.Test;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Connection;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
+import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 /**
  * TestJdbcWithMiniLlap for Arrow format
  */
 public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
+  private static MiniHS2 miniHS2 = null;
+  private static final String tableName = "testJdbcMinihs2Tbl";
+  private static String dataFileDir;
+  private static final String testDbName = "testJdbcMinihs2";
+
+  private static class ExceptionHolder {
+    Throwable throwable;
+  }
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    BaseJdbcWithMiniLlap.beforeTest(true);
+    HiveConf conf = new HiveConf();
+    MiniHS2.cleanupLocalDir();
+    miniHS2 = BaseJdbcWithMiniLlap.beforeTest(true);
+    dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
+
+    Connection conDefault = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(),
+            System.getProperty("user.name"), "bar");
+    Statement stmt = conDefault.createStatement();
+    stmt.execute("drop database if exists " + testDbName + " cascade");
+    stmt.execute("create database " + testDbName);
+    stmt.close();
+    conDefault.close();
+  }
+
+  @AfterClass
+  public static void afterTest() {
+    if (miniHS2 != null && miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
   }
 
   @Override
@@ -224,6 +262,96 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     assertEquals("abc123", rowValues[20]);
     assertEquals("abc123         ", rowValues[21]);
     assertArrayEquals("X'01FF'".getBytes("UTF-8"), (byte[]) rowValues[22]);
+  }
+
+  /**
+   * SleepMsUDF
+   */
+  public static class SleepMsUDF extends UDF {
+    public Integer evaluate(int value, int ms) {
+      try {
+        Thread.sleep(ms);
+      } catch (InterruptedException e) {
+        // No-op
+      }
+      return value;
+    }
+  }
+
+  /**
+   * Test CLI kill command of a query that is running.
+   * We spawn 2 threads - one running the query and
+   * the other attempting to cancel.
+   * We're using a dummy udf to simulate a query,
+   * that runs for a sufficiently long time.
+   * @throws Exception
+   */
+  @Test
+  public void testKillQuery() throws Exception {
+    Connection con = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(testDbName),
+            System.getProperty("user.name"), "bar");
+    Connection con2 = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(testDbName),
+            System.getProperty("user.name"), "bar");
+
+    String udfName = SleepMsUDF.class.getName();
+    Statement stmt1 = con.createStatement();
+    final Statement stmt2 = con2.createStatement();
+    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
+
+    String tblName = testDbName + "." + tableName;
+
+    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
+    stmt1.execute("create table " + tblName + " (int_col int, value string) ");
+    stmt1.execute("load data local inpath '" + dataFilePath.toString() + "' into table " + tblName);
+
+
+    stmt1.close();
+    final Statement stmt = con.createStatement();
+    final ExceptionHolder tExecuteHolder = new ExceptionHolder();
+    final ExceptionHolder tKillHolder = new ExceptionHolder();
+
+    // Thread executing the query
+    Thread tExecute = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          System.out.println("Executing query: ");
+          stmt.execute("set hive.llap.execution.mode = none");
+
+          // The test table has 500 rows, so total query time should be ~ 500*500ms
+          stmt.executeQuery("select sleepMsUDF(t1.int_col, 100), t1.int_col, t2.int_col " +
+                  "from " + tableName + " t1 join " + tableName + " t2 on t1.int_col = t2.int_col");
+        } catch (SQLException e) {
+          tExecuteHolder.throwable = e;
+        }
+      }
+    });
+    // Thread killing the query
+    Thread tKill = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(5000);
+          String queryId = ((HiveStatement) stmt).getQueryId();
+          System.out.println("Killing query: " + queryId);
+          stmt2.execute("kill query '" + queryId + "'");
+          stmt2.close();
+        } catch (Exception e) {
+          tKillHolder.throwable = e;
+        }
+      }
+    });
+
+    tExecute.start();
+    tKill.start();
+    tExecute.join();
+    tKill.join();
+    stmt.close();
+    con2.close();
+    con.close();
+
+    assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertNull("tCancel", tKillHolder.throwable);
   }
 
 }

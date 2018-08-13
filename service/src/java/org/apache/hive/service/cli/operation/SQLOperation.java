@@ -198,7 +198,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       if (0 != response.getResponseCode()) {
         throw toSQLException("Error while compiling statement", response);
       }
-
+      if (queryState.getQueryTag() != null && queryState.getQueryId() != null) {
+        parentSession.updateQueryTag(queryState.getQueryId(), queryState.getQueryTag());
+      }
       setHasResultSet(driver.hasResultSet());
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);

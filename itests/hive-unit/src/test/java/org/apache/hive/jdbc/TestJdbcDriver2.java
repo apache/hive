@@ -690,6 +690,34 @@ public class TestJdbcDriver2 {
     }
   }
 
+  @Test
+  public void testGetQueryId() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    HiveStatement stmt1 = (HiveStatement) con.createStatement();
+    stmt.executeAsync("create database query_id_test with dbproperties ('repl.source.for' = '1, 2, 3')");
+    String queryId = stmt.getQueryId();
+    assertFalse(queryId.isEmpty());
+    stmt.getUpdateCount();
+
+    stmt1.executeAsync("repl status query_id_test with ('hive.query.id' = 'hiveCustomTag')");
+    String queryId1 = stmt1.getQueryId();
+    assertFalse("hiveCustomTag".equals(queryId1));
+    assertFalse(queryId.equals(queryId1));
+    assertFalse(queryId1.isEmpty());
+    stmt1.getUpdateCount();
+
+    stmt.executeAsync("select count(*) from " + dataTypeTableName);
+    queryId = stmt.getQueryId();
+    assertFalse("hiveCustomTag".equals(queryId));
+    assertFalse(queryId.isEmpty());
+    assertFalse(queryId.equals(queryId1));
+    stmt.getUpdateCount();
+
+    stmt.execute("drop database query_id_test");
+    stmt.close();
+    stmt1.close();
+  }
+
   private void checkResultSetExpected(Statement stmt, List<String> setupQueries, String testQuery,
       boolean isExpectedResultSet) throws Exception {
     boolean hasResultSet;

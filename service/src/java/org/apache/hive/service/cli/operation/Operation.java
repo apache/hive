@@ -409,4 +409,12 @@ public abstract class Operation {
   protected void markOperationCompletedTime() {
     operationComplete = System.currentTimeMillis();
   }
+
+  public String getQueryTag() {
+    return queryState.getQueryTag();
+  }
+
+  public String getQueryId() {
+    return queryState.getQueryId();
+  }
 }
