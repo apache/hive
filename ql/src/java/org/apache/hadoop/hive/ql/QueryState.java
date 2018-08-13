@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.LineageState;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 
 /**
  * The class to store query level info such as queryId. Multiple queries can run
@@ -49,6 +50,10 @@ public class QueryState {
    */
   private HiveTxnManager txnManager;
 
+  // Holds the tag supplied by user to uniquely identify the query. Can be used to kill the query if the query
+  // id cannot be queried for some reason like hive server restart.
+  private String queryTag = null;
+
   /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
@@ -57,6 +62,7 @@ public class QueryState {
     this.queryConf = conf;
   }
 
+  // Get the query id stored in query specific config.
   public String getQueryId() {
     return (queryConf.getVar(HiveConf.ConfVars.HIVEQUERYID));
   }
@@ -98,6 +104,24 @@ public class QueryState {
 
   public void setTxnManager(HiveTxnManager txnManager) {
     this.txnManager = txnManager;
+  }
+
+  public String getQueryTag() {
+    return queryTag;
+  }
+
+  public void setQueryTag(String queryTag) {
+    this.queryTag = queryTag;
+  }
+
+  public static void setMapReduceJobTag(HiveConf queryConf, String queryTag) {
+    String jobTag = queryConf.get(MRJobConfig.JOB_TAGS);
+    if (jobTag == null) {
+      jobTag = queryTag;
+    } else {
+      jobTag = jobTag.concat("," + queryTag);
+    }
+    queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
   }
 
   /**
@@ -209,6 +233,8 @@ public class QueryState {
       if (generateNewQueryId) {
         String queryId = QueryPlan.makeQueryId();
         queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+        setMapReduceJobTag(queryConf, queryId);
+
         // FIXME: druid storage handler relies on query.id to maintain some staging directories
         // expose queryid to session level
         if (hiveConf != null) {
