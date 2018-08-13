@@ -1354,7 +1354,12 @@ public class DagUtils {
     // Removing job credential entry/ cannot be set on the tasks
     conf.unset("mapreduce.job.credentials.binary");
 
-    hiveConf.stripHiddenConfigurations(conf);
+
+    boolean stripEnabled = conf.getBoolean(
+        ConfVars.HIVE_CONF_HIDDEN_LIST_ENABLED_TEZ.varname, true);
+    if (stripEnabled) {
+      hiveConf.stripHiddenConfigurations(conf);
+    }
     return conf;
   }
 

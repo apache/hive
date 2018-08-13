@@ -4380,6 +4380,12 @@ public class HiveConf extends Configuration {
             "yarn.bin.path,"+
             "spark.home",
         "Comma separated list of configuration options which are immutable at runtime"),
+    HIVE_CONF_HIDDEN_LIST_ENABLED_TEZ("hive.conf.internal.hidden.list.tez", "true",
+        "Whether to enable or not stripping the hidden fields for the tez tasks. Ideally the hidden "
+            + "fields would be managed with the command 'hadoop credentials' and setting"
+            + " 'hadoop.security.credential.provider.path', but this may not always be "
+            + "possible or it may be convenient to set them directly in the configuration "
+            + "file. Please be aware that setting this property to false may be a security risk"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
         + "," + DRUID_METADATA_DB_PASSWORD.varname
