@@ -8979,10 +8979,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     return RetryingHMSHandler.getProxy(conf, baseHandler, local);
   }
 
-  static Iface newRetryingHMSHandler(String name, Configuration conf, boolean local)
+  /**
+   * Create retrying HMS handler for embedded metastore.
+   *
+   * <h1>IMPORTANT</h1>
+   *
+   * This method is called indirectly by HiveMetastoreClient and HiveMetaStoreClientPreCatalog
+   * using reflection. It can not be removed and its arguments can't be changed without matching
+   * change in HiveMetastoreClient and HiveMetaStoreClientPreCatalog.
+   *
+   * @param conf configuration to use
+   * @throws MetaException
+   */
+  static Iface newRetryingHMSHandler(Configuration conf)
       throws MetaException {
-    HMSHandler baseHandler = new HiveMetaStore.HMSHandler(name, conf, false);
-    return RetryingHMSHandler.getProxy(conf, baseHandler, local);
+    HMSHandler baseHandler = new HiveMetaStore.HMSHandler("hive client", conf, false);
+    return RetryingHMSHandler.getProxy(conf, baseHandler, true);
   }
 
   /**
