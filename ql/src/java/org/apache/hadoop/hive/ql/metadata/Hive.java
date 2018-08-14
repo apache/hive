@@ -36,6 +36,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,6 +72,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
@@ -1030,6 +1032,13 @@ public class Hive {
       if (!ignoreUnknownTab) {
         throw new HiveException(e);
       }
+    } catch (MetaException e) {
+      int idx = ExceptionUtils.indexOfType(e, SQLIntegrityConstraintViolationException.class);
+      if (idx != -1 && ExceptionUtils.getThrowables(e)[idx].getMessage().contains("MV_TABLES_USED")) {
+        throw new HiveException("Cannot drop table since it is used by at least one materialized view definition. " +
+            "Please drop any materialized view that uses the table before dropping it", e);
+      }
+      throw new HiveException(e);
     } catch (Exception e) {
       throw new HiveException(e);
     }
