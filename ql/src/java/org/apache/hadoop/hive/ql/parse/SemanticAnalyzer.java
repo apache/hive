@@ -12559,86 +12559,120 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String expandedText = ctx.getTokenRewriteStream().toString(
         viewSelect.getTokenStartIndex(), viewSelect.getTokenStopIndex());
 
-    if (imposedSchema != null) {
-      // Merge the names from the imposed schema into the types
-      // from the derived schema.
-      StringBuilder sb = new StringBuilder();
-      sb.append("SELECT ");
-      int n = derivedSchema.size();
-      for (int i = 0; i < n; ++i) {
-        if (i > 0) {
-          sb.append(", ");
+    if (createVwDesc.isMaterialized()) {
+      if (createVwDesc.getPartColNames() != null) {
+        // If we are creating a materialized view and it has partition columns,
+        // we may need to reorder column projection in expanded query. The reason
+        // is that Hive assumes that in the partition columns are at the end of
+        // the MV schema, and if we do not do this, we will have a mismatch between
+        // the SQL query for the MV and the MV itself.
+        boolean first = true;
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
+        for (int i = 0; i < derivedSchema.size(); ++i) {
+          FieldSchema fieldSchema = derivedSchema.get(i);
+          if (!createVwDesc.getPartColNames().contains(fieldSchema.getName())) {
+            if (first) {
+              first = false;
+            } else {
+              sb.append(", ");
+            }
+            sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
+          }
         }
-        FieldSchema fieldSchema = derivedSchema.get(i);
-        // Modify a copy, not the original
-        fieldSchema = new FieldSchema(fieldSchema);
-        // TODO: there's a potential problem here if some table uses external schema like Avro,
-        //       with a very large type name. It seems like the view does not derive the SerDe from
-        //       the table, so it won't be able to just get the type from the deserializer like the
-        //       table does; we won't be able to properly store the type in the RDBMS metastore.
-        //       Not sure if these large cols could be in resultSchema. Ignore this for now 0_o
-        derivedSchema.set(i, fieldSchema);
-        sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
-        sb.append(" AS ");
-        String imposedName = imposedSchema.get(i).getName();
-        sb.append(HiveUtils.unparseIdentifier(imposedName, conf));
-        fieldSchema.setName(imposedName);
-        // We don't currently allow imposition of a type
-        fieldSchema.setComment(imposedSchema.get(i).getComment());
+        for (String partColName : createVwDesc.getPartColNames()) {
+          sb.append(", ");
+          sb.append(HiveUtils.unparseIdentifier(partColName, conf));
+        }
+        sb.append(" FROM (");
+        sb.append(expandedText);
+        sb.append(") ");
+        sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
+        expandedText = sb.toString();
       }
-      sb.append(" FROM (");
-      sb.append(expandedText);
-      sb.append(") ");
-      sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
-      expandedText = sb.toString();
-    }
-
-    if (createVwDesc.getPartColNames() != null) {
-      // Make sure all partitioning columns referenced actually
-      // exist and are in the correct order at the end
-      // of the list of columns produced by the view. Also move the field
-      // schema descriptors from derivedSchema to the partitioning key
-      // descriptor.
-      List<String> partColNames = createVwDesc.getPartColNames();
-      if (partColNames.size() > derivedSchema.size()) {
-        throw new SemanticException(
-            ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
+    } else {
+      if (imposedSchema != null) {
+        // Merge the names from the imposed schema into the types
+        // from the derived schema.
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
+        int n = derivedSchema.size();
+        for (int i = 0; i < n; ++i) {
+          if (i > 0) {
+            sb.append(", ");
+          }
+          FieldSchema fieldSchema = derivedSchema.get(i);
+          // Modify a copy, not the original
+          fieldSchema = new FieldSchema(fieldSchema);
+          // TODO: there's a potential problem here if some table uses external schema like Avro,
+          //       with a very large type name. It seems like the view does not derive the SerDe from
+          //       the table, so it won't be able to just get the type from the deserializer like the
+          //       table does; we won't be able to properly store the type in the RDBMS metastore.
+          //       Not sure if these large cols could be in resultSchema. Ignore this for now 0_o
+          derivedSchema.set(i, fieldSchema);
+          sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
+          sb.append(" AS ");
+          String imposedName = imposedSchema.get(i).getName();
+          sb.append(HiveUtils.unparseIdentifier(imposedName, conf));
+          fieldSchema.setName(imposedName);
+          // We don't currently allow imposition of a type
+          fieldSchema.setComment(imposedSchema.get(i).getComment());
+        }
+        sb.append(" FROM (");
+        sb.append(expandedText);
+        sb.append(") ");
+        sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
+        expandedText = sb.toString();
       }
 
-      // Get the partition columns from the end of derivedSchema.
-      List<FieldSchema> partitionColumns = derivedSchema.subList(
-          derivedSchema.size() - partColNames.size(),
-          derivedSchema.size());
-
-      // Verify that the names match the PARTITIONED ON clause.
-      Iterator<String> colNameIter = partColNames.iterator();
-      Iterator<FieldSchema> schemaIter = partitionColumns.iterator();
-      while (colNameIter.hasNext()) {
-        String colName = colNameIter.next();
-        FieldSchema fieldSchema = schemaIter.next();
-        if (!fieldSchema.getName().equals(colName)) {
+      if (createVwDesc.getPartColNames() != null) {
+        // Make sure all partitioning columns referenced actually
+        // exist and are in the correct order at the end
+        // of the list of columns produced by the view. Also move the field
+        // schema descriptors from derivedSchema to the partitioning key
+        // descriptor.
+        List<String> partColNames = createVwDesc.getPartColNames();
+        if (partColNames.size() > derivedSchema.size()) {
           throw new SemanticException(
               ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
         }
+
+        // Get the partition columns from the end of derivedSchema.
+        List<FieldSchema> partitionColumns = derivedSchema.subList(
+            derivedSchema.size() - partColNames.size(),
+            derivedSchema.size());
+
+        // Verify that the names match the PARTITIONED ON clause.
+        Iterator<String> colNameIter = partColNames.iterator();
+        Iterator<FieldSchema> schemaIter = partitionColumns.iterator();
+        while (colNameIter.hasNext()) {
+          String colName = colNameIter.next();
+          FieldSchema fieldSchema = schemaIter.next();
+          if (!fieldSchema.getName().equals(colName)) {
+            throw new SemanticException(
+                ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
+          }
+        }
+
+        // Boundary case: require at least one non-partitioned column
+        // for consistency with tables.
+        if (partColNames.size() == derivedSchema.size()) {
+          throw new SemanticException(
+              ErrorMsg.VIEW_PARTITION_TOTAL.getMsg());
+        }
+
+        // Now make a copy.
+        createVwDesc.setPartCols(
+            new ArrayList<FieldSchema>(partitionColumns));
+
+        // Finally, remove the partition columns from the end of derivedSchema.
+        // (Clearing the subList writes through to the underlying
+        // derivedSchema ArrayList.)
+        partitionColumns.clear();
       }
-
-      // Boundary case: require at least one non-partitioned column
-      // for consistency with tables.
-      if (partColNames.size() == derivedSchema.size()) {
-        throw new SemanticException(
-            ErrorMsg.VIEW_PARTITION_TOTAL.getMsg());
-      }
-
-      // Now make a copy.
-      createVwDesc.setPartCols(
-          new ArrayList<FieldSchema>(partitionColumns));
-
-      // Finally, remove the partition columns from the end of derivedSchema.
-      // (Clearing the subList writes through to the underlying
-      // derivedSchema ArrayList.)
-      partitionColumns.clear();
     }
 
+    // Set schema and expanded text for the view
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
   }

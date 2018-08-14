@@ -57,11 +57,11 @@ analyze table mv1_part_n0 compute statistics for columns;
 
 explain
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno;
 
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno;
 
 drop materialized view mv1_part_n0;
@@ -75,11 +75,11 @@ analyze table mv1_part_n0 compute statistics for columns;
 
 explain
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno;
 
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno;
 
 drop materialized view mv1_part_n0;
@@ -93,11 +93,11 @@ analyze table mv1_part_n0 compute statistics for columns;
 
 explain
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno;
 
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno;
 
 drop materialized view mv1_part_n0;
