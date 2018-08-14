@@ -59,8 +59,9 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -1902,7 +1903,7 @@ public class CachedStore implements RawStore, Configurable {
     }
     // Note that enableBitVector does not apply here because ColumnStatisticsObj
     // itself will tell whether bitvector is null or not and aggr logic can automatically apply.
-    return new MergedColumnStatsForPartitions(MetaStoreUtils.aggrPartitionStats(colStatsMap,
+    return new MergedColumnStatsForPartitions(MetaStoreServerUtils.aggrPartitionStats(colStatsMap,
         partNames, areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner), partsFound);
   }
 

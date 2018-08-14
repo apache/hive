@@ -104,6 +104,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -1957,10 +1958,10 @@ public class Hive {
               newPartPath, -1, newPartPath.getFileSystem(conf));
         }
         if (filesForStats != null) {
-          MetaStoreUtils.populateQuickStats(filesForStats, newTPart.getParameters());
+          MetaStoreServerUtils.populateQuickStats(filesForStats, newTPart.getParameters());
         } else {
           // The ACID state is probably absent. Warning is logged in the get method.
-          MetaStoreUtils.clearQuickStats(newTPart.getParameters());
+          MetaStoreServerUtils.clearQuickStats(newTPart.getParameters());
         }
         try {
           LOG.debug("Adding new partition " + newTPart.getSpec());

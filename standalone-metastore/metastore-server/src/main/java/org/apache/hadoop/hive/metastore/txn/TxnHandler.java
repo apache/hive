@@ -80,7 +80,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -329,7 +329,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     maxOpenTxns = MetastoreConf.getIntVar(conf, ConfVars.MAX_OPEN_TXNS);
 
     try {
-      transactionalListeners = MetaStoreUtils.getMetaStoreListeners(
+      transactionalListeners = MetaStoreServerUtils.getMetaStoreListeners(
               TransactionalMetaStoreEventListener.class,
                       conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
     } catch(MetaException e) {

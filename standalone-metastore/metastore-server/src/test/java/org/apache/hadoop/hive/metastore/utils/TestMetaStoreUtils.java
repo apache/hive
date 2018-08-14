@@ -47,7 +47,7 @@ import static org.apache.hadoop.hive.common.StatsSetupConst.NUM_FILES;
 import static org.apache.hadoop.hive.common.StatsSetupConst.NUM_ERASURE_CODED_FILES;
 import static org.apache.hadoop.hive.common.StatsSetupConst.STATS_GENERATED;
 import static org.apache.hadoop.hive.common.StatsSetupConst.TOTAL_SIZE;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.updateTableStatsSlow;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.updateTableStatsSlow;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -88,7 +88,7 @@ public class TestMetaStoreUtils {
     Map<String, String> expected = ImmutableMap.of("akey", "aval",
         "blank", "", "null", "");
 
-    Map<String,String> xformed = MetaStoreUtils.trimMapNulls(m,true);
+    Map<String,String> xformed = MetaStoreServerUtils.trimMapNulls(m,true);
     assertThat(xformed, is(expected));
   }
 
@@ -100,7 +100,7 @@ public class TestMetaStoreUtils {
     m.put("null",null);
     Map<String, String> expected = ImmutableMap.of("akey", "aval", "blank", "");
 
-    Map<String,String> pruned = MetaStoreUtils.trimMapNulls(m,false);
+    Map<String,String> pruned = MetaStoreServerUtils.trimMapNulls(m,false);
     assertThat(pruned, is(expected));
   }
 
@@ -110,13 +110,13 @@ public class TestMetaStoreUtils {
     FieldSchema col1a = new FieldSchema("col1", "string", "col1 but with a different comment");
     FieldSchema col2 = new FieldSchema("col2", "string", "col2 comment");
     FieldSchema col3 = new FieldSchema("col3", "string", "col3 comment");
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1a)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col2, col1)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)));
-    Assert.assertFalse(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1a)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col2, col1)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)));
+    Assert.assertFalse(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1)));
   }
 
   /**

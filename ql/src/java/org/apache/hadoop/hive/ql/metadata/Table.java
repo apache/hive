@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -1073,7 +1074,7 @@ public class Table implements Serializable {
   }
 
   private static String normalize(String colName) throws HiveException {
-    if (!MetaStoreUtils.validateColumnName(colName)) {
+    if (!MetaStoreServerUtils.validateColumnName(colName)) {
       throw new HiveException("Invalid column name '" + colName
           + "' in the table definition");
     }
