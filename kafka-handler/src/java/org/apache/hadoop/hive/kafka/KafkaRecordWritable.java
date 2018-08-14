@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,12 +37,13 @@ public class KafkaRecordWritable implements Writable {
   private int partition;
   private long offset;
   private long timestamp;
-  private byte [] value;
+  private byte[] value;
 
   public static KafkaRecordWritable fromKafkaRecord(ConsumerRecord<byte[], byte[]> consumerRecord) {
-    return new KafkaRecordWritable(consumerRecord.partition(), consumerRecord.offset(),
-        consumerRecord.timestamp(), consumerRecord.value()
-    );
+    return new KafkaRecordWritable(consumerRecord.partition(),
+        consumerRecord.offset(),
+        consumerRecord.timestamp(),
+        consumerRecord.value());
   }
 
   public void set(ConsumerRecord<byte[], byte[]> consumerRecord) {
@@ -74,7 +75,7 @@ public class KafkaRecordWritable implements Writable {
     timestamp = dataInput.readLong();
     partition = dataInput.readInt();
     offset = dataInput.readLong();
-    int size =  dataInput.readInt();
+    int size = dataInput.readInt();
     if (size > 0) {
       value = new byte[size];
       dataInput.readFully(value);
@@ -107,8 +108,10 @@ public class KafkaRecordWritable implements Writable {
       return false;
     }
     KafkaRecordWritable that = (KafkaRecordWritable) o;
-    return getPartition() == that.getPartition() && getOffset() == that.getOffset()
-        && getTimestamp() == that.getTimestamp() && Arrays.equals(getValue(), that.getValue());
+    return getPartition() == that.getPartition()
+        && getOffset() == that.getOffset()
+        && getTimestamp() == that.getTimestamp()
+        && Arrays.equals(getValue(), that.getValue());
   }
 
   @Override public int hashCode() {

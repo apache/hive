@@ -24,12 +24,14 @@ import org.junit.Test;
 
 import java.util.Properties;
 
+/**
+ * Test for Utility class.
+ */
 public class KafkaStreamingUtilsTest {
   public KafkaStreamingUtilsTest() {
   }
 
-  @Test
-  public void testConsumerProperties() {
+  @Test public void testConsumerProperties() {
     Configuration configuration = new Configuration();
     configuration.set("kafka.bootstrap.servers", "localhost:9090");
     configuration.set("kafka.consumer.fetch.max.wait.ms", "40");

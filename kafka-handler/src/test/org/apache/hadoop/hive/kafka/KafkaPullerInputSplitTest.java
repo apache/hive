@@ -29,21 +29,18 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-public class KafkaPullerInputSplitTest
-{
+/**
+ * Kafka Hadoop InputSplit Test.
+ */
+public class KafkaPullerInputSplitTest {
   private String topic = "my_topic";
   private KafkaPullerInputSplit expectedInputSplit;
 
-  public KafkaPullerInputSplitTest()
-  {
-    this.expectedInputSplit = new KafkaPullerInputSplit(this.topic, 1, 50L, 56L,
-                                                        new Path("/tmp")
-    );
+  public KafkaPullerInputSplitTest() {
+    this.expectedInputSplit = new KafkaPullerInputSplit(this.topic, 1, 50L, 56L, new Path("/tmp"));
   }
 
-  @Test
-  public void testWriteRead() throws IOException
-  {
+  @Test public void testWriteRead() throws IOException {
     DataOutput output = new DataOutputBuffer();
     this.expectedInputSplit.write(output);
     KafkaPullerInputSplit kafkaPullerInputSplit = new KafkaPullerInputSplit();
@@ -53,132 +50,59 @@ public class KafkaPullerInputSplitTest
     Assert.assertEquals(this.expectedInputSplit, kafkaPullerInputSplit);
   }
 
+  @Test public void andRangeOverLapping() {
+    KafkaPullerInputSplit kafkaPullerInputSplit = new KafkaPullerInputSplit("test-topic", 2, 10, 400, new Path("/tmp"));
 
-  @Test
-  public void andRangeOverLapping()
-  {
-    KafkaPullerInputSplit kafkaPullerInputSplit = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        10,
-        400,
-        new Path("/tmp")
-    );
+    KafkaPullerInputSplit kafkaPullerInputSplit2 = new KafkaPullerInputSplit("test-topic", 2, 3, 200, new Path("/tmp"));
 
-    KafkaPullerInputSplit kafkaPullerInputSplit2 = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        3,
-        200,
-        new Path("/tmp")
-    );
-
-
-    Assert.assertEquals(
-        new KafkaPullerInputSplit("test-topic", 2, 10, 200, new Path("/tmp")),
-        KafkaPullerInputSplit.intersectRange(kafkaPullerInputSplit, kafkaPullerInputSplit2)
-    );
-
+    Assert.assertEquals(new KafkaPullerInputSplit("test-topic", 2, 10, 200, new Path("/tmp")),
+        KafkaPullerInputSplit.intersectRange(kafkaPullerInputSplit, kafkaPullerInputSplit2));
 
   }
 
+  @Test public void andRangeNonOverLapping() {
+    KafkaPullerInputSplit kafkaPullerInputSplit = new KafkaPullerInputSplit("test-topic", 2, 10, 400, new Path("/tmp"));
 
-  @Test
-  public void andRangeNonOverLapping()
-  {
-    KafkaPullerInputSplit kafkaPullerInputSplit = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        10,
-        400,
-        new Path("/tmp")
-    );
-
-    KafkaPullerInputSplit kafkaPullerInputSplit2 = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        550,
-        700,
-        new Path("/tmp")
-    );
-
+    KafkaPullerInputSplit
+        kafkaPullerInputSplit2 =
+        new KafkaPullerInputSplit("test-topic", 2, 550, 700, new Path("/tmp"));
 
     Assert.assertEquals(null, KafkaPullerInputSplit.intersectRange(kafkaPullerInputSplit, kafkaPullerInputSplit2));
 
-
   }
 
-  @Test
-  public void orRange()
-  {
-    KafkaPullerInputSplit kafkaPullerInputSplit = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        300,
-        400,
-        new Path("/tmp")
-    );
+  @Test public void orRange() {
+    KafkaPullerInputSplit
+        kafkaPullerInputSplit =
+        new KafkaPullerInputSplit("test-topic", 2, 300, 400, new Path("/tmp"));
 
+    KafkaPullerInputSplit kafkaPullerInputSplit2 = new KafkaPullerInputSplit("test-topic", 2, 3, 600, new Path("/tmp"));
 
-    KafkaPullerInputSplit kafkaPullerInputSplit2 = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        3,
-        600,
-        new Path("/tmp")
-    );
+    Assert.assertEquals(kafkaPullerInputSplit2,
+        KafkaPullerInputSplit.unionRange(kafkaPullerInputSplit, kafkaPullerInputSplit2));
 
+    KafkaPullerInputSplit
+        kafkaPullerInputSplit3 =
+        new KafkaPullerInputSplit("test-topic", 2, 700, 6000, new Path("/tmp"));
 
-    Assert.assertEquals(
-        kafkaPullerInputSplit2,
-        KafkaPullerInputSplit.unionRange(kafkaPullerInputSplit, kafkaPullerInputSplit2)
-    );
-
-    KafkaPullerInputSplit kafkaPullerInputSplit3 = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        700,
-        6000,
-        new Path("/tmp")
-    );
-
-
-    Assert.assertEquals(new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        300,
-        6000,
-        new Path("/tmp")
-    ), KafkaPullerInputSplit.unionRange(kafkaPullerInputSplit, kafkaPullerInputSplit3));
+    Assert.assertEquals(new KafkaPullerInputSplit("test-topic", 2, 300, 6000, new Path("/tmp")),
+        KafkaPullerInputSplit.unionRange(kafkaPullerInputSplit, kafkaPullerInputSplit3));
   }
 
-
-  @Test
-  public void copyOf()
-  {
-    KafkaPullerInputSplit kafkaPullerInputSplit = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        300,
-        400,
-        new Path("/tmp")
-    );
+  @Test public void copyOf() {
+    KafkaPullerInputSplit
+        kafkaPullerInputSplit =
+        new KafkaPullerInputSplit("test-topic", 2, 300, 400, new Path("/tmp"));
 
     KafkaPullerInputSplit copyOf = KafkaPullerInputSplit.copyOf(kafkaPullerInputSplit);
     Assert.assertEquals(kafkaPullerInputSplit, copyOf);
     Assert.assertTrue(kafkaPullerInputSplit != copyOf);
   }
 
-  @Test
-  public void TestClone()
-  {
-    KafkaPullerInputSplit kafkaPullerInputSplit = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        300,
-        400,
-        new Path("/tmp")
-    );
+  @Test public void testClone() {
+    KafkaPullerInputSplit
+        kafkaPullerInputSplit =
+        new KafkaPullerInputSplit("test-topic", 2, 300, 400, new Path("/tmp"));
 
     KafkaPullerInputSplit clone = kafkaPullerInputSplit.clone();
     Assert.assertEquals(kafkaPullerInputSplit, clone);
@@ -186,32 +110,22 @@ public class KafkaPullerInputSplitTest
 
   }
 
-  @Test
-  public void testSlice()
-  {
-    KafkaPullerInputSplit kafkaPullerInputSplit = new KafkaPullerInputSplit(
-        "test-topic",
-        2,
-        300,
-        400,
-        new Path("/tmp")
-    );
+  @Test public void testSlice() {
+    KafkaPullerInputSplit
+        kafkaPullerInputSplit =
+        new KafkaPullerInputSplit("test-topic", 2, 300, 400, new Path("/tmp"));
     List<KafkaPullerInputSplit> kafkaPullerInputSplitList = KafkaPullerInputSplit.slice(14, kafkaPullerInputSplit);
-    Assert.assertEquals(
-        kafkaPullerInputSplitList.stream()
-                                 .mapToLong(kafkaPullerInputSplit1 -> kafkaPullerInputSplit1.getEndOffset()
-                                                                      - kafkaPullerInputSplit1.getStartOffset())
-                                 .sum(),
-        kafkaPullerInputSplit.getEndOffset() - kafkaPullerInputSplit.getStartOffset()
-    );
+    Assert.assertEquals(kafkaPullerInputSplitList.stream()
+        .mapToLong(kafkaPullerInputSplit1 -> kafkaPullerInputSplit1.getEndOffset()
+            - kafkaPullerInputSplit1.getStartOffset())
+        .sum(), kafkaPullerInputSplit.getEndOffset() - kafkaPullerInputSplit.getStartOffset());
     Assert.assertTrue(kafkaPullerInputSplitList.stream()
-                                               .filter(kafkaPullerInputSplit1 -> kafkaPullerInputSplit.getStartOffset()
-                                                                                 == kafkaPullerInputSplit1.getStartOffset())
-                                               .count() == 1);
+        .filter(kafkaPullerInputSplit1 -> kafkaPullerInputSplit.getStartOffset()
+            == kafkaPullerInputSplit1.getStartOffset())
+        .count() == 1);
     Assert.assertTrue(kafkaPullerInputSplitList.stream()
-                                               .filter(kafkaPullerInputSplit1 -> kafkaPullerInputSplit.getEndOffset()
-                                                                                 == kafkaPullerInputSplit1.getEndOffset())
-                                               .count() == 1);
+        .filter(kafkaPullerInputSplit1 -> kafkaPullerInputSplit.getEndOffset() == kafkaPullerInputSplit1.getEndOffset())
+        .count() == 1);
 
   }
 }

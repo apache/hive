@@ -52,39 +52,37 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
-;
 
-public class GenericKafkaSerDe extends AbstractSerDe
-{
-  private static final Logger log = LoggerFactory.getLogger(GenericKafkaSerDe.class);
+/**
+ * Generic Kafka Serde that allow user to delegate Serde to other class like Avro, Json or any class that supports
+ * {@link BytesRefWritable}.
+ */
+public class GenericKafkaSerDe extends AbstractSerDe {
+  private static final Logger LOG = LoggerFactory.getLogger(GenericKafkaSerDe.class);
   // ORDER of fields and types matters here
-  public static final ImmutableList<String> METADATA_COLUMN_NAMES = ImmutableList.of(
-      KafkaStorageHandler.__PARTITION,
-      KafkaStorageHandler.__OFFSET,
-      KafkaStorageHandler.__TIMESTAMP
-  );
-  public static final ImmutableList<PrimitiveTypeInfo> METADATA_PRIMITIVE_TYPE_INFO = ImmutableList.of(
-      TypeInfoFactory.intTypeInfo,
-      TypeInfoFactory.longTypeInfo,
-      TypeInfoFactory.longTypeInfo
-  );
+  public static final ImmutableList<String>
+      METADATA_COLUMN_NAMES =
+      ImmutableList.of(KafkaStorageHandler.PARTITION_COLUMN,
+          KafkaStorageHandler.OFFSET_COLUMN,
+          KafkaStorageHandler.TIMESTAMP_COLUMN);
+  public static final ImmutableList<PrimitiveTypeInfo>
+      METADATA_PRIMITIVE_TYPE_INFO =
+      ImmutableList.of(TypeInfoFactory.intTypeInfo, TypeInfoFactory.longTypeInfo, TypeInfoFactory.longTypeInfo);
 
   private AbstractSerDe delegateSerDe;
   private ObjectInspector objectInspector;
   private final List<String> columnNames = Lists.newArrayList();
   StructObjectInspector delegateObjectInspector;
 
-  @Override
-  public void initialize(@Nullable Configuration conf, Properties tbl) throws SerDeException
-  {
+  @Override public void initialize(@Nullable Configuration conf, Properties tbl) throws SerDeException {
     final String className = tbl.getProperty(KafkaStorageHandler.SERDE_CLASS_NAME, KafkaJsonSerDe.class.getName());
     delegateSerDe = createDelegate(className);
     delegateSerDe.initialize(conf, tbl);
-    log.info("Using SerDe instance {}", delegateSerDe.getClass().getCanonicalName());
+    LOG.info("Using SerDe instance {}", delegateSerDe.getClass().getCanonicalName());
     if (!(delegateSerDe.getObjectInspector() instanceof StructObjectInspector)) {
       throw new SerDeException("Was expecting StructObject Inspector but have " + delegateSerDe.getObjectInspector()
-                                                                                               .getClass()
-                                                                                               .getName());
+          .getClass()
+          .getName());
     }
 
     delegateObjectInspector = (StructObjectInspector) delegateSerDe.getObjectInspector();
@@ -92,8 +90,11 @@ public class GenericKafkaSerDe extends AbstractSerDe
     final List<ObjectInspector> inspectors;
     // Get column names and types
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    final String
+        columnNameDelimiter =
+        tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ?
+            tbl.getProperty(serdeConstants.COLUMN_NAME_DELIMITER) :
+            String.valueOf(SerDeUtils.COMMA);
     // all table column names
     if (!columnNameProperty.isEmpty()) {
       columnNames.addAll(Arrays.asList(columnNameProperty.split(columnNameDelimiter)));
@@ -101,57 +102,47 @@ public class GenericKafkaSerDe extends AbstractSerDe
 
     columnNames.addAll(METADATA_COLUMN_NAMES);
 
-    if (log.isDebugEnabled()) {
-      log.debug("columns: {}, {}", columnNameProperty, columnNames);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("columns: {}, {}", columnNameProperty, columnNames);
     }
 
     inspectors = new ArrayList<>(columnNames.size());
     inspectors.addAll(delegateObjectInspector.getAllStructFieldRefs()
-                                             .stream()
-                                             .map(structField -> structField.getFieldObjectInspector())
-                                             .collect(Collectors.toList()));
+        .stream()
+        .map(structField -> structField.getFieldObjectInspector())
+        .collect(Collectors.toList()));
     inspectors.addAll(METADATA_PRIMITIVE_TYPE_INFO.stream()
-                                                  .map(KafkaJsonSerDe.typeInfoToObjectInspector)
-                                                  .collect(Collectors.toList()));
+        .map(KafkaJsonSerDe.typeInfoToObjectInspector)
+        .collect(Collectors.toList()));
 
     objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
   }
 
-  private AbstractSerDe createDelegate(String className)
-  {
+  private AbstractSerDe createDelegate(String className) {
     final Class<? extends AbstractSerDe> clazz;
     try {
       clazz = (Class<? extends AbstractSerDe>) Class.forName(className);
-    }
-    catch (ClassNotFoundException e) {
-      log.error("Failed a loading delegate SerDe {}", className);
+    } catch (ClassNotFoundException e) {
+      LOG.error("Failed a loading delegate SerDe {}", className);
       throw new RuntimeException(e);
     }
     // we are not setting conf thus null is okay
     return ReflectionUtil.newInstance(clazz, null);
   }
 
-  @Override
-  public Class<? extends Writable> getSerializedClass()
-  {
+  @Override public Class<? extends Writable> getSerializedClass() {
     return delegateSerDe.getSerializedClass();
   }
 
-  @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException
-  {
+  @Override public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     return delegateSerDe.serialize(obj, objInspector);
   }
 
-  @Override
-  public SerDeStats getSerDeStats()
-  {
+  @Override public SerDeStats getSerDeStats() {
     return delegateSerDe.getSerDeStats();
   }
 
-  @Override
-  public Object deserialize(Writable blob) throws SerDeException
-  {
+  @Override public Object deserialize(Writable blob) throws SerDeException {
     KafkaRecordWritable record = (KafkaRecordWritable) blob;
     // switch case the serde nature
     final Object row;
@@ -163,8 +154,7 @@ public class GenericKafkaSerDe extends AbstractSerDe
       try {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(record.getValue());
         avroGenericRecordWritable.readFields(new DataInputStream(byteArrayInputStream));
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         throw new SerDeException(e);
       }
       row = delegateSerDe.deserialize(avroGenericRecordWritable);
@@ -175,21 +165,19 @@ public class GenericKafkaSerDe extends AbstractSerDe
 
     return columnNames.stream().map(name -> {
       switch (name) {
-        case KafkaStorageHandler.__PARTITION:
-          return new IntWritable(record.getPartition());
-        case KafkaStorageHandler.__OFFSET:
-          return new LongWritable(record.getOffset());
-        case KafkaStorageHandler.__TIMESTAMP:
-          return new LongWritable(record.getTimestamp());
-        default:
-          return delegateObjectInspector.getStructFieldData(row, delegateObjectInspector.getStructFieldRef(name));
+      case KafkaStorageHandler.PARTITION_COLUMN:
+        return new IntWritable(record.getPartition());
+      case KafkaStorageHandler.OFFSET_COLUMN:
+        return new LongWritable(record.getOffset());
+      case KafkaStorageHandler.TIMESTAMP_COLUMN:
+        return new LongWritable(record.getTimestamp());
+      default:
+        return delegateObjectInspector.getStructFieldData(row, delegateObjectInspector.getStructFieldRef(name));
       }
     }).collect(Collectors.toList());
   }
 
-  @Override
-  public ObjectInspector getObjectInspector()
-  {
+  @Override public ObjectInspector getObjectInspector() {
     return objectInspector;
   }
 }

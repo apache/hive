@@ -28,12 +28,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+/**
+ * Test class for kafka Writable.
+ */
 public class KafkaRecordWritableTest {
   public KafkaRecordWritableTest() {
   }
 
-  @Test
-  public void testWriteReadFields() throws IOException {
+  @Test public void testWriteReadFields() throws IOException {
     ConsumerRecord<byte[], byte[]> record = new ConsumerRecord("topic", 0, 3L, "key".getBytes(), "value".getBytes());
     KafkaRecordWritable kafkaRecordWritable = KafkaRecordWritable.fromKafkaRecord(record);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
