@@ -107,6 +107,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public final static ClientCapabilities TEST_VERSION = new ClientCapabilities(
       Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES, ClientCapability.TEST_CAPABILITY));
 
+  // Name of the HiveMetaStore class. It is used to initialize embedded metastore
+  private static final String HIVE_METASTORE_CLASS =
+      "org.apache.hadoop.hive.metastore.HiveMetaStore";
+
+  // Method used to create Hive Metastore client. It is called as
+  // HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
+  private static final String HIVE_METASTORE_CREATE_HANDLER_METHOD = "newRetryingHMSHandler";
+
   ThriftHiveMetastore.Iface client = null;
   private TTransport transport = null;
   private boolean isConnected = false;
@@ -164,9 +172,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         throw new MetaException("Embedded metastore is not allowed here. Please configure "
             + ConfVars.THRIFT_URIS.toString() + "; it is currently set to [" + msUri + "]");
       }
+
+      client = callEmbeddedMetastore(this.conf);
+
       // instantiate the metastore server handler directly instead of connecting
       // through the network
-      client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
       isConnected = true;
       snapshotActiveConf();
       return;
@@ -222,6 +232,45 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     // finally open the store
     open();
+  }
+
+  /**
+   * Instantiate the metastore server handler directly instead of connecting
+   * through the network
+   *
+   * @param conf Configuration object passed to embedded metastore
+   * @return embedded client instance
+   * @throws MetaException
+   */
+  static ThriftHiveMetastore.Iface callEmbeddedMetastore(Configuration conf) throws MetaException {
+    // Instantiate the metastore server handler directly instead of connecting
+    // through the network
+    //
+    // The code below simulates the following code
+    //
+    // client = HiveMetaStore.newRetryingHMSHandler(this.conf);
+    //
+    // using reflection API. This is done to avoid dependency of MetastoreClient on Hive Metastore.
+    // Note that newRetryingHMSHandler is static method, so we pass null as the object reference.
+    //
+    try {
+      Class<?> clazz = Class.forName(HIVE_METASTORE_CLASS);
+      //noinspection JavaReflectionMemberAccess
+      Method method = clazz.getDeclaredMethod(HIVE_METASTORE_CREATE_HANDLER_METHOD,
+          Configuration.class);
+      method.setAccessible(true);
+      return (ThriftHiveMetastore.Iface) method.invoke(null, conf);
+    } catch (InvocationTargetException e) {
+      if (e.getCause() != null) {
+        MetaStoreUtils.logAndThrowMetaException((Exception)e.getCause());
+      }
+      MetaStoreUtils.logAndThrowMetaException(e);
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | IllegalAccessException e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
   }
 
   private void resolveUris() throws MetaException {
