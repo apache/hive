@@ -31,6 +31,100 @@ Select `__partition`, `__offset`,`__time`, `page`, `user`, `language`, `country`
 from kafka_table where `__offset` > 7 and `__partition` = 0 OR
 `__offset` = 4 and `__partition` = 0 OR `__offset` <= 1 and `__partition` = 0;
 
+
+-- non existing partition
+Select  count(*) from kafka_table where `__partition` = 1;
+
+-- non existing offset
+Select count(*) from kafka_table where `__offset` = 100;
+
+-- less than non existing offset  and partition
+Select count(*) from kafka_table where `__offset` <= 100 and `__partition` <= 100;
+
+Drop table kafka_table_offsets;
+create table kafka_table_offsets(partition_id int, max_offset bigint, insert_time timestamp);
+
+insert overwrite table kafka_table_offsets select `__partition`, min(`__offset`) - 1, CURRENT_TIMESTAMP from kafka_table group by `__partition`, CURRENT_TIMESTAMP ;
+
+-- check initial state is 0 for partition and 0 offsets
+select partition_id, max_offset from kafka_table_offsets;
+
+Drop table orc_kafka_table;
+Create table orc_kafka_table (partition_id int, row_offset bigint, kafka_ts bigint,
+ `__time` timestamp , `page` string, `user` string, `language` string,
+`country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
+`anonymous` boolean, `robot` boolean, added int, deleted int, delta bigint
+) stored as ORC;
+
+
+From kafka_table ktable JOIN kafka_table_offsets offset_table
+on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset and  ktable.`__offset` < 3 )
+insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
+`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta
+Insert overwrite table kafka_table_offsets select
+`__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP;
+
+-- should ingest only first 3 rows
+select count(*) from  orc_kafka_table;
+
+-- check max offset is 2
+select partition_id, max_offset from kafka_table_offsets;
+
+-- 3 rows form 0 to 2
+select `partition_id`, `row_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta from  orc_kafka_table;
+
+
+-- insert the rest using inner join
+
+From kafka_table ktable JOIN kafka_table_offsets offset_table
+on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset)
+insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
+`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta
+Insert overwrite table kafka_table_offsets select
+`__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP;
+
+-- check that max offset is 9
+select partition_id, max_offset from kafka_table_offsets;
+
+-- 10 rows
+select count(*) from  orc_kafka_table;
+
+-- no duplicate or missing data
+select `partition_id`, `row_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta from  orc_kafka_table;
+
+-- LEFT OUTER JOIN if metadata is empty
+
+Drop table kafka_table_offsets;
+create table kafka_table_offsets(partition_id int, max_offset bigint, insert_time timestamp);
+
+Drop table orc_kafka_table;
+Create table orc_kafka_table (partition_id int, row_offset bigint, kafka_ts bigint,
+ `__time` timestamp , `page` string, `user` string, `language` string,
+`country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
+`anonymous` boolean, `robot` boolean, added int, deleted int, delta bigint
+) stored as ORC;
+
+
+From kafka_table ktable LEFT OUTER JOIN kafka_table_offsets offset_table
+on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset )
+insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
+`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta
+Insert overwrite table kafka_table_offsets select
+`__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP;
+
+select count(*) from  orc_kafka_table;
+
+select partition_id, max_offset from kafka_table_offsets;
+
+select `partition_id`, `row_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta from  orc_kafka_table;
+
+-- using basic implementation of flat json probably to be removed
 CREATE EXTERNAL TABLE kafka_table_2
 (`__time` timestamp with local time zone , `page` string, `user` string, `language` string,
 `country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,

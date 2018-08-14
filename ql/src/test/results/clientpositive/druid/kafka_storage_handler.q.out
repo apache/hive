@@ -141,6 +141,364 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
 0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+PREHOOK: query: Select  count(*) from kafka_table where `__partition` = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: Select  count(*) from kafka_table where `__partition` = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: Select count(*) from kafka_table where `__offset` = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: Select count(*) from kafka_table where `__offset` = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: Select count(*) from kafka_table where `__offset` <= 100 and `__partition` <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: Select count(*) from kafka_table where `__offset` <= 100 and `__partition` <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10
+PREHOOK: query: Drop table kafka_table_offsets
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: Drop table kafka_table_offsets
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table kafka_table_offsets(partition_id int, max_offset bigint, insert_time timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@kafka_table_offsets
+POSTHOOK: query: create table kafka_table_offsets(partition_id int, max_offset bigint, insert_time timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@kafka_table_offsets
+PREHOOK: query: insert overwrite table kafka_table_offsets select `__partition`, min(`__offset`) - 1, CURRENT_TIMESTAMP from kafka_table group by `__partition`, CURRENT_TIMESTAMP
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table
+PREHOOK: Output: default@kafka_table_offsets
+POSTHOOK: query: insert overwrite table kafka_table_offsets select `__partition`, min(`__offset`) - 1, CURRENT_TIMESTAMP from kafka_table group by `__partition`, CURRENT_TIMESTAMP
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table
+POSTHOOK: Output: default@kafka_table_offsets
+POSTHOOK: Lineage: kafka_table_offsets.insert_time SIMPLE []
+POSTHOOK: Lineage: kafka_table_offsets.max_offset EXPRESSION [(kafka_table)kafka_table.FieldSchema(name:__offset, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: kafka_table_offsets.partition_id SIMPLE [(kafka_table)kafka_table.FieldSchema(name:__partition, type:int, comment:from deserializer), ]
+PREHOOK: query: select partition_id, max_offset from kafka_table_offsets
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table_offsets
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_id, max_offset from kafka_table_offsets
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table_offsets
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	-1
+PREHOOK: query: Drop table orc_kafka_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: Drop table orc_kafka_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: Create table orc_kafka_table (partition_id int, row_offset bigint, kafka_ts bigint,
+ `__time` timestamp , `page` string, `user` string, `language` string,
+`country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
+`anonymous` boolean, `robot` boolean, added int, deleted int, delta bigint
+) stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_kafka_table
+POSTHOOK: query: Create table orc_kafka_table (partition_id int, row_offset bigint, kafka_ts bigint,
+ `__time` timestamp , `page` string, `user` string, `language` string,
+`country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
+`anonymous` boolean, `robot` boolean, added int, deleted int, delta bigint
+) stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_kafka_table
+PREHOOK: query: From kafka_table ktable JOIN kafka_table_offsets offset_table
+on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset and  ktable.`__offset` < 3 )
+insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
+`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta
+Insert overwrite table kafka_table_offsets select
+`__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table
+PREHOOK: Input: default@kafka_table_offsets
+PREHOOK: Output: default@kafka_table_offsets
+PREHOOK: Output: default@orc_kafka_table
+POSTHOOK: query: From kafka_table ktable JOIN kafka_table_offsets offset_table
+on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset and  ktable.`__offset` < 3 )
+insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
+`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta
+Insert overwrite table kafka_table_offsets select
+`__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table
+POSTHOOK: Input: default@kafka_table_offsets
+POSTHOOK: Output: default@kafka_table_offsets
+POSTHOOK: Output: default@orc_kafka_table
+POSTHOOK: Lineage: kafka_table_offsets.insert_time EXPRESSION []
+POSTHOOK: Lineage: kafka_table_offsets.max_offset EXPRESSION [(kafka_table)ktable.FieldSchema(name:__offset, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: kafka_table_offsets.partition_id SIMPLE [(kafka_table)ktable.FieldSchema(name:__partition, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.__time SIMPLE [(kafka_table)ktable.FieldSchema(name:__time, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.added SIMPLE [(kafka_table)ktable.FieldSchema(name:added, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.anonymous SIMPLE [(kafka_table)ktable.FieldSchema(name:anonymous, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.continent SIMPLE [(kafka_table)ktable.FieldSchema(name:continent, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.country SIMPLE [(kafka_table)ktable.FieldSchema(name:country, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.deleted SIMPLE [(kafka_table)ktable.FieldSchema(name:deleted, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.delta SIMPLE [(kafka_table)ktable.FieldSchema(name:delta, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.kafka_ts SIMPLE [(kafka_table)ktable.FieldSchema(name:__timestamp, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.language SIMPLE [(kafka_table)ktable.FieldSchema(name:language, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.namespace SIMPLE [(kafka_table)ktable.FieldSchema(name:namespace, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.newpage SIMPLE [(kafka_table)ktable.FieldSchema(name:newpage, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.page SIMPLE [(kafka_table)ktable.FieldSchema(name:page, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.partition_id SIMPLE [(kafka_table)ktable.FieldSchema(name:__partition, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.robot SIMPLE [(kafka_table)ktable.FieldSchema(name:robot, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.row_offset SIMPLE [(kafka_table)ktable.FieldSchema(name:__offset, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.unpatrolled SIMPLE [(kafka_table)ktable.FieldSchema(name:unpatrolled, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.user SIMPLE [(kafka_table)ktable.FieldSchema(name:user, type:string, comment:from deserializer), ]
+PREHOOK: query: select count(*) from  orc_kafka_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from  orc_kafka_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3
+PREHOOK: query: select partition_id, max_offset from kafka_table_offsets
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table_offsets
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_id, max_offset from kafka_table_offsets
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table_offsets
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	2
+PREHOOK: query: select `partition_id`, `row_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta from  orc_kafka_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition_id`, `row_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta from  orc_kafka_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+PREHOOK: query: From kafka_table ktable JOIN kafka_table_offsets offset_table
+on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset)
+insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
+`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta
+Insert overwrite table kafka_table_offsets select
+`__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table
+PREHOOK: Input: default@kafka_table_offsets
+PREHOOK: Output: default@kafka_table_offsets
+PREHOOK: Output: default@orc_kafka_table
+POSTHOOK: query: From kafka_table ktable JOIN kafka_table_offsets offset_table
+on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset)
+insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
+`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta
+Insert overwrite table kafka_table_offsets select
+`__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table
+POSTHOOK: Input: default@kafka_table_offsets
+POSTHOOK: Output: default@kafka_table_offsets
+POSTHOOK: Output: default@orc_kafka_table
+POSTHOOK: Lineage: kafka_table_offsets.insert_time EXPRESSION []
+POSTHOOK: Lineage: kafka_table_offsets.max_offset EXPRESSION [(kafka_table)ktable.FieldSchema(name:__offset, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: kafka_table_offsets.partition_id SIMPLE [(kafka_table)ktable.FieldSchema(name:__partition, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.__time SIMPLE [(kafka_table)ktable.FieldSchema(name:__time, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.added SIMPLE [(kafka_table)ktable.FieldSchema(name:added, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.anonymous SIMPLE [(kafka_table)ktable.FieldSchema(name:anonymous, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.continent SIMPLE [(kafka_table)ktable.FieldSchema(name:continent, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.country SIMPLE [(kafka_table)ktable.FieldSchema(name:country, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.deleted SIMPLE [(kafka_table)ktable.FieldSchema(name:deleted, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.delta SIMPLE [(kafka_table)ktable.FieldSchema(name:delta, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.kafka_ts SIMPLE [(kafka_table)ktable.FieldSchema(name:__timestamp, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.language SIMPLE [(kafka_table)ktable.FieldSchema(name:language, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.namespace SIMPLE [(kafka_table)ktable.FieldSchema(name:namespace, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.newpage SIMPLE [(kafka_table)ktable.FieldSchema(name:newpage, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.page SIMPLE [(kafka_table)ktable.FieldSchema(name:page, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.partition_id SIMPLE [(kafka_table)ktable.FieldSchema(name:__partition, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.robot SIMPLE [(kafka_table)ktable.FieldSchema(name:robot, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.row_offset SIMPLE [(kafka_table)ktable.FieldSchema(name:__offset, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.unpatrolled SIMPLE [(kafka_table)ktable.FieldSchema(name:unpatrolled, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.user SIMPLE [(kafka_table)ktable.FieldSchema(name:user, type:string, comment:from deserializer), ]
+PREHOOK: query: select partition_id, max_offset from kafka_table_offsets
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table_offsets
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_id, max_offset from kafka_table_offsets
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table_offsets
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	9
+PREHOOK: query: select count(*) from  orc_kafka_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from  orc_kafka_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10
+PREHOOK: query: select `partition_id`, `row_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta from  orc_kafka_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition_id`, `row_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta from  orc_kafka_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+PREHOOK: query: Drop table kafka_table_offsets
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@kafka_table_offsets
+PREHOOK: Output: default@kafka_table_offsets
+POSTHOOK: query: Drop table kafka_table_offsets
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@kafka_table_offsets
+POSTHOOK: Output: default@kafka_table_offsets
+PREHOOK: query: create table kafka_table_offsets(partition_id int, max_offset bigint, insert_time timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@kafka_table_offsets
+POSTHOOK: query: create table kafka_table_offsets(partition_id int, max_offset bigint, insert_time timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@kafka_table_offsets
+PREHOOK: query: Drop table orc_kafka_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_kafka_table
+PREHOOK: Output: default@orc_kafka_table
+POSTHOOK: query: Drop table orc_kafka_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_kafka_table
+POSTHOOK: Output: default@orc_kafka_table
+PREHOOK: query: Create table orc_kafka_table (partition_id int, row_offset bigint, kafka_ts bigint,
+ `__time` timestamp , `page` string, `user` string, `language` string,
+`country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
+`anonymous` boolean, `robot` boolean, added int, deleted int, delta bigint
+) stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_kafka_table
+POSTHOOK: query: Create table orc_kafka_table (partition_id int, row_offset bigint, kafka_ts bigint,
+ `__time` timestamp , `page` string, `user` string, `language` string,
+`country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
+`anonymous` boolean, `robot` boolean, added int, deleted int, delta bigint
+) stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_kafka_table
+PREHOOK: query: From kafka_table ktable LEFT OUTER JOIN kafka_table_offsets offset_table
+on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset )
+insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
+`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta
+Insert overwrite table kafka_table_offsets select
+`__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table
+PREHOOK: Input: default@kafka_table_offsets
+PREHOOK: Output: default@kafka_table_offsets
+PREHOOK: Output: default@orc_kafka_table
+POSTHOOK: query: From kafka_table ktable LEFT OUTER JOIN kafka_table_offsets offset_table
+on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset )
+insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
+`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta
+Insert overwrite table kafka_table_offsets select
+`__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table
+POSTHOOK: Input: default@kafka_table_offsets
+POSTHOOK: Output: default@kafka_table_offsets
+POSTHOOK: Output: default@orc_kafka_table
+POSTHOOK: Lineage: kafka_table_offsets.insert_time EXPRESSION []
+POSTHOOK: Lineage: kafka_table_offsets.max_offset EXPRESSION [(kafka_table)ktable.FieldSchema(name:__offset, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: kafka_table_offsets.partition_id SIMPLE [(kafka_table)ktable.FieldSchema(name:__partition, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.__time SIMPLE [(kafka_table)ktable.FieldSchema(name:__time, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.added SIMPLE [(kafka_table)ktable.FieldSchema(name:added, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.anonymous SIMPLE [(kafka_table)ktable.FieldSchema(name:anonymous, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.continent SIMPLE [(kafka_table)ktable.FieldSchema(name:continent, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.country SIMPLE [(kafka_table)ktable.FieldSchema(name:country, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.deleted SIMPLE [(kafka_table)ktable.FieldSchema(name:deleted, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.delta SIMPLE [(kafka_table)ktable.FieldSchema(name:delta, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.kafka_ts SIMPLE [(kafka_table)ktable.FieldSchema(name:__timestamp, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.language SIMPLE [(kafka_table)ktable.FieldSchema(name:language, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.namespace SIMPLE [(kafka_table)ktable.FieldSchema(name:namespace, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.newpage SIMPLE [(kafka_table)ktable.FieldSchema(name:newpage, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.page SIMPLE [(kafka_table)ktable.FieldSchema(name:page, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.partition_id SIMPLE [(kafka_table)ktable.FieldSchema(name:__partition, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.robot SIMPLE [(kafka_table)ktable.FieldSchema(name:robot, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.row_offset SIMPLE [(kafka_table)ktable.FieldSchema(name:__offset, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.unpatrolled SIMPLE [(kafka_table)ktable.FieldSchema(name:unpatrolled, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: orc_kafka_table.user SIMPLE [(kafka_table)ktable.FieldSchema(name:user, type:string, comment:from deserializer), ]
+PREHOOK: query: select count(*) from  orc_kafka_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from  orc_kafka_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10
+PREHOOK: query: select partition_id, max_offset from kafka_table_offsets
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table_offsets
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_id, max_offset from kafka_table_offsets
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table_offsets
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	9
+PREHOOK: query: select `partition_id`, `row_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta from  orc_kafka_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition_id`, `row_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+`unpatrolled` , `anonymous` , `robot` , added , deleted , delta from  orc_kafka_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 PREHOOK: query: CREATE EXTERNAL TABLE kafka_table_2
 (`__time` timestamp with local time zone , `page` string, `user` string, `language` string,
 `country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
