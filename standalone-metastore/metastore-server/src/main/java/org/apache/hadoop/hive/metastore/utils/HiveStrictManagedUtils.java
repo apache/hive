@@ -18,10 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.utils;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -54,7 +50,7 @@ public class HiveStrictManagedUtils {
 
       TableType tableType = TableType.valueOf(table.getTableType());
       if (tableType == TableType.MANAGED_TABLE) {
-        if (!MetaStoreUtils.isTransactionalTable(table.getParameters())) {
+        if (!MetaStoreServerUtils.isTransactionalTable(table.getParameters())) {
           return createValidationError(table, "Table is marked as a managed table but is not transactional.");
         }
         if (MetaStoreUtils.isNonNativeTable(table)) {
