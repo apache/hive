@@ -2372,7 +2372,7 @@ columnNameOrder
     -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_ASC}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
     -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_DESC}?
-            ^(TOK_TABSORTCOLNAMEDESC ^(TOK_NULLS_LAST identifier))
+            ^(TOK_TABSORTCOLNAMEDESC ^(TOK_NULLS_FIRST identifier))
     -> {$orderSpec.tree.getType()==HiveParser.KW_ASC}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))
     -> ^(TOK_TABSORTCOLNAMEDESC ^($nullSpec identifier))
@@ -2402,7 +2402,7 @@ columnRefOrder
     -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_ASC}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST expression))
     -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_DESC}?
-            ^(TOK_TABSORTCOLNAMEDESC ^(TOK_NULLS_LAST expression))
+            ^(TOK_TABSORTCOLNAMEDESC ^(TOK_NULLS_FIRST expression))
     -> {$orderSpec.tree.getType()==HiveParser.KW_ASC}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec expression))
     -> ^(TOK_TABSORTCOLNAMEDESC ^($nullSpec expression))
