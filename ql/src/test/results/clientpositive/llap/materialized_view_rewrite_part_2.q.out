@@ -209,12 +209,12 @@ POSTHOOK: Output: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -228,28 +228,31 @@ STAGE PLANS:
         TableScan
           alias: default.mv1_part_n0
           Filter Operator
-            predicate: (deptno > 20) (type: boolean)
+            predicate: (deptno >= 20) (type: boolean)
             Select Operator
               expressions: empid (type: int)
               outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 PREHOOK: type: QUERY
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
 PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
 POSTHOOK: query: select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
+200
 PREHOOK: query: drop materialized view mv1_part_n0
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mv1_part_n0
@@ -295,12 +298,12 @@ POSTHOOK: Output: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -314,14 +317,14 @@ STAGE PLANS:
         TableScan
           alias: default.mv1_part_n0
           Filter Operator
-            predicate: (empid > 20) (type: boolean)
+            predicate: (empid >= 20) (type: boolean)
             Select Operator
               expressions: deptno (type: int)
               outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 PREHOOK: type: QUERY
 PREHOOK: Input: default@depts_n00
@@ -330,7 +333,7 @@ PREHOOK: Input: default@mv1_part_n0
 PREHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
 POSTHOOK: query: select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@depts_n00
@@ -338,7 +341,7 @@ POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
 POSTHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
-20
+200
 PREHOOK: query: drop materialized view mv1_part_n0
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mv1_part_n0
@@ -384,12 +387,12 @@ POSTHOOK: Output: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -403,28 +406,31 @@ STAGE PLANS:
         TableScan
           alias: default.mv1_part_n0
           Filter Operator
-            predicate: (deptno > 20) (type: boolean)
+            predicate: (deptno >= 20) (type: boolean)
             Select Operator
               expressions: empid (type: int)
               outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 PREHOOK: type: QUERY
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
 PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
 POSTHOOK: query: select empid from emps_n00
-join depts_n00 using (deptno) where depts_n00.deptno > 20
+join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
+200
 PREHOOK: query: drop materialized view mv1_part_n0
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mv1_part_n0
@@ -494,10 +500,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_part_n0
-          Select Operator
-            expressions: empid (type: int)
-            outputColumnNames: _col0
-            ListSink
+          Filter Operator
+            predicate: (empid > 15) (type: boolean)
+            Select Operator
+              expressions: deptno (type: int)
+              outputColumnNames: _col0
+              ListSink
 
 PREHOOK: query: select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
@@ -506,6 +514,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
 PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno=10
 PREHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
 POSTHOOK: query: select depts_n00.deptno from depts_n00
@@ -515,9 +524,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno=10
 POSTHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
-200
+10
+10
+10
+10
+20
 PREHOOK: query: drop materialized view mv1_part_n0
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mv1_part_n0
@@ -593,21 +607,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_part_n0
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: empid (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: _col0 (type: int)
-                      mode: hash
+                  Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (empid > 15) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -617,10 +634,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -639,6 +656,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
 PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno=10
 PREHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
 POSTHOOK: query: select depts_n00.deptno from depts_n00
@@ -648,9 +666,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno=10
 POSTHOOK: Input: default@mv1_part_n0@deptno=20
 #### A masked pattern was here ####
-200
+10
+20
 PREHOOK: query: drop materialized view mv1_part_n0
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mv1_part_n0
@@ -745,10 +765,10 @@ STAGE PLANS:
                   alias: default.mv1_part_n0
                   Statistics: Num rows: 8 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno = empid) and (name = name2)) (type: boolean)
+                    predicate: ((deptno = deptno2) and (name = name2)) (type: boolean)
                     Statistics: Num rows: 2 Data size: 390 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: deptno2 (type: int)
+                      expressions: empid (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 390 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
