@@ -43,10 +43,6 @@ public class DecimalColumnStatsDataInspector extends DecimalColumnStatsData {
     }
   }
 
-  public DecimalColumnStatsDataInspector(DecimalColumnStatsData other) {
-    super(other);
-  }
-
   @Override
   public DecimalColumnStatsDataInspector deepCopy() {
     return new DecimalColumnStatsDataInspector(this);

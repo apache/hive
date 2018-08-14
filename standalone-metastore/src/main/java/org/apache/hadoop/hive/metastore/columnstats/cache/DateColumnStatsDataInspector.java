@@ -43,10 +43,6 @@ public class DateColumnStatsDataInspector extends DateColumnStatsData {
     }
   }
 
-  public DateColumnStatsDataInspector(DateColumnStatsData other) {
-    super(other);
-  }
-
   @Override
   public DateColumnStatsDataInspector deepCopy() {
     return new DateColumnStatsDataInspector(this);

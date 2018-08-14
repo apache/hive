@@ -44,10 +44,6 @@ public class StringColumnStatsDataInspector extends StringColumnStatsData {
     }
   }
 
-  public StringColumnStatsDataInspector(StringColumnStatsData other) {
-    super(other);
-  }
-
   @Override
   public StringColumnStatsDataInspector deepCopy() {
     return new StringColumnStatsDataInspector(this);

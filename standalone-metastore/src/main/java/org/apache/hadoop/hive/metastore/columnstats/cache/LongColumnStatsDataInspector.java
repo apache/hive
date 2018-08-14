@@ -43,10 +43,6 @@ public class LongColumnStatsDataInspector extends LongColumnStatsData {
     }
   }
 
-  public LongColumnStatsDataInspector(LongColumnStatsData other) {
-    super(other);
-  }
-
   @Override
   public LongColumnStatsDataInspector deepCopy() {
     return new LongColumnStatsDataInspector(this);

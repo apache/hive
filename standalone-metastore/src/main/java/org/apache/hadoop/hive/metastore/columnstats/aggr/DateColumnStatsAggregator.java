@@ -38,8 +38,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSour
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.dateInspectorFromStats;
-
 public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
     IExtrapolatePartStatus {
 
@@ -64,8 +62,8 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
             cso.getStatsData().getSetField());
         LOG.trace("doAllPartitionContainStats for column: {} is: {}", colName, doAllPartitionContainStats);
       }
-      DateColumnStatsDataInspector dateColumnStats = dateInspectorFromStats(cso);
-
+      DateColumnStatsDataInspector dateColumnStats =
+          (DateColumnStatsDataInspector) cso.getStatsData().getDateStats();
       if (dateColumnStats.getNdvEstimator() == null) {
         ndvEstimator = null;
         break;
@@ -97,7 +95,9 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
       double densityAvgSum = 0.0;
       for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
         ColumnStatisticsObj cso = csp.getColStatsObj();
-        DateColumnStatsDataInspector newData = dateInspectorFromStats(cso);
+        DateColumnStatsDataInspector newData =
+            (DateColumnStatsDataInspector) cso.getStatsData().getDateStats();
+        lowerBound = Math.max(lowerBound, newData.getNumDVs());
         higherBound += newData.getNumDVs();
         densityAvgSum += (diff(newData.getHighValue(), newData.getLowValue()))
             / newData.getNumDVs();
@@ -174,7 +174,8 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
           ColumnStatisticsObj cso = csp.getColStatsObj();
           String partName = csp.getPartName();
-          DateColumnStatsDataInspector newData = dateInspectorFromStats(cso);
+          DateColumnStatsDataInspector newData =
+              (DateColumnStatsDataInspector) cso.getStatsData().getDateStats();
           // newData.isSetBitVectors() should be true for sure because we
           // already checked it before.
           if (indexMap.get(partName) != curIndex) {

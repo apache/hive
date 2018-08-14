@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSour
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.doubleInspectorFromStats;
-
 public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implements
     IExtrapolatePartStatus {
 
@@ -65,7 +63,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
             doAllPartitionContainStats);
       }
       DoubleColumnStatsDataInspector doubleColumnStatsData =
-          doubleInspectorFromStats(cso);
+          (DoubleColumnStatsDataInspector) cso.getStatsData().getDoubleStats();
       if (doubleColumnStatsData.getNdvEstimator() == null) {
         ndvEstimator = null;
         break;
@@ -97,7 +95,8 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
       double densityAvgSum = 0.0;
       for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
         ColumnStatisticsObj cso = csp.getColStatsObj();
-        DoubleColumnStatsDataInspector newData = doubleInspectorFromStats(cso);
+        DoubleColumnStatsDataInspector newData =
+            (DoubleColumnStatsDataInspector) cso.getStatsData().getDoubleStats();
         lowerBound = Math.max(lowerBound, newData.getNumDVs());
         higherBound += newData.getNumDVs();
         densityAvgSum += (newData.getHighValue() - newData.getLowValue()) / newData.getNumDVs();
@@ -174,7 +173,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
           ColumnStatisticsObj cso = csp.getColStatsObj();
           String partName = csp.getPartName();
           DoubleColumnStatsDataInspector newData =
-              doubleInspectorFromStats(cso);
+              (DoubleColumnStatsDataInspector) cso.getStatsData().getDoubleStats();
           // newData.isSetBitVectors() should be true for sure because we
           // already checked it before.
           if (indexMap.get(partName) != curIndex) {
