@@ -12980,10 +12980,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *          property map
    * @return Modified table property map
    */
-  private Map<String, String> addDefaultProperties(
+  private Map<String, String> validateAndAddDefaultProperties(
       Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
       String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
-      boolean isTemporaryTable) {
+      boolean isTemporaryTable) throws SemanticException {
     Map<String, String> retValue;
     if (tblProp == null) {
       retValue = new HashMap<String, String>();
@@ -13002,6 +13002,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+    if (!retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)
+        && retValue.containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)) {
+      throw new SemanticException("Cannot specify "
+        + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES
+        + " without " + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    }
 
     if (isExt && HiveConf.getBoolVar(conf, ConfVars.HIVE_EXTERNALTABLE_PURGE_DEFAULT)) {
       if (retValue.get(MetaStoreUtils.EXTERNAL_TABLE_PURGE) == null) {
@@ -13009,7 +13015,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
+    boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(
+        conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
     boolean makeAcid = !isTemporaryTable &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
         HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
@@ -13024,32 +13031,39 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
       if (makeAcid) {
-        /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
-         so the initial write ends up running as non-acid...*/
-        try {
-          Class inputFormatClass = storageFormat.getInputFormat() == null ? null :
-              Class.forName(storageFormat.getInputFormat());
-          Class outputFormatClass = storageFormat.getOutputFormat() == null ? null :
-              Class.forName(storageFormat.getOutputFormat());
-          if (inputFormatClass == null || outputFormatClass == null ||
-              !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
-              !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
-            return retValue;
-          }
-        } catch (ClassNotFoundException e) {
-          LOG.warn("Could not verify InputFormat=" + storageFormat.getInputFormat() + " or OutputFormat=" +
-              storageFormat.getOutputFormat() + "  for " + qualifiedTableName);
-          return retValue;
-        }
-        if(sortCols != null && !sortCols.isEmpty()) {
-          return retValue;
-        }
-        retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
-        retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
-            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY);
-        LOG.info("Automatically chose to make " + qualifiedTableName + " acid.");
+        retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
     }
+    return retValue;
+  }
+
+  private Map<String, String> convertToAcidByDefault(
+      StorageFormat storageFormat, String qualifiedTableName, List<Order> sortCols,
+      Map<String, String> retValue) {
+    /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
+     so the initial write ends up running as non-acid...*/
+    try {
+      Class inputFormatClass = storageFormat.getInputFormat() == null ? null :
+          Class.forName(storageFormat.getInputFormat());
+      Class outputFormatClass = storageFormat.getOutputFormat() == null ? null :
+          Class.forName(storageFormat.getOutputFormat());
+      if (inputFormatClass == null || outputFormatClass == null ||
+          !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
+          !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+        return retValue;
+      }
+    } catch (ClassNotFoundException e) {
+      LOG.warn("Could not verify InputFormat=" + storageFormat.getInputFormat() + " or OutputFormat=" +
+          storageFormat.getOutputFormat() + "  for " + qualifiedTableName);
+      return retValue;
+    }
+    if (sortCols != null && !sortCols.isEmpty()) {
+      return retValue;
+    }
+    retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+    retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+        TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY);
+    LOG.info("Automatically chose to make " + qualifiedTableName + " acid.");
     return retValue;
   }
 
@@ -13328,7 +13342,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(
             "Partition columns can only declared using their name and types in regular CREATE TABLE statements");
       }
-      tblProps = addDefaultProperties(
+      tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13352,7 +13366,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
 
     case CTLT: // create table like <tbl_name>
-      tblProps = addDefaultProperties(
+      tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13436,7 +13450,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Partition columns can only declared using their names in CTAS statements");
       }
 
-      tblProps = addDefaultProperties(
+      tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
