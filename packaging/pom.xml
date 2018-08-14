@@ -215,7 +215,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-kafka-reader</artifactId>
+      <artifactId>kafka-handler</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
