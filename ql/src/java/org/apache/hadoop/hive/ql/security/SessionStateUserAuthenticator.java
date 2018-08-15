@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.security;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -32,15 +31,14 @@ import org.apache.hadoop.security.UserGroupInformation;
  */
 public class SessionStateUserAuthenticator implements HiveAuthenticationProvider {
 
-  private final List<String> groupNames = new ArrayList<String>();
-
   protected Configuration conf;
   private SessionState sessionState;
   private List<String> groups;
 
   @Override
   public List<String> getGroupNames() {
-    if (groups == null) {
+       // In case of embedded hs2, sessionState.getUserName()=null
+    if (groups == null && sessionState.getUserName() != null) {
       groups = UserGroupInformation.createRemoteUser(sessionState.getUserName()).getGroups();
     }
     return groups;
