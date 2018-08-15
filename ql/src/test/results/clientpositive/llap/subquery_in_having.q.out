@@ -338,7 +338,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), (_col1 / _col2) (type: double)
+                  expressions: _col0 (type: string), (UDFToDouble(_col1) / _col2) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Merge Join Operator
@@ -467,7 +467,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), (_col1 / _col2) (type: double)
+                  expressions: _col0 (type: string), (UDFToDouble(_col1) / _col2) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Merge Join Operator
@@ -1472,7 +1472,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), _col0 (type: string), (_col2 / _col3) (type: double)
+                  expressions: _col1 (type: string), _col0 (type: string), (UDFToDouble(_col2) / _col3) (type: double)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
