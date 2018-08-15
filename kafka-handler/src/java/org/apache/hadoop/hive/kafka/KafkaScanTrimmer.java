@@ -192,7 +192,7 @@ public class KafkaScanTrimmer {
     }
 
     if (columnDesc.getColumn().equals(KafkaStorageHandler.PARTITION_COLUMN)) {
-      return buildScanFormPartitionPredicate(fullHouse,
+      return buildScanFromPartitionPredicate(fullHouse,
           operator,
           ((Number) constantDesc.getValue()).intValue(),
           flip,
@@ -225,7 +225,7 @@ public class KafkaScanTrimmer {
    *
    * @return filtered kafka scan
    */
-  @VisibleForTesting protected static Map<TopicPartition, KafkaPullerInputSplit> buildScanFormPartitionPredicate(
+  @VisibleForTesting protected static Map<TopicPartition, KafkaPullerInputSplit> buildScanFromPartitionPredicate(
       Map<TopicPartition, KafkaPullerInputSplit> fullScan,
       PredicateLeaf.Operator operator,
       int partitionConst,
@@ -328,7 +328,7 @@ public class KafkaScanTrimmer {
         newInputSplit = new KafkaPullerInputSplit(tp.topic(),
             tp.partition(),
             // @TODO make sure that this is okay
-            //if the user as for start offset > max offset will replace with last offset
+            //if the user ask for start offset > max offset will replace with last offset
             Math.min(startOffset, existingInputSplit.getEndOffset()),
             existingInputSplit.getEndOffset(),
             existingInputSplit.getPath());

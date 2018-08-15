@@ -217,7 +217,7 @@ public class KafkaScanTrimmerTest {
   @Test public void buildScanFormPartitionPredicateEq() {
     Map
         actual =
-        KafkaScanTrimmer.buildScanFormPartitionPredicate(fullHouse, PredicateLeaf.Operator.EQUALS, 3, false, false);
+        KafkaScanTrimmer.buildScanFromPartitionPredicate(fullHouse, PredicateLeaf.Operator.EQUALS, 3, false, false);
     TopicPartition topicPartition = new TopicPartition(topic, 3);
     Assert.assertEquals(fullHouse.get(topicPartition), actual.get(topicPartition));
   }
@@ -227,7 +227,7 @@ public class KafkaScanTrimmerTest {
     int partitionConst = 2;
     Map
         actual =
-        KafkaScanTrimmer.buildScanFormPartitionPredicate(fullHouse,
+        KafkaScanTrimmer.buildScanFromPartitionPredicate(fullHouse,
             PredicateLeaf.Operator.LESS_THAN,
             partitionConst,
             true,
@@ -241,7 +241,7 @@ public class KafkaScanTrimmerTest {
 
     // partitionConst >= partitionColumn (flip true, negation true)
     actual =
-        KafkaScanTrimmer.buildScanFormPartitionPredicate(fullHouse,
+        KafkaScanTrimmer.buildScanFromPartitionPredicate(fullHouse,
             PredicateLeaf.Operator.LESS_THAN,
             partitionConst,
             true,
@@ -254,7 +254,7 @@ public class KafkaScanTrimmerTest {
 
     // partitionColumn >= partitionConst (negation true)
     actual =
-        KafkaScanTrimmer.buildScanFormPartitionPredicate(fullHouse,
+        KafkaScanTrimmer.buildScanFromPartitionPredicate(fullHouse,
             PredicateLeaf.Operator.LESS_THAN,
             partitionConst,
             false,
@@ -267,7 +267,7 @@ public class KafkaScanTrimmerTest {
 
     // partitionColumn < partitionConst (negation true)
     actual =
-        KafkaScanTrimmer.buildScanFormPartitionPredicate(fullHouse,
+        KafkaScanTrimmer.buildScanFromPartitionPredicate(fullHouse,
             PredicateLeaf.Operator.LESS_THAN,
             partitionConst,
             false,
@@ -284,7 +284,7 @@ public class KafkaScanTrimmerTest {
     int partitionConst = 2;
     Map
         actual =
-        KafkaScanTrimmer.buildScanFormPartitionPredicate(fullHouse,
+        KafkaScanTrimmer.buildScanFromPartitionPredicate(fullHouse,
             PredicateLeaf.Operator.LESS_THAN_EQUALS,
             partitionConst,
             true,
@@ -298,7 +298,7 @@ public class KafkaScanTrimmerTest {
 
     // partitionConst > partitionColumn (flip true, negation true)
     actual =
-        KafkaScanTrimmer.buildScanFormPartitionPredicate(fullHouse,
+        KafkaScanTrimmer.buildScanFromPartitionPredicate(fullHouse,
             PredicateLeaf.Operator.LESS_THAN_EQUALS,
             partitionConst,
             true,
@@ -311,7 +311,7 @@ public class KafkaScanTrimmerTest {
 
     // partitionColumn > partitionConst (negation true)
     actual =
-        KafkaScanTrimmer.buildScanFormPartitionPredicate(fullHouse,
+        KafkaScanTrimmer.buildScanFromPartitionPredicate(fullHouse,
             PredicateLeaf.Operator.LESS_THAN_EQUALS,
             partitionConst,
             false,
@@ -324,7 +324,7 @@ public class KafkaScanTrimmerTest {
 
     // partitionColumn <= partitionConst (negation true)
     actual =
-        KafkaScanTrimmer.buildScanFormPartitionPredicate(fullHouse,
+        KafkaScanTrimmer.buildScanFromPartitionPredicate(fullHouse,
             PredicateLeaf.Operator.LESS_THAN_EQUALS,
             partitionConst,
             false,
