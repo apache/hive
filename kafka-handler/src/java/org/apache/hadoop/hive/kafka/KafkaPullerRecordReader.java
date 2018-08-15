@@ -94,7 +94,10 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
           config.getLong(KafkaStorageHandler.HIVE_KAFKA_POLL_TIMEOUT,
               KafkaStorageHandler.DEFAULT_CONSUMER_POLL_TIMEOUT_MS);
       LOG.debug("Consumer poll timeout [{}] ms", pollTimeout);
-      this.recordsCursor = new KafkaRecordIterator(consumer, topicPartition, startOffset, endOffset, pollTimeout);
+      this.recordsCursor =
+          startOffset == endOffset ?
+              new KafkaRecordIterator.EmptyIterator() :
+              new KafkaRecordIterator(consumer, topicPartition, startOffset, endOffset, pollTimeout);
       started = true;
     }
   }

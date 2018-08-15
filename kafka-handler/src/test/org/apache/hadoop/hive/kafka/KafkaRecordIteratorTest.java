@@ -114,7 +114,7 @@ public class KafkaRecordIteratorTest {
   }
 
   @Test public void testHasNextAbsoluteStartEnd() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, (long) RECORDS.size(), 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, (long) RECORDS.size(), 200L);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 

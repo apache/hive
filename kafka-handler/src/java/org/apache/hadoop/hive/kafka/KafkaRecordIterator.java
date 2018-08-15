@@ -88,7 +88,7 @@ public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte
     this.started = true;
   }
 
-  public KafkaRecordIterator(Consumer consumer, TopicPartition tp, long pollTimeoutMs) {
+  KafkaRecordIterator(Consumer<byte[], byte[]> consumer, TopicPartition tp, long pollTimeoutMs) {
     this(consumer, tp, null, null, pollTimeoutMs);
   }
 
@@ -132,7 +132,7 @@ public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte
   @Override
   public boolean hasNext() {
     /*
-    Poll more records if
+    Poll more records from Kafka queue IF:
     Initial poll case -> (records == null)
       OR
     Need to poll at least one more record (currentOffset + 1 < endOffset) AND consumerRecordIterator is empty (!hasMore)
@@ -194,4 +194,16 @@ public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte
     nextRecord = null;
   }
 
+  /**
+   * Empty iterator for empty splits when startOffset == endOffset, this is added to avoid clumsy if condition.
+   */
+  protected static final class EmptyIterator implements Iterator<ConsumerRecord<byte[], byte[]>>  {
+    @Override public boolean hasNext() {
+      return false;
+    }
+
+    @Override public ConsumerRecord<byte[], byte[]> next() {
+      throw new IllegalStateException("this is an empty iterator");
+    }
+  }
 }
