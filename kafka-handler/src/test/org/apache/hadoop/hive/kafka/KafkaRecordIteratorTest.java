@@ -221,6 +221,12 @@ public class KafkaRecordIteratorTest {
     this.compareIterator(ImmutableList.of(), this.kafkaRecordIterator);
   }
 
+  @Test public void testStartIsTheFirstOffset() {
+    this.kafkaRecordIterator =
+        new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 0L, 100L);
+    this.compareIterator(ImmutableList.of(), this.kafkaRecordIterator);
+  }
+
   private void compareIterator(List<ConsumerRecord<byte[], byte[]>> expected,
       Iterator<ConsumerRecord<byte[], byte[]>> kafkaRecordIterator) {
     expected.stream().forEachOrdered((expectedRecord) -> {
