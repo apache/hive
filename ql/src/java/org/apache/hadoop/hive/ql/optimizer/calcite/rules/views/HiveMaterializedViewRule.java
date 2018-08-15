@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinProjectTranspos
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectMergeRule;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Enable join and aggregate materialized view rewriting
@@ -65,7 +64,8 @@ public class HiveMaterializedViewRule {
    * the root of the plan.
    */
   private static final HepProgram PROGRAM = new HepProgramBuilder()
-      .addRuleInstance(HiveExtractRelNodeRule.INSTANCE)
+      .addRuleInstance(HiveHepExtractRelNodeRule.INSTANCE)
+      .addRuleInstance(HiveVolcanoExtractRelNodeRule.INSTANCE)
       .addRuleInstance(HiveTableScanProjectInsert.INSTANCE)
       .addRuleCollection(
           ImmutableList.of(
@@ -101,6 +101,15 @@ public class HiveMaterializedViewRule {
   public static final HiveMaterializedViewOnlyAggregateRule INSTANCE_AGGREGATE =
       new HiveMaterializedViewOnlyAggregateRule(HiveRelFactories.HIVE_BUILDER,
           true, PROGRAM);
+
+  public static final RelOptRule[] MATERIALIZED_VIEW_REWRITING_RULES =
+      new RelOptRule[] {
+          HiveMaterializedViewRule.INSTANCE_PROJECT_FILTER,
+          HiveMaterializedViewRule.INSTANCE_FILTER,
+          HiveMaterializedViewRule.INSTANCE_PROJECT_JOIN,
+          HiveMaterializedViewRule.INSTANCE_JOIN,
+          HiveMaterializedViewRule.INSTANCE_PROJECT_AGGREGATE,
+          HiveMaterializedViewRule.INSTANCE_AGGREGATE };
 
 
   protected static class HiveMaterializedViewProjectAggregateRule extends MaterializedViewProjectAggregateRule {
@@ -140,15 +149,37 @@ public class HiveMaterializedViewRule {
   /**
    * This rule is used within the PROGRAM that rewrites the query for
    * partial rewritings. Its goal is to extract the RelNode from the
+   * HepRelVertex node so the rest of the rules in the PROGRAM can be
+   * applied correctly.
+   */
+  private static class HiveHepExtractRelNodeRule extends RelOptRule {
+
+    private static final HiveHepExtractRelNodeRule INSTANCE =
+        new HiveHepExtractRelNodeRule();
+
+    private HiveHepExtractRelNodeRule() {
+      super(operand(HepRelVertex.class, any()));
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HepRelVertex rel = call.rel(0);
+      call.transformTo(rel.getCurrentRel());
+    }
+  }
+
+  /**
+   * This rule is used within the PROGRAM that rewrites the query for
+   * partial rewritings. Its goal is to extract the RelNode from the
    * RelSubset node so the rest of the rules in the PROGRAM can be
    * applied correctly.
    */
-  private static class HiveExtractRelNodeRule extends RelOptRule {
+  private static class HiveVolcanoExtractRelNodeRule extends RelOptRule {
 
-    private static final HiveExtractRelNodeRule INSTANCE =
-        new HiveExtractRelNodeRule();
+    private static final HiveVolcanoExtractRelNodeRule INSTANCE =
+        new HiveVolcanoExtractRelNodeRule();
 
-    private HiveExtractRelNodeRule() {
+    private HiveVolcanoExtractRelNodeRule() {
       super(operand(RelSubset.class, any()));
     }
 

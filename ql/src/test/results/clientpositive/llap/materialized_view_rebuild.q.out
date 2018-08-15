@@ -77,14 +77,16 @@ POSTHOOK: Input: default@mv_rebuild
 PREHOOK: query: alter materialized view mv_rebuild rebuild
 PREHOOK: type: QUERY
 PREHOOK: Input: default@basetable_rebuild
+PREHOOK: Input: default@mv_rebuild
 PREHOOK: Output: default@mv_rebuild
 POSTHOOK: query: alter materialized view mv_rebuild rebuild
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@basetable_rebuild
+POSTHOOK: Input: default@mv_rebuild
 POSTHOOK: Output: default@mv_rebuild
-POSTHOOK: Lineage: mv_rebuild._c2 EXPRESSION [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: mv_rebuild.a SIMPLE [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: mv_rebuild.b SIMPLE [(basetable_rebuild)basetable_rebuild.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv_rebuild._c2 EXPRESSION [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), (mv_rebuild)default.mv_rebuild.FieldSchema(name:_c2, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_rebuild.a EXPRESSION [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), (mv_rebuild)default.mv_rebuild.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_rebuild.b EXPRESSION [(basetable_rebuild)basetable_rebuild.FieldSchema(name:b, type:varchar(256), comment:null), (mv_rebuild)default.mv_rebuild.FieldSchema(name:b, type:varchar(256), comment:null), ]
 PREHOOK: query: select * from mv_rebuild
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_rebuild
