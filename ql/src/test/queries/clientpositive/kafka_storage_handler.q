@@ -31,6 +31,10 @@ Select `__partition`, `__offset`,`__time`, `page`, `user`, `language`, `country`
 from kafka_table where `__offset` > 7 and `__partition` = 0 OR
 `__offset` = 4 and `__partition` = 0 OR `__offset` <= 1 and `__partition` = 0;
 
+-- Timestamp filter
+
+Select `__partition`, `__offset`, `user`  from kafka_table where
+`__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS) ;
 
 -- non existing partition
 Select  count(*) from kafka_table where `__partition` = 1;

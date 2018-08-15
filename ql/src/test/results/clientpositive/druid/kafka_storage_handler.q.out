@@ -141,6 +141,26 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
 0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+PREHOOK: query: Select `__partition`, `__offset`, `user`  from kafka_table where
+`__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: Select `__partition`, `__offset`, `user`  from kafka_table where
+`__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	0	nuclear
+0	1	speed
+0	2	masterYi
+0	3	triplets
+0	4	stringer
+0	5	nuclear
+0	6	speed
+0	7	masterYi
+0	8	triplets
+0	9	stringer
 PREHOOK: query: Select  count(*) from kafka_table where `__partition` = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
