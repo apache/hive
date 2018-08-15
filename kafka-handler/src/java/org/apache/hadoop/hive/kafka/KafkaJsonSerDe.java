@@ -74,7 +74,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Basic JsonSerde to make use of such storage handler smooth and easy. For production please use Hive native JsonSerde
+ * Basic JsonSerDe to make use of such storage handler smooth and easy and testing basic primitive Json.
+ * For production please use Hive native JsonSerde.
  */
 public class KafkaJsonSerDe extends AbstractSerDe {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaJsonSerDe.class);

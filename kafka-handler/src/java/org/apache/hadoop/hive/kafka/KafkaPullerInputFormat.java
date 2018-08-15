@@ -157,7 +157,11 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
 
         Future<List<KafkaPullerInputSplit>> futureTinyHouse = execService.submit(trimmerWorker);
         try {
-          return futureTinyHouse.get(timeoutMs, TimeUnit.MILLISECONDS);
+          return futureTinyHouse.get(timeoutMs, TimeUnit.MILLISECONDS)
+              .stream()
+              // filter out empty splits
+              .filter(split -> split.getStartOffset() < split.getEndOffset())
+              .collect(Collectors.toList());
         } catch (ExecutionException | TimeoutException e) {
           futureTinyHouse.cancel(true);
           LOG.error("Had issue with trimmer will return full scan ", e);
