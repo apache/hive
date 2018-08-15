@@ -74,6 +74,10 @@ public class VectorizedOrcAcidRowBatchReader
   protected float progress = 0.0f;
   protected Object[] partitionValues;
   private boolean addPartitionCols = true;
+  /**
+   * true means there is no OrcRecordUpdater.ROW column
+   * (i.e. the struct wrapping user columns) in {@link #vectorizedRowBatchBase}.
+   */
   private final boolean isFlatPayload;
   private final ValidWriteIdList validWriteIdList;
   private final DeleteEventRegistry deleteEventRegistry;
@@ -88,6 +92,12 @@ public class VectorizedOrcAcidRowBatchReader
    */
   private final boolean rowIdProjected;
   /**
+   * if false, we don't need any acid medadata columns from the file because we
+   * know all data in the split is valid (wrt to visible writeIDs/delete events)
+   * and ROW_ID is not needed higher up in the operator pipeline
+   */
+  private final boolean includeAcidColumns;
+  /**
    * partition/table root
    */
   private final Path rootPath;
@@ -96,10 +106,11 @@ public class VectorizedOrcAcidRowBatchReader
    */
   private final OffsetAndBucketProperty syntheticProps;
   /**
-   * To have access to {@link RecordReader#getRowNumber()} in the underlying file
+   * To have access to {@link RecordReader#getRowNumber()} in the underlying file which we need to
+   * generate synthetic ROW_IDs for original files
    */
   private RecordReader innerReader;
-
+  //OrcInputFormat c'tor
   VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf,
                                   Reporter reporter) throws IOException {
     this(inputSplit, conf,reporter, null);
@@ -230,8 +241,45 @@ public class VectorizedOrcAcidRowBatchReader
     rootPath = orcSplit.getRootDir();
     //why even compute syntheticProps if !isOriginal???
     syntheticProps = computeOffsetAndBucket(orcSplit, conf, validWriteIdList);
+
+    if(conf.getBoolean(ConfVars.OPTIMIZE_ACID_META_COLUMNS.varname, true)) {
+      /*figure out if we can skip reading acid metadata columns:
+       * isOriginal - don't have meta columns - nothing to skip
+       * there no relevant delete events && ROW__ID is not needed higher up (e.g.
+       * this is not a delete statement)*/
+      if (!isOriginal && deleteEventRegistry.isEmpty() && !rowIdProjected) {
+        Path parent = orcSplit.getPath().getParent();
+        while (parent != null && !rootPath.equals(parent)) {
+          if (parent.getName().startsWith(AcidUtils.BASE_PREFIX)) {
+            /**
+             * The assumption here is that any base_x is filtered out by
+             * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} so if we see it
+             * here it's valid.
+             * {@link AcidUtils#isValidBase(long, ValidWriteIdList, Path, FileSystem)} can check but
+             * it makes a {@link FileSystem} call.  Should really move all this to split-generation...
+             *
+             */
+            readerOptions.includeAcidColumns(false);
+            break;
+          } else {
+            AcidUtils.ParsedDelta pd = AcidUtils.parsedDelta(parent, isOriginal);
+            if (validWriteIdList.isWriteIdRangeValid(pd.getMinWriteId(), pd.getMaxWriteId()) ==
+                ValidWriteIdList.RangeResponse.ALL) {
+              //all write IDs in range are committed (and visible in current snapshot)
+              readerOptions.includeAcidColumns(false);
+              break;
+            }
+          }
+          parent = parent.getParent();
+        }
+      }
+    }
+    includeAcidColumns = readerOptions.getIncludeAcidColumns();//default is true
   }
 
+  public boolean includeAcidColumns() {
+    return this.includeAcidColumns;
+  }
   public void setBaseAndInnerReader(
     final org.apache.hadoop.mapred.RecordReader<NullWritable,VectorizedRowBatch> baseReader) {
     this.baseReader = baseReader;
@@ -409,7 +457,16 @@ public class VectorizedOrcAcidRowBatchReader
     } catch (Exception e) {
       throw new IOException("error iterating", e);
     }
-
+    if(!includeAcidColumns) {
+      //if here, we don't need to filter anything wrt acid metadata columns
+      //in fact, they are not even read from file/llap
+      value.size = vectorizedRowBatchBase.size;
+      value.selected = vectorizedRowBatchBase.selected;
+      value.selectedInUse = vectorizedRowBatchBase.selectedInUse;
+      copyFromBase(value);
+      progress = baseReader.getProgress();
+      return true;
+    }
     // Once we have read the VectorizedRowBatchBase from the file, there are two kinds of cases
     // for which we might have to discard rows from the batch:
     // Case 1- when the row is created by a transaction that is not valid, or
@@ -465,22 +522,7 @@ public class VectorizedOrcAcidRowBatchReader
      /* Just copy the payload.  {@link recordIdColumnVector} has already been populated */
       System.arraycopy(vectorizedRowBatchBase.cols, 0, value.cols, 0, value.getDataColumnCount());
     } else {
-      int payloadCol = OrcRecordUpdater.ROW;
-      if (isFlatPayload) {
-        // Ignore the struct column and just copy all the following data columns.
-        System.arraycopy(vectorizedRowBatchBase.cols, payloadCol + 1, value.cols, 0,
-            vectorizedRowBatchBase.cols.length - payloadCol - 1);
-      } else {
-        StructColumnVector payloadStruct =
-            (StructColumnVector) vectorizedRowBatchBase.cols[payloadCol];
-        // Transfer columnVector objects from base batch to outgoing batch.
-        System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
-      }
-      if (rowIdProjected) {
-        recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_WRITEID];
-        recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
-        recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
-      }
+      copyFromBase(value);
     }
     if (rowIdProjected) {
       int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWID);
@@ -489,7 +531,26 @@ public class VectorizedOrcAcidRowBatchReader
     progress = baseReader.getProgress();
     return true;
   }
-
+  //get the 'data' cols and set in value as individual ColumnVector, then get ColumnVectors for acid meta cols to create a single ColumnVector representing RecordIdentifier and (optionally) set it in 'value'
+  private void copyFromBase(VectorizedRowBatch value) {
+    assert !isOriginal;
+    if (isFlatPayload) {
+      int payloadCol = includeAcidColumns ? OrcRecordUpdater.ROW : 0;
+        // Ignore the struct column and just copy all the following data columns.
+        System.arraycopy(vectorizedRowBatchBase.cols, payloadCol + 1, value.cols, 0,
+            vectorizedRowBatchBase.cols.length - payloadCol - 1);
+    } else {
+      StructColumnVector payloadStruct =
+          (StructColumnVector) vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW];
+      // Transfer columnVector objects from base batch to outgoing batch.
+      System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
+    }
+    if (rowIdProjected) {
+      recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_WRITEID];
+      recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
+      recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
+    }
+  }
   private ColumnVector[] handleOriginalFile(
       BitSet selectedBitSet, ColumnVector[] innerRecordIdColumnVector) throws IOException {
     /*
