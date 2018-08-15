@@ -596,6 +596,26 @@ public class HiveSchemaTool {
     }
   }
 
+  /**
+   * Initialize or upgrade the metastore schema to current version
+   *
+   * @throws MetaException
+   */
+  public void doInitOrUpgrade() throws HiveMetaException {
+    String dbVersion = null;
+    try {
+      dbVersion = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(true));
+    } catch (HiveMetaException e) {
+      LOG.info("Exception getting db version:" + e.getMessage());
+      LOG.info("Try to initialize db schema");
+    }
+    if (dbVersion == null) {
+      doInit();
+    } else {
+      doUpgrade();
+    }
+  }
+
   public void doValidate() throws HiveMetaException {
     System.out.println("Starting metastore validation\n");
     Connection conn = getConnectionToMetastore(false);
@@ -1291,6 +1311,7 @@ public class HiveSchemaTool {
     Option initToOpt = OptionBuilder.withArgName("initTo").hasArg().
                 withDescription("Schema initialization to a version").
                 create("initSchemaTo");
+    Option initOrUpgradeSchemaOpt = new Option("initOrUpgradeSchema", "Initialize or upgrade schema to latest version");
     Option infoOpt = new Option("info", "Show config and schema details");
     Option validateOpt = new Option("validate", "Validate the database");
     Option createCatalog = OptionBuilder
@@ -1319,6 +1340,7 @@ public class HiveSchemaTool {
         .addOption(help)
         .addOption(upgradeFromOpt)
         .addOption(initToOpt)
+        .addOption(initOrUpgradeSchemaOpt)
         .addOption(infoOpt)
         .addOption(validateOpt)
         .addOption(createCatalog)
@@ -1518,6 +1540,8 @@ public class HiveSchemaTool {
       } else if (line.hasOption("initSchemaTo")) {
         schemaVer = line.getOptionValue("initSchemaTo");
         schemaTool.doInit(schemaVer);
+      } else if (line.hasOption("initOrUpgradeSchema")) {
+        schemaTool.doInitOrUpgrade();
       } else if (line.hasOption("validate")) {
         schemaTool.doValidate();
       } else if (line.hasOption("createCatalog")) {

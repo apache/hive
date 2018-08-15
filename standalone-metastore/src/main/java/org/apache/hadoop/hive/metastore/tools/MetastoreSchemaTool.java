@@ -602,6 +602,26 @@ public class MetastoreSchemaTool {
     }
   }
 
+  /**
+   * Initialize or upgrade the metastore schema to current version
+   *
+   * @throws MetaException
+   */
+  public void doInitOrUpgrade() throws HiveMetaException {
+    String dbVersion = null;
+    try {
+      dbVersion = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(true));
+    } catch (HiveMetaException e) {
+      System.out.println("Exception getting db version:" + e.getMessage());
+      System.out.println("Try to initialize db schema");
+    }
+    if (dbVersion == null) {
+      doInit();
+    } else {
+      doUpgrade();
+    }
+  }
+
   private void doCreateUser() throws HiveMetaException {
     testConnectionToMetastore();
     System.out.println("Starting user creation");
