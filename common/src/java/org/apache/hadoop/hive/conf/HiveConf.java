@@ -4372,17 +4372,7 @@ public class HiveConf extends Configuration {
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
-        + "," + DRUID_METADATA_DB_PASSWORD.varname
-        // Adding the S3 credentials from Hadoop config to be hidden
-        + ",fs.s3.awsAccessKeyId"
-        + ",fs.s3.awsSecretAccessKey"
-        + ",fs.s3n.awsAccessKeyId"
-        + ",fs.s3n.awsSecretAccessKey"
-        + ",fs.s3a.access.key"
-        + ",fs.s3a.secret.key"
-        + ",fs.s3a.proxy.password"
-        + ",dfs.adls.oauth2.credential"
-        + ",fs.adl.oauth2.credential",
+        + "," + DRUID_METADATA_DB_PASSWORD.varname,
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",

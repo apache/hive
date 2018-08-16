@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
@@ -129,6 +130,7 @@ public class TestHiveConf {
     Assert.assertEquals(1125899906842624L, HiveConf.toSizeBytes("1pb"));
   }
 
+  @Ignore("Ignoring until BUG-109388")
   @Test
   public void testHiddenConfig() throws Exception {
     HiveConf conf = new HiveConf();
