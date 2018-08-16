@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -171,72 +170,14 @@ public class VectorCopyRow {
 
   private class DecimalCopyRow extends CopyRow {
 
-    private HiveDecimalWritable decimalWritableTemp;
-
     DecimalCopyRow(int inColumnIndex, int outColumnIndex) {
       super(inColumnIndex, outColumnIndex);
     }
 
     @Override
     void copy(VectorizedRowBatch inBatch, int inBatchIndex, VectorizedRowBatch outBatch, int outBatchIndex) {
-
-      // FUTURE: Figure out how to avoid this runtime checking by working out
-      // DECIMAL_64 to DECIMAL and DECIMAL_64 to DECIMAL_64 up front...
-
-      ColumnVector inColVectorBase = inBatch.cols[inColumnIndex];
-      ColumnVector outColVectorBase = outBatch.cols[outColumnIndex];
-      if (inColVectorBase instanceof Decimal64ColumnVector) {
-        Decimal64ColumnVector inColVector = (Decimal64ColumnVector) inColVectorBase;
-
-        if (outColVectorBase instanceof Decimal64ColumnVector) {
-          Decimal64ColumnVector outColVector = (Decimal64ColumnVector) outColVectorBase;
-
-          if (inColVector.isRepeating) {
-            if (inColVector.noNulls || !inColVector.isNull[0]) {
-              outColVector.vector[outBatchIndex] = inColVector.vector[0];
-              outColVector.isNull[outBatchIndex] = false;
-            } else {
-              VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
-            }
-          } else {
-            if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
-              outColVector.vector[outBatchIndex] = inColVector.vector[inBatchIndex];
-              outColVector.isNull[outBatchIndex] = false;
-            } else {
-              VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
-            }
-          }
-        } else {
-          DecimalColumnVector outColVector = (DecimalColumnVector) outColVectorBase;
-
-          if (decimalWritableTemp == null) {
-            decimalWritableTemp = new HiveDecimalWritable(0);
-          }
-          if (inColVector.isRepeating) {
-            if (inColVector.noNulls || !inColVector.isNull[0]) {
-              decimalWritableTemp.deserialize64(
-                  inColVector.vector[0], inColVector.scale);
-              outColVector.set(outBatchIndex, decimalWritableTemp);
-              outColVector.isNull[outBatchIndex] = false;
-            } else {
-              VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
-            }
-          } else {
-            if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
-              decimalWritableTemp.deserialize64(
-                  inColVector.vector[inBatchIndex], inColVector.scale);
-              outColVector.set(outBatchIndex, decimalWritableTemp);
-              outColVector.isNull[outBatchIndex] = false;
-            } else {
-              VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
-            }
-          }
-        }
-        return;
-      }
-
-      DecimalColumnVector inColVector = (DecimalColumnVector) inColVectorBase;
-      DecimalColumnVector outColVector = (DecimalColumnVector) outColVectorBase;
+      DecimalColumnVector inColVector = (DecimalColumnVector) inBatch.cols[inColumnIndex];
+      DecimalColumnVector outColVector = (DecimalColumnVector) outBatch.cols[outColumnIndex];
 
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {

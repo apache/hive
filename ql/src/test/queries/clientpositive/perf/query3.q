@@ -1,9 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
-set hive.auto.convert.join=true;
-set hive.fetch.task.conversion=none;
--- start query  1 in stream 0 using template query3.tpl and seed 2031708268
-explain vectorization expression
+-- start query 1 in stream 0 using template query3.tpl and seed 2031708268
+explain
 select  dt.d_year 
        ,item.i_brand_id brand_id 
        ,item.i_brand brand

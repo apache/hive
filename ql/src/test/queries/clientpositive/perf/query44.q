@@ -1,9 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
-set hive.auto.convert.join=true;
-set hive.fetch.task.conversion=none;
--- start query  1 in stream 0 using template query44.tpl and seed 1819994127
-explain vectorization expression
+-- start query 1 in stream 0 using template query44.tpl and seed 1819994127
+explain
 select  asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing
 from(select *
      from (select item_sk,rank() over (order by rank_col asc) rnk

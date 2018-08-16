@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -106,12 +105,9 @@ public class VectorColumnSetInfo {
   }
 
 
-  protected void addKey(TypeInfo typeInfo, DataTypePhysicalVariation dataTypePhysicalVariation)
-      throws HiveException {
+  protected void addKey(TypeInfo typeInfo) throws HiveException {
 
-    Type columnVectorType =
-        VectorizationContext.getColumnVectorTypeFromTypeInfo(
-            typeInfo, dataTypePhysicalVariation);
+    Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
     switch (columnVectorType) {
     case LONG:
     case DECIMAL_64:

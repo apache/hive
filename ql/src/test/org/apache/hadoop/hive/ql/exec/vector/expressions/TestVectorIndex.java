@@ -28,6 +28,8 @@ import java.util.TreeSet;
 import java.util.stream.IntStream;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -304,8 +306,7 @@ public class TestVectorIndex {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0,
-        /* allowNull */ allowNulls,  /* isUnicodeOk */ true,
+        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ allowNulls,
         explicitDataTypePhysicalVariationList);
 
     String[] columnNames = columns.toArray(new String[0]);

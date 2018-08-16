@@ -1,9 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
-set hive.auto.convert.join=true;
-set hive.fetch.task.conversion=none;
--- start query  1 in stream 0 using template query32.tpl and seed 2031708268
-explain vectorization expression
+-- start query 1 in stream 0 using template query32.tpl and seed 2031708268
+explain
 select  sum(cs_ext_discount_amt)  as `excess discount amount` 
 from 
    catalog_sales 
