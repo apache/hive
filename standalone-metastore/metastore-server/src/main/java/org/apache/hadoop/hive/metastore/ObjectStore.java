@@ -4112,7 +4112,8 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setDatabase(newt.getDatabase());
       oldt.setTableName(normalizeIdentifier(newt.getTableName()));
       boolean isTxn = TxnUtils.isTransactionalTable(newTable);
-      if (isTxn && areTxnStatsSupported) {
+      boolean isToTxn = isTxn && !TxnUtils.isTransactionalTable(oldt.getParameters());
+      if (!isToTxn && isTxn && areTxnStatsSupported) {
         // Transactional table is altered without a txn. Make sure there are no changes to the flag.
         String errorMsg = verifyStatsChangeCtx(oldt.getParameters(), newTable.getParameters(),
             newTable.getWriteId(), queryValidWriteIds, false);
@@ -4120,7 +4121,6 @@ public class ObjectStore implements RawStore, Configurable {
           throw new MetaException(errorMsg);
         }
       }
-      boolean isToTxn = isTxn && !TxnUtils.isTransactionalTable(oldt.getParameters());
       oldt.setParameters(newt.getParameters());
       oldt.setOwner(newt.getOwner());
       oldt.setOwnerType(newt.getOwnerType());
@@ -4142,12 +4142,11 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
 
       // If transactional, update the stats state for the current Stats updater query.
-      // Don't update for conversion to acid - it doesn't modify stats but passes in qVWIds.
-      // The fact that it doesn't update stats is verified above.
+      // Set stats invalid for ACID conversion; it doesn't pass in the write ID.
       if (isTxn) {
-        if (!areTxnStatsSupported) {
+        if (!areTxnStatsSupported || isToTxn) {
           StatsSetupConst.setBasicStatsState(oldt.getParameters(), StatsSetupConst.FALSE);
-        } else if (queryValidWriteIds != null && (!isToTxn || newTable.getWriteId() > 0)) {
+        } else if (queryValidWriteIds != null && newTable.getWriteId() > 0) {
           // Check concurrent INSERT case and set false to the flag.
           if (!isCurrentStatsValidForTheQuery(oldt, queryValidWriteIds, true)) {
             StatsSetupConst.setBasicStatsState(oldt.getParameters(), StatsSetupConst.FALSE);

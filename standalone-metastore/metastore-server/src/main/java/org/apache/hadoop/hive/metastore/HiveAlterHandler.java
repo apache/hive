@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -812,6 +813,9 @@ public class HiveAlterHandler implements AlterHandler {
       ColumnStatistics colStats = null;
       boolean updateColumnStats = !newDbName.equals(dbName) || !newTableName.equals(tableName)
           || !MetaStoreServerUtils.columnsIncludedByNameType(oldCols, newCols);
+      // Don't bother in the case of ACID conversion.
+      updateColumnStats = updateColumnStats
+          && (TxnUtils.isAcidTable(oldTable) == TxnUtils.isAcidTable(newTable));
       if (updateColumnStats) {
         List<String> oldColNames = new ArrayList<>(oldCols.size());
         for (FieldSchema oldCol : oldCols) {
