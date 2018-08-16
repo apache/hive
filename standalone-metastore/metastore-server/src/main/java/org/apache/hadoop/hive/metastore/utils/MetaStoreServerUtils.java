@@ -369,9 +369,9 @@ public class MetaStoreServerUtils {
 
   public static boolean isFastStatsSame(Partition oldPart, Partition newPart) {
     // requires to calculate stats if new and old have different fast stats
-    if ((oldPart != null) && (oldPart.getParameters() != null)) {
+    if ((oldPart != null) && oldPart.isSetParameters() && newPart != null && newPart.isSetParameters()) {
       for (String stat : StatsSetupConst.FAST_STATS) {
-        if (oldPart.getParameters().containsKey(stat)) {
+        if (oldPart.getParameters().containsKey(stat) && newPart.getParameters().containsKey(stat)) {
           Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
           Long newStat = Long.parseLong(newPart.getParameters().get(stat));
           if (!oldStat.equals(newStat)) {
