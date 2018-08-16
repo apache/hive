@@ -1,9 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
-set hive.auto.convert.join=true;
-set hive.fetch.task.conversion=none;
--- start query  1 in stream 0 using template query96.tpl and seed 1819994127
-explain vectorization expression
+-- start query 1 in stream 0 using template query96.tpl and seed 1819994127
+explain
 select  count(*) 
 from store_sales
     ,household_demographics 

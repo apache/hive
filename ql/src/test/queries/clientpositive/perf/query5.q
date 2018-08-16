@@ -1,9 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
-set hive.auto.convert.join=true;
-set hive.fetch.task.conversion=none;
--- start query  1 in stream 0 using template query5.tpl and seed 1819994127
-explain vectorization expression
+-- start query 1 in stream 0 using template query5.tpl and seed 1819994127
+explain
 with ssr as
  (select s_store_id,
         sum(sales_price) as sales,

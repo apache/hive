@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import java.sql.Timestamp;
 
 import org.junit.Test;
-import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromObjectIterables;
@@ -48,13 +47,10 @@ public class TestVectorHashKeyWrapperBatch {
         new VectorExpression[] { new IdentityExpression(0) };
     TypeInfo[] typeInfos =
         new TypeInfo[] {TypeInfoFactory.timestampTypeInfo};
-    DataTypePhysicalVariation[] dataTypePhysicalVariations =
-        new DataTypePhysicalVariation[] {DataTypePhysicalVariation.NONE};
     VectorHashKeyWrapperBatch vhkwb =
         VectorHashKeyWrapperBatch.compileKeyWrapperBatch(
             keyExpressions,
-            typeInfos,
-            dataTypePhysicalVariations);
+            typeInfos);
 
     VectorizedRowBatch batch = new VectorizedRowBatch(1);
     batch.selectedInUse = false;

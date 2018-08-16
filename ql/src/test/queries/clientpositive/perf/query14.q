@@ -1,9 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
-set hive.auto.convert.join=true;
-set hive.fetch.task.conversion=none;
--- start query  1 in stream 0 using template query14.tpl and seed 1819994127
-explain vectorization expression
+-- start query 1 in stream 0 using template query14.tpl and seed 1819994127
+explain
 with  cross_items as
  (select i_item_sk ss_item_sk
  from item,
