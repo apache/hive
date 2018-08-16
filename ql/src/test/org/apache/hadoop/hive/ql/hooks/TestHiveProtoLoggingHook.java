@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,15 +29,22 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.EventLogger;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.EventType;
+import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.ExecutionMode;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.OtherInfoType;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.yarn.util.SystemClock;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.history.logging.proto.DatePartitionedLogger;
 import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
@@ -63,6 +69,9 @@ public class TestHiveProtoLoggingHook {
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
+    conf.set(HiveConf.ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, "llap_queue");
+    conf.set(MRJobConfig.QUEUE_NAME, "mr_queue");
+    conf.set(TezConfiguration.TEZ_QUEUE_NAME, "tez_queue");
     tmpFolder = folder.newFolder().getAbsolutePath();
     conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
     QueryState state = new QueryState.Builder().withHiveConf(conf).build();
@@ -94,7 +103,8 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals("test_user", event.getRequestUser());
     Assert.assertEquals("test_queryId", event.getHiveQueryId());
     Assert.assertEquals("test_op_id", event.getOperationId());
-    Assert.assertEquals("NONE", event.getExecutionMode());
+    Assert.assertEquals(ExecutionMode.NONE.name(), event.getExecutionMode());
+    Assert.assertFalse(event.hasQueue());
 
     assertOtherInfo(event, OtherInfoType.TEZ, Boolean.FALSE.toString());
     assertOtherInfo(event, OtherInfoType.MAPRED, Boolean.FALSE.toString());
@@ -105,6 +115,69 @@ public class TestHiveProtoLoggingHook {
     assertOtherInfo(event, OtherInfoType.HIVE_ADDRESS, "hive_addr");
     assertOtherInfo(event, OtherInfoType.CONF, null);
     assertOtherInfo(event, OtherInfoType.QUERY, null);
+  }
+
+  @Test
+  public void testQueueLogs() throws Exception {
+    context.setHookType(HookType.PRE_EXEC_HOOK);
+    EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
+
+    // This makes it MR task
+    context.getQueryPlan().getRootTasks().add(new ExecDriver());
+    evtLogger.handle(context);
+
+    // This makes it Tez task
+    MapWork mapWork = new MapWork();
+    TezWork tezWork = new TezWork("test_queryid");
+    tezWork.add(mapWork);
+    TezTask task = new TezTask();
+    task.setId("id1");
+    task.setWork(tezWork);
+    context.getQueryPlan().getRootTasks().add(task);
+    context.getQueryPlan().getRootTasks().add(new TezTask());
+    evtLogger.handle(context);
+
+    // This makes it llap task
+    mapWork.setLlapMode(true);
+    evtLogger.handle(context);
+
+    evtLogger.shutdown();
+
+    ProtoMessageReader<HiveHookEventProto> reader = getTestReader(conf, tmpFolder);
+
+    HiveHookEventProto event = reader.readEvent();
+    Assert.assertNotNull(event);
+    Assert.assertEquals(ExecutionMode.MR.name(), event.getExecutionMode());
+    Assert.assertEquals(event.getQueue(), "mr_queue");
+
+    event = reader.readEvent();
+    Assert.assertNotNull(event);
+    Assert.assertEquals(ExecutionMode.TEZ.name(), event.getExecutionMode());
+    Assert.assertEquals(event.getQueue(), "tez_queue");
+
+    event = reader.readEvent();
+    Assert.assertNotNull(event);
+    Assert.assertEquals(ExecutionMode.LLAP.name(), event.getExecutionMode());
+    Assert.assertEquals(event.getQueue(), "llap_queue");
+  }
+
+  @Test
+  public void testPreAndPostEventBoth() throws Exception {
+    context.setHookType(HookType.PRE_EXEC_HOOK);
+    EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
+    evtLogger.handle(context);
+    context.setHookType(HookType.POST_EXEC_HOOK);
+    evtLogger.handle(context);
+    evtLogger.shutdown();
+
+    ProtoMessageReader<HiveHookEventProto> reader = getTestReader(conf, tmpFolder);
+    HiveHookEventProto event = reader.readEvent();
+    Assert.assertNotNull("Pre hook event not found", event);
+    Assert.assertEquals(EventType.QUERY_SUBMITTED.name(), event.getEventType());
+
+    event = reader.readEvent();
+    Assert.assertNotNull("Post hook event not found", event);
+    Assert.assertEquals(EventType.QUERY_COMPLETED.name(), event.getEventType());
   }
 
   @Test
@@ -151,18 +224,21 @@ public class TestHiveProtoLoggingHook {
     assertOtherInfo(event, OtherInfoType.PERF, null);
   }
 
-  private HiveHookEventProto loadEvent(HiveConf conf, String tmpFolder)
-      throws IOException, FileNotFoundException {
+  private ProtoMessageReader<HiveHookEventProto> getTestReader(HiveConf conf, String tmpFolder)
+      throws IOException {
     Path path = new Path(tmpFolder);
     FileSystem fs = path.getFileSystem(conf);
     FileStatus[] status = fs.listStatus(path);
     Assert.assertEquals(1, status.length);
     status = fs.listStatus(status[0].getPath());
     Assert.assertEquals(1, status.length);
-
     DatePartitionedLogger<HiveHookEventProto> logger = new DatePartitionedLogger<>(
         HiveHookEventProto.PARSER, path, conf, SystemClock.getInstance());
-    ProtoMessageReader<HiveHookEventProto> reader = logger.getReader(status[0].getPath());
+    return logger.getReader(status[0].getPath());
+  }
+
+  private HiveHookEventProto loadEvent(HiveConf conf, String tmpFolder) throws IOException {
+    ProtoMessageReader<HiveHookEventProto> reader = getTestReader(conf, tmpFolder);
     HiveHookEventProto event = reader.readEvent();
     Assert.assertNotNull(event);
     return event;
