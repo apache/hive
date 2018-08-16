@@ -36,21 +36,29 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.HiveStrictManagedUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.TableSnapshot;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.HiveParser.switchDatabaseStatement_return;
@@ -58,11 +66,12 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
-
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 public class HiveStrictManagedMigration {
 
@@ -874,6 +883,16 @@ public class HiveStrictManagedMigration {
     return hiveUpdater;
   }
 
+  private static final class TxnCtx {
+    public final TableSnapshot ts;
+    public final long txnId;
+
+    public TxnCtx(TableSnapshot ts, long txnId) {
+      this.ts = ts;
+      this.txnId = txnId;
+    }
+  }
+
   class HiveUpdater {
     Hive hive;
 
@@ -897,6 +916,7 @@ public class HiveStrictManagedMigration {
       hive.alterDatabase(db.getName(), db);
     }
 
+
     void updateTableLocation(Table table, Path newLocation) throws HiveException {
       String msg = String.format("ALTER TABLE %s SET LOCATION '%s'",
           getQualifiedName(table), newLocation);
@@ -905,8 +925,104 @@ public class HiveStrictManagedMigration {
       org.apache.hadoop.hive.ql.metadata.Table modifiedTable =
           new org.apache.hadoop.hive.ql.metadata.Table(table);
       modifiedTable.setDataLocation(newLocation);
-      hive.alterTable(table.getCatName(), table.getDbName(), table.getTableName(),
-          modifiedTable, false, null, false);
+
+      alterTableInternal(table, modifiedTable);
+    }
+
+    private void alterTableInternal(Table table,
+        org.apache.hadoop.hive.ql.metadata.Table modifiedTable) throws HiveException {
+      IMetaStoreClient msc = getMSC();
+      TxnCtx txnCtx = generateTxnCtxForAlter(table, msc);
+      boolean isOk = false;
+      try {
+        String validWriteIds = null;
+        if (txnCtx != null) {
+          validWriteIds = txnCtx.ts.getValidWriteIdList();
+          modifiedTable.getTTable().setWriteId(txnCtx.ts.getWriteId());
+        }
+        msc.alter_table(table.getCatName(), table.getDbName(), table.getTableName(),
+            modifiedTable.getTTable(), null, validWriteIds);
+        isOk = true;
+      } catch (TException ex) {
+        throw new HiveException(ex);
+      } finally {
+        closeTxnCtx(txnCtx, msc, isOk);
+      }
+    }
+
+    private void alterPartitionInternal(Table table,
+        org.apache.hadoop.hive.ql.metadata.Partition modifiedPart) throws HiveException {
+      IMetaStoreClient msc = getMSC();
+      TxnCtx txnCtx = generateTxnCtxForAlter(table, msc);
+      boolean isOk = false;
+      try {
+        String validWriteIds = null;
+        if (txnCtx != null) {
+          validWriteIds = txnCtx.ts.getValidWriteIdList();
+          modifiedPart.getTPartition().setWriteId(txnCtx.ts.getWriteId());
+        }
+        msc.alter_partition(table.getDbName(), table.getTableName(),
+            modifiedPart.getTPartition(), null, validWriteIds);
+        isOk = true;
+      } catch (TException ex) {
+        throw new HiveException(ex);
+      } finally {
+        closeTxnCtx(txnCtx, msc, isOk);
+      }
+    }
+
+    private IMetaStoreClient getMSC() throws HiveException {
+      IMetaStoreClient msc = null;
+      try {
+        msc = hive.getMSC();
+      } catch (MetaException ex) {
+        throw new HiveException(ex);
+      }
+      return msc;
+    }
+
+    private TxnCtx generateTxnCtxForAlter(
+        Table table, IMetaStoreClient msc) throws HiveException {
+      if (!TxnUtils.isTransactionalTable(table.getParameters())) {
+        return null;
+      }
+      try {
+        UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+        long txnId = msc.openTxn(ugi == null ? "anonymous" : ugi.getShortUserName());
+        TxnCtx result = null;
+        try {
+          ValidTxnList txns = msc.getValidTxns(txnId);
+          String fqn = table.getDbName() + "." + table.getTableName();
+          List<TableValidWriteIds> writeIdsObj = msc.getValidWriteIds(
+              Lists.newArrayList(fqn), txns.toString());
+          String validWriteIds = TxnUtils.createValidTxnWriteIdList(txnId, writeIdsObj)
+              .getTableValidWriteIdList(fqn).writeToString();
+          long writeId = msc.allocateTableWriteId(txnId, table.getDbName(), table.getTableName());
+          TableSnapshot tableSnapshot = new TableSnapshot(writeId, validWriteIds);
+          result = new TxnCtx(tableSnapshot, txnId);
+        } finally {
+          if (result == null) {
+            msc.abortTxns(Lists.newArrayList(txnId));
+          }
+        }
+        return result;
+      } catch (IOException | TException ex) {
+        throw new HiveException(ex);
+      }
+    }
+
+    private void closeTxnCtx(TxnCtx txnCtx, IMetaStoreClient msc, boolean isOk)
+        throws HiveException {
+      if (txnCtx == null) return;
+      try {
+        if (isOk) {
+          msc.commitTxn(txnCtx.txnId);
+        } else {
+          msc.abortTxns(Lists.newArrayList(txnCtx.txnId));
+        }
+      } catch (TException ex) {
+        throw new HiveException(ex);
+      }
     }
 
     void updatePartitionLocation(String dbName, Table table, String partName, Partition part, Path newLocation)
@@ -920,7 +1036,7 @@ public class HiveStrictManagedMigration {
               new org.apache.hadoop.hive.ql.metadata.Table(table),
               part);
       modifiedPart.setLocation(newLocation.toString());
-      hive.alterPartition(dbName, table.getTableName(), modifiedPart, null, false);
+      alterPartitionInternal(table, modifiedPart);
     }
 
     void updateTableProperties(Table table, Map<String, String> props) throws HiveException {
@@ -951,8 +1067,9 @@ public class HiveStrictManagedMigration {
           getQualifiedName(table), sb.toString());
       LOG.info(msg);
 
-      hive.alterTable(table.getCatName(), table.getDbName(), table.getTableName(), modifiedTable,
-          false, null, false);
+      // Note: for now, this is always called to convert the table to either external, or ACID/MM,
+      //       so the original table would be non-txn and the transaction wouldn't be opened.
+      alterTableInternal(table, modifiedTable);
     }
   }
 

@@ -767,6 +767,7 @@ public class Hive {
     try {
       validatePartition(newPart);
       String location = newPart.getLocation();
+      // TODO: why is this done on client? this should be done on server...
       if (location != null) {
         location = Utilities.getQualifiedPath(conf, new Path(location));
         newPart.setLocation(location);
