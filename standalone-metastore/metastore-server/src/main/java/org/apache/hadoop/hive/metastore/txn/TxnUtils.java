@@ -221,6 +221,7 @@ public class TxnUtils {
       return false;
     }
     Map<String, String> parameters = table.getParameters();
+    if (parameters == null) return false;
     String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
