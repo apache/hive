@@ -172,7 +172,7 @@ STAGE PLANS:
                     1 _col10 (type: binary)
                   Map Join Vectorization:
                       bigTableKeyExpressions: col 10:binary
-                      bigTableValueExpressions: col 0:tinyint, col 1:smallint, col 2:int, col 3:bigint, col 4:float, col 5:double, col 6:boolean, col 7:string, col 8:timestamp, ConvertDecimal64ToDecimal(col 9:decimal(4,2)/DECIMAL_64) -> 22:decimal(4,2), col 10:binary
+                      bigTableValueExpressions: col 0:tinyint, col 1:smallint, col 2:int, col 3:bigint, col 4:float, col 5:double, col 6:boolean, col 7:string, col 8:timestamp, ConvertDecimal64ToDecimal(col 9:decimal(4,2)/DECIMAL_64) -> 12:decimal(4,2), col 10:binary
                       className: VectorMapJoinOperator
                       native: false
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true

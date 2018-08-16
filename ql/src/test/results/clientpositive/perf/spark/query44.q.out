@@ -1,6 +1,6 @@
 Warning: Shuffle Join JOIN[20][tables = [$hdt$_1, $hdt$_2]] in Work 'Reducer 7' is a cross product
 Warning: Shuffle Join JOIN[49][tables = [$hdt$_3, $hdt$_4]] in Work 'Reducer 15' is a cross product
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 select  asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing
 from(select *
      from (select item_sk,rank() over (order by rank_col asc) rnk
@@ -34,7 +34,7 @@ where asceding.rnk = descending.rnk
 order by asceding.rnk
 limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 select  asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing
 from(select *
      from (select item_sk,rank() over (order by rank_col asc) rnk
@@ -68,10 +68,6 @@ where asceding.rnk = descending.rnk
 order by asceding.rnk
 limit 100
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -100,119 +96,55 @@ STAGE PLANS:
                   alias: i1
                   filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
                   Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: i_item_sk is not null (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_product_name (type: string)
                       outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [0, 21]
                       Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkLongOperator
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
         Map 11 
             Map Operator Tree:
                 TableScan
                   alias: i2
                   filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
                   Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: i_item_sk is not null (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_product_name (type: string)
                       outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [0, 21]
                       Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkLongOperator
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
         Map 13 
             Map Operator Tree:
                 TableScan
                   alias: ss1
                   filterExpr: (ss_store_sk = 410) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
                   Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: FilterLongColEqualLongScalar(col 7:int, val 410)
                     predicate: (ss_store_sk = 410) (type: boolean)
                     Statistics: Num rows: 287997817 Data size: 25407250999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_item_sk (type: int), ss_net_profit (type: decimal(7,2))
                       outputColumnNames: ss_item_sk, ss_net_profit
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [2, 22]
                       Statistics: Num rows: 287997817 Data size: 25407250999 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(ss_net_profit), count(ss_net_profit)
-                        Group By Vectorization:
-                            aggregators: VectorUDAFSumDecimal64(col 22:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64, VectorUDAFCount(col 22:decimal(7,2)/DECIMAL_64) -> bigint
-                            className: VectorGroupByOperator
-                            groupByMode: HASH
-                            keyExpressions: col 2:int
-                            native: false
-                            vectorProcessingMode: HASH
-                            projectedOutputColumnNums: [0, 1]
                         keys: ss_item_sk (type: int)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
@@ -221,55 +153,24 @@ STAGE PLANS:
                           key expressions: _col0 (type: int)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Reduce Sink Vectorization:
-                              className: VectorReduceSinkLongOperator
-                              native: true
-                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 287997817 Data size: 25407250999 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
             Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
         Map 17 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
                   filterExpr: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
                   Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 7:int, val 410), SelectColumnIsNull(col 5:int))
                     predicate: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
                     Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_net_profit (type: decimal(7,2))
                       outputColumnNames: _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [22]
                       Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(_col1), count(_col1)
-                        Group By Vectorization:
-                            aggregators: VectorUDAFSumDecimal64(col 22:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64, VectorUDAFCount(col 22:decimal(7,2)/DECIMAL_64) -> bigint
-                            className: VectorGroupByOperator
-                            groupByMode: HASH
-                            keyExpressions: ConstantVectorExpression(val 410) -> 24:int
-                            native: false
-                            vectorProcessingMode: HASH
-                            projectedOutputColumnNums: [0, 1]
                         keys: 410 (type: int)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
@@ -278,41 +179,14 @@ STAGE PLANS:
                           key expressions: _col0 (type: int)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Reduce Sink Vectorization:
-                              className: VectorReduceSinkLongOperator
-                              native: true
-                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
             Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
         Reducer 10 
             Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
-                Group By Vectorization:
-                    aggregators: VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFCountMerge(col 2:bigint) -> bigint
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1]
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
@@ -320,26 +194,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: (_col1 / _col2) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [4]
-                      selectExpressions: DecimalColDivideDecimalColumn(col 1:decimal(17,2), col 3:decimal(19,0))(children: CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 4:decimal(37,22)
                   Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkEmptyKeyOperator
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: decimal(37,22))
         Reducer 12 
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: Tagging not supported
-                vectorized: false
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -357,23 +217,9 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
         Reducer 14 
             Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
-                Group By Vectorization:
-                    aggregators: VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFCountMerge(col 2:bigint) -> bigint
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1]
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
@@ -381,26 +227,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), (_col1 / _col2) (type: decimal(37,22))
                   outputColumnNames: _col0, _col1
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [0, 4]
-                      selectExpressions: DecimalColDivideDecimalColumn(col 1:decimal(17,2), col 3:decimal(19,0))(children: CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 4:decimal(37,22)
                   Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkEmptyKeyOperator
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: int), _col1 (type: decimal(37,22))
         Reducer 15 
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: Tagging not supported
-                vectorized: false
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -422,20 +254,10 @@ STAGE PLANS:
                     value expressions: _col0 (type: int)
         Reducer 16 
             Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: decimal(37,22))
                 outputColumnNames: _col0, _col1
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [2, 1]
                 Statistics: Num rows: 3455947584198744 Data size: 613225345280533248 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -457,59 +279,25 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  PTF Vectorization:
-                      className: VectorPTFOperator
-                      evaluatorClasses: [VectorPTFEvaluatorRank]
-                      functionInputExpressions: [col 1:decimal(37,22)]
-                      functionNames: [rank]
-                      native: true
-                      orderExpressions: [col 1:decimal(37,22)]
-                      partitionExpressions: [ConstantVectorExpression(val 0) -> 4:int]
                   Statistics: Num rows: 3455947584198744 Data size: 613225345280533248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColLessLongScalar(col 3:int, val 11), SelectColumnIsNotNull(col 2:int))
                     predicate: ((rank_window_0 < 11) and _col0 is not null) (type: boolean)
                     Statistics: Num rows: 1151982528066248 Data size: 204408448426844416 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [2, 3]
                       Statistics: Num rows: 1151982528066248 Data size: 204408448426844416 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkLongOperator
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1151982528066248 Data size: 204408448426844416 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int)
         Reducer 18 
             Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
-                Group By Vectorization:
-                    aggregators: VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFCountMerge(col 2:bigint) -> bigint
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1]
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
@@ -517,26 +305,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: (_col1 / _col2) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [4]
-                      selectExpressions: DecimalColDivideDecimalColumn(col 1:decimal(17,2), col 3:decimal(19,0))(children: CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 4:decimal(37,22)
                   Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkEmptyKeyOperator
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: decimal(37,22))
         Reducer 2 
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: Tagging not supported
-                vectorized: false
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -553,11 +327,6 @@ STAGE PLANS:
                   Statistics: Num rows: 1267180808338276 Data size: 224849298143006048 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
         Reducer 3 
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: Tagging not supported
-                vectorized: false
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -579,32 +348,16 @@ STAGE PLANS:
                     value expressions: _col1 (type: string), _col2 (type: string)
         Reducer 4 
             Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [0, 1, 2]
                 Statistics: Num rows: 1393898919384048 Data size: 247334233318131680 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 100
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
                   Statistics: Num rows: 100 Data size: 17700 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
                     Statistics: Num rows: 100 Data size: 17700 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -612,23 +365,9 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
             Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
-                Group By Vectorization:
-                    aggregators: VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFCountMerge(col 2:bigint) -> bigint
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1]
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
@@ -636,26 +375,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), (_col1 / _col2) (type: decimal(37,22))
                   outputColumnNames: _col0, _col1
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [0, 4]
-                      selectExpressions: DecimalColDivideDecimalColumn(col 1:decimal(17,2), col 3:decimal(19,0))(children: CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 4:decimal(37,22)
                   Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkEmptyKeyOperator
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: int), _col1 (type: decimal(37,22))
         Reducer 7 
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: Tagging not supported
-                vectorized: false
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -677,20 +402,10 @@ STAGE PLANS:
                     value expressions: _col0 (type: int)
         Reducer 8 
             Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: decimal(37,22))
                 outputColumnNames: _col0, _col1
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [2, 1]
                 Statistics: Num rows: 3455947584198744 Data size: 613225345280533248 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -712,38 +427,18 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  PTF Vectorization:
-                      className: VectorPTFOperator
-                      evaluatorClasses: [VectorPTFEvaluatorRank]
-                      functionInputExpressions: [col 1:decimal(37,22)]
-                      functionNames: [rank]
-                      native: true
-                      orderExpressions: [col 1:decimal(37,22)]
-                      partitionExpressions: [ConstantVectorExpression(val 0) -> 4:int]
                   Statistics: Num rows: 3455947584198744 Data size: 613225345280533248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColLessLongScalar(col 3:int, val 11), SelectColumnIsNotNull(col 2:int))
                     predicate: ((rank_window_0 < 11) and _col0 is not null) (type: boolean)
                     Statistics: Num rows: 1151982528066248 Data size: 204408448426844416 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [2, 3]
                       Statistics: Num rows: 1151982528066248 Data size: 204408448426844416 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkLongOperator
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1151982528066248 Data size: 204408448426844416 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int)
 

@@ -369,8 +369,7 @@ public class TestVectorAggregation extends AggregationBase {
     VectorRandomRowSource mergeRowSource = new VectorRandomRowSource();
 
     mergeRowSource.initGenerationSpecSchema(
-        random, mergeAggrGenerationSpecList, /* maxComplexDepth */ 0,
-        /* allowNull */ false, /* isUnicodeOk */ true,
+        random, mergeAggrGenerationSpecList, /* maxComplexDepth */ 0, /* allowNull */ false,
         mergeDataTypePhysicalVariationList);
 
     Object[][] mergeRandomRows = mergeRowSource.randomRows(TEST_ROW_COUNT);
@@ -509,8 +508,7 @@ public class TestVectorAggregation extends AggregationBase {
 
     boolean allowNull = !aggregationName.equals("bloom_filter");
     partial1RowSource.initGenerationSpecSchema(
-        random, dataAggrGenerationSpecList, /* maxComplexDepth */ 0,
-        allowNull,  /* isUnicodeOk */ true,
+        random, dataAggrGenerationSpecList, /* maxComplexDepth */ 0, allowNull,
         explicitDataTypePhysicalVariationList);
 
     Object[][] partial1RandomRows = partial1RowSource.randomRows(TEST_ROW_COUNT);
@@ -606,8 +604,7 @@ public class TestVectorAggregation extends AggregationBase {
       VectorRandomRowSource completeRowSource = new VectorRandomRowSource();
 
       completeRowSource.initGenerationSpecSchema(
-          random, dataAggrGenerationSpecList, /* maxComplexDepth */ 0,
-          /* allowNull */ true, /* isUnicodeOk */ true,
+          random, dataAggrGenerationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
           explicitDataTypePhysicalVariationList);
 
       Object[][] completeRandomRows = completeRowSource.randomRows(TEST_ROW_COUNT);

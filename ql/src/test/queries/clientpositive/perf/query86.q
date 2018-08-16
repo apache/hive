@@ -1,9 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
-set hive.auto.convert.join=true;
-set hive.fetch.task.conversion=none;
--- start query  1 in stream 0 using template query86.tpl and seed 1819994127
-explain vectorization expression
+-- start query 1 in stream 0 using template query86.tpl and seed 1819994127
+explain
 select   
     sum(ws_net_paid) as total_sum
    ,i_category
