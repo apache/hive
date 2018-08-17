@@ -91,8 +91,6 @@ public final class KafkaStreamingUtils {
    */
   public static Properties consumerProperties(Configuration configuration) {
     final Properties props = new Properties();
-    // important to set to avoid long blocking
-    props.setProperty(CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG, "10000");
     // we are managing the commit offset
     props.setProperty("enable.auto.commit", "false");
     // we are seeking in the stream so no reset
