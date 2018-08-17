@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -160,7 +161,7 @@ public class GenericKafkaSerDe extends AbstractSerDe {
       row = delegateSerDe.deserialize(avroGenericRecordWritable);
     } else {
       // default assuming delegate Serde know how to deal with
-      row = delegateSerDe.deserialize(new BytesRefWritable(record.getValue()));
+      row = delegateSerDe.deserialize(new BytesWritable(record.getValue()));
     }
 
     return columnNames.stream().map(name -> {
