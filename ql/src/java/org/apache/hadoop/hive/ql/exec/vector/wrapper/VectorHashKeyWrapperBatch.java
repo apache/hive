@@ -16,13 +16,22 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector;
+package org.apache.hadoop.hive.ql.exec.vector.wrapper;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorColumnSetInfo;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
@@ -53,7 +62,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Always clone the key wrapper to obtain an immutable keywrapper suitable
    * to use a key in a HashMap.
    */
-  private VectorHashKeyWrapper[] vectorHashKeyWrappers;
+  private VectorHashKeyWrapperBase[] vectorHashKeyWrappers;
 
   /**
    * The fixed size of the key wrappers.
@@ -63,7 +72,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
   /**
    * Shared hashcontext for all keys in this batch
    */
-  private final VectorHashKeyWrapper.HashContext hashCtx = new VectorHashKeyWrapper.HashContext();
+  private final VectorHashKeyWrapperBase.HashContext hashCtx = new VectorHashKeyWrapperBase.HashContext();
 
    /**
    * Returns the compiled fixed size for the key wrappers.
@@ -76,7 +85,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
   /**
    * Accessor for the batch-sized array of key wrappers.
    */
-  public VectorHashKeyWrapper[] getVectorHashKeyWrappers() {
+  public VectorHashKeyWrapperBase[] getVectorHashKeyWrappers() {
     return vectorHashKeyWrappers;
   }
 
@@ -904,7 +913,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     compiledKeyWrapperBatch.finishAdding();
 
     compiledKeyWrapperBatch.vectorHashKeyWrappers =
-        new VectorHashKeyWrapper[VectorizedRowBatch.DEFAULT_SIZE];
+        new VectorHashKeyWrapperBase[VectorizedRowBatch.DEFAULT_SIZE];
     for(int i=0;i<VectorizedRowBatch.DEFAULT_SIZE; ++i) {
       compiledKeyWrapperBatch.vectorHashKeyWrappers[i] =
           compiledKeyWrapperBatch.allocateKeyWrapper();
@@ -934,8 +943,8 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     return compiledKeyWrapperBatch;
   }
 
-  public VectorHashKeyWrapper allocateKeyWrapper() {
-    return VectorHashKeyWrapper.allocate(hashCtx,
+  public VectorHashKeyWrapperBase allocateKeyWrapper() {
+    return VectorHashKeyWrapperFactory.allocate(hashCtx,
         longIndices.length,
         doubleIndices.length,
         stringIndices.length,
@@ -949,7 +958,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Get the row-mode writable object value of a key from a key wrapper
    * @param keyOutputWriter
    */
-  public Object getWritableKeyValue(VectorHashKeyWrapper kw, int keyIndex,
+  public Object getWritableKeyValue(VectorHashKeyWrapperBase kw, int keyIndex,
       VectorExpressionWriter keyOutputWriter)
     throws HiveException {
 
@@ -988,7 +997,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     }
   }
 
-  public void setLongValue(VectorHashKeyWrapper kw, int keyIndex, Long value)
+  public void setLongValue(VectorHashKeyWrapperBase kw, int keyIndex, Long value)
     throws HiveException {
 
     if (columnVectorTypes[keyIndex] != Type.LONG) {
@@ -1004,7 +1013,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
   }
 
   public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int keyIndex,
-      VectorHashKeyWrapper kw)
+      VectorHashKeyWrapperBase kw)
     throws HiveException {
 
     ColumnVector colVector = batch.cols[keyIndex];
@@ -1057,7 +1066,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     int variableSize = 0;
     if ( 0 < stringIndices.length) {
       for (int k=0; k<batchSize; ++k) {
-        VectorHashKeyWrapper hkw = vectorHashKeyWrappers[k];
+        VectorHashKeyWrapperBase hkw = vectorHashKeyWrappers[k];
         variableSize += hkw.getVariableSize();
       }
     }

@@ -44,6 +44,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
@@ -453,7 +455,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       if (!aborted && sumBatchSize == 0 && GroupByOperator.shouldEmitSummaryRow(conf)) {
         // in case the empty grouping set is preset; but no output has done
         // the "summary row" still needs to be emitted
-        VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
+        VectorHashKeyWrapperBase kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
         kw.setNull();
         int pos = conf.getGroupingSetPosition();
         if (pos >= 0) {
@@ -481,13 +483,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       // We now have to probe the global hash and find-or-allocate
       // the aggregation buffers to use for each key present in the batch
-      VectorHashKeyWrapper[] keyWrappers = keyWrappersBatch.getVectorHashKeyWrappers();
+      VectorHashKeyWrapperBase[] keyWrappers = keyWrappersBatch.getVectorHashKeyWrappers();
 
       final int n = keyExpressions.length == 0 ? 1 : batch.size;
       // note - the row mapping is not relevant when aggregationBatchInfo::getDistinctBufferSetCount() == 1
 
       for (int i=0; i < n; ++i) {
-        VectorHashKeyWrapper kw = keyWrappers[i];
+        VectorHashKeyWrapperBase kw = keyWrappers[i];
         VectorAggregationBufferRow aggregationBuffer = mapKeysAggregationBuffers.get(kw);
         if (null == aggregationBuffer) {
           // the probe failed, we must allocate a set of aggregation buffers
@@ -564,7 +566,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       while(iter.hasNext()) {
         Map.Entry<KeyWrapper, VectorAggregationBufferRow> pair = iter.next();
 
-        writeSingleRow((VectorHashKeyWrapper) pair.getKey(), pair.getValue());
+        writeSingleRow((VectorHashKeyWrapperBase) pair.getKey(), pair.getValue());
 
         if (!all) {
           iter.remove();
@@ -659,13 +661,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     /**
      * The current key, used in streaming mode
      */
-    private VectorHashKeyWrapper streamingKey;
+    private VectorHashKeyWrapperBase streamingKey;
 
     /**
      * The keys that needs to be flushed at the end of the current batch
      */
-    private final VectorHashKeyWrapper[] keysToFlush =
-        new VectorHashKeyWrapper[VectorizedRowBatch.DEFAULT_SIZE];
+    private final VectorHashKeyWrapperBase[] keysToFlush =
+        new VectorHashKeyWrapperBase[VectorizedRowBatch.DEFAULT_SIZE];
 
     /**
      * The aggregates that needs to be flushed at the end of the current batch
@@ -723,9 +725,9 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         keyWrappersBatch.evaluateBatchGroupingSets(batch, currentGroupingSetsOverrideIsNulls);
       }
 
-      VectorHashKeyWrapper[] batchKeys = keyWrappersBatch.getVectorHashKeyWrappers();
+      VectorHashKeyWrapperBase[] batchKeys = keyWrappersBatch.getVectorHashKeyWrappers();
 
-      final VectorHashKeyWrapper prevKey = streamingKey;
+      final VectorHashKeyWrapperBase prevKey = streamingKey;
       if (streamingKey == null) {
         // This is the first batch we process after switching from hash mode
         currentStreamingAggregators = streamAggregationBufferRowPool.getFromPool();
@@ -760,7 +762,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       }
 
       if (streamingKey != prevKey) {
-        streamingKey = (VectorHashKeyWrapper) streamingKey.copyKey();
+        streamingKey = (VectorHashKeyWrapperBase) streamingKey.copyKey();
       }
     }
 
@@ -1127,7 +1129,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    * @param agg
    * @throws HiveException
    */
-  private void writeSingleRow(VectorHashKeyWrapper kw, VectorAggregationBufferRow agg)
+  private void writeSingleRow(VectorHashKeyWrapperBase kw, VectorAggregationBufferRow agg)
       throws HiveException {
 
     int colNum = 0;

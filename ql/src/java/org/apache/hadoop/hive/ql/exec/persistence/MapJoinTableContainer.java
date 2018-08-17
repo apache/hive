@@ -24,9 +24,9 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.common.MemoryEstimate;
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -43,7 +43,7 @@ public interface MapJoinTableContainer extends MemoryEstimate {
      * Changes current rows to which adaptor is referring to the rows corresponding to
      * the key represented by a VHKW object, and writers and batch used to interpret it.
      */
-    JoinUtil.JoinResult setFromVector(VectorHashKeyWrapper kw, VectorExpressionWriter[] keyOutputWriters,
+    JoinUtil.JoinResult setFromVector(VectorHashKeyWrapperBase kw, VectorExpressionWriter[] keyOutputWriters,
         VectorHashKeyWrapperBatch keyWrapperBatch) throws HiveException;
 
     /**
