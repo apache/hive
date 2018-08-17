@@ -25,10 +25,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -149,7 +149,7 @@ public class MapJoinKeyObject extends MapJoinKey {
     return nulls;
   }
 
-  public void readFromVector(VectorHashKeyWrapper kw, VectorExpressionWriter[] keyOutputWriters,
+  public void readFromVector(VectorHashKeyWrapperBase kw, VectorExpressionWriter[] keyOutputWriters,
       VectorHashKeyWrapperBatch keyWrapperBatch) throws HiveException {
     if (key == null || key.length != keyOutputWriters.length) {
       key = new Object[keyOutputWriters.length];

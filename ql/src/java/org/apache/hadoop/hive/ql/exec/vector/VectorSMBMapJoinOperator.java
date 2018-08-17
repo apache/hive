@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -87,14 +89,14 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator
 
   private transient int batchIndex = -1;
 
-  private transient VectorHashKeyWrapper[] keyValues;
+  private transient VectorHashKeyWrapperBase[] keyValues;
 
   private transient SMBJoinKeyEvaluator keyEvaluator;
 
   private transient VectorExpressionWriter[] valueWriters;
 
   private interface SMBJoinKeyEvaluator {
-    List<Object> evaluate(VectorHashKeyWrapper kw) throws HiveException;
+    List<Object> evaluate(VectorHashKeyWrapperBase kw) throws HiveException;
 }
 
   /** Kryo ctor. */
@@ -193,7 +195,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator
       }
 
       @Override
-      public List<Object> evaluate(VectorHashKeyWrapper kw) throws HiveException {
+      public List<Object> evaluate(VectorHashKeyWrapperBase kw) throws HiveException {
         for(int i = 0; i < keyExpressions.length; ++i) {
           key.set(i, keyWrapperBatch.getWritableKeyValue(kw, i, keyOutputWriters[i]));
         }

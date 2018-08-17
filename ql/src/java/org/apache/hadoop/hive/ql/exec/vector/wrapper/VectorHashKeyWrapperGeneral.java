@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector;
+package org.apache.hadoop.hive.ql.exec.vector.wrapper;
 
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hive.common.util.Murmur3;
@@ -28,6 +28,9 @@ import java.util.Arrays;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
+import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorColumnSetInfo;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -44,18 +47,7 @@ import com.google.common.base.Preconditions;
  * {@link org.apache.hadoop.hive.ql.exec.VectorHashKeyWrapperBatch VectorHashKeyWrapperBatch}
  * to hash vectorized processing units (batches).
  */
-public class VectorHashKeyWrapper extends KeyWrapper {
-
-  public static final class HashContext {
-    private final Murmur3.IncrementalHash32 bytesHash = new Murmur3.IncrementalHash32();
-
-    public static Murmur3.IncrementalHash32 getBytesHash(HashContext ctx) {
-      if (ctx == null) {
-        return new Murmur3.IncrementalHash32();
-      }
-      return ctx.bytesHash;
-    }
-  }
+public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
 
   private static final int[] EMPTY_INT_ARRAY = new int[0];
   private static final long[] EMPTY_LONG_ARRAY = new long[0];
@@ -64,8 +56,6 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private static final HiveDecimalWritable[] EMPTY_DECIMAL_ARRAY = new HiveDecimalWritable[0];
   private static final Timestamp[] EMPTY_TIMESTAMP_ARRAY = new Timestamp[0];
   private static final HiveIntervalDayTime[] EMPTY_INTERVAL_DAY_TIME_ARRAY = new HiveIntervalDayTime[0];
-
-  public static final VectorHashKeyWrapper EMPTY_KEY_WRAPPER = new EmptyVectorHashKeyWrapper();
 
   private long[] longValues;
   private double[] doubleValues;
@@ -82,20 +72,22 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private HiveIntervalDayTime[] intervalDayTimeValues;
   private static HiveIntervalDayTime ZERO_INTERVALDAYTIME= new HiveIntervalDayTime(0, 0);
 
+  private HashContext hashCtx;
+
+  private int keyCount;
+
   // NOTE: The null array is indexed by keyIndex, which is not available internally.  The mapping
   //       from a long, double, etc index to key index is kept once in the separate
   //       VectorColumnSetInfo object.
-  private boolean[] isNull;
+  protected boolean[] isNull;
 
-  private int hashcode;
-
-  private HashContext hashCtx;
-
-  private VectorHashKeyWrapper(HashContext ctx, int longValuesCount, int doubleValuesCount,
+  public VectorHashKeyWrapperGeneral(HashContext ctx, int longValuesCount, int doubleValuesCount,
           int byteValuesCount, int decimalValuesCount, int timestampValuesCount,
           int intervalDayTimeValuesCount,
           int keyCount) {
+    super();
     hashCtx = ctx;
+    this.keyCount = keyCount;
     longValues = longValuesCount > 0 ? new long[longValuesCount] : EMPTY_LONG_ARRAY;
     doubleValues = doubleValuesCount > 0 ? new double[doubleValuesCount] : EMPTY_DOUBLE_ARRAY;
     decimalValues = decimalValuesCount > 0 ? new HiveDecimalWritable[decimalValuesCount] : EMPTY_DECIMAL_ARRAY;
@@ -120,27 +112,10 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       intervalDayTimeValues[i] = new HiveIntervalDayTime();
     }
     isNull = new boolean[keyCount];
-    hashcode = 0;
   }
 
-  private VectorHashKeyWrapper() {
-  }
-
-  public static VectorHashKeyWrapper allocate(HashContext ctx, int longValuesCount, int doubleValuesCount,
-      int byteValuesCount, int decimalValuesCount, int timestampValuesCount,
-      int intervalDayTimeValuesCount, int keyCount) {
-    if ((longValuesCount + doubleValuesCount + byteValuesCount + decimalValuesCount
-        + timestampValuesCount + intervalDayTimeValuesCount) == 0) {
-      return EMPTY_KEY_WRAPPER;
-    }
-    return new VectorHashKeyWrapper(ctx, longValuesCount, doubleValuesCount, byteValuesCount,
-        decimalValuesCount, timestampValuesCount, intervalDayTimeValuesCount,
-        keyCount);
-  }
-
-  @Override
-  public void getNewKey(Object row, ObjectInspector rowInspector) throws HiveException {
-    throw new HiveException("Should not be called");
+  private VectorHashKeyWrapperGeneral() {
+    super();
   }
 
   @Override
@@ -192,8 +167,8 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   @Override
   public boolean equals(Object that) {
-    if (that instanceof VectorHashKeyWrapper) {
-      VectorHashKeyWrapper keyThat = (VectorHashKeyWrapper)that;
+    if (that instanceof VectorHashKeyWrapperGeneral) {
+      VectorHashKeyWrapperGeneral keyThat = (VectorHashKeyWrapperGeneral)that;
       // not comparing hashCtx - irrelevant
       return hashcode == keyThat.hashcode &&
           Arrays.equals(longValues, keyThat.longValues) &&
@@ -208,7 +183,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     return false;
   }
 
-  private boolean bytesEquals(VectorHashKeyWrapper keyThat) {
+  private boolean bytesEquals(VectorHashKeyWrapperGeneral keyThat) {
     //By the time we enter here the byteValues.lentgh and isNull must have already been compared
     for (int i = 0; i < byteValues.length; ++i) {
       // the byte comparison is potentially expensive so is better to branch on null
@@ -229,13 +204,14 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   @Override
   protected Object clone() {
-    VectorHashKeyWrapper clone = new VectorHashKeyWrapper();
+    VectorHashKeyWrapperGeneral clone = new VectorHashKeyWrapperGeneral();
     duplicateTo(clone);
     return clone;
   }
 
-  public void duplicateTo(VectorHashKeyWrapper clone) {
+  private void duplicateTo(VectorHashKeyWrapperGeneral clone) {
     clone.hashCtx = hashCtx;
+    clone.keyCount = keyCount;
     clone.longValues = (longValues.length > 0) ? longValues.clone() : EMPTY_LONG_ARRAY;
     clone.doubleValues = (doubleValues.length > 0) ? doubleValues.clone() : EMPTY_DOUBLE_ARRAY;
     clone.isNull = isNull.clone();
@@ -289,20 +265,6 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   @Override
-  public KeyWrapper copyKey() {
-    return (KeyWrapper) clone();
-  }
-
-  @Override
-  public void copyKey(KeyWrapper oldWrapper) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Object[] getKeyArray() {
-    throw new UnsupportedOperationException();
-  }
-
   public void assignLong(int keyIndex, int index, long v) {
     isNull[keyIndex] = false;
     longValues[index] = v;
@@ -310,24 +272,29 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   // FIXME: isNull is not updated; which might cause problems
   @Deprecated
+  @Override
   public void assignLong(int index, long v) {
     longValues[index] = v;
   }
 
+  @Override
   public void assignNullLong(int keyIndex, int index) {
     isNull[keyIndex] = true;
     longValues[index] = 0; // assign 0 to simplify hashcode
   }
 
+  @Override
   public void assignDouble(int index, double d) {
     doubleValues[index] = d;
   }
 
+  @Override
   public void assignNullDouble(int keyIndex, int index) {
     isNull[keyIndex] = true;
     doubleValues[index] = 0; // assign 0 to simplify hashcode
   }
 
+  @Override
   public void assignString(int index, byte[] bytes, int start, int length) {
     Preconditions.checkState(bytes != null);
     byteValues[index] = bytes;
@@ -335,6 +302,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     byteLengths[index] = length;
   }
 
+  @Override
   public void assignNullString(int keyIndex, int index) {
     isNull[keyIndex] = true;
     byteValues[index] = null;
@@ -343,15 +311,18 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     byteLengths[index] = -1;
   }
 
+  @Override
   public void assignDecimal(int index, HiveDecimalWritable value) {
     decimalValues[index].set(value);
   }
 
+  @Override
   public void assignNullDecimal(int keyIndex, int index) {
     isNull[keyIndex] = true;
     decimalValues[index].set(HiveDecimal.ZERO); // assign 0 to simplify hashcode
   }
 
+  @Override
   public void assignTimestamp(int index, Timestamp value) {
     // Do not assign the input value object to the timestampValues array element.
     // Always copy value using set* methods.
@@ -359,10 +330,12 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     timestampValues[index].setNanos(value.getNanos());
   }
 
+  @Override
   public void assignTimestamp(int index, TimestampColumnVector colVector, int elementNum) {
     colVector.timestampUpdate(timestampValues[index], elementNum);
   }
 
+  @Override
   public void assignNullTimestamp(int keyIndex, int index) {
     isNull[keyIndex] = true;
     // assign 0 to simplify hashcode
@@ -370,14 +343,17 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     timestampValues[index].setNanos(ZERO_TIMESTAMP.getNanos());
   }
 
+  @Override
   public void assignIntervalDayTime(int index, HiveIntervalDayTime value) {
     intervalDayTimeValues[index].set(value);
   }
 
+  @Override
   public void assignIntervalDayTime(int index, IntervalDayTimeColumnVector colVector, int elementNum) {
     intervalDayTimeValues[index].set(colVector.asScratchIntervalDayTime(elementNum));
   }
 
+  @Override
   public void assignNullIntervalDayTime(int keyIndex, int index) {
     isNull[keyIndex] = true;
     intervalDayTimeValues[index].set(ZERO_INTERVALDAYTIME); // assign 0 to simplify hashcode
@@ -386,6 +362,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   /*
    * This method is mainly intended for debug display purposes.
    */
+  @Override
   public String stringifyKeys(VectorColumnSetInfo columnSetInfo)
   {
     StringBuilder sb = new StringBuilder();
@@ -605,26 +582,47 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     return sb.toString();
   }
 
+  @Override
   public long getLongValue(int i) {
     return longValues[i];
   }
 
+  @Override
   public double getDoubleValue(int i) {
     return doubleValues[i];
   }
 
+  @Override
   public byte[] getBytes(int i) {
     return byteValues[i];
   }
 
+  @Override
   public int getByteStart(int i) {
     return byteStarts[i];
   }
 
+  @Override
   public int getByteLength(int i) {
     return byteLengths[i];
   }
 
+  @Override
+  public HiveDecimalWritable getDecimal(int i) {
+    return decimalValues[i];
+  }
+
+  @Override
+  public Timestamp getTimestamp(int i) {
+    return timestampValues[i];
+  }
+
+  @Override
+  public HiveIntervalDayTime getIntervalDayTime(int i) {
+    return intervalDayTimeValues[i];
+  }
+
+  @Override
   public int getVariableSize() {
     int variableSize = 0;
     for (int i=0; i<byteLengths.length; ++i) {
@@ -634,49 +632,18 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     return variableSize;
   }
 
-  public HiveDecimalWritable getDecimal(int i) {
-    return decimalValues[i];
-  }
-
-  public Timestamp getTimestamp(int i) {
-    return timestampValues[i];
-  }
-
-  public HiveIntervalDayTime getIntervalDayTime(int i) {
-    return intervalDayTimeValues[i];
-  }
-
+  @Override
   public void clearIsNull() {
     Arrays.fill(isNull, false);
   }
 
+  @Override
   public void setNull() {
     Arrays.fill(isNull, true);
   }
 
+  @Override
   public boolean isNull(int keyIndex) {
     return isNull[keyIndex];
-  }
-
-  public static final class EmptyVectorHashKeyWrapper extends VectorHashKeyWrapper {
-    private EmptyVectorHashKeyWrapper() {
-      super(null, 0, 0, 0, 0, 0, 0, /* keyCount */ 0);
-      // no need to override assigns - all assign ops will fail due to 0 size
-    }
-
-    @Override
-    protected Object clone() {
-      // immutable
-      return this;
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == this) {
-        // should only be one object
-        return true;
-      }
-      return super.equals(that);
-    }
   }
 }
