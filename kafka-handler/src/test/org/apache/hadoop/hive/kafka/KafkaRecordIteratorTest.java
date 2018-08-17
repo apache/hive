@@ -55,22 +55,27 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Kafka Iterator Tests.
  */
 public class KafkaRecordIteratorTest {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaRecordIteratorTest.class);
-  private static final String TOPIC = "my_test_topic";
-  private static final List<ConsumerRecord<byte[], byte[]>> RECORDS = new ArrayList();
   private static final int RECORD_NUMBER = 100;
+  private static final String TOPIC = "my_test_topic";
   private static final TopicPartition TOPIC_PARTITION = new TopicPartition(TOPIC, 0);
   public static final byte[] KEY_BYTES = "KEY".getBytes(Charset.forName("UTF-8"));
+  private static final List<ConsumerRecord<byte[], byte[]>>
+      RECORDS =
+      IntStream.range(0, RECORD_NUMBER).mapToObj(number -> {
+        final byte[] value = ("VALUE-" + Integer.toString(number)).getBytes(Charset.forName("UTF-8"));
+        return new ConsumerRecord<byte[], byte[]>(TOPIC, 0, (long) number, 0L, null, 0L, 0, 0, KEY_BYTES, value);
+      }).collect(Collectors.toList());
   private static ZkUtils zkUtils;
   private static ZkClient zkClient;
   private static KafkaProducer<byte[], byte[]> producer;
@@ -189,8 +194,7 @@ public class KafkaRecordIteratorTest {
   }
 
   @Test(expected = TimeoutException.class) public void testPullingBeyondLimit() {
-    this.kafkaRecordIterator =
-        new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 101L, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 101L, 100L);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
@@ -205,8 +209,7 @@ public class KafkaRecordIteratorTest {
   }
 
   @Test(expected = TimeoutException.class) public void testPullingFromEmptyPartition() {
-    this.kafkaRecordIterator =
-        new KafkaRecordIterator(this.consumer, new TopicPartition(TOPIC, 1), 0L, 100L, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, new TopicPartition(TOPIC, 1), 0L, 100L, 100L);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
@@ -222,8 +225,7 @@ public class KafkaRecordIteratorTest {
   }
 
   @Test public void testStartIsTheFirstOffset() {
-    this.kafkaRecordIterator =
-        new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 0L, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 0L, 100L);
     this.compareIterator(ImmutableList.of(), this.kafkaRecordIterator);
   }
 
@@ -271,19 +273,15 @@ public class KafkaRecordIteratorTest {
     this.consumer = new KafkaConsumer(consumerProps);
   }
 
-  private static void sendData() throws InterruptedException {
+  private static void sendData() {
     LOG.info("Sending {} records", RECORD_NUMBER);
-    RECORDS.clear();
-    for (int i = 0; i < RECORD_NUMBER; ++i) {
-
-      final byte[] value = ("VALUE-" + Integer.toString(i)).getBytes(Charset.forName("UTF-8"));
-      //noinspection unchecked
-      producer.send(new ProducerRecord(TOPIC, 0, 0L, KEY_BYTES, value));
-
-      //noinspection unchecked
-      RECORDS.add(new ConsumerRecord(TOPIC, 0, (long) i, 0L, null, 0L, 0, 0, KEY_BYTES, value));
-    }
-
+    RECORDS.stream()
+        .map(consumerRecord -> new ProducerRecord(consumerRecord.topic(),
+            consumerRecord.partition(),
+            consumerRecord.timestamp(),
+            consumerRecord.key(),
+            consumerRecord.value()))
+        .forEach(producerRecord -> producer.send(producerRecord));
     producer.close();
   }
 
