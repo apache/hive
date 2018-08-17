@@ -884,12 +884,14 @@ public class HiveStrictManagedMigration {
   }
 
   private static final class TxnCtx {
-    public final TableSnapshot ts;
+    public final long writeId;
+    public final String validWriteIds;
     public final long txnId;
 
-    public TxnCtx(TableSnapshot ts, long txnId) {
-      this.ts = ts;
+    public TxnCtx(long writeId, String validWriteIds, long txnId) {
+      this.writeId = writeId;
       this.txnId = txnId;
+      this.validWriteIds = validWriteIds;
     }
   }
 
@@ -921,24 +923,25 @@ public class HiveStrictManagedMigration {
       String msg = String.format("ALTER TABLE %s SET LOCATION '%s'",
           getQualifiedName(table), newLocation);
       LOG.info(msg);
+      boolean isTxn = TxnUtils.isTransactionalTable(table);
 
       org.apache.hadoop.hive.ql.metadata.Table modifiedTable =
           new org.apache.hadoop.hive.ql.metadata.Table(table);
       modifiedTable.setDataLocation(newLocation);
 
-      alterTableInternal(table, modifiedTable);
+      alterTableInternal(isTxn, table, modifiedTable);
     }
 
-    private void alterTableInternal(Table table,
+    private void alterTableInternal(boolean wasTxn, Table table,
         org.apache.hadoop.hive.ql.metadata.Table modifiedTable) throws HiveException {
       IMetaStoreClient msc = getMSC();
-      TxnCtx txnCtx = generateTxnCtxForAlter(table, msc);
+      TxnCtx txnCtx = generateTxnCtxForAlter(table, msc, wasTxn);
       boolean isOk = false;
       try {
         String validWriteIds = null;
         if (txnCtx != null) {
-          validWriteIds = txnCtx.ts.getValidWriteIdList();
-          modifiedTable.getTTable().setWriteId(txnCtx.ts.getWriteId());
+          validWriteIds = txnCtx.validWriteIds;
+          modifiedTable.getTTable().setWriteId(txnCtx.writeId);
         }
         msc.alter_table(table.getCatName(), table.getDbName(), table.getTableName(),
             modifiedTable.getTTable(), null, validWriteIds);
@@ -953,13 +956,13 @@ public class HiveStrictManagedMigration {
     private void alterPartitionInternal(Table table,
         org.apache.hadoop.hive.ql.metadata.Partition modifiedPart) throws HiveException {
       IMetaStoreClient msc = getMSC();
-      TxnCtx txnCtx = generateTxnCtxForAlter(table, msc);
+      TxnCtx txnCtx = generateTxnCtxForAlter(table, msc, null);
       boolean isOk = false;
       try {
         String validWriteIds = null;
         if (txnCtx != null) {
-          validWriteIds = txnCtx.ts.getValidWriteIdList();
-          modifiedPart.getTPartition().setWriteId(txnCtx.ts.getWriteId());
+          validWriteIds = txnCtx.validWriteIds;
+          modifiedPart.getTPartition().setWriteId(txnCtx.writeId);
         }
         msc.alter_partition(table.getDbName(), table.getTableName(),
             modifiedPart.getTPartition(), null, validWriteIds);
@@ -982,8 +985,8 @@ public class HiveStrictManagedMigration {
     }
 
     private TxnCtx generateTxnCtxForAlter(
-        Table table, IMetaStoreClient msc) throws HiveException {
-      if (!TxnUtils.isTransactionalTable(table.getParameters())) {
+        Table table, IMetaStoreClient msc, Boolean wasTxn) throws HiveException {
+      if ((wasTxn != null && !wasTxn) || !TxnUtils.isTransactionalTable(table.getParameters())) {
         return null;
       }
       try {
@@ -998,8 +1001,7 @@ public class HiveStrictManagedMigration {
           String validWriteIds = TxnUtils.createValidTxnWriteIdList(txnId, writeIdsObj)
               .getTableValidWriteIdList(fqn).writeToString();
           long writeId = msc.allocateTableWriteId(txnId, table.getDbName(), table.getTableName());
-          TableSnapshot tableSnapshot = new TableSnapshot(writeId, validWriteIds);
-          result = new TxnCtx(tableSnapshot, txnId);
+          result = new TxnCtx(writeId, validWriteIds, txnId);
         } finally {
           if (result == null) {
             msc.abortTxns(Lists.newArrayList(txnId));
@@ -1041,6 +1043,8 @@ public class HiveStrictManagedMigration {
 
     void updateTableProperties(Table table, Map<String, String> props) throws HiveException {
       StringBuilder sb = new StringBuilder();
+      boolean isTxn = TxnUtils.isTransactionalTable(table);
+
       org.apache.hadoop.hive.ql.metadata.Table modifiedTable =
           new org.apache.hadoop.hive.ql.metadata.Table(table);
       if (props.size() == 0) {
@@ -1069,7 +1073,7 @@ public class HiveStrictManagedMigration {
 
       // Note: for now, this is always called to convert the table to either external, or ACID/MM,
       //       so the original table would be non-txn and the transaction wouldn't be opened.
-      alterTableInternal(table, modifiedTable);
+      alterTableInternal(isTxn, table, modifiedTable);
     }
   }
 
