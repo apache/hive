@@ -1439,7 +1439,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int touch(Hive db, AlterTableSimpleDesc touchDesc)
       throws HiveException {
-
+    // TODO: catalog
     Table tbl = db.getTable(touchDesc.getTableName());
     EnvironmentContext environmentContext = new EnvironmentContext();
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
@@ -1454,7 +1454,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException("Specified partition does not exist");
       }
       try {
-        db.alterPartition(touchDesc.getTableName(), part, environmentContext, true);
+        db.alterPartition(tbl.getCatalogName(), tbl.getDbName(), tbl.getTableName(),
+            part, environmentContext, true);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
       }
@@ -1803,6 +1804,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             authority.toString(),
             harPartitionDir.getPath()); // make in Path to ensure no slash at the end
         setArchived(p, harPath, partSpecInfo.values.size());
+        // TODO: catalog
         db.alterPartition(simpleDesc.getTableName(), p, null, true);
       }
     } catch (Exception e) {
@@ -2009,6 +2011,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     for(Partition p: partitions) {
       setUnArchived(p);
       try {
+        // TODO: catalog
         db.alterPartition(simpleDesc.getTableName(), p, null, true);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
@@ -4766,6 +4769,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // drop the table
+    // TODO: API w/catalog name
     db.dropTable(dropTbl.getTableName(), dropTbl.getIfPurge());
     if (tbl != null) {
       // Remove from cache if it is a materialized view

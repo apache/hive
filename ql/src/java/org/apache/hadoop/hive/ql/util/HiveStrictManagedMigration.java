@@ -964,7 +964,7 @@ public class HiveStrictManagedMigration {
           validWriteIds = txnCtx.validWriteIds;
           modifiedPart.getTPartition().setWriteId(txnCtx.writeId);
         }
-        msc.alter_partition(table.getDbName(), table.getTableName(),
+        msc.alter_partition(table.getCatName(), table.getDbName(), table.getTableName(),
             modifiedPart.getTPartition(), null, validWriteIds);
         isOk = true;
       } catch (TException ex) {

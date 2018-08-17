@@ -73,7 +73,7 @@ public class UpdateInputAccessTimeHook {
           Table t = db.getTable(dbName, tblName);
           p = db.getPartition(t, p.getSpec(), false);
           p.setLastAccessTime(lastAccessTime);
-          db.alterPartition(dbName, tblName, p, null, false);
+          db.alterPartition(null, dbName, tblName, p, null, false);
           t.setLastAccessTime(lastAccessTime);
           db.alterTable(dbName + "." + tblName, t, false, null, false);
           break;
