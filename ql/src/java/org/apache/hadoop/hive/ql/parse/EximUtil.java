@@ -236,8 +236,11 @@ public class EximUtil {
         }
         return uri.toString();
       } else {
-        // no-op for non-test mode for now
-        return location;
+        Path path = new Path(location);
+        if (path.isAbsolute()) {
+          return location;
+        }
+        return path.getFileSystem(conf).makeQualified(path).toString();
       }
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.IO_ERROR.getMsg() + ": " + e.getMessage(), e);
