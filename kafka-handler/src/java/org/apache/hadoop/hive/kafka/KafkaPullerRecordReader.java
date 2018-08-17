@@ -127,7 +127,7 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
   }
 
   @Override public long getPos() throws IOException {
-    return consumedRecords;
+    return -1;
   }
 
   @Override public boolean nextKeyValue() throws IOException {

@@ -208,4 +208,5 @@ public class KafkaPullerInputSplit extends FileSplit implements org.apache.hadoo
 
     return Collections.singletonList(copyOf(split));
   }
+
 }
