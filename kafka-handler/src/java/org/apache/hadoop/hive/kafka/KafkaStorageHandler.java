@@ -43,16 +43,6 @@ import java.util.Map;
  */
 public class KafkaStorageHandler implements HiveStorageHandler {
 
-  public static final String TIMESTAMP_COLUMN = "__timestamp";
-  public static final String PARTITION_COLUMN = "__partition";
-  public static final String OFFSET_COLUMN = "__offset";
-  public static final String SERDE_CLASS_NAME = "kafka.serde.class";
-  public static final String HIVE_KAFKA_TOPIC = "kafka.topic";
-  public static final String CONSUMER_CONFIGURATION_PREFIX = "kafka.consumer";
-  public static final String HIVE_KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
-  public static final String HIVE_KAFKA_POLL_TIMEOUT = "hive.kafka.poll.timeout.ms";
-  public static final long DEFAULT_CONSUMER_POLL_TIMEOUT_MS = 5000L; // 5 seconds
-
   private static final Logger LOG = LoggerFactory.getLogger(KafkaStorageHandler.class);
 
   Configuration configuration;
@@ -78,18 +68,18 @@ public class KafkaStorageHandler implements HiveStorageHandler {
   }
 
   @Override public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
-    jobProperties.put(HIVE_KAFKA_TOPIC,
-        Preconditions.checkNotNull(tableDesc.getProperties().getProperty(HIVE_KAFKA_TOPIC),
-            "kafka topic missing set table property->" + HIVE_KAFKA_TOPIC));
-    LOG.debug("Table properties: Kafka Topic {}", tableDesc.getProperties().getProperty(HIVE_KAFKA_TOPIC));
-    jobProperties.put(HIVE_KAFKA_BOOTSTRAP_SERVERS,
-        Preconditions.checkNotNull(tableDesc.getProperties().getProperty(HIVE_KAFKA_BOOTSTRAP_SERVERS),
-            "Broker address missing set table property->" + HIVE_KAFKA_BOOTSTRAP_SERVERS));
-    LOG.debug("Table properties: Kafka broker {}", tableDesc.getProperties().getProperty(HIVE_KAFKA_BOOTSTRAP_SERVERS));
-    jobProperties.put(SERDE_CLASS_NAME,
-        tableDesc.getProperties().getProperty(SERDE_CLASS_NAME, KafkaJsonSerDe.class.getName()));
+    jobProperties.put(KafkaStreamingUtils.HIVE_KAFKA_TOPIC,
+        Preconditions.checkNotNull(tableDesc.getProperties().getProperty(KafkaStreamingUtils.HIVE_KAFKA_TOPIC),
+            "kafka topic missing set table property->" + KafkaStreamingUtils.HIVE_KAFKA_TOPIC));
+    LOG.debug("Table properties: Kafka Topic {}", tableDesc.getProperties().getProperty(KafkaStreamingUtils.HIVE_KAFKA_TOPIC));
+    jobProperties.put(KafkaStreamingUtils.HIVE_KAFKA_BOOTSTRAP_SERVERS,
+        Preconditions.checkNotNull(tableDesc.getProperties().getProperty(KafkaStreamingUtils.HIVE_KAFKA_BOOTSTRAP_SERVERS),
+            "Broker address missing set table property->" + KafkaStreamingUtils.HIVE_KAFKA_BOOTSTRAP_SERVERS));
+    LOG.debug("Table properties: Kafka broker {}", tableDesc.getProperties().getProperty(KafkaStreamingUtils.HIVE_KAFKA_BOOTSTRAP_SERVERS));
+    jobProperties.put(KafkaStreamingUtils.SERDE_CLASS_NAME,
+        tableDesc.getProperties().getProperty(KafkaStreamingUtils.SERDE_CLASS_NAME, KafkaJsonSerDe.class.getName()));
 
-    LOG.info("Table properties: SerDe class name {}", jobProperties.get(SERDE_CLASS_NAME));
+    LOG.debug("Table properties: SerDe class name {}", jobProperties.get(KafkaStreamingUtils.SERDE_CLASS_NAME));
 
     //set extra properties
     tableDesc.getProperties()
@@ -98,9 +88,9 @@ public class KafkaStorageHandler implements HiveStorageHandler {
         .filter(objectObjectEntry -> objectObjectEntry.getKey()
             .toString()
             .toLowerCase()
-            .startsWith(CONSUMER_CONFIGURATION_PREFIX))
+            .startsWith(KafkaStreamingUtils.CONSUMER_CONFIGURATION_PREFIX))
         .forEach(entry -> {
-          String key = entry.getKey().toString().substring(CONSUMER_CONFIGURATION_PREFIX.length() + 1);
+          String key = entry.getKey().toString().substring(KafkaStreamingUtils.CONSUMER_CONFIGURATION_PREFIX.length() + 1);
           String value = entry.getValue().toString();
           jobProperties.put(key, value);
           LOG.info("Setting extra job properties: key [{}] -> value [{}]", key, value);

@@ -114,11 +114,11 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
     // this will be used to harness some KAFKA blocking calls
     final ExecutorService execService = Executors.newSingleThreadExecutor();
     try (KafkaConsumer consumer = new KafkaConsumer(KafkaStreamingUtils.consumerProperties(configuration))) {
-      final String topic = configuration.get(KafkaStorageHandler.HIVE_KAFKA_TOPIC);
+      final String topic = configuration.get(KafkaStreamingUtils.HIVE_KAFKA_TOPIC);
       final long
           timeoutMs =
-          configuration.getLong(KafkaStorageHandler.HIVE_KAFKA_POLL_TIMEOUT,
-              KafkaStorageHandler.DEFAULT_CONSUMER_POLL_TIMEOUT_MS);
+          configuration.getLong(KafkaStreamingUtils.HIVE_KAFKA_POLL_TIMEOUT,
+              KafkaStreamingUtils.DEFAULT_CONSUMER_POLL_TIMEOUT_MS);
       // hive depends on FileSplits
       JobConf jobConf = new JobConf(configuration);
       Path[] tablePaths = org.apache.hadoop.mapred.FileInputFormat.getInputPaths(jobConf);

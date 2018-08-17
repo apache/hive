@@ -38,9 +38,48 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_
 import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 
 /**
- * Utilities class.
+ * Constant, Table properties, Utilities class.
  */
 public final class KafkaStreamingUtils {
+
+  /**
+   * MANDATORY Table property indicating kafka topic backing the table
+   */
+  public static final String HIVE_KAFKA_TOPIC = "kafka.topic";
+  /**
+   * MANDATORY Table property indicating kafka broker(s) connection string.
+   */
+  public static final String HIVE_KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
+  /**
+   * Table property indicating which delegate serde to be used, NOT MANDATORY defaults to {@link KafkaJsonSerDe}
+   */
+  public static final String SERDE_CLASS_NAME = "kafka.serde.class";
+  /**
+   * Table property indicating poll/fetch timeout period in millis.
+   * FYI this is independent from internal Kafka consumer timeouts, defaults to {@DEFAULT_CONSUMER_POLL_TIMEOUT_MS}
+   */
+  public static final String HIVE_KAFKA_POLL_TIMEOUT = "hive.kafka.poll.timeout.ms";
+  /**
+   * default poll timeout for fetching metadata and record batch
+   */
+  public static final long DEFAULT_CONSUMER_POLL_TIMEOUT_MS = 5000L; // 5 seconds
+  /**
+   * Record Timestamp column name, added as extra meta column of type long
+   */
+  public static final String TIMESTAMP_COLUMN = "__timestamp";
+  /**
+   * Record Kafka Partition column name added as extra meta column of type int
+   */
+  public static final String PARTITION_COLUMN = "__partition";
+  /**
+   * Record offset column name added as extra metadata column to row as long
+   */
+  public static final String OFFSET_COLUMN = "__offset";
+  /**
+   * Table property prefix used to inject kafka consumer properties, e.g "kafka.consumer.max.poll.records" = "5000"
+   * this will lead to inject max.poll.records=5000 to the Kafka Consumer. NOT MANDATORY defaults to nothing
+   */
+  protected static final String CONSUMER_CONFIGURATION_PREFIX = "kafka.consumer";
 
   private KafkaStreamingUtils() {
   }
@@ -60,16 +99,16 @@ public final class KafkaStreamingUtils {
     props.setProperty("enable.auto.commit", "false");
     // we are seeking in the stream so no reset
     props.setProperty("auto.offset.reset", "none");
-    String brokerEndPoint = configuration.get(KafkaStorageHandler.HIVE_KAFKA_BOOTSTRAP_SERVERS);
+    String brokerEndPoint = configuration.get(HIVE_KAFKA_BOOTSTRAP_SERVERS);
     props.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokerEndPoint);
     props.setProperty(KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
     props.setProperty(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
     // user can always override stuff
     final Map<String, String>
         kafkaProperties =
-        configuration.getValByRegex("^" + KafkaStorageHandler.CONSUMER_CONFIGURATION_PREFIX + "\\..*");
+        configuration.getValByRegex("^" + CONSUMER_CONFIGURATION_PREFIX + "\\..*");
     for (Map.Entry<String, String> entry : kafkaProperties.entrySet()) {
-      props.setProperty(entry.getKey().substring(KafkaStorageHandler.CONSUMER_CONFIGURATION_PREFIX.length() + 1),
+      props.setProperty(entry.getKey().substring(CONSUMER_CONFIGURATION_PREFIX.length() + 1),
           entry.getValue());
     }
     return props;

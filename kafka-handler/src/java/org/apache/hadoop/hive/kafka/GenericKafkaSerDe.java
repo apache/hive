@@ -63,9 +63,9 @@ public class GenericKafkaSerDe extends AbstractSerDe {
   // ORDER of fields and types matters here
   public static final ImmutableList<String>
       METADATA_COLUMN_NAMES =
-      ImmutableList.of(KafkaStorageHandler.PARTITION_COLUMN,
-          KafkaStorageHandler.OFFSET_COLUMN,
-          KafkaStorageHandler.TIMESTAMP_COLUMN);
+      ImmutableList.of(KafkaStreamingUtils.PARTITION_COLUMN,
+          KafkaStreamingUtils.OFFSET_COLUMN,
+          KafkaStreamingUtils.TIMESTAMP_COLUMN);
   public static final ImmutableList<PrimitiveTypeInfo>
       METADATA_PRIMITIVE_TYPE_INFO =
       ImmutableList.of(TypeInfoFactory.intTypeInfo, TypeInfoFactory.longTypeInfo, TypeInfoFactory.longTypeInfo);
@@ -76,7 +76,7 @@ public class GenericKafkaSerDe extends AbstractSerDe {
   StructObjectInspector delegateObjectInspector;
 
   @Override public void initialize(@Nullable Configuration conf, Properties tbl) throws SerDeException {
-    final String className = tbl.getProperty(KafkaStorageHandler.SERDE_CLASS_NAME, KafkaJsonSerDe.class.getName());
+    final String className = tbl.getProperty(KafkaStreamingUtils.SERDE_CLASS_NAME, KafkaJsonSerDe.class.getName());
     delegateSerDe = createDelegate(className);
     delegateSerDe.initialize(conf, tbl);
     LOG.info("Using SerDe instance {}", delegateSerDe.getClass().getCanonicalName());
@@ -166,11 +166,11 @@ public class GenericKafkaSerDe extends AbstractSerDe {
 
     return columnNames.stream().map(name -> {
       switch (name) {
-      case KafkaStorageHandler.PARTITION_COLUMN:
+      case KafkaStreamingUtils.PARTITION_COLUMN:
         return new IntWritable(record.getPartition());
-      case KafkaStorageHandler.OFFSET_COLUMN:
+      case KafkaStreamingUtils.OFFSET_COLUMN:
         return new LongWritable(record.getOffset());
-      case KafkaStorageHandler.TIMESTAMP_COLUMN:
+      case KafkaStreamingUtils.TIMESTAMP_COLUMN:
         return new LongWritable(record.getTimestamp());
       default:
         return delegateObjectInspector.getStructFieldData(row, delegateObjectInspector.getStructFieldRef(name));

@@ -61,10 +61,10 @@ public class KafkaScanTrimmerTest {
 
   private ExprNodeDesc
       partitionColumn =
-      new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, KafkaStorageHandler.PARTITION_COLUMN, null, false);
+      new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, KafkaStreamingUtils.PARTITION_COLUMN, null, false);
   private ExprNodeDesc
       offsetColumn =
-      new ExprNodeColumnDesc(TypeInfoFactory.longTypeInfo, KafkaStorageHandler.OFFSET_COLUMN, null, false);
+      new ExprNodeColumnDesc(TypeInfoFactory.longTypeInfo, KafkaStreamingUtils.OFFSET_COLUMN, null, false);
 
   private String topic = "my_topic";
   private Map<TopicPartition, KafkaPullerInputSplit>

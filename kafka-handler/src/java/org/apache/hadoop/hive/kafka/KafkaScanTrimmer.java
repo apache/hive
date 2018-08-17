@@ -191,7 +191,8 @@ public class KafkaScanTrimmer {
       constantDesc = (ExprNodeConstantDesc) extracted[0];
     }
 
-    if (columnDesc.getColumn().equals(KafkaStorageHandler.PARTITION_COLUMN)) {
+
+    if (columnDesc.getColumn().equals(KafkaStreamingUtils.PARTITION_COLUMN)) {
       return buildScanFromPartitionPredicate(fullHouse,
           operator,
           ((Number) constantDesc.getValue()).intValue(),
@@ -199,7 +200,7 @@ public class KafkaScanTrimmer {
           negation);
 
     }
-    if (columnDesc.getColumn().equals(KafkaStorageHandler.OFFSET_COLUMN)) {
+    if (columnDesc.getColumn().equals(KafkaStreamingUtils.OFFSET_COLUMN)) {
       return buildScanFromOffsetPredicate(fullHouse,
           operator,
           ((Number) constantDesc.getValue()).longValue(),
@@ -207,7 +208,7 @@ public class KafkaScanTrimmer {
           negation);
     }
 
-    if (columnDesc.getColumn().equals(KafkaStorageHandler.TIMESTAMP_COLUMN)) {
+    if (columnDesc.getColumn().equals(KafkaStreamingUtils.TIMESTAMP_COLUMN)) {
       long timestamp = ((Number) constantDesc.getValue()).longValue();
       return buildScanForTimesPredicate(fullHouse, operator, timestamp, flip, negation, kafkaConsumer);
     }

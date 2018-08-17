@@ -165,7 +165,7 @@ public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte
           topicPartition.toString(),
           endOffset,
           pollTimeoutMs,
-          KafkaStorageHandler.HIVE_KAFKA_POLL_TIMEOUT));
+          KafkaStreamingUtils.HIVE_KAFKA_POLL_TIMEOUT));
     }
     consumerRecordIterator = records.iterator();
   }
