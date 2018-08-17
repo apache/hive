@@ -186,6 +186,10 @@ public abstract class BaseSemanticAnalyzer {
     return false;
   }
 
+  public String getCboInfo() {
+    return ctx.getCboInfo();
+  }
+
   class RowFormatParams {
     String fieldDelim = null;
     String fieldEscape = null;

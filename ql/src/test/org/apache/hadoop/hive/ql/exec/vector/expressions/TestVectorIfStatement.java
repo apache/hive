@@ -273,8 +273,7 @@ public class TestVectorIfStatement {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initExplicitSchema(
-        random, explicitTypeNameList, /* maxComplexDepth */ 0,
-        /* allowNull */ true, /* isUnicodeOk */ true,
+        random, explicitTypeNameList, /* maxComplexDepth */ 0, /* allowNull */ true,
         explicitDataTypePhysicalVariationList);
 
     List<String> columns = new ArrayList<String>();

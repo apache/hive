@@ -257,6 +257,34 @@ public class TestSchemaToolForMetastore {
   }
 
   /**
+   * initOrUpgrade takes init path
+   */
+  @Test
+  public void testSchemaInitOrUgrade1() throws Exception {
+    execute(new SchemaToolTaskInit(), "-initOrUpgradeSchema");
+    schemaTool.verifySchemaVersion();
+  }
+
+  /**
+   * initOrUpgrade takes upgrade path
+   */
+  @Test
+  public void testSchemaInitOrUgrade2() throws Exception {
+    execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
+
+    schemaTool.setDryRun(true);
+    execute(new SchemaToolTaskUpgrade(), "-initOrUpgradeSchema");
+    schemaTool.setDryRun(false);
+    try {
+      schemaTool.verifySchemaVersion();
+    } catch (HiveMetaException e) {
+      // The connection should fail since it the dry run
+      return;
+    }
+    Assert.fail("Dry run shouldn't upgrade metastore schema");
+  }
+
+  /**
   * Test validation for schema versions
   */
   @Test

@@ -421,6 +421,7 @@ public class HiveConf extends Configuration {
    * 1) Hadoop configuration properties are applied.
    * 2) ConfVar properties with non-null values are overlayed.
    * 3) hive-site.xml properties are overlayed.
+   * 4) System Properties and Manual Overrides are overlayed.
    *
    * WARNING: think twice before adding any Hadoop configuration properties
    * with non-null values to this list as they will override any values defined
@@ -1683,7 +1684,7 @@ public class HiveConf extends Configuration {
         "How many rows with the same key value should be cached in memory per smb joined table."),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000,
         "Number of rows after which size of the grouping keys/aggregation classes is performed"),
-    HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float) 0.5,
+    HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float) 0.99,
         "Portion of total memory to be used by map-side group aggregation hash table"),
     HIVEMAPJOINFOLLOWEDBYMAPAGGRHASHMEMORY("hive.mapjoin.followby.map.aggr.hash.percentmemory", (float) 0.3,
         "Portion of total memory to be used by map-side group aggregation hash table, when this group by is followed by map join"),
@@ -5242,7 +5243,7 @@ public class HiveConf extends Configuration {
       addResource(hiveServer2SiteUrl);
     }
 
-    // Overlay the values of any system properties whose names appear in the list of ConfVars
+    // Overlay the values of any system properties and manual overrides
     applySystemProperties();
 
     if ((this.get("hive.metastore.ds.retry.attempts") != null) ||
@@ -5509,7 +5510,9 @@ public class HiveConf extends Configuration {
 
   };
 
-
+  //Take care of conf overrides.
+  //Includes values in ConfVars as well as underlying configuration properties (ie, hadoop)
+  public static final Map<String, String> overrides = new HashMap<String, String>();
 
   /**
    * Apply system properties to this object if the property name is defined in ConfVars
@@ -5537,6 +5540,13 @@ public class HiveConf extends Configuration {
       }
     }
 
+    for (Map.Entry<String, String> oneVar : overrides.entrySet()) {
+      if (overrides.get(oneVar.getKey()) != null) {
+        if (overrides.get(oneVar.getKey()).length() > 0) {
+          systemProperties.put(oneVar.getKey(), oneVar.getValue());
+        }
+      }
+    }
     return systemProperties;
   }
 

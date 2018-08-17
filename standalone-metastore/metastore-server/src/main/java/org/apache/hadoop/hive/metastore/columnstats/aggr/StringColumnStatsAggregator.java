@@ -28,15 +28,16 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.stringInspectorFromStats;
 
 public class StringColumnStatsAggregator extends ColumnStatsAggregator implements
     IExtrapolatePartStatus {
@@ -63,8 +64,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
         LOG.trace("doAllPartitionContainStats for column: {} is: {}", colName,
             doAllPartitionContainStats);
       }
-      StringColumnStatsDataInspector stringColumnStatsData =
-          (StringColumnStatsDataInspector) cso.getStatsData().getStringStats();
+      StringColumnStatsDataInspector stringColumnStatsData = stringInspectorFromStats(cso);
       if (stringColumnStatsData.getNdvEstimator() == null) {
         ndvEstimator = null;
         break;
@@ -93,8 +93,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       StringColumnStatsDataInspector aggregateData = null;
       for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
         ColumnStatisticsObj cso = csp.getColStatsObj();
-        StringColumnStatsDataInspector newData =
-            (StringColumnStatsDataInspector) cso.getStatsData().getStringStats();
+        StringColumnStatsDataInspector newData = stringInspectorFromStats(cso);
         if (ndvEstimator != null) {
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
         }
@@ -149,7 +148,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
           ColumnStatisticsObj cso = csp.getColStatsObj();
           String partName = csp.getPartName();
           StringColumnStatsDataInspector newData =
-              (StringColumnStatsDataInspector) cso.getStatsData().getStringStats();
+              stringInspectorFromStats(cso);
           // newData.isSetBitVectors() should be true for sure because we
           // already checked it before.
           if (indexMap.get(partName) != curIndex) {
@@ -211,7 +210,8 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       int numPartsWithStats, Map<String, Double> adjustedIndexMap,
       Map<String, ColumnStatisticsData> adjustedStatsMap, double densityAvg) {
     int rightBorderInd = numParts;
-    StringColumnStatsDataInspector extrapolateStringData = new StringColumnStatsDataInspector();
+    StringColumnStatsDataInspector extrapolateStringData =
+        new StringColumnStatsDataInspector();
     Map<String, StringColumnStatsData> extractedAdjustedStatsMap = new HashMap<>();
     for (Map.Entry<String, ColumnStatisticsData> entry : adjustedStatsMap.entrySet()) {
       extractedAdjustedStatsMap.put(entry.getKey(), entry.getValue().getStringStats());

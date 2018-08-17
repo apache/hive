@@ -296,7 +296,49 @@ public class AcidUtils {
     }
     return createBucketFile(new Path(directory, subdir), options.getBucketId());
   }
-
+  /**
+   * Represents bucketId and copy_N suffix
+   */
+  public static final class BucketMetaData {
+    private static final BucketMetaData INVALID = new BucketMetaData(-1, 0);
+    /**
+     * @param bucketFileName {@link #ORIGINAL_PATTERN} or {@link #ORIGINAL_PATTERN_COPY}
+     */
+    public static BucketMetaData parse(String bucketFileName) {
+      if (ORIGINAL_PATTERN.matcher(bucketFileName).matches()) {
+        int bucketId = Integer
+            .parseInt(bucketFileName.substring(0, bucketFileName.indexOf('_')));
+        return new BucketMetaData(bucketId, 0);
+      }
+      else if(ORIGINAL_PATTERN_COPY.matcher(bucketFileName).matches()) {
+        int copyNumber = Integer.parseInt(
+            bucketFileName.substring(bucketFileName.lastIndexOf('_') + 1));
+        int bucketId = Integer
+            .parseInt(bucketFileName.substring(0, bucketFileName.indexOf('_')));
+        return new BucketMetaData(bucketId, copyNumber);
+      }
+      else if (bucketFileName.startsWith(BUCKET_PREFIX)) {
+        return new BucketMetaData(Integer
+            .parseInt(bucketFileName.substring(bucketFileName.indexOf('_') + 1)), 0);
+      }
+      return INVALID;
+    }
+    public static BucketMetaData parse(Path bucketFile) {
+      return parse(bucketFile.getName());
+    }
+    /**
+     * -1 if non-standard file name
+     */
+    public final int bucketId;
+    /**
+     * 0 means no copy_N suffix
+     */
+    public final int copyNumber;
+    private BucketMetaData(int bucketId, int copyNumber) {
+      this.bucketId = bucketId;
+      this.copyNumber = copyNumber;
+    }
+  }
   /**
    * Get the write id from a base directory name.
    * @param path the base directory name

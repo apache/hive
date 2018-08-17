@@ -47,6 +47,7 @@ public class SchemaToolCommandLine {
     Option initToOpt = OptionBuilder.withArgName("initTo").hasArg()
         .withDescription("Schema initialization to a version")
         .create("initSchemaTo");
+    Option initOrUpgradeSchemaOpt = new Option("initOrUpgradeSchema", "Initialize or upgrade schema to latest version");
     Option validateOpt = new Option("validate", "Validate the database");
     Option createCatalog = OptionBuilder
         .hasArg()
@@ -78,6 +79,7 @@ public class SchemaToolCommandLine {
       .addOption(upgradeFromOpt)
       .addOption(initOpt)
       .addOption(initToOpt)
+      .addOption(initOrUpgradeSchemaOpt)
       .addOption(validateOpt)
       .addOption(createCatalog)
       .addOption(alterCatalog)

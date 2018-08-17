@@ -23,8 +23,10 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -38,6 +40,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class FileUtils {
   private static final PathFilter SNAPSHOT_DIR_PATH_FILTER = new PathFilter() {
@@ -533,5 +536,62 @@ public class FileUtils {
       return new Path(newPath, name);
     }
     return null;
+  }
+  public static class RemoteIteratorWithFilter implements RemoteIterator<LocatedFileStatus> {
+    /**
+     * This works with {@link RemoteIterator} which (potentially) produces all files recursively
+     * so looking for hidden folders must look at whole path, not just the the last part of it as
+     * would be appropriate w/o recursive listing.
+     */
+    public static final PathFilter HIDDEN_FILES_FULL_PATH_FILTER = new PathFilter() {
+      @Override
+      public boolean accept(Path p) {
+        do {
+          String name = p.getName();
+          if (name.startsWith("_") || name.startsWith(".")) {
+            return false;
+          }
+        } while ((p = p.getParent()) != null);
+        return true;
+      }
+    };
+    private final RemoteIterator<LocatedFileStatus> iter;
+    private final PathFilter filter;
+    private LocatedFileStatus nextFile;
+
+    public RemoteIteratorWithFilter(RemoteIterator<LocatedFileStatus> iter, PathFilter filter)
+        throws IOException {
+      this.iter = iter;
+      this.filter = filter;
+      findNext();
+    }
+
+    @Override
+    public boolean hasNext() throws IOException {
+      return nextFile != null;
+    }
+
+    @Override
+    public LocatedFileStatus next() throws IOException {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      LocatedFileStatus result = nextFile;
+      findNext();
+      return result;
+    }
+
+    void findNext() throws IOException {
+      while (iter.hasNext()) {
+        LocatedFileStatus status = iter.next();
+        if (filter.accept(status.getPath())) {
+          nextFile = status;
+          return;
+        }
+      }
+
+      // No more matching files in the iterator
+      nextFile = null;
+    }
   }
 }

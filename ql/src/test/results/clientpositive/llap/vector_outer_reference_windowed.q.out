@@ -503,7 +503,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFSumDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> decimal(25,2)
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:decimal(15,2)/DECIMAL_64, col 1:decimal(15,2)/DECIMAL_64
+                          keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2), ConvertDecimal64ToDecimal(col 1:decimal(15,2)/DECIMAL_64) -> 4:decimal(15,2)
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -539,7 +539,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(15,2), decimal(15,2)]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1801,7 +1801,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFSumDecimal64(col 0:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:decimal(7,2)/DECIMAL_64, col 1:decimal(7,2)/DECIMAL_64
+                          keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2), ConvertDecimal64ToDecimal(col 1:decimal(7,2)/DECIMAL_64) -> 4:decimal(7,2)
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -1837,7 +1837,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(7,2), decimal(7,2)]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:

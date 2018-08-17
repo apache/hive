@@ -1569,19 +1569,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qbp.setSelExprForClause(ctx_1.dest, ast);
 
         int posn = 0;
-        if (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.QUERY_HINT) {
-          ParseDriver pd = new ParseDriver();
-          String queryHintStr = ast.getChild(0).getText();
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("QUERY HINT: "+queryHintStr);
-          }
-          try {
-            ASTNode hintNode = pd.parseHint(queryHintStr);
-            qbp.setHints(hintNode);
-            posn++;
-          } catch (ParseException e) {
-            throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
-          }
+        if (((ASTNode) ast.getChild(0)).getType() == HiveParser.QUERY_HINT) {
+          posn = processQueryHint((ASTNode)ast.getChild(0), qbp, posn);
         }
 
         if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM)) {
@@ -1881,6 +1870,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_CTE:
         processCTE(qb, ast);
         break;
+      case HiveParser.QUERY_HINT:
+          processQueryHint(ast, qbp, 0);
       default:
         skipRecursion = false;
         break;
@@ -1897,6 +1888,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return phase1Result;
+  }
+
+  private int processQueryHint(ASTNode ast, QBParseInfo qbp, int posn) throws SemanticException{
+    ParseDriver pd = new ParseDriver();
+    String queryHintStr = ast.getText();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("QUERY HINT: "+queryHintStr);
+    }
+    try {
+      ASTNode hintNode = pd.parseHint(queryHintStr);
+      qbp.setHints(hintNode);
+    } catch (ParseException e) {
+      throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
+    }
+    return posn + 1;
   }
 
   /**
@@ -12553,86 +12559,120 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String expandedText = ctx.getTokenRewriteStream().toString(
         viewSelect.getTokenStartIndex(), viewSelect.getTokenStopIndex());
 
-    if (imposedSchema != null) {
-      // Merge the names from the imposed schema into the types
-      // from the derived schema.
-      StringBuilder sb = new StringBuilder();
-      sb.append("SELECT ");
-      int n = derivedSchema.size();
-      for (int i = 0; i < n; ++i) {
-        if (i > 0) {
-          sb.append(", ");
+    if (createVwDesc.isMaterialized()) {
+      if (createVwDesc.getPartColNames() != null) {
+        // If we are creating a materialized view and it has partition columns,
+        // we may need to reorder column projection in expanded query. The reason
+        // is that Hive assumes that in the partition columns are at the end of
+        // the MV schema, and if we do not do this, we will have a mismatch between
+        // the SQL query for the MV and the MV itself.
+        boolean first = true;
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
+        for (int i = 0; i < derivedSchema.size(); ++i) {
+          FieldSchema fieldSchema = derivedSchema.get(i);
+          if (!createVwDesc.getPartColNames().contains(fieldSchema.getName())) {
+            if (first) {
+              first = false;
+            } else {
+              sb.append(", ");
+            }
+            sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
+          }
         }
-        FieldSchema fieldSchema = derivedSchema.get(i);
-        // Modify a copy, not the original
-        fieldSchema = new FieldSchema(fieldSchema);
-        // TODO: there's a potential problem here if some table uses external schema like Avro,
-        //       with a very large type name. It seems like the view does not derive the SerDe from
-        //       the table, so it won't be able to just get the type from the deserializer like the
-        //       table does; we won't be able to properly store the type in the RDBMS metastore.
-        //       Not sure if these large cols could be in resultSchema. Ignore this for now 0_o
-        derivedSchema.set(i, fieldSchema);
-        sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
-        sb.append(" AS ");
-        String imposedName = imposedSchema.get(i).getName();
-        sb.append(HiveUtils.unparseIdentifier(imposedName, conf));
-        fieldSchema.setName(imposedName);
-        // We don't currently allow imposition of a type
-        fieldSchema.setComment(imposedSchema.get(i).getComment());
+        for (String partColName : createVwDesc.getPartColNames()) {
+          sb.append(", ");
+          sb.append(HiveUtils.unparseIdentifier(partColName, conf));
+        }
+        sb.append(" FROM (");
+        sb.append(expandedText);
+        sb.append(") ");
+        sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
+        expandedText = sb.toString();
       }
-      sb.append(" FROM (");
-      sb.append(expandedText);
-      sb.append(") ");
-      sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
-      expandedText = sb.toString();
-    }
-
-    if (createVwDesc.getPartColNames() != null) {
-      // Make sure all partitioning columns referenced actually
-      // exist and are in the correct order at the end
-      // of the list of columns produced by the view. Also move the field
-      // schema descriptors from derivedSchema to the partitioning key
-      // descriptor.
-      List<String> partColNames = createVwDesc.getPartColNames();
-      if (partColNames.size() > derivedSchema.size()) {
-        throw new SemanticException(
-            ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
+    } else {
+      if (imposedSchema != null) {
+        // Merge the names from the imposed schema into the types
+        // from the derived schema.
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
+        int n = derivedSchema.size();
+        for (int i = 0; i < n; ++i) {
+          if (i > 0) {
+            sb.append(", ");
+          }
+          FieldSchema fieldSchema = derivedSchema.get(i);
+          // Modify a copy, not the original
+          fieldSchema = new FieldSchema(fieldSchema);
+          // TODO: there's a potential problem here if some table uses external schema like Avro,
+          //       with a very large type name. It seems like the view does not derive the SerDe from
+          //       the table, so it won't be able to just get the type from the deserializer like the
+          //       table does; we won't be able to properly store the type in the RDBMS metastore.
+          //       Not sure if these large cols could be in resultSchema. Ignore this for now 0_o
+          derivedSchema.set(i, fieldSchema);
+          sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
+          sb.append(" AS ");
+          String imposedName = imposedSchema.get(i).getName();
+          sb.append(HiveUtils.unparseIdentifier(imposedName, conf));
+          fieldSchema.setName(imposedName);
+          // We don't currently allow imposition of a type
+          fieldSchema.setComment(imposedSchema.get(i).getComment());
+        }
+        sb.append(" FROM (");
+        sb.append(expandedText);
+        sb.append(") ");
+        sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
+        expandedText = sb.toString();
       }
 
-      // Get the partition columns from the end of derivedSchema.
-      List<FieldSchema> partitionColumns = derivedSchema.subList(
-          derivedSchema.size() - partColNames.size(),
-          derivedSchema.size());
-
-      // Verify that the names match the PARTITIONED ON clause.
-      Iterator<String> colNameIter = partColNames.iterator();
-      Iterator<FieldSchema> schemaIter = partitionColumns.iterator();
-      while (colNameIter.hasNext()) {
-        String colName = colNameIter.next();
-        FieldSchema fieldSchema = schemaIter.next();
-        if (!fieldSchema.getName().equals(colName)) {
+      if (createVwDesc.getPartColNames() != null) {
+        // Make sure all partitioning columns referenced actually
+        // exist and are in the correct order at the end
+        // of the list of columns produced by the view. Also move the field
+        // schema descriptors from derivedSchema to the partitioning key
+        // descriptor.
+        List<String> partColNames = createVwDesc.getPartColNames();
+        if (partColNames.size() > derivedSchema.size()) {
           throw new SemanticException(
               ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
         }
+
+        // Get the partition columns from the end of derivedSchema.
+        List<FieldSchema> partitionColumns = derivedSchema.subList(
+            derivedSchema.size() - partColNames.size(),
+            derivedSchema.size());
+
+        // Verify that the names match the PARTITIONED ON clause.
+        Iterator<String> colNameIter = partColNames.iterator();
+        Iterator<FieldSchema> schemaIter = partitionColumns.iterator();
+        while (colNameIter.hasNext()) {
+          String colName = colNameIter.next();
+          FieldSchema fieldSchema = schemaIter.next();
+          if (!fieldSchema.getName().equals(colName)) {
+            throw new SemanticException(
+                ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
+          }
+        }
+
+        // Boundary case: require at least one non-partitioned column
+        // for consistency with tables.
+        if (partColNames.size() == derivedSchema.size()) {
+          throw new SemanticException(
+              ErrorMsg.VIEW_PARTITION_TOTAL.getMsg());
+        }
+
+        // Now make a copy.
+        createVwDesc.setPartCols(
+            new ArrayList<FieldSchema>(partitionColumns));
+
+        // Finally, remove the partition columns from the end of derivedSchema.
+        // (Clearing the subList writes through to the underlying
+        // derivedSchema ArrayList.)
+        partitionColumns.clear();
       }
-
-      // Boundary case: require at least one non-partitioned column
-      // for consistency with tables.
-      if (partColNames.size() == derivedSchema.size()) {
-        throw new SemanticException(
-            ErrorMsg.VIEW_PARTITION_TOTAL.getMsg());
-      }
-
-      // Now make a copy.
-      createVwDesc.setPartCols(
-          new ArrayList<FieldSchema>(partitionColumns));
-
-      // Finally, remove the partition columns from the end of derivedSchema.
-      // (Clearing the subList writes through to the underlying
-      // derivedSchema ArrayList.)
-      partitionColumns.clear();
     }
 
+    // Set schema and expanded text for the view
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
   }
@@ -12974,10 +13014,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *          property map
    * @return Modified table property map
    */
-  private Map<String, String> addDefaultProperties(
+  private Map<String, String> validateAndAddDefaultProperties(
       Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
       String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
-      boolean isTemporaryTable) {
+      boolean isTemporaryTable) throws SemanticException {
     Map<String, String> retValue;
     if (tblProp == null) {
       retValue = new HashMap<String, String>();
@@ -12996,6 +13036,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+    if (!retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)
+        && retValue.containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)) {
+      throw new SemanticException("Cannot specify "
+        + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES
+        + " without " + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    }
 
     if (isExt && HiveConf.getBoolVar(conf, ConfVars.HIVE_EXTERNALTABLE_PURGE_DEFAULT)) {
       if (retValue.get(MetaStoreUtils.EXTERNAL_TABLE_PURGE) == null) {
@@ -13003,7 +13049,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
+    boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(
+        conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
     boolean makeAcid = !isTemporaryTable &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
         HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
@@ -13018,32 +13065,39 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
       if (makeAcid) {
-        /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
-         so the initial write ends up running as non-acid...*/
-        try {
-          Class inputFormatClass = storageFormat.getInputFormat() == null ? null :
-              Class.forName(storageFormat.getInputFormat());
-          Class outputFormatClass = storageFormat.getOutputFormat() == null ? null :
-              Class.forName(storageFormat.getOutputFormat());
-          if (inputFormatClass == null || outputFormatClass == null ||
-              !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
-              !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
-            return retValue;
-          }
-        } catch (ClassNotFoundException e) {
-          LOG.warn("Could not verify InputFormat=" + storageFormat.getInputFormat() + " or OutputFormat=" +
-              storageFormat.getOutputFormat() + "  for " + qualifiedTableName);
-          return retValue;
-        }
-        if(sortCols != null && !sortCols.isEmpty()) {
-          return retValue;
-        }
-        retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
-        retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
-            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY);
-        LOG.info("Automatically chose to make " + qualifiedTableName + " acid.");
+        retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
     }
+    return retValue;
+  }
+
+  private Map<String, String> convertToAcidByDefault(
+      StorageFormat storageFormat, String qualifiedTableName, List<Order> sortCols,
+      Map<String, String> retValue) {
+    /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
+     so the initial write ends up running as non-acid...*/
+    try {
+      Class inputFormatClass = storageFormat.getInputFormat() == null ? null :
+          Class.forName(storageFormat.getInputFormat());
+      Class outputFormatClass = storageFormat.getOutputFormat() == null ? null :
+          Class.forName(storageFormat.getOutputFormat());
+      if (inputFormatClass == null || outputFormatClass == null ||
+          !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
+          !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+        return retValue;
+      }
+    } catch (ClassNotFoundException e) {
+      LOG.warn("Could not verify InputFormat=" + storageFormat.getInputFormat() + " or OutputFormat=" +
+          storageFormat.getOutputFormat() + "  for " + qualifiedTableName);
+      return retValue;
+    }
+    if (sortCols != null && !sortCols.isEmpty()) {
+      return retValue;
+    }
+    retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+    retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+        TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY);
+    LOG.info("Automatically chose to make " + qualifiedTableName + " acid.");
     return retValue;
   }
 
@@ -13322,7 +13376,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(
             "Partition columns can only declared using their name and types in regular CREATE TABLE statements");
       }
-      tblProps = addDefaultProperties(
+      tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13346,7 +13400,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
 
     case CTLT: // create table like <tbl_name>
-      tblProps = addDefaultProperties(
+      tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
@@ -13430,7 +13484,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Partition columns can only declared using their names in CTAS statements");
       }
 
-      tblProps = addDefaultProperties(
+      tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
