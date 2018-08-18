@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -135,12 +136,12 @@ public class KafkaJsonSerDe extends AbstractSerDe {
   }
 
   @Override public Object deserialize(Writable blob) throws SerDeException {
-    BytesRefWritable record = (BytesRefWritable) blob;
+    BytesWritable record = (BytesWritable) blob;
     Map<String, JsonNode> payload;
     try {
-      payload = parseAsJson(record.getData());
+      payload = parseAsJson(record.getBytes());
       rowCount += 1;
-      rawDataSize += record.getData().length;
+      rawDataSize += record.getLength();
     } catch (IOException e) {
       throw new SerDeException(e);
     }
