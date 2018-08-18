@@ -18,8 +18,16 @@
 
 package org.apache.hadoop.hive.kafka;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -29,7 +37,7 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.avro.AvroGenericRecordWritable;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
-import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -45,9 +53,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,8 +62,8 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
- * Generic Kafka Serde that allow user to delegate Serde to other class like Avro, Json or any class that supports
- * {@link BytesRefWritable}.
+ * Generic Kafka Serde that allow user to delegate Serde to other class like Avro,
+ * Json or any class that supports {@link BytesWritable}.
  */
 public class GenericKafkaSerDe extends AbstractSerDe {
   private static final Logger LOG = LoggerFactory.getLogger(GenericKafkaSerDe.class);
@@ -74,6 +81,11 @@ public class GenericKafkaSerDe extends AbstractSerDe {
   private ObjectInspector objectInspector;
   private final List<String> columnNames = Lists.newArrayList();
   StructObjectInspector delegateObjectInspector;
+
+  //GenericDatumReader<GenericRecord> gdr;
+  //DatumReader<GenericRecord> reader = new SpecificDatumReader<>(schema);
+  private final UID uid = new UID();
+  private Supplier<DatumReader<GenericRecord>> gdrSupplier;
 
   @Override public void initialize(@Nullable Configuration conf, Properties tbl) throws SerDeException {
     final String className = tbl.getProperty(KafkaStreamingUtils.SERDE_CLASS_NAME, KafkaJsonSerDe.class.getName());
@@ -116,6 +128,13 @@ public class GenericKafkaSerDe extends AbstractSerDe {
         .map(KafkaJsonSerDe.typeInfoToObjectInspector)
         .collect(Collectors.toList()));
 
+    gdrSupplier = Suppliers.memoize(() -> {
+      String schemaFromProperty = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
+      Preconditions.checkArgument(!schemaFromProperty.isEmpty(), "Avro Schema is empty Can not go further");
+      Schema schema = AvroSerdeUtils.getSchemaFor(schemaFromProperty);
+      return new SpecificDatumReader<>(schema);
+    });
+
     objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
   }
 
@@ -153,8 +172,12 @@ public class GenericKafkaSerDe extends AbstractSerDe {
     } else if (delegateSerDe instanceof AvroSerDe) {
       AvroGenericRecordWritable avroGenericRecordWritable = new AvroGenericRecordWritable();
       try {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(record.getValue());
-        avroGenericRecordWritable.readFields(new DataInputStream(byteArrayInputStream));
+        GenericRecord
+            avroRecord =
+            gdrSupplier.get().read(null, DecoderFactory.get().binaryDecoder(record.getValue(), null));
+        avroGenericRecordWritable.setRecord(avroRecord);
+        avroGenericRecordWritable.setRecordReaderID(uid);
+        avroGenericRecordWritable.setFileSchema(avroRecord.getSchema());
       } catch (IOException e) {
         throw new SerDeException(e);
       }
