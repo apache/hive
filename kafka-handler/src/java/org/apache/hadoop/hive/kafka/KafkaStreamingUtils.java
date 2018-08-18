@@ -22,7 +22,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 
@@ -89,7 +91,7 @@ public final class KafkaStreamingUtils {
    *
    * @return default consumer properties
    */
-  public static Properties consumerProperties(Configuration configuration) {
+  static Properties consumerProperties(Configuration configuration) {
     final Properties props = new Properties();
     // we are managing the commit offset
     props.setProperty("enable.auto.commit", "false");
@@ -110,7 +112,7 @@ public final class KafkaStreamingUtils {
     return props;
   }
 
-  public static void copyDependencyJars(Configuration conf, Class<?>... classes) throws IOException {
+  static void copyDependencyJars(Configuration conf, Class<?>... classes) throws IOException {
     Set<String> jars = new HashSet<>();
     FileSystem localFs = FileSystem.getLocal(conf);
     jars.addAll(conf.getStringCollection("tmpjars"));
@@ -136,5 +138,16 @@ public final class KafkaStreamingUtils {
       return;
     }
     conf.set("tmpjars", StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
+  }
+
+  static AbstractSerDe createDelegate(String className) {
+    final Class<? extends AbstractSerDe> clazz;
+    try {
+      clazz = (Class<? extends AbstractSerDe>) Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    // we are not setting conf thus null is okay
+    return ReflectionUtil.newInstance(clazz, null);
   }
 }

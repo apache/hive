@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -46,7 +47,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,12 +65,12 @@ import java.util.stream.Collectors;
 public class GenericKafkaSerDe extends AbstractSerDe {
   private static final Logger LOG = LoggerFactory.getLogger(GenericKafkaSerDe.class);
   // ORDER of fields and types matters here
-  public static final ImmutableList<String>
+  private static final ImmutableList<String>
       METADATA_COLUMN_NAMES =
       ImmutableList.of(KafkaStreamingUtils.PARTITION_COLUMN,
           KafkaStreamingUtils.OFFSET_COLUMN,
           KafkaStreamingUtils.TIMESTAMP_COLUMN);
-  public static final ImmutableList<PrimitiveTypeInfo>
+  private static final ImmutableList<PrimitiveTypeInfo>
       METADATA_PRIMITIVE_TYPE_INFO =
       ImmutableList.of(TypeInfoFactory.intTypeInfo, TypeInfoFactory.longTypeInfo, TypeInfoFactory.longTypeInfo);
 
@@ -79,13 +79,15 @@ public class GenericKafkaSerDe extends AbstractSerDe {
   private final List<String> columnNames = Lists.newArrayList();
   private StructObjectInspector delegateObjectInspector;
   private final UID uid = new UID();
-  private Supplier<DatumReader<GenericRecord>> gdrSupplier;
+  @SuppressWarnings("Guava") private Supplier<DatumReader<GenericRecord>> gdrSupplier;
 
   @Override public void initialize(@Nullable Configuration conf, Properties tbl) throws SerDeException {
     final String className = tbl.getProperty(KafkaStreamingUtils.SERDE_CLASS_NAME, KafkaJsonSerDe.class.getName());
-    delegateSerDe = createDelegate(className);
+    delegateSerDe = KafkaStreamingUtils.createDelegate(className);
+    //noinspection deprecation
     delegateSerDe.initialize(conf, tbl);
-    LOG.info("Using SerDe instance {}", delegateSerDe.getClass().getCanonicalName());
+    LOG.debug("Using SerDe instance {}", delegateSerDe.getClass().getCanonicalName());
+
     if (!(delegateSerDe.getObjectInspector() instanceof StructObjectInspector)) {
       throw new SerDeException("Was expecting StructObject Inspector but have " + delegateSerDe.getObjectInspector()
           .getClass()
@@ -96,14 +98,14 @@ public class GenericKafkaSerDe extends AbstractSerDe {
     // Build column names Order matters here
     columnNames.addAll(delegateObjectInspector.getAllStructFieldRefs()
         .stream()
-        .map(element -> element.getFieldName())
+        .map(StructField::getFieldName)
         .collect(Collectors.toList()));
     columnNames.addAll(METADATA_COLUMN_NAMES);
 
     final List<ObjectInspector> inspectors = new ArrayList<>(columnNames.size());
     inspectors.addAll(delegateObjectInspector.getAllStructFieldRefs()
         .stream()
-        .map(structField -> structField.getFieldObjectInspector())
+        .map(StructField::getFieldObjectInspector)
         .collect(Collectors.toList()));
     inspectors.addAll(METADATA_PRIMITIVE_TYPE_INFO.stream()
         .map(KafkaJsonSerDe.typeInfoToObjectInspector)
@@ -111,25 +113,7 @@ public class GenericKafkaSerDe extends AbstractSerDe {
     objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
 
     // lazy supplier to read Avro Records if needed
-    gdrSupplier = Suppliers.memoize(() -> {
-      String schemaFromProperty = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
-      Preconditions.checkArgument(!schemaFromProperty.isEmpty(), "Avro Schema is empty Can not go further");
-      Schema schema = AvroSerdeUtils.getSchemaFor(schemaFromProperty);
-      LOG.info("Building Avro Reader with schema {}", schemaFromProperty);
-      return new SpecificDatumReader<>(schema);
-    });
-  }
-
-  private AbstractSerDe createDelegate(String className) {
-    final Class<? extends AbstractSerDe> clazz;
-    try {
-      clazz = (Class<? extends AbstractSerDe>) Class.forName(className);
-    } catch (ClassNotFoundException e) {
-      LOG.error("Failed a loading delegate SerDe {}", className);
-      throw new RuntimeException(e);
-    }
-    // we are not setting conf thus null is okay
-    return ReflectionUtil.newInstance(clazz, null);
+    gdrSupplier = getReaderSupplier(tbl);
   }
 
   @Override public Class<? extends Writable> getSerializedClass() {
@@ -184,5 +168,15 @@ public class GenericKafkaSerDe extends AbstractSerDe {
 
   @Override public ObjectInspector getObjectInspector() {
     return objectInspector;
+  }
+
+  @SuppressWarnings("Guava") private Supplier<DatumReader<GenericRecord>> getReaderSupplier(Properties tbl) {
+    return Suppliers.memoize(() -> {
+      String schemaFromProperty = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
+      Preconditions.checkArgument(!schemaFromProperty.isEmpty(), "Avro Schema is empty Can not go further");
+      Schema schema = AvroSerdeUtils.getSchemaFor(schemaFromProperty);
+      LOG.debug("Building Avro Reader with schema {}", schemaFromProperty);
+      return new SpecificDatumReader<>(schema);
+    });
   }
 }
