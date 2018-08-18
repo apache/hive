@@ -29,12 +29,10 @@ import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.JsonSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.avro.AvroGenericRecordWritable;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
@@ -56,7 +54,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.rmi.server.UID;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -80,10 +77,7 @@ public class GenericKafkaSerDe extends AbstractSerDe {
   private AbstractSerDe delegateSerDe;
   private ObjectInspector objectInspector;
   private final List<String> columnNames = Lists.newArrayList();
-  StructObjectInspector delegateObjectInspector;
-
-  //GenericDatumReader<GenericRecord> gdr;
-  //DatumReader<GenericRecord> reader = new SpecificDatumReader<>(schema);
+  private StructObjectInspector delegateObjectInspector;
   private final UID uid = new UID();
   private Supplier<DatumReader<GenericRecord>> gdrSupplier;
 
@@ -97,29 +91,16 @@ public class GenericKafkaSerDe extends AbstractSerDe {
           .getClass()
           .getName());
     }
-
     delegateObjectInspector = (StructObjectInspector) delegateSerDe.getObjectInspector();
 
-    final List<ObjectInspector> inspectors;
-    // Get column names and types
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    final String
-        columnNameDelimiter =
-        tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ?
-            tbl.getProperty(serdeConstants.COLUMN_NAME_DELIMITER) :
-            String.valueOf(SerDeUtils.COMMA);
-    // all table column names
-    if (!columnNameProperty.isEmpty()) {
-      columnNames.addAll(Arrays.asList(columnNameProperty.split(columnNameDelimiter)));
-    }
-
+    // Build column names Order matters here
+    columnNames.addAll(delegateObjectInspector.getAllStructFieldRefs()
+        .stream()
+        .map(element -> element.getFieldName())
+        .collect(Collectors.toList()));
     columnNames.addAll(METADATA_COLUMN_NAMES);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("columns: {}, {}", columnNameProperty, columnNames);
-    }
-
-    inspectors = new ArrayList<>(columnNames.size());
+    final List<ObjectInspector> inspectors = new ArrayList<>(columnNames.size());
     inspectors.addAll(delegateObjectInspector.getAllStructFieldRefs()
         .stream()
         .map(structField -> structField.getFieldObjectInspector())
@@ -127,15 +108,16 @@ public class GenericKafkaSerDe extends AbstractSerDe {
     inspectors.addAll(METADATA_PRIMITIVE_TYPE_INFO.stream()
         .map(KafkaJsonSerDe.typeInfoToObjectInspector)
         .collect(Collectors.toList()));
+    objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
 
+    // lazy supplier to read Avro Records if needed
     gdrSupplier = Suppliers.memoize(() -> {
       String schemaFromProperty = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
       Preconditions.checkArgument(!schemaFromProperty.isEmpty(), "Avro Schema is empty Can not go further");
       Schema schema = AvroSerdeUtils.getSchemaFor(schemaFromProperty);
+      LOG.info("Building Avro Reader with schema {}", schemaFromProperty);
       return new SpecificDatumReader<>(schema);
     });
-
-    objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
   }
 
   private AbstractSerDe createDelegate(String className) {
@@ -171,10 +153,9 @@ public class GenericKafkaSerDe extends AbstractSerDe {
       row = delegateSerDe.deserialize(new Text(record.getValue()));
     } else if (delegateSerDe instanceof AvroSerDe) {
       AvroGenericRecordWritable avroGenericRecordWritable = new AvroGenericRecordWritable();
+      GenericRecord avroRecord;
       try {
-        GenericRecord
-            avroRecord =
-            gdrSupplier.get().read(null, DecoderFactory.get().binaryDecoder(record.getValue(), null));
+        avroRecord = gdrSupplier.get().read(null, DecoderFactory.get().binaryDecoder(record.getValue(), null));
         avroGenericRecordWritable.setRecord(avroRecord);
         avroGenericRecordWritable.setRecordReaderID(uid);
         avroGenericRecordWritable.setFileSchema(avroRecord.getSchema());
