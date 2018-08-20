@@ -1011,7 +1011,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: UDFToInteger(_col0) (type: int), _col2 (type: float)
-                    null sort order: aa
+                    null sort order: az
                     sort order: +-
                     Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: NONE
                     tag: -1

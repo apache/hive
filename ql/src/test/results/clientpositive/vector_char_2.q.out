@@ -407,11 +407,11 @@ limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_2_n0
 #### A masked pattern was here ####
-NULL	NULL	1
 val_98              	196	2
 val_97              	194	2
 val_96              	96	1
 val_95              	190	2
+val_92              	92	1
 PREHOOK: query: drop table char_2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_2_n0

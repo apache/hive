@@ -179,7 +179,7 @@ Stage-0
                           Filter Operator [FIL_133] (rows=1151982528066248 width=177)
                             predicate:((rank_window_0 < 11) and _col0 is not null)
                             PTF Operator [PTF_132] (rows=3455947584198744 width=177)
-                              Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 DESC NULLS FIRST","partition by:":"0"}]
+                              Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 DESC NULLS LAST","partition by:":"0"}]
                               Select Operator [SEL_131] (rows=3455947584198744 width=177)
                                 Output:["_col0","_col1"]
                               <-Reducer 8 [SIMPLE_EDGE]

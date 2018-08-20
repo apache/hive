@@ -276,7 +276,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col8 DESC NULLS FIRST
+                        order by: _col8 DESC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:

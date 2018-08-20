@@ -536,7 +536,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST, _col2 DESC NULLS FIRST
+                        order by: _col5 ASC NULLS FIRST, _col2 DESC NULLS LAST
                         partition by: _col10
                         raw input shape:
                         window functions:
@@ -1838,7 +1838,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 DESC NULLS FIRST
+                        order by: _col1 DESC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -1909,11 +1909,11 @@ a	b	first_value_window_0	first_value_window_1	first_value_window_2	first_value_w
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
-2	NULL	NULL	NULL	NULL	NULL
-2	NULL	NULL	3	NULL	3
-2	3	NULL	3	NULL	3
-2	2	3	3	NULL	3
-2	1	2	2	NULL	3
+2	3	3	3	3	3
+2	2	3	3	3	3
+2	1	2	2	3	3
+2	NULL	1	1	3	3
+2	NULL	NULL	NULL	3	3
 3	5	5	5	5	5
 3	4	5	5	5	5
 3	3	4	4	5	5
@@ -2182,7 +2182,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 DESC NULLS FIRST
+                        order by: _col1 DESC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -2253,11 +2253,11 @@ a	b	last_value_window_0	last_value_window_1	last_value_window_2	last_value_windo
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
-2	NULL	NULL	NULL	NULL	NULL
-2	NULL	3	3	3	3
 2	3	2	2	2	2
 2	2	1	1	1	1
-2	1	1	1	1	1
+2	1	NULL	1	NULL	1
+2	NULL	NULL	1	NULL	1
+2	NULL	NULL	NULL	NULL	1
 3	5	4	4	4	4
 3	4	3	3	3	3
 3	3	2	2	2	2
