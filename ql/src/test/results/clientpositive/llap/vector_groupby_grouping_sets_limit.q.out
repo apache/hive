@@ -60,30 +60,30 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string), b (type: string)
-                    outputColumnNames: a, b
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1]
+                  Top N Key Operator
+                    sort order: +++
+                    keys: a (type: string), b (type: string)
                     Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +++
-                      keys: a (type: string), b (type: string), 0L (type: bigint)
-                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string, col 1:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string), b (type: string)
+                      outputColumnNames: a, b
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 5:bigint
+                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
@@ -120,7 +120,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -270,30 +270,30 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string), b (type: string)
-                    outputColumnNames: a, b
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1]
+                  Top N Key Operator
+                    sort order: +++
+                    keys: a (type: string), b (type: string)
                     Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +++
-                      keys: a (type: string), b (type: string), 0L (type: bigint)
-                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string, col 1:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string), b (type: string)
+                      outputColumnNames: a, b
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 5:bigint
+                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
@@ -330,7 +330,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -480,30 +480,30 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string), b (type: string)
-                    outputColumnNames: a, b
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1]
+                  Top N Key Operator
+                    sort order: +++
+                    keys: a (type: string), b (type: string)
                     Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +++
-                      keys: a (type: string), b (type: string), 0L (type: bigint)
-                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string, col 1:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string), b (type: string)
+                      outputColumnNames: a, b
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 5:bigint
+                            keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
@@ -540,7 +540,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -690,28 +690,28 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string), b (type: string), c (type: string)
-                    outputColumnNames: a, b, c
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1, 2]
+                  Top N Key Operator
+                    sort order: ++++
+                    keys: a (type: string), b (type: string), c (type: string)
                     Statistics: Num rows: 6 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: ++++
-                      keys: a (type: string), b (type: string), c (type: string), 0L (type: bigint)
-                      Statistics: Num rows: 6 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string, col 1:string, col 2:string, ConstantVectorExpression(val 0) -> 4:bigint
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string, col 1:string, col 2:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string), b (type: string), c (type: string)
+                      outputColumnNames: a, b, c
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0, 1, 2]
+                      Statistics: Num rows: 6 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 0:string, col 1:string, col 2:string, ConstantVectorExpression(val 0) -> 5:bigint
+                            keyExpressions: col 0:string, col 1:string, col 2:string, ConstantVectorExpression(val 0) -> 4:bigint
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
@@ -747,7 +747,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -894,23 +894,23 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: a (type: string)
-                    outputColumnNames: a
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0]
+                  Top N Key Operator
+                    sort order: +
+                    keys: a (type: string)
                     Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +
-                      keys: a (type: string)
-                      Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 0:string
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: col 0:string
+                        native: true
+                    Select Operator
+                      expressions: a (type: string)
+                      outputColumnNames: a
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
@@ -1084,31 +1084,31 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: (UDFToDouble(a) + UDFToDouble(b)) (type: double)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: DoubleColAddDoubleColumn(col 4:double, col 5:double)(children: CastStringToDouble(col 0:string) -> 4:double, CastStringToDouble(col 1:string) -> 5:double) -> 6:double
+                  Top N Key Operator
+                    sort order: +
+                    keys: (UDFToDouble(a) + UDFToDouble(b)) (type: double)
                     Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: double)
-                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 6:double
+                    top n: 10
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: DoubleColAddDoubleColumn(col 4:double, col 5:double)(children: CastStringToDouble(col 0:string) -> 4:double, CastStringToDouble(col 1:string) -> 5:double) -> 6:double
+                        native: true
+                    Select Operator
+                      expressions: (UDFToDouble(a) + UDFToDouble(b)) (type: double)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [7]
+                          selectExpressions: DoubleColAddDoubleColumn(col 4:double, col 5:double)(children: CastStringToDouble(col 0:string) -> 4:double, CastStringToDouble(col 1:string) -> 5:double) -> 7:double
+                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 6:double
+                            keyExpressions: col 7:double
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
@@ -1145,7 +1145,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:

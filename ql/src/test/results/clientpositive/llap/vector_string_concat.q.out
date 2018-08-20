@@ -343,29 +343,29 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                  Select Operator
-                    expressions: concat(concat(concat('Quarter ', CAST( UDFToInteger(((UDFToDouble((month(dt) - 1)) / 3.0D) + 1.0D)) AS STRING)), '-'), CAST( year(dt) AS STRING)) (type: string)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [20]
-                        selectExpressions: StringGroupConcatColCol(col 18:string, col 19:string)(children: StringGroupColConcatStringScalar(col 19:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 18:string)(children: CastLongToString(col 14:int)(children: CastDoubleToLong(col 16:double)(children: DoubleColAddDoubleScalar(col 17:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 16:double, val 3.0)(children: CastLongToDouble(col 15:int)(children: LongColSubtractLongScalar(col 14:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 14:int) -> 15:int) -> 16:double) -> 17:double) -> 16:double) -> 14:int) -> 18:string) -> 19:string) -> 18:string, CastLongToString(col 14:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 14:int) -> 19:string) -> 20:string
+                  Top N Key Operator
+                    sort order: +
+                    keys: concat(concat(concat('Quarter ', CAST( UDFToInteger(((UDFToDouble((month(dt) - 1)) / 3.0D) + 1.0D)) AS STRING)), '-'), CAST( year(dt) AS STRING)) (type: string)
                     Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: string)
-                      Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
-                      top n: 50
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 20:string
+                    top n: 50
+                    Top N Key Vectorization:
+                        className: VectorTopNKeyOperator
+                        keyExpressions: StringGroupConcatColCol(col 18:string, col 19:string)(children: StringGroupColConcatStringScalar(col 19:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 18:string)(children: CastLongToString(col 14:int)(children: CastDoubleToLong(col 16:double)(children: DoubleColAddDoubleScalar(col 17:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 16:double, val 3.0)(children: CastLongToDouble(col 15:int)(children: LongColSubtractLongScalar(col 14:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 14:int) -> 15:int) -> 16:double) -> 17:double) -> 16:double) -> 14:int) -> 18:string) -> 19:string) -> 18:string, CastLongToString(col 14:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 14:int) -> 19:string) -> 20:string
+                        native: true
+                    Select Operator
+                      expressions: concat(concat(concat('Quarter ', CAST( UDFToInteger(((UDFToDouble((month(dt) - 1)) / 3.0D) + 1.0D)) AS STRING)), '-'), CAST( year(dt) AS STRING)) (type: string)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [21]
+                          selectExpressions: StringGroupConcatColCol(col 18:string, col 19:string)(children: StringGroupColConcatStringScalar(col 19:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 18:string)(children: CastLongToString(col 14:int)(children: CastDoubleToLong(col 16:double)(children: DoubleColAddDoubleScalar(col 17:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 16:double, val 3.0)(children: CastLongToDouble(col 15:int)(children: LongColSubtractLongScalar(col 14:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 14:int) -> 15:int) -> 16:double) -> 17:double) -> 16:double) -> 14:int) -> 18:string) -> 19:string) -> 18:string, CastLongToString(col 14:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 14:int) -> 19:string) -> 21:string
+                      Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 20:string
+                            keyExpressions: col 21:string
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []

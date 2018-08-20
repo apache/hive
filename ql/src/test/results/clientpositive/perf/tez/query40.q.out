@@ -85,10 +85,10 @@ Stage-0
                   PartitionCols:_col0, _col1
                   Group By Operator [GBY_29] (rows=421645953 width=135)
                     Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(_col2)","sum(_col3)"],keys:_col0, _col1
-                    Top N Key Operator [TNK_55] (rows=421645953 width=135)
-                      keys:_col0, _col1,sort order:++,top n:100
-                      Select Operator [SEL_27] (rows=421645953 width=135)
-                        Output:["_col0","_col1","_col2","_col3"]
+                    Select Operator [SEL_27] (rows=421645953 width=135)
+                      Output:["_col0","_col1","_col2","_col3"]
+                      Top N Key Operator [TNK_55] (rows=421645953 width=135)
+                        keys:_col14, _col11,sort order:++,top n:100
                         Merge Join Operator [MERGEJOIN_101] (rows=421645953 width=135)
                           Conds:RS_24._col1=RS_120._col0(Inner),Output:["_col4","_col7","_col9","_col11","_col14"]
                         <-Map 13 [SIMPLE_EDGE] vectorized
