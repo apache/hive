@@ -328,26 +328,25 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
         }
       }
     });
-    // Thread killing the query
-    Thread tKill = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(5000);
-          String queryId = ((HiveStatement) stmt).getQueryId();
-          System.out.println("Killing query: " + queryId);
-          stmt2.execute("kill query '" + queryId + "'");
-          stmt2.close();
-        } catch (Exception e) {
-          tKillHolder.throwable = e;
-        }
-      }
-    });
 
     tExecute.start();
-    tKill.start();
+
+    // wait for other thread to create the stmt handle
+    int count = 0;
+    while (count < 10) {
+      try {
+        Thread.sleep(2000);
+        String queryId = ((HiveStatement) stmt).getQueryId();
+        System.out.println("Killing query: " + queryId);
+        stmt2.execute("kill query '" + queryId + "'");
+        stmt2.close();
+        break;
+      } catch (SQLException e) {
+        count++;
+      }
+    }
+    
     tExecute.join();
-    tKill.join();
     stmt.close();
     con2.close();
     con.close();
