@@ -1341,8 +1341,13 @@ public abstract class BaseSemanticAnalyzer {
         }
       } else {
         child = (ASTNode) child.getChild(0);
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-            HIVE_COLUMN_ORDER_DESC));
+        if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {
+          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+              HIVE_COLUMN_ORDER_DESC));
+        } else {
+          throw new SemanticException("create/alter table: "
+                  + "not supported NULLS FIRST for ORDER BY in DESC order");
+        }
       }
     }
     return colList;
