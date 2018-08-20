@@ -61,4 +61,5 @@ dfs -rmr hdfs:///tmp/erasure_coding1;
 ERASURE echo disablePolicy  RS-10-4-1024k;
 ERASURE disablePolicy --policy  RS-10-4-1024k;
 
-
+ERASURE echo disablePolicy  XOR-2-1-1024k;
+ERASURE disablePolicy --policy  XOR-2-1-1024k;

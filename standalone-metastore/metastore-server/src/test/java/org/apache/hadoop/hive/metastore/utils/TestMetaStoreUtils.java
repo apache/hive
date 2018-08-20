@@ -29,13 +29,17 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,14 +47,18 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
+import static org.apache.hadoop.hive.common.StatsSetupConst.FAST_STATS;
 import static org.apache.hadoop.hive.common.StatsSetupConst.NUM_FILES;
 import static org.apache.hadoop.hive.common.StatsSetupConst.NUM_ERASURE_CODED_FILES;
 import static org.apache.hadoop.hive.common.StatsSetupConst.STATS_GENERATED;
 import static org.apache.hadoop.hive.common.StatsSetupConst.TOTAL_SIZE;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.updateTableStatsSlow;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.updateTableStatsSlow;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isFastStatsSame;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -88,7 +96,7 @@ public class TestMetaStoreUtils {
     Map<String, String> expected = ImmutableMap.of("akey", "aval",
         "blank", "", "null", "");
 
-    Map<String,String> xformed = MetaStoreUtils.trimMapNulls(m,true);
+    Map<String,String> xformed = MetaStoreServerUtils.trimMapNulls(m,true);
     assertThat(xformed, is(expected));
   }
 
@@ -100,7 +108,7 @@ public class TestMetaStoreUtils {
     m.put("null",null);
     Map<String, String> expected = ImmutableMap.of("akey", "aval", "blank", "");
 
-    Map<String,String> pruned = MetaStoreUtils.trimMapNulls(m,false);
+    Map<String,String> pruned = MetaStoreServerUtils.trimMapNulls(m,false);
     assertThat(pruned, is(expected));
   }
 
@@ -110,13 +118,13 @@ public class TestMetaStoreUtils {
     FieldSchema col1a = new FieldSchema("col1", "string", "col1 but with a different comment");
     FieldSchema col2 = new FieldSchema("col2", "string", "col2 comment");
     FieldSchema col3 = new FieldSchema("col3", "string", "col3 comment");
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1a)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col2, col1)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)));
-    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)));
-    Assert.assertFalse(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1a)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col2, col1)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)));
+    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)));
+    Assert.assertFalse(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1)));
   }
 
   /**
@@ -275,6 +283,63 @@ public class TestMetaStoreUtils {
         .build(null);
     updateTableStatsSlow(db, tbl2, wh, false, false, null);
     verify(wh, never()).getFileStatusesForUnpartitionedTable(db, tbl2);
+  }
+
+  @Test
+  public void testIsFastStatsSameHandleNull() throws TException {
+
+    FieldSchema fs = new FieldSchema("date", "string", "date column");
+    List<FieldSchema> cols = Collections.singletonList(fs);
+
+    Table tbl = new TableBuilder()
+        .setDbName(DB_NAME)
+        .setTableName(TABLE_NAME)
+        .addCol("id", "int")
+        .build(null);
+    List<String> vals = new ArrayList<String>();
+    vals.add("val1");
+    Partition oldPart;
+    Partition newPart;
+
+    PartitionBuilder partitionBuilder = new PartitionBuilder().inTable(tbl);
+    vals.forEach(val -> partitionBuilder.addValue(val));
+
+    oldPart = partitionBuilder.build(null);
+    newPart = partitionBuilder.build(null);
+
+    Map<String, String> oldParams = new HashMap<>();
+    Map<String, String> newParams = new HashMap<>();
+
+    //Test case where all parameters are present and their values are same
+    long testVal = 1;
+    for (String key : FAST_STATS) {
+      oldParams.put(key, String.valueOf(testVal));
+      newParams.put(key, String.valueOf(testVal));
+    }
+    oldPart.setParameters(oldParams);
+    newPart.setParameters(newParams);
+    assertTrue(isFastStatsSame(oldPart, newPart));
+
+    //Test case where all parameters are present and their values are different
+    for (String key : FAST_STATS) {
+      oldParams.put(key, String.valueOf(testVal));
+      newParams.put(key, String.valueOf(++testVal));
+    }
+    oldPart.setParameters(oldParams);
+    newPart.setParameters(newParams);
+    assertFalse(isFastStatsSame(oldPart, newPart));
+
+    //Test case where newPart is null
+    assertFalse(isFastStatsSame(oldPart, null));
+
+    //Test case where oldPart is null
+    assertFalse(isFastStatsSame(null, newPart));
+
+    //Test case where one or all of the FAST_STATS parameters are not present in newPart
+    Map<String, String> randomParams = new HashMap<String, String>();
+    randomParams.put("randomParam1", "randomVal1");
+    newPart.setParameters(randomParams);
+    assertFalse(isFastStatsSame(oldPart, newPart));
   }
 
   /**

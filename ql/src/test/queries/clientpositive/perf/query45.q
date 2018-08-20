@@ -1,9 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
-set hive.auto.convert.join=true;
-set hive.fetch.task.conversion=none;
--- start query  1 in stream 0 using template query45.tpl and seed 2031708268
-explain vectorization expression
+-- start query 1 in stream 0 using template query45.tpl and seed 2031708268
+explain
 select  ca_zip, ca_county, sum(ws_sales_price)
  from web_sales, customer, customer_address, date_dim, item
  where ws_bill_customer_sk = c_customer_sk

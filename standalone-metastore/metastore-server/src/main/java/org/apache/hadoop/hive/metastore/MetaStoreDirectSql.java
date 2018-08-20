@@ -89,8 +89,9 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.slf4j.Logger;
@@ -384,7 +385,7 @@ class MetaStoreDirectSql {
       db.setOwnerType(
           (null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
       db.setCatalogName(extractSqlString(dbline[6]));
-      db.setParameters(MetaStoreUtils.trimMapNulls(dbParams,convertMapNullsToEmptyStrings));
+      db.setParameters(MetaStoreServerUtils.trimMapNulls(dbParams,convertMapNullsToEmptyStrings));
       if (LOG.isDebugEnabled()){
         LOG.debug("getDatabase: directsql returning db " + db.getName()
             + " locn["+db.getLocationUri()  +"] desc [" +db.getDescription()
@@ -772,7 +773,7 @@ class MetaStoreDirectSql {
       }});
     // Perform conversion of null map values
     for (Partition t : partitions.values()) {
-      t.setParameters(MetaStoreUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
+      t.setParameters(MetaStoreServerUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
     }
 
     queryText = "select \"PART_ID\", \"PART_KEY_VAL\" from " + PARTITION_KEY_VALS + ""
@@ -805,7 +806,7 @@ class MetaStoreDirectSql {
       }});
     // Perform conversion of null map values
     for (StorageDescriptor t : sds.values()) {
-      t.setParameters(MetaStoreUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
+      t.setParameters(MetaStoreServerUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
     }
 
     queryText = "select \"SD_ID\", \"COLUMN_NAME\", " + SORT_COLS + ".\"ORDER\""
@@ -947,7 +948,7 @@ class MetaStoreDirectSql {
       }});
     // Perform conversion of null map values
     for (SerDeInfo t : serdes.values()) {
-      t.setParameters(MetaStoreUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
+      t.setParameters(MetaStoreServerUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
     }
 
     return orderedResult;
@@ -1615,7 +1616,7 @@ class MetaStoreDirectSql {
     List<ColumnStatistics> partStats =
         getPartitionStats(catName, dbName, tableName, partNames, colNames, true);
     // 2. use util function to aggr stats
-    return MetaStoreUtils.aggrPartitionStats(partStats, catName, dbName, tableName, partNames, colNames,
+    return MetaStoreServerUtils.aggrPartitionStats(partStats, catName, dbName, tableName, partNames, colNames,
         areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner);
   }
 

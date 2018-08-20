@@ -1127,12 +1127,19 @@ public class AcidUtils {
       }
     }
 
-    if(bestBase.oldestBase != null && bestBase.status == null) {
+    if(bestBase.oldestBase != null && bestBase.status == null &&
+        MetaDataFile.isCompacted(bestBase.oldestBase, fs)) {
       /**
        * If here, it means there was a base_x (> 1 perhaps) but none were suitable for given
        * {@link writeIdList}.  Note that 'original' files are logically a base_Long.MIN_VALUE and thus
        * cannot have any data for an open txn.  We could check {@link deltas} has files to cover
-       * [1,n] w/o gaps but this would almost never happen...*/
+       * [1,n] w/o gaps but this would almost never happen...
+       *
+       * We only throw for base_x produced by Compactor since that base erases all history and
+       * cannot be used for a client that has a snapshot in which something inside this base is
+       * open.  (Nor can we ignore this base of course)  But base_x which is a result of IOW,
+       * contains all history so we treat it just like delta wrt visibility.  Imagine, IOW which
+       * aborts. It creates a base_x, which can and should just be ignored.*/
       long[] exceptions = writeIdList.getInvalidWriteIds();
       String minOpenWriteId = exceptions != null && exceptions.length > 0 ?
         Long.toString(exceptions[0]) : "x";

@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.Reusable
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -69,7 +71,7 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
   // for the inner-loop supper.processOp callbacks
   //
   private transient int batchIndex;
-  private transient VectorHashKeyWrapper[] keyValues;
+  private transient VectorHashKeyWrapperBase[] keyValues;
   private transient VectorHashKeyWrapperBatch keyWrapperBatch;
   private transient VectorExpressionWriter[] keyOutputWriters;
 

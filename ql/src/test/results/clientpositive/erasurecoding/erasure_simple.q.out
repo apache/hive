@@ -127,3 +127,5 @@ Unset EC policy
 #### A masked pattern was here ####
 ECHO disablePolicy RS-10-4-1024k
 Disabled EC policy 'RS-10-4-1024k'
+ECHO disablePolicy XOR-2-1-1024k
+Disabled EC policy 'XOR-2-1-1024k'

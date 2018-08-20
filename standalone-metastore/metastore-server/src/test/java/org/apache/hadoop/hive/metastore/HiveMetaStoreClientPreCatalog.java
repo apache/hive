@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.callEmbeddedMetastore;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -162,9 +162,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
         throw new MetaException("Embedded metastore is not allowed here. Please configure "
             + ConfVars.THRIFT_URIS.toString() + "; it is currently set to [" + msUri + "]");
       }
-      // instantiate the metastore server handler directly instead of connecting
-      // through the network
-      client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
+
+      client = callEmbeddedMetastore(this.conf);
+
       isConnected = true;
       snapshotActiveConf();
       return;

@@ -385,7 +385,7 @@ STAGE PLANS:
                   predicate: (_col0 is not null and _col1 is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: (_col0 / _col1) (type: double)
+                    expressions: (UDFToDouble(_col0) / _col1) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -4575,7 +4575,7 @@ STAGE PLANS:
                   predicate: (_col1 is not null and _col2 is not null) (type: boolean)
                   Statistics: Num rows: 13 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col0 (type: int), (_col1 / _col2) (type: double)
+                    expressions: _col0 (type: int), (UDFToDouble(_col1) / _col2) (type: double)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 13 Data size: 156 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
@@ -5239,7 +5239,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 13 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), (_col1 / _col2) (type: double)
+                  expressions: _col0 (type: int), (UDFToDouble(_col1) / _col2) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 13 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -5267,7 +5267,7 @@ STAGE PLANS:
                   predicate: (_col1 is not null and _col2 is not null) (type: boolean)
                   Statistics: Num rows: 13 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: (_col1 / _col2) (type: double), _col0 (type: int), true (type: boolean)
+                    expressions: (UDFToDouble(_col1) / _col2) (type: double), _col0 (type: int), true (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 13 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator

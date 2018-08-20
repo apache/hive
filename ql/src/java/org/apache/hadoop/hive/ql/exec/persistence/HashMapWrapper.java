@@ -32,9 +32,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
@@ -163,7 +163,7 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
     }
 
     @Override
-    public JoinUtil.JoinResult setFromVector(VectorHashKeyWrapper kw,
+    public JoinUtil.JoinResult setFromVector(VectorHashKeyWrapperBase kw,
         VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch)
         throws HiveException {
       if (currentKey == null) {

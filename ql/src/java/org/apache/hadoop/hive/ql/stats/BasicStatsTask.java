@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -145,7 +146,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
             :  partish.getPartition().getSpec().toString();
         LOG.warn("Partition/partfiles is null for: " + spec);
         if (isMissingAcidState) {
-          MetaStoreUtils.clearQuickStats(parameters);
+          MetaStoreServerUtils.clearQuickStats(parameters);
           return p.getOutput();
         }
         return null;
@@ -159,7 +160,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
       }
 
-      MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
+      MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
 
       if (statsAggregator != null) {
         // Update stats for transactional tables (MM, or full ACID with overwrite), even

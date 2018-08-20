@@ -179,7 +179,7 @@ STAGE PLANS:
                 TableScan
                   alias: hive_14349
                   filterExpr: (a like 'XYZ%a%') (type: boolean)
-                  Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -188,7 +188,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterStringColLikeStringScalar(col 0:string, pattern XYZ%a%)
                     predicate: (a like 'XYZ%a%') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: a (type: string)
                       outputColumnNames: _col0
@@ -196,13 +196,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -267,7 +267,7 @@ STAGE PLANS:
                 TableScan
                   alias: hive_14349
                   filterExpr: (a like 'XYZ%a_') (type: boolean)
-                  Statistics: Num rows: 6 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -276,7 +276,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterStringColLikeStringScalar(col 0:string, pattern XYZ%a_)
                     predicate: (a like 'XYZ%a_') (type: boolean)
-                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: a (type: string)
                       outputColumnNames: _col0
@@ -284,13 +284,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -152,6 +152,7 @@ import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.hive.metastore.utils.CommonCliOptions;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -521,7 +522,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public void init() throws MetaException {
-      initListeners = MetaStoreUtils.getMetaStoreListeners(
+      initListeners = MetaStoreServerUtils.getMetaStoreListeners(
           MetaStoreInitListener.class, conf, MetastoreConf.getVar(conf, ConfVars.INIT_HOOKS));
       for (MetaStoreInitListener singleInitListener: initListeners) {
           MetaStoreInitContext context = new MetaStoreInitContext();
@@ -553,20 +554,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       }
 
-      preListeners = MetaStoreUtils.getMetaStoreListeners(MetaStorePreEventListener.class,
+      preListeners = MetaStoreServerUtils.getMetaStoreListeners(MetaStorePreEventListener.class,
           conf, MetastoreConf.getVar(conf, ConfVars.PRE_EVENT_LISTENERS));
       preListeners.add(0, new TransactionalValidationListener(conf));
-      listeners = MetaStoreUtils.getMetaStoreListeners(MetaStoreEventListener.class, conf,
+      listeners = MetaStoreServerUtils.getMetaStoreListeners(MetaStoreEventListener.class, conf,
           MetastoreConf.getVar(conf, ConfVars.EVENT_LISTENERS));
       listeners.add(new SessionPropertiesListener(conf));
       listeners.add(new AcidEventListener(conf));
-      transactionalListeners = MetaStoreUtils.getMetaStoreListeners(TransactionalMetaStoreEventListener.class,
+      transactionalListeners = MetaStoreServerUtils.getMetaStoreListeners(TransactionalMetaStoreEventListener.class,
           conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
       if (Metrics.getRegistry() != null) {
         listeners.add(new HMSMetricsListener(conf));
       }
 
-      endFunctionListeners = MetaStoreUtils.getMetaStoreListeners(
+      endFunctionListeners = MetaStoreServerUtils.getMetaStoreListeners(
           MetaStoreEndFunctionListener.class, conf, MetastoreConf.getVar(conf, ConfVars.END_FUNCTION_LISTENERS));
 
       String partitionValidationRegex =
@@ -1572,9 +1573,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               drop_table(MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
                   table.getTableName(), false);
             }
-
-            startIndex = endIndex;
           }
+
+          startIndex = endIndex;
         }
 
         if (ms.dropDatabase(catName, name)) {
@@ -1794,23 +1795,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
       }
-      String validate = MetaStoreUtils.validateTblColumns(tbl.getSd().getCols());
+      String validate = MetaStoreServerUtils.validateTblColumns(tbl.getSd().getCols());
       if (validate != null) {
         throw new InvalidObjectException("Invalid column " + validate);
       }
       if (tbl.getPartitionKeys() != null) {
-        validate = MetaStoreUtils.validateTblColumns(tbl.getPartitionKeys());
+        validate = MetaStoreServerUtils.validateTblColumns(tbl.getPartitionKeys());
         if (validate != null) {
           throw new InvalidObjectException("Invalid partition column " + validate);
         }
       }
       SkewedInfo skew = tbl.getSd().getSkewedInfo();
       if (skew != null) {
-        validate = MetaStoreUtils.validateSkewedColNames(skew.getSkewedColNames());
+        validate = MetaStoreServerUtils.validateSkewedColNames(skew.getSkewedColNames());
         if (validate != null) {
           throw new InvalidObjectException("Invalid skew column " + validate);
         }
-        validate = MetaStoreUtils.validateSkewedColNamesSubsetCol(
+        validate = MetaStoreServerUtils.validateSkewedColNamesSubsetCol(
             skew.getSkewedColNames(), tbl.getSd().getCols());
         if (validate != null) {
           throw new InvalidObjectException("Invalid skew column " + validate);
@@ -1861,8 +1862,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
         if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
-            !MetaStoreUtils.isView(tbl)) {
-          MetaStoreUtils.updateTableStatsSlow(db, tbl, wh, madeDir, false, envContext);
+            !MetaStoreServerUtils.isView(tbl)) {
+          MetaStoreServerUtils.updateTableStatsSlow(db, tbl, wh, madeDir, false, envContext);
         }
 
         // set create time
@@ -3127,7 +3128,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         part.setTableName(tableName);
         part.setValues(part_vals);
 
-        MetaStoreUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
+        MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
 
         tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
         if (tbl == null) {
@@ -3174,8 +3175,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
 
         if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
-            !MetaStoreUtils.isView(tbl)) {
-          MetaStoreUtils.updatePartitionStatsFast(part, tbl, wh, madeDir, false, envContext, true);
+            !MetaStoreServerUtils.isView(tbl)) {
+          MetaStoreServerUtils.updatePartitionStatsFast(part, tbl, wh, madeDir, false, envContext, true);
         }
 
         if (ms.addPartition(part)) {
@@ -3734,7 +3735,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private boolean startAddPartition(
         RawStore ms, Partition part, List<FieldSchema> partitionKeys, boolean ifNotExists)
         throws TException {
-      MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
+      MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(),
           partitionValidationPattern);
       boolean doesExist = ms.doesPartitionExist(part.getCatName(),
           part.getDbName(), part.getTableName(), partitionKeys, part.getValues());
@@ -3798,8 +3799,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void initializeAddedPartition(
         final Table tbl, final PartitionSpecProxy.PartitionIterator part, boolean madeDir) throws MetaException {
       if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
-          !MetaStoreUtils.isView(tbl)) {
-        MetaStoreUtils.updatePartitionStatsFast(part, tbl, wh, madeDir, false, null, true);
+          !MetaStoreServerUtils.isView(tbl)) {
+        MetaStoreServerUtils.updatePartitionStatsFast(part, tbl, wh, madeDir, false, null, true);
       }
 
       // set create time
@@ -4883,7 +4884,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, part_vals, new_part, this));
         if (part_vals != null && !part_vals.isEmpty()) {
-          MetaStoreUtils.validatePartitionNameCharacters(new_part.getValues(),
+          MetaStoreServerUtils.validatePartitionNameCharacters(new_part.getValues(),
               partitionValidationPattern);
         }
 
@@ -7011,10 +7012,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       try {
         if (throw_exception) {
-          MetaStoreUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
+          MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
           ret = true;
         } else {
-          ret = MetaStoreUtils.partitionNameHasValidCharacters(part_vals,
+          ret = MetaStoreServerUtils.partitionNameHasValidCharacters(part_vals,
               partitionValidationPattern);
         }
       } catch (MetaException e) {
@@ -7610,7 +7611,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         for (ColumnStatistics csNew : csNews) {
           String partName = csNew.getStatsDesc().getPartName();
           if (newStatsMap.containsKey(partName)) {
-            MetaStoreUtils.mergeColStats(csNew, newStatsMap.get(partName));
+            MetaStoreServerUtils.mergeColStats(csNew, newStatsMap.get(partName));
           }
           newStatsMap.put(partName, csNew);
         }
@@ -7670,10 +7671,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             csNew.setStatsObj(Lists.newArrayList());
           } else {
             // we first use getParameters() to prune the stats
-            MetaStoreUtils.getMergableCols(csNew, part.getParameters());
+            MetaStoreServerUtils.getMergableCols(csNew, part.getParameters());
             // we merge those that can be merged
             if (csOld != null && csOld.getStatsObjSize() != 0 && !csNew.getStatsObj().isEmpty()) {
-              MetaStoreUtils.mergeColStats(csNew, csOld);
+              MetaStoreServerUtils.mergeColStats(csNew, csOld);
             }
           }
 
@@ -7726,11 +7727,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           firstColStats.setStatsObj(Lists.newArrayList());
         } else {
           Table t = getTable(catName, dbName, tableName);
-          MetaStoreUtils.getMergableCols(firstColStats, t.getParameters());
+          MetaStoreServerUtils.getMergableCols(firstColStats, t.getParameters());
 
           // we merge those that can be merged
           if (csOld != null && csOld.getStatsObjSize() != 0 && !firstColStats.getStatsObj().isEmpty()) {
-            MetaStoreUtils.mergeColStats(firstColStats, csOld);
+            MetaStoreServerUtils.mergeColStats(firstColStats, csOld);
           }
         }
 
@@ -7835,7 +7836,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         LOG.error("Cannot obtain username", ex);
         throw ex;
       }
-      if (!MetaStoreUtils.checkUserHasHostProxyPrivileges(user, conf, getIPAddress())) {
+      if (!MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf, getIPAddress())) {
         throw new MetaException("User " + user + " is not allowed to perform this API call");
       }
     }
@@ -8979,10 +8980,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     return RetryingHMSHandler.getProxy(conf, baseHandler, local);
   }
 
-  static Iface newRetryingHMSHandler(String name, Configuration conf, boolean local)
+  /**
+   * Create retrying HMS handler for embedded metastore.
+   *
+   * <h1>IMPORTANT</h1>
+   *
+   * This method is called indirectly by HiveMetastoreClient and HiveMetaStoreClientPreCatalog
+   * using reflection. It can not be removed and its arguments can't be changed without matching
+   * change in HiveMetastoreClient and HiveMetaStoreClientPreCatalog.
+   *
+   * @param conf configuration to use
+   * @throws MetaException
+   */
+  static Iface newRetryingHMSHandler(Configuration conf)
       throws MetaException {
-    HMSHandler baseHandler = new HiveMetaStore.HMSHandler(name, conf, false);
-    return RetryingHMSHandler.getProxy(conf, baseHandler, local);
+    HMSHandler baseHandler = new HiveMetaStore.HMSHandler("hive client", conf, false);
+    return RetryingHMSHandler.getProxy(conf, baseHandler, true);
   }
 
   /**

@@ -40,12 +40,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Sets;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
@@ -83,7 +83,6 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.junit.Test;
@@ -481,7 +480,7 @@ public abstract class TestHiveMetaStore {
     part4.setSd(tbl.getSd().deepCopy());
     part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
     part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
-    MetaStoreUtils.updatePartitionStatsFast(part4, tbl, warehouse, false, false, null, true);
+    MetaStoreServerUtils.updatePartitionStatsFast(part4, tbl, warehouse, false, false, null, true);
     return part4;
   }
 

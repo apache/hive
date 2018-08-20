@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.IntWritable;
 
 import junit.framework.Assert;
 
@@ -67,11 +66,7 @@ public class TestVectorCoalesceElt {
   public void testCoalesce() throws Exception {
     Random random = new Random(5371);
 
-    // Grind through a few more index values...
-    int iteration = 0;
-    for (int i = 0; i < 10; i++) {
-      iteration =  doCoalesceElt(random, iteration, /* isCoalesce */ true, false);
-    }
+    doCoalesceElt(random, /* isCoalesce */ true, false);
   }
 
   @Test
@@ -79,10 +74,9 @@ public class TestVectorCoalesceElt {
     Random random = new Random(5371);
 
     // Grind through a few more index values...
-    int iteration = 0;
-    for (int i = 0; i < 10; i++) {
-      iteration = doCoalesceElt(random, iteration, /* isCoalesce */ false, false);
-      iteration = doCoalesceElt(random, iteration, /* isCoalesce */ false, true);
+    for (int i = 0; i < 4; i++) {
+      doCoalesceElt(random, /* isCoalesce */ false, false);
+      doCoalesceElt(random, /* isCoalesce */ false, true);
     }
   }
 
@@ -94,41 +88,39 @@ public class TestVectorCoalesceElt {
     static final int count = values().length;
   }
 
-  private int doCoalesceElt(Random random, int iteration, boolean isCoalesce,
-      boolean isEltIndexConst)
-          throws Exception {
+  private void doCoalesceElt(Random random, boolean isCoalesce, boolean isEltIndexConst)
+      throws Exception {
 
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 2,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 2,
         /* constantColumns */ null, /* nullConstantColumns */ null, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 2,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 2,
         /* constantColumns */ null, /* nullConstantColumns */ null, /* allowNulls */ false);
 
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 3,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 3,
         /* constantColumns */ null, /* nullConstantColumns */ null, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 3,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 3,
         new int[] { 0 }, /* nullConstantColumns */ null, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 3,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 3,
         new int[] { 0 }, /* nullConstantColumns */ new int[] { 0 }, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 3,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 3,
         new int[] { 1 }, /* nullConstantColumns */ null, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 3,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 3,
         new int[] { 1 }, /* nullConstantColumns */ new int[] { 1 }, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 3,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 3,
         new int[] { 0, 2 }, /* nullConstantColumns */ null, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 3,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 3,
         new int[] { 0, 2 }, /* nullConstantColumns */ new int[] { 0 }, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 3,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 3,
         new int[] { 0, 2 }, /* nullConstantColumns */ new int[] { 0, 2 }, /* allowNulls */ false);
 
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 4,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 4,
         /* constantColumns */ null, /* nullConstantColumns */ null, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 4,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 4,
         /* constantColumns */ null, /* nullConstantColumns */ null, /* allowNulls */ false);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 4,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 4,
         new int[] { 0, 1, 2 }, /* nullConstantColumns */ new int[] { 0, 1, 2 }, /* allowNulls */ true);
-    doCoalesceOnRandomDataType(random, iteration++, isCoalesce, isEltIndexConst, /* columnCount */ 4,
+    doCoalesceOnRandomDataType(random, isCoalesce, isEltIndexConst, /* columnCount */ 4,
         new int[] { 0, 1, 2 }, /* nullConstantColumns */ new int[] { 0, 1, 2 }, /* allowNulls */ false);
-    return iteration;
   }
 
   private boolean contains(int[] columns, int column) {
@@ -143,7 +135,7 @@ public class TestVectorCoalesceElt {
     return false;
   }
 
-  private boolean doCoalesceOnRandomDataType(Random random, int iteration,
+  private boolean doCoalesceOnRandomDataType(Random random,
       boolean isCoalesce, boolean isEltIndexConst, int columnCount,
       int[] constantColumns, int[] nullConstantColumns, boolean allowNulls)
       throws Exception {
@@ -195,18 +187,17 @@ public class TestVectorCoalesceElt {
 
       List<Object> intValueList = new ArrayList<Object>();
       for (int i = -1; i < columnCount + 2; i++) {
-        intValueList.add(
-            new IntWritable(i));
+        intValueList.add(i);
       }
       final int intValueListCount = intValueList.size();
-      ExprNodeDesc intColExpr;
+      ExprNodeDesc colExpr;
       if (!isEltIndexConst) {
         generationSpecList.add(
             GenerationSpec.createValueList(intTypeInfo, intValueList));
         explicitDataTypePhysicalVariationList.add(DataTypePhysicalVariation.NONE);
         String columnName = "col" + columnNum++;
         columns.add(columnName);
-        intColExpr = new ExprNodeColumnDesc(intTypeInfo, columnName, "table", false);
+        colExpr = new ExprNodeColumnDesc(intTypeInfo, columnName, "table", false);
       } else {
         final Object scalarObject;
         if (random.nextInt(10) != 0) {
@@ -214,9 +205,8 @@ public class TestVectorCoalesceElt {
         } else {
           scalarObject = null;
         }
-        intColExpr = new ExprNodeConstantDesc(typeInfo, scalarObject);
+        colExpr = new ExprNodeConstantDesc(typeInfo, scalarObject);
       }
-      children.add(intColExpr);
     }
     for (int c = 0; c < columnCount; c++) {
       ExprNodeDesc colExpr;
@@ -245,8 +235,7 @@ public class TestVectorCoalesceElt {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0,
-        /* allowNull */ allowNulls,  /* isUnicodeOk */ true,
+        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ allowNulls,
         explicitDataTypePhysicalVariationList);
 
     String[] columnNames = columns.toArray(new String[0]);
@@ -306,7 +295,6 @@ public class TestVectorCoalesceElt {
       case VECTOR_EXPRESSION:
         if (!doVectorCastTest(
               typeInfo,
-              iteration,
               columns,
               columnNames,
               rowSource.typeInfos(),
@@ -339,10 +327,9 @@ public class TestVectorCoalesceElt {
                 "Row " + i +
                 " sourceTypeName " + typeName +
                 " " + coalesceEltTestMode +
-                " iteration " + iteration +
                 " result is NULL " + (vectorResult == null ? "YES" : "NO result " + vectorResult.toString()) +
                 " does not match row-mode expected result is NULL " +
-                (expectedResult == null ? "YES" : "NO result '" + expectedResult.toString()) + "'" +
+                (expectedResult == null ? "YES" : "NO result " + expectedResult.toString()) +
                 " row values " + Arrays.toString(randomRows[i]) +
                 " exprDesc " + exprDesc.toString());
           }
@@ -353,10 +340,9 @@ public class TestVectorCoalesceElt {
                 "Row " + i +
                 " sourceTypeName " + typeName +
                 " " + coalesceEltTestMode +
-                " iteration " + iteration +
-                " result '" + vectorResult.toString() + "'" +
+                " result " + vectorResult.toString() +
                 " (" + vectorResult.getClass().getSimpleName() + ")" +
-                " does not match row-mode expected result '" + expectedResult.toString() + "'" +
+                " does not match row-mode expected result " + expectedResult.toString() +
                 " (" + expectedResult.getClass().getSimpleName() + ")" +
                 " row values " + Arrays.toString(randomRows[i]) +
                 " exprDesc " + exprDesc.toString());
@@ -424,7 +410,7 @@ public class TestVectorCoalesceElt {
     }
   }
 
-  private boolean doVectorCastTest(TypeInfo typeInfo, int iteration,
+  private boolean doVectorCastTest(TypeInfo typeInfo,
       List<String> columns, String[] columnNames,
       TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
       List<ExprNodeDesc> children,
@@ -459,7 +445,7 @@ public class TestVectorCoalesceElt {
           " vectorExpression " + vectorExpression.toString());
     }
 
-    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+    System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
 
     /*
     System.out.println(
@@ -487,6 +473,17 @@ public class TestVectorCoalesceElt {
     resultVectorExtractRow.init(
         new TypeInfo[] { outputTypeInfo }, new int[] { vectorExpression.getOutputColumnNum() });
     Object[] scrqtchRow = new Object[1];
+
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
+    System.out.println(
+        "*DEBUG* typeInfo1 " + typeInfo1.toString() +
+        " typeInfo2 " + typeInfo2.toString() +
+        " arithmeticTestMode " + arithmeticTestMode +
+        " columnScalarMode " + columnScalarMode +
+        " vectorExpression " + vectorExpression.toString());
+    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;

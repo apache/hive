@@ -1229,7 +1229,7 @@ public class HiveServer2 extends CompositeService {
                 + " or use the set the value in the configuration file"
                 + " (see HIVE-19886)");
           }
-          System.setProperty(propKey, confProps.getProperty(propKey));
+          HiveConf.overrides.put(propKey, confProps.getProperty(propKey));
         }
 
         // Process --help

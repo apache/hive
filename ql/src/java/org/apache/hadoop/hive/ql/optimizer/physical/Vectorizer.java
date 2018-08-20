@@ -3435,8 +3435,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     boolean outerJoinHasNoKeys = (!desc.isNoOuterJoin() && keyDesc.size() == 0);
 
-    VectorExpression[] allBigTableKeyExpressions = vContext.getVectorExpressions(keyDesc);
-
+    // For now, we don't support joins on or using DECIMAL_64.
+    VectorExpression[] allBigTableKeyExpressions =
+        vContext.getVectorExpressionsUpConvertDecimal64(keyDesc);
     final int allBigTableKeyExpressionsLength = allBigTableKeyExpressions.length;
     boolean supportsKeyTypes = true;  // Assume.
     HashSet<String> notSupportedKeyTypes = new HashSet<String>();
@@ -3478,7 +3479,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     List<ExprNodeDesc> bigTableExprs = desc.getExprs().get(posBigTable);
 
-    VectorExpression[] allBigTableValueExpressions = vContext.getVectorExpressions(bigTableExprs);
+    // For now, we don't support joins on or using DECIMAL_64.
+    VectorExpression[] allBigTableValueExpressions =
+        vContext.getVectorExpressionsUpConvertDecimal64(bigTableExprs);
 
     boolean isFastHashTableEnabled =
         HiveConf.getBoolVar(hiveConf,
@@ -4473,7 +4476,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     List<ExprNodeDesc> keysDesc = groupByDesc.getKeys();
 
-    VectorExpression[] vecKeyExpressions = vContext.getVectorExpressions(keysDesc);
+    // For now, we don't support group by on DECIMAL_64 keys.
+    VectorExpression[] vecKeyExpressions =
+        vContext.getVectorExpressionsUpConvertDecimal64(keysDesc);
     ArrayList<AggregationDesc> aggrDesc = groupByDesc.getAggregators();
     final int size = aggrDesc.size();
 
@@ -5014,12 +5019,6 @@ public class Vectorizer implements PhysicalPlanResolver {
                 } else {
                   opClass = VectorMapJoinOuterFilteredOperator.class;
                 }
-
-                // Wrap any DECIMAL_64 expressions with Conversion.
-                vContext.wrapWithDecimal64ToDecimalConversions(
-                    vectorMapJoinDesc.getAllBigTableKeyExpressions());
-                vContext.wrapWithDecimal64ToDecimalConversions(
-                    vectorMapJoinDesc.getAllBigTableValueExpressions());
 
                 vectorOp = OperatorFactory.getVectorOperator(
                     opClass, op.getCompilationOpContext(), desc,

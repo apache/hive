@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
@@ -709,7 +709,7 @@ public class SharedCache {
       }
       setTable(tblCopy);
       if (tblCopy.getSd() != null) {
-        sdHash = MetaStoreUtils.hashStorageDescriptor(tblCopy.getSd(), md);
+        sdHash = MetaStoreServerUtils.hashStorageDescriptor(tblCopy.getSd(), md);
         StorageDescriptor sd = tblCopy.getSd();
         sharedCache.increSd(sd, sdHash);
         tblCopy.setSd(null);
@@ -727,7 +727,7 @@ public class SharedCache {
       Partition partCopy = part.deepCopy();
       PartitionWrapper wrapper;
       if (part.getSd() != null) {
-        byte[] sdHash = MetaStoreUtils.hashStorageDescriptor(part.getSd(), md);
+        byte[] sdHash = MetaStoreServerUtils.hashStorageDescriptor(part.getSd(), md);
         StorageDescriptor sd = part.getSd();
         sharedCache.increSd(sd, sdHash);
         partCopy.setSd(null);
@@ -1146,7 +1146,7 @@ public class SharedCache {
       }
     }
     if (tbl.getSd() != null) {
-      byte[] sdHash = MetaStoreUtils.hashStorageDescriptor(tbl.getSd(), md);
+      byte[] sdHash = MetaStoreServerUtils.hashStorageDescriptor(tbl.getSd(), md);
       StorageDescriptor sd = tbl.getSd();
       increSd(sd, sdHash);
       tblCopy.setSd(null);

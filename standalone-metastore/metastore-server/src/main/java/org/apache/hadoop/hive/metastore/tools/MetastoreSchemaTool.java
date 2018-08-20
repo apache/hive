@@ -109,6 +109,13 @@ public class MetastoreSchemaTool {
     this.needsQuotedIdentifier = parser.needsQuotedIdentifier();
     this.quoteCharacter = parser.getQuoteCharacter();
     this.metaStoreSchemaInfo = MetaStoreSchemaInfoFactory.get(conf, metastoreHome, dbType);
+    // If the dbType is "hive", this is setting up the information schema in Hive.
+    // We will set the default jdbc url and driver.
+    // It is overriden by command line options if passed (-url and -driver
+    if (dbType.equalsIgnoreCase(HiveSchemaHelper.DB_HIVE)) {
+      this.url = HiveSchemaHelper.EMBEDDED_HS2_URL;
+      this.driver = HiveSchemaHelper.HIVE_JDBC_DRIVER;
+    }
 
     if (cmdLine.hasOption("userName")) {
       setUserName(cmdLine.getOptionValue("userName"));
@@ -416,6 +423,8 @@ public class MetastoreSchemaTool {
         task = new SchemaToolTaskUpgrade();
       } else if (cmdLine.hasOption("initSchema") || cmdLine.hasOption("initSchemaTo")) {
         task = new SchemaToolTaskInit();
+      } else if (cmdLine.hasOption("initOrUpgradeSchema")) {
+        task = new SchemaToolTaskInitOrUpgrade();
       } else if (cmdLine.hasOption("validate")) {
         task = new SchemaToolTaskValidate();
       } else if (cmdLine.hasOption("createCatalog")) {

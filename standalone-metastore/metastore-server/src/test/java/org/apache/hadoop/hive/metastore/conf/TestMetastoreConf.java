@@ -40,6 +40,18 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
+import org.apache.hadoop.hive.metastore.HiveAlterHandler;
+import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
+import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask;
+import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
+import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
+import org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService;
+import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
+import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
+
 @Category(MetastoreUnitTest.class)
 public class TestMetastoreConf {
 
@@ -429,5 +441,37 @@ public class TestMetastoreConf {
     Assert.assertThat(dump, new StringEndsWith("Finished MetastoreConf object.\n"));
     // Make sure the hidden keys didn't get published
     Assert.assertThat(dump, CoreMatchers.not(new StringContains(ConfVars.PWD.getVarname())));
+  }
+
+  /**
+   * Test class names hardcoded in MetastoreConf.
+   * MetastoreConf uses several hard-coded class names. If one of these classes is renamed or
+   * moved to a different package we want to be able to catch this. So we compare expected
+   * class name with the actual one.
+   */
+  @Test
+  public void testClassNames() {
+    Assert.assertEquals(MetastoreConf.DEFAULT_STORAGE_SCHEMA_READER_CLASS,
+        DefaultStorageSchemaReader.class.getName());
+    Assert.assertEquals(MetastoreConf.HIVE_ALTER_HANDLE_CLASS,
+        HiveAlterHandler.class.getName());
+    Assert.assertEquals(MetastoreConf.MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS,
+        MaterializationsRebuildLockCleanerTask.class.getName());
+    Assert.assertEquals(MetastoreConf.METASTORE_TASK_THREAD_CLASS,
+        MetastoreTaskThread.class.getName());
+    Assert.assertEquals(MetastoreConf.RUNTIME_STATS_CLEANER_TASK_CLASS,
+        RuntimeStatsCleanerTask.class.getName());
+    Assert.assertEquals(MetastoreConf.EVENT_CLEANER_TASK_CLASS,
+        EventCleanerTask.class.getName());
+    Assert.assertEquals(MetastoreConf.METASTORE_DELEGATION_MANAGER_CLASS,
+        MetastoreDelegationTokenManager.class.getName());
+    Assert.assertEquals(MetastoreConf.ACID_COMPACTION_HISTORY_SERVICE_CLASS,
+        AcidCompactionHistoryService.class.getName());
+    Assert.assertEquals(MetastoreConf.ACID_HOUSE_KEEPER_SERVICE_CLASS,
+        AcidHouseKeeperService.class.getName());
+    Assert.assertEquals(MetastoreConf.ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS,
+        AcidOpenTxnsCounterService.class.getName());
+    Assert.assertEquals(MetastoreConf.ACID_WRITE_SET_SERVICE_CLASS,
+        AcidWriteSetService.class.getName());
   }
 }

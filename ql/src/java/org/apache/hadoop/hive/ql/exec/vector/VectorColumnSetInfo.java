@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -38,34 +37,34 @@ public class VectorColumnSetInfo {
   /**
    * indices of LONG primitive keys.
    */
-  protected int[] longIndices;
+  public int[] longIndices;
 
   /**
    * indices of DOUBLE primitive keys.
    */
-  protected int[] doubleIndices;
+  public int[] doubleIndices;
 
   /**
    * indices of string (byte[]) primitive keys.
    */
-  protected int[] stringIndices;
+  public int[] stringIndices;
 
   /**
    * indices of decimal primitive keys.
    */
-  protected int[] decimalIndices;
+  public int[] decimalIndices;
 
   /**
    * indices of TIMESTAMP primitive keys.
    */
-  protected int[] timestampIndices;
+  public int[] timestampIndices;
 
   /**
    * indices of INTERVAL_DAY_TIME primitive keys.
    */
-  protected int[] intervalDayTimeIndices;
+  public int[] intervalDayTimeIndices;
 
-  final protected int keyCount;
+  final public int keyCount;
   private int addKeyIndex;
 
   private int addLongIndex;
@@ -78,9 +77,9 @@ public class VectorColumnSetInfo {
   // Given the keyIndex these arrays return:
   //   The ColumnVector.Type,
   //   The type specific index into longIndices, doubleIndices, etc...
-  protected TypeInfo[] typeInfos;
-  protected ColumnVector.Type[] columnVectorTypes;
-  protected int[] columnTypeSpecificIndices;
+  public TypeInfo[] typeInfos;
+  public ColumnVector.Type[] columnVectorTypes;
+  public int[] columnTypeSpecificIndices;
 
   protected VectorColumnSetInfo(int keyCount) {
     this.keyCount = keyCount;
@@ -106,12 +105,9 @@ public class VectorColumnSetInfo {
   }
 
 
-  protected void addKey(TypeInfo typeInfo, DataTypePhysicalVariation dataTypePhysicalVariation)
-      throws HiveException {
+  protected void addKey(TypeInfo typeInfo) throws HiveException {
 
-    Type columnVectorType =
-        VectorizationContext.getColumnVectorTypeFromTypeInfo(
-            typeInfo, dataTypePhysicalVariation);
+    Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
     switch (columnVectorType) {
     case LONG:
     case DECIMAL_64:
