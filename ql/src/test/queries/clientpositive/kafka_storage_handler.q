@@ -143,3 +143,86 @@ Select `__partition`, `__offset`, `__time`, `page`, `user`, `language`, `country
 FROM kafka_table_2;
 
 Select count(*) FROM kafka_table_2;
+
+
+CREATE EXTERNAL TABLE wiki_kafka_avro_table
+STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+TBLPROPERTIES
+("kafka.topic" = "wiki_kafka_avro_table",
+"kafka.bootstrap.servers"="localhost:9092",
+"kafka.serde.class"="org.apache.hadoop.hive.serde2.avro.AvroSerDe",
+'avro.schema.literal'='{
+  "type" : "record",
+  "name" : "Wikipedia",
+  "namespace" : "org.apache.hive.kafka",
+  "version": "1",
+  "fields" : [ {
+    "name" : "isrobot",
+    "type" : "boolean"
+  }, {
+    "name" : "channel",
+    "type" : "string"
+  }, {
+    "name" : "timestamp",
+    "type" : "string"
+  }, {
+    "name" : "flags",
+    "type" : "string"
+  }, {
+    "name" : "isunpatrolled",
+    "type" : "boolean"
+  }, {
+    "name" : "page",
+    "type" : "string"
+  }, {
+    "name" : "diffurl",
+    "type" : "string"
+  }, {
+    "name" : "added",
+    "type" : "long"
+  }, {
+    "name" : "comment",
+    "type" : "string"
+  }, {
+    "name" : "commentlength",
+    "type" : "long"
+  }, {
+    "name" : "isnew",
+    "type" : "boolean"
+  }, {
+    "name" : "isminor",
+    "type" : "boolean"
+  }, {
+    "name" : "delta",
+    "type" : "long"
+  }, {
+    "name" : "isanonymous",
+    "type" : "boolean"
+  }, {
+    "name" : "user",
+    "type" : "string"
+  }, {
+    "name" : "deltabucket",
+    "type" : "double"
+  }, {
+    "name" : "deleted",
+    "type" : "long"
+  }, {
+    "name" : "namespace",
+    "type" : "string"
+  } ]
+}'
+);
+
+describe extended wiki_kafka_avro_table;
+
+select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table;
+
+select count(*) from wiki_kafka_avro_table;
+
+select count(distinct `user`) from  wiki_kafka_avro_table;
+
+select sum(deltabucket), min(commentlength) from wiki_kafka_avro_table;
+
+select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090;
+
