@@ -328,7 +328,6 @@ public class KafkaScanTrimmer {
       if (startOffset != -1 && endOffset == -1) {
         newInputSplit = new KafkaPullerInputSplit(tp.topic(),
             tp.partition(),
-            // @TODO make sure that this is okay
             //if the user ask for start offset > max offset will replace with last offset
             Math.min(startOffset, existingInputSplit.getEndOffset()),
             existingInputSplit.getEndOffset(),
@@ -336,12 +335,13 @@ public class KafkaScanTrimmer {
       } else if (endOffset != -1 && startOffset == -1) {
         newInputSplit = new KafkaPullerInputSplit(tp.topic(), tp.partition(), existingInputSplit.getStartOffset(),
             //@TODO check this, if user ask for non existing end offset ignore it and position head on start
+            // This can be an issue when doing ingestion from kafka into Hive, what happen if there is some gaps
+            // Shall we fail the ingest or carry-on and ignore non existing offsets
             Math.max(endOffset, existingInputSplit.getStartOffset()), existingInputSplit.getPath());
       } else if (endOffset == startOffset + 1) {
         if (startOffset < existingInputSplit.getStartOffset() || startOffset >= existingInputSplit.getEndOffset()) {
           newInputSplit = new KafkaPullerInputSplit(tp.topic(), tp.partition(),
-              //@TODO check this with team if we have ask for offset out of range what to do ?
-              // here am seeking to last offset
+              // non existing offset will be seeking last offset
               existingInputSplit.getEndOffset(), existingInputSplit.getEndOffset(), existingInputSplit.getPath());
         } else {
           newInputSplit =

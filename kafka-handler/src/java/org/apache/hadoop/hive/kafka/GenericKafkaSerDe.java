@@ -133,7 +133,7 @@ public class GenericKafkaSerDe extends AbstractSerDe {
     // switch case the serde nature
     final Object row;
     if (delegateSerDe instanceof JsonSerDe) {
-      // @TODO Text constructor copies the data, this op is not needed
+      //@TODO Text constructor copies the data, this op is not needed
       row = delegateSerDe.deserialize(new Text(record.getValue()));
     } else if (delegateSerDe instanceof AvroSerDe) {
       AvroGenericRecordWritable avroGenericRecordWritable = new AvroGenericRecordWritable();
