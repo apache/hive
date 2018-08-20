@@ -1696,12 +1696,17 @@ public class StatsRulesProcFactory {
         }
 
         List<Long> distinctVals = Lists.newArrayList();
+
+        // these ndvs are later used to compute unmatched rows and num of nulls for outer joins
+        List<Long> ndvsUnmatched= Lists.newArrayList();
         long denom = 1;
+        long denomUnmatched = 1;
         if (inferredRowCount == -1) {
           // failed to infer PK-FK relationship for row count estimation fall-back on default logic
           // compute denominator  max(V(R,y1), V(S,y1)) * max(V(R,y2), V(S,y2))
           // in case of multi-attribute join
           List<Long> perAttrDVs = Lists.newArrayList();
+          // go over each predicate
           for (int idx = 0; idx < numAttr; idx++) {
             for (Integer i : joinKeys.keySet()) {
               String col = joinKeys.get(i).get(idx);
@@ -1711,19 +1716,27 @@ public class StatsRulesProcFactory {
               }
             }
             distinctVals.add(getDenominator(perAttrDVs));
+            ndvsUnmatched.add(getDenominatorForUnmatchedRows(perAttrDVs));
             perAttrDVs.clear();
           }
 
           if (numAttr > 1 && conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS)) {
             denom = Collections.max(distinctVals);
+            denomUnmatched = denom - ndvsUnmatched.get(distinctVals.indexOf(denom));
           } else if (numAttr > numParent) {
             // To avoid denominator getting larger and aggressively reducing
             // number of rows, we will ease out denominator.
             denom = StatsUtils.addWithExpDecay(distinctVals);
+            denomUnmatched = denom - StatsUtils.addWithExpDecay(ndvsUnmatched);
           } else {
             for (Long l : distinctVals) {
               denom = StatsUtils.safeMult(denom, l);
             }
+            long tempDenom = 1;
+            for (Long l : ndvsUnmatched) {
+              tempDenom = StatsUtils.safeMult(tempDenom, l);
+            }
+            denomUnmatched = denom - tempDenom;
           }
         }
 
@@ -1754,15 +1767,22 @@ public class StatsRulesProcFactory {
         // update join statistics
         stats.setColumnStats(outColStats);
 
-        // reason we compute interim row count, where join type isn't considered, is because later
-        // it will be used to estimate num nulls
         long interimRowCount = inferredRowCount != -1 ? inferredRowCount
           : computeRowCountAssumingInnerJoin(rowCounts, denom, jop);
         // final row computation will consider join type
         long joinRowCount = inferredRowCount != -1 ? inferredRowCount
           : computeFinalRowCount(rowCounts, interimRowCount, jop);
 
-        updateColStats(conf, stats, interimRowCount, joinRowCount, jop, rowCountParents);
+        // the idea is to measure unmatche rows in outer joins by figuring out how many rows didn't match
+        // mismatched rows are figured using denomUnmatched which is the difference of denom used for computing
+        // join cardinality minus the ndv which wasn't used. This number (mismatched rows) is then subtracted from
+        /// join cardinality to get the rows which didn't match
+        long unMatchedRows = Math.abs(computeRowCountAssumingInnerJoin(rowCounts, denomUnmatched, jop) - joinRowCount);
+        if(denomUnmatched == 0) {
+          // if unmatched denominator is zero we take it as all rows will match
+          unMatchedRows = 0;
+        }
+        updateColStats(conf, stats, unMatchedRows, joinRowCount, jop, rowCountParents);
 
         // evaluate filter expression and update statistics
         if (joinRowCount != -1 && jop.getConf().getNoOuterJoin() &&
@@ -2159,7 +2179,7 @@ public class StatsRulesProcFactory {
       return false;
     }
 
-    private void updateNumNulls(ColStatistics colStats, long interimNumRows, long newNumRows,
+    private void updateNumNulls(ColStatistics colStats, long unmatchedRows, long newNumRows,
         long pos, CommonJoinOperator<? extends JoinDesc> jop) {
 
       if (!(jop.getConf().getConds().length == 1)) {
@@ -2175,39 +2195,31 @@ public class StatsRulesProcFactory {
       case JoinDesc.LEFT_OUTER_JOIN:
         //if this column is coming from right input only then we update num nulls
         if (pos == joinCond.getRight()
-            && interimNumRows != newNumRows) {
-          // interim row count can not be less due to containment
-          // assumption in join cardinality computation
-          assert (newNumRows > interimNumRows);
+            && unmatchedRows != newNumRows) {
           if (isJoinKey(colStats.getColumnName(), jop.getConf().getJoinKeys())) {
-            newNumNulls = Math.min(newNumRows, (newNumRows - interimNumRows));
+            newNumNulls = Math.min(newNumRows, (unmatchedRows));
           } else {
-            newNumNulls = Math.min(newNumRows, oldNumNulls + (newNumRows - interimNumRows));
+            newNumNulls = Math.min(newNumRows, oldNumNulls + (unmatchedRows));
           }
         }
         break;
       case JoinDesc.RIGHT_OUTER_JOIN:
         if (pos == joinCond.getLeft()
-            && interimNumRows != newNumRows) {
-
-          // interim row count can not be less due to containment
-          // assumption in join cardinality computation
-          // interimNumRows represent number of matches for join keys on two sides.
-          // newNumRows-interimNumRows represent number of non-matches.
-          assert (newNumRows > interimNumRows);
+            && unmatchedRows != newNumRows) {
 
           if (isJoinKey(colStats.getColumnName(), jop.getConf().getJoinKeys())) {
-            newNumNulls = Math.min(newNumRows, (newNumRows - interimNumRows));
+            newNumNulls = Math.min(newNumRows, ( unmatchedRows));
           } else {
-            newNumNulls = Math.min(newNumRows, oldNumNulls + (newNumRows - interimNumRows));
+            // TODO: oldNumNulls should be scaled instead of taken as it is
+            newNumNulls = Math.min(newNumRows, oldNumNulls + (unmatchedRows));
           }
         }
         break;
       case JoinDesc.FULL_OUTER_JOIN:
         if (isJoinKey(colStats.getColumnName(), jop.getConf().getJoinKeys())) {
-          newNumNulls = Math.min(newNumRows, (newNumRows - interimNumRows));
+          newNumNulls = Math.min(newNumRows, (unmatchedRows));
         } else {
-          newNumNulls = Math.min(newNumRows, oldNumNulls + (newNumRows - interimNumRows));
+          newNumNulls = Math.min(newNumRows, oldNumNulls + (unmatchedRows));
         }
         break;
 
@@ -2379,6 +2391,39 @@ public class StatsRulesProcFactory {
       }
     }
 
+    private long getDenominatorForUnmatchedRows(List<Long> distinctVals) {
+
+      if (distinctVals.isEmpty()) {
+        return 2;
+      }
+
+      // simple join from 2 relations: denom = min(v1, v2)
+      if (distinctVals.size() <= 2) {
+        return Collections.min(distinctVals);
+      } else {
+
+        // remember max value and ignore it from the denominator
+        long maxNDV = distinctVals.get(0);
+        int maxIdx = 0;
+
+        for (int i = 1; i < distinctVals.size(); i++) {
+          if (distinctVals.get(i) > maxNDV) {
+            maxNDV = distinctVals.get(i);
+            maxIdx = i;
+          }
+        }
+
+        // join from multiple relations:
+        // denom = Product of all NDVs except the greatest of all
+        long denom = 1;
+        for (int i = 0; i < distinctVals.size(); i++) {
+          if (i != maxIdx) {
+            denom = StatsUtils.safeMult(denom, distinctVals.get(i));
+          }
+        }
+        return denom;
+      }
+    }
     private long getDenominator(List<Long> distinctVals) {
 
       if (distinctVals.isEmpty()) {
