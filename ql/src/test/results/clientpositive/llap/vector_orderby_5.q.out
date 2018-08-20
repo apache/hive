@@ -248,6 +248,6 @@ POSTHOOK: query: select bo, max(b) from vectortab2korc_n6 group by bo order by b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2korc_n6
 #### A masked pattern was here ####
+NULL	9180098147855769600
 true	9211455920344088576
 false	9209153648361848832
-NULL	9180098147855769600

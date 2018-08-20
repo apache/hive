@@ -285,7 +285,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 DESC NULLS LAST
+                        order by: _col1 DESC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -398,7 +398,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 DESC NULLS LAST
+                        order by: _col2 DESC NULLS FIRST
                         partition by: (grouping(_col3, 1) + grouping(_col3, 0)), CASE WHEN ((grouping(_col3, 0) = 0)) THEN (_col0) ELSE (CAST( null AS STRING)) END
                         raw input shape:
                         window functions:
