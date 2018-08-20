@@ -2366,7 +2366,7 @@ columnNameOrder
 @after { popMsg(state); }
     : identifier orderSpec=orderSpecification? nullSpec=nullOrdering?
     -> {$orderSpec.tree == null && $nullSpec.tree == null}?
-            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST identifier))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))
     -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_ASC}?
@@ -2396,7 +2396,7 @@ columnRefOrder
 @after { popMsg(state); }
     : expression orderSpec=orderSpecification? nullSpec=nullOrdering?
     -> {$orderSpec.tree == null && $nullSpec.tree == null}?
-            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST expression))
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST expression))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec expression))
     -> {$nullSpec.tree == null && $orderSpec.tree.getType()==HiveParser.KW_ASC}?
