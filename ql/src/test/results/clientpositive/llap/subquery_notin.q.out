@@ -105,10 +105,10 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col5
-                Statistics: Num rows: 500 Data size: 97528 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 97716 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col2 = 0L) or (_col5 is null and _col0 is not null and (_col3 >= _col2))) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 97528 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 97716 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1
@@ -373,12 +373,12 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5
-                Statistics: Num rows: 26 Data size: 6134 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5814 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 26 Data size: 6134 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 5814 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: int), _col4 (type: bigint), _col5 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -390,10 +390,10 @@ STAGE PLANS:
                   0 _col0 (type: string), _col1 (type: string)
                   1 _col0 (type: string), _col1 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col8
-                Statistics: Num rows: 26 Data size: 6154 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5834 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col4 = 0L)) THEN (true) WHEN (_col4 is null) THEN (true) WHEN (_col8 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col5 < _col4)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 13 Data size: 3087 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 13 Data size: 2927 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: string), _col2 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -932,10 +932,10 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col4
-                Statistics: Num rows: 26 Data size: 5966 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5806 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: (sq_count_check(CASE WHEN (_col4 is null) THEN (0) ELSE (_col4) END, true) > 0) (type: boolean)
-                  Statistics: Num rows: 8 Data size: 1840 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 8 Data size: 1792 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -973,10 +973,10 @@ STAGE PLANS:
                   0 _col1 (type: string), _col2 (type: int)
                   1 _col1 (type: string), _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col8
-                Statistics: Num rows: 8 Data size: 1932 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 8 Data size: 1944 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col4 = 0L)) THEN (true) WHEN (_col4 is null) THEN (true) WHEN (_col8 is not null) THEN (false) WHEN (_col2 is null) THEN (null) WHEN ((_col5 < _col4)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 4 Data size: 968 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 972 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: string), _col2 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -1518,10 +1518,10 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col4
-                Statistics: Num rows: 166 Data size: 17358 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 166 Data size: 17526 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col1 = 0L) or (_col4 is null and _col0 is not null and (_col2 >= _col1))) (type: boolean)
-                  Statistics: Num rows: 166 Data size: 17358 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 166 Data size: 17526 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
                     outputColumnNames: _col0
@@ -1679,12 +1679,12 @@ STAGE PLANS:
                   0 _col4 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11
-                Statistics: Num rows: 26 Data size: 16334 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16462 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col4 (type: string), _col5 (type: int)
                   sort order: ++
                   Map-reduce partition columns: _col4 (type: string), _col5 (type: int)
-                  Statistics: Num rows: 26 Data size: 16334 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 16462 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: bigint), _col11 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -1696,10 +1696,10 @@ STAGE PLANS:
                   0 _col4 (type: string), _col5 (type: int)
                   1 _col1 (type: string), _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col14
-                Statistics: Num rows: 26 Data size: 16402 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16506 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col10 = 0L)) THEN (true) WHEN (_col10 is null) THEN (true) WHEN (_col14 is not null) THEN (false) WHEN (_col5 is null) THEN (null) WHEN ((_col11 < _col10)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 13 Data size: 8211 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 13 Data size: 8263 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -1869,10 +1869,10 @@ STAGE PLANS:
                   0 (_col5 - 1) (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
-                Statistics: Num rows: 26 Data size: 16542 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16554 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col12 is null and _col5 is not null and (_col10 >= _col9)) or (_col9 = 0L)) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 16542 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 16554 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -2076,10 +2076,10 @@ STAGE PLANS:
                   0 (_col0 * _col5) (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
-                Statistics: Num rows: 26 Data size: 16538 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16542 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col12 is null and _col0 is not null and _col5 is not null and (_col10 >= _col9)) or (_col9 = 0L)) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 16538 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 16542 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -2314,12 +2314,12 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3, _col4
-                Statistics: Num rows: 26 Data size: 3474 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 3650 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: int)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                  Statistics: Num rows: 26 Data size: 3474 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 3650 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: bigint), _col4 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -2331,12 +2331,12 @@ STAGE PLANS:
                   0 _col0 (type: string), _col1 (type: int)
                   1 _col1 (type: string), _col3 (type: int)
                 outputColumnNames: _col1, _col3, _col4, _col7
-                Statistics: Num rows: 26 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 548 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col3 = 0L)) THEN (true) WHEN (_col3 is null) THEN (true) WHEN (_col7 is not null) THEN (false) WHEN ((_col1 + 100) is null) THEN (null) WHEN ((_col4 < _col3)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 13 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 13 Data size: 284 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 13 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 13 Data size: 284 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -2513,10 +2513,10 @@ STAGE PLANS:
                   0 floor(_col7) (type: bigint)
                   1 _col0 (type: bigint)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
-                Statistics: Num rows: 26 Data size: 16538 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16546 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col12 is null and _col7 is not null and (_col10 >= _col9)) or (_col9 = 0L)) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 16538 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 16546 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -2737,12 +2737,12 @@ STAGE PLANS:
                   0 _col5 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11
-                Statistics: Num rows: 26 Data size: 16222 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16270 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string), _col5 (type: int)
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: string), _col5 (type: int)
-                  Statistics: Num rows: 26 Data size: 16222 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 16270 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col10 (type: bigint), _col11 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -2754,10 +2754,10 @@ STAGE PLANS:
                   0 _col1 (type: string), _col5 (type: int)
                   1 _col0 (type: string), _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col14
-                Statistics: Num rows: 26 Data size: 16250 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16306 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col10 = 0L)) THEN (true) WHEN (_col10 is null) THEN (true) WHEN (_col14 is not null) THEN (false) WHEN (_col1 is null) THEN (null) WHEN ((_col11 < _col10)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 13 Data size: 8127 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 13 Data size: 8163 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -2967,12 +2967,12 @@ STAGE PLANS:
                   0 _col0 (type: int), _col5 (type: int)
                   1 _col0 (type: int), _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col11, _col12
-                Statistics: Num rows: 26 Data size: 16318 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16494 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col5 (type: int)
-                  Statistics: Num rows: 26 Data size: 16318 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 16494 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: string), _col3 (type: string), _col4 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col11 (type: bigint), _col12 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -2984,10 +2984,10 @@ STAGE PLANS:
                   0 _col0 (type: int), _col1 (type: string), _col5 (type: int)
                   1 _col1 (type: int), _col0 (type: string), _col2 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col11, _col12, _col16
-                Statistics: Num rows: 26 Data size: 16374 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16594 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col11 = 0L)) THEN (true) WHEN (_col11 is null) THEN (true) WHEN (_col16 is not null) THEN (false) WHEN (_col1 is null) THEN (null) WHEN ((_col12 < _col11)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 13 Data size: 8187 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 13 Data size: 8307 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -3137,12 +3137,12 @@ STAGE PLANS:
                   0 _col2 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5
-                Statistics: Num rows: 26 Data size: 8594 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 8258 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col1) (type: double), _col2 (type: string)
                   sort order: ++
                   Map-reduce partition columns: UDFToDouble(_col1) (type: double), _col2 (type: string)
-                  Statistics: Num rows: 26 Data size: 8594 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 8258 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col4 (type: bigint), _col5 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -3154,10 +3154,10 @@ STAGE PLANS:
                   0 UDFToDouble(_col1) (type: double), _col2 (type: string)
                   1 _col0 (type: double), _col1 (type: string)
                 outputColumnNames: _col0, _col1, _col4, _col5, _col8
-                Statistics: Num rows: 26 Data size: 6262 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 5958 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col4 = 0L)) THEN (true) WHEN (_col4 is null) THEN (true) WHEN (_col8 is not null) THEN (false) WHEN (_col1 is null) THEN (null) WHEN ((_col5 < _col4)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 13 Data size: 3133 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 13 Data size: 2989 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
                     outputColumnNames: _col0
@@ -3369,12 +3369,12 @@ STAGE PLANS:
                   0 _col2 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5
-                Statistics: Num rows: 26 Data size: 6114 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6226 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string), _col2 (type: int)
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: string), _col2 (type: int)
-                  Statistics: Num rows: 26 Data size: 6114 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 6226 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col4 (type: bigint), _col5 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -3386,10 +3386,10 @@ STAGE PLANS:
                   0 _col1 (type: string), _col2 (type: int)
                   1 _col0 (type: string), _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col4, _col5, _col8
-                Statistics: Num rows: 26 Data size: 6046 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 6178 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col4 = 0L)) THEN (true) WHEN (_col4 is null) THEN (true) WHEN (_col8 is not null) THEN (false) WHEN (_col1 is null) THEN (null) WHEN ((_col5 < _col4)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 13 Data size: 3025 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 13 Data size: 3097 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
                     outputColumnNames: _col0
@@ -3631,14 +3631,14 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col5
-                Statistics: Num rows: 500 Data size: 98632 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 97004 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col2 = 0L) or (_col5 is null and _col1 is not null and (_col3 >= _col2))) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 98632 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 97004 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 98632 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 97004 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       keys: _col0 (type: string)
@@ -3904,12 +3904,12 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3, _col4
-                Statistics: Num rows: 500 Data size: 95336 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 89016 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 500 Data size: 95336 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 89016 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: bigint), _col4 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -3921,14 +3921,14 @@ STAGE PLANS:
                   0 _col0 (type: string), _col1 (type: string)
                   1 _col1 (type: string), _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3, _col4, _col7
-                Statistics: Num rows: 500 Data size: 96968 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 89020 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col3 = 0L)) THEN (true) WHEN (_col3 is null) THEN (true) WHEN (_col7 is not null) THEN (false) WHEN (_col1 is null) THEN (null) WHEN ((_col4 < _col3)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 250 Data size: 48484 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 44520 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 250 Data size: 48484 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 250 Data size: 44520 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       keys: _col0 (type: string)
@@ -4173,10 +4173,10 @@ STAGE PLANS:
                   0 (_col5 - 1) (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
-                Statistics: Num rows: 26 Data size: 16542 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16554 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col12 is null and _col5 is not null and (_col10 >= _col9)) or (_col9 = 0L)) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 16542 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 16554 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -4381,10 +4381,10 @@ STAGE PLANS:
                   0 (_col5 - 1) (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
-                Statistics: Num rows: 26 Data size: 16542 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 16554 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col12 is null and _col5 is not null and (_col10 >= _col9)) or (_col9 = 0L)) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 16542 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 16554 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -4660,10 +4660,10 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col5
-                Statistics: Num rows: 500 Data size: 97160 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 97172 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col2 = 0L) or (_col5 is null and _col0 is not null and (_col3 >= _col2))) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 97160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 97172 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1
@@ -5329,12 +5329,12 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3, _col4
-                Statistics: Num rows: 26 Data size: 2848 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 2512 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: int)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                  Statistics: Num rows: 26 Data size: 2848 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 2512 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: bigint), _col4 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -5346,12 +5346,12 @@ STAGE PLANS:
                   0 _col0 (type: string), _col1 (type: int)
                   1 _col1 (type: string), _col3 (type: int)
                 outputColumnNames: _col1, _col3, _col4, _col7
-                Statistics: Num rows: 26 Data size: 524 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 164 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col3 = 0L)) THEN (true) WHEN (_col3 is null) THEN (true) WHEN (_col7 is not null) THEN (false) WHEN ((_col1 + 100) is null) THEN (null) WHEN ((_col4 < _col3)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 13 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 13 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 13 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 13 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -5569,10 +5569,10 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col4
-                Statistics: Num rows: 4 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col1 = 0L) or (_col4 is null and _col0 is not null and (_col2 >= _col1))) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
                     outputColumnNames: _col0
@@ -5722,12 +5722,12 @@ STAGE PLANS:
                   0 _col1 (type: char(100))
                   1 _col0 (type: char(100))
                 outputColumnNames: _col0, _col1, _col3, _col4
-                Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: char(100))
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: char(100))
-                  Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: bigint), _col4 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -5739,10 +5739,10 @@ STAGE PLANS:
                   0 _col0 (type: int), _col1 (type: char(100))
                   1 _col0 (type: int), _col1 (type: char(100))
                 outputColumnNames: _col0, _col3, _col4, _col7
-                Statistics: Num rows: 4 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col3 = 0L)) THEN (true) WHEN (_col3 is null) THEN (true) WHEN (_col7 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col4 < _col3)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 2 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
                     outputColumnNames: _col0
@@ -6627,12 +6627,12 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3, _col4
-                Statistics: Num rows: 3 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                  Statistics: Num rows: 3 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: bigint), _col4 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -6644,7 +6644,7 @@ STAGE PLANS:
                   0 _col0 (type: int), _col1 (type: int)
                   1 _col0 (type: int), _col1 (type: int)
                 outputColumnNames: _col0, _col3, _col4, _col7
-                Statistics: Num rows: 3 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col3 = 0L)) THEN (true) WHEN (_col3 is null) THEN (true) WHEN (_col7 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col4 < _col3)) THEN (false) ELSE (true) END (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7115,12 +7115,12 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3, _col4
-                Statistics: Num rows: 500 Data size: 95528 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 89016 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 95528 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 89016 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string), _col3 (type: bigint), _col4 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -7133,10 +7133,10 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3, _col4, _col6, _col7
                 residual filter predicates: {(_col1 > _col6)}
-                Statistics: Num rows: 500 Data size: 108068 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 106021 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CASE WHEN ((_col3 = 0L)) THEN (true) WHEN (_col3 is null) THEN (true) WHEN (_col7 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col4 < _col3)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 250 Data size: 54034 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 53066 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1
