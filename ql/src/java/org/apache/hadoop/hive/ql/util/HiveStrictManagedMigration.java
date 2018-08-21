@@ -241,7 +241,7 @@ public class HiveStrictManagedMigration {
     }
     String oldWarehouseRoot = cli.getOptionValue("oldWarehouseRoot");
     boolean dryRun = cli.hasOption("dryRun");
-    
+
     RunOptions runOpts = new RunOptions(
         dbRegex,
         tableRegex,
@@ -499,7 +499,7 @@ public class HiveStrictManagedMigration {
               oldDefaultDbLocation, curWhRootPath, dbName);
         }
       }
-    } 
+    }
     return false;
   }
 
@@ -576,7 +576,7 @@ public class HiveStrictManagedMigration {
   void moveTableData(Database dbObj, Table tableObj, Path newTablePath) throws HiveException, IOException, TException {
     String dbName = tableObj.getDbName();
     String tableName = tableObj.getTableName();
-    
+
     Path oldTablePath = new Path(tableObj.getSd().getLocation());
 
     LOG.info("Moving location of {} from {} to {}", getQualifiedName(tableObj), oldTablePath, newTablePath);
@@ -909,8 +909,8 @@ public class HiveStrictManagedMigration {
           modifiedTable, false, null, false);
     }
 
-    void updatePartitionLocation(String dbName, Table table, String partName, Partition part, Path newLocation)
-        throws HiveException, TException {
+    void updatePartitionLocation(String dbName, Table table, String partName,
+        Partition part, Path newLocation) throws HiveException, TException {
       String msg = String.format("ALTER TABLE %s PARTITION (%s) SET LOCATION '%s'",
           getQualifiedName(table), partName, newLocation.toString());
       LOG.info(msg);
@@ -920,7 +920,8 @@ public class HiveStrictManagedMigration {
               new org.apache.hadoop.hive.ql.metadata.Table(table),
               part);
       modifiedPart.setLocation(newLocation.toString());
-      hive.alterPartition(dbName, table.getTableName(), modifiedPart, null, false);
+      hive.alterPartition(
+        table.getCatName(), dbName, table.getTableName(), modifiedPart, null, false);
     }
 
     void updateTableProperties(Table table, Map<String, String> props) throws HiveException {
@@ -1100,7 +1101,7 @@ public class HiveStrictManagedMigration {
     if (isDir && recurse) {
       for (FileStatus subFile : fs.listStatus(path)) {
         // TODO: Use threadpool for more concurrency?
-        // TODO: check/set all files, or only directories 
+        // TODO: check/set all files, or only directories
         checkAndSetFileOwnerPermissions(fs, subFile, userName, groupName, dirPerms, filePerms, dryRun, recurse);
       }
     }
