@@ -193,17 +193,9 @@ public class Serializer {
       final FieldType fieldType = toFieldType(fieldTypeInfo);
       //Reuse existing FieldVector buffers
       //since we always call setValue or setNull for each row
-      boolean fieldExists = false;
-      if(rootVector.getChild(fieldName) != null) {
-        fieldExists = true;
-      }
       final FieldVector arrowVector = rootVector.addOrGet(fieldName, fieldType, FieldVector.class);
-      if(fieldExists) {
-        arrowVector.setValueCount(isNative ? vectorizedRowBatch.size : batchSize);
-      } else {
-        arrowVector.setInitialCapacity(isNative ? vectorizedRowBatch.size : batchSize);
-        arrowVector.allocateNew();
-      }
+      arrowVector.setInitialCapacity(isNative ? vectorizedRowBatch.size : batchSize);
+      arrowVector.allocateNew();
       write(arrowVector, hiveVector, fieldTypeInfo, isNative ? vectorizedRowBatch.size : batchSize, vectorizedRowBatch, isNative);
     }
     if(!isNative) {
