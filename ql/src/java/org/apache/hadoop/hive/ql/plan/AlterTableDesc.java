@@ -62,11 +62,15 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     ADDFILEFORMAT("add fileformat"), ADDCLUSTERSORTCOLUMN("add cluster sort column"),
     RENAMECOLUMN("rename column"), ADDPARTITION("add partition"), TOUCH("touch"), ARCHIVE("archieve"),
     UNARCHIVE("unarchieve"), ALTERLOCATION("alter location"),
-    DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
+    DROPPARTITION("drop partition"),
+    RENAMEPARTITION("rename partition"), // Note: used in RenamePartitionDesc, not here.
+    ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
-    ALTERPARTITION("alter partition"), COMPACT("compact"),
+    ALTERPARTITION("alter partition"), // Note: this is never used in AlterTableDesc.
+    COMPACT("compact"),
     TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint"), ADDCONSTRAINT("add constraint"),
-    UPDATECOLUMNS("update columns"), OWNER("set owner"), UPDATESTATS("update stats");
+    UPDATECOLUMNS("update columns"), OWNER("set owner"),
+    UPDATESTATS("update stats"); // Note: used in ColumnStatsUpdateWork, not here.
     ;
 
     private final String name;
@@ -969,10 +973,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     case DROPPROPS: return isExplicitStatsUpdate;
     // The check for the following ones is performed before setting AlterTableDesc into the acid field.
     // These need write ID and stuff because they invalidate column stats.
-    case RENAMECOLUMN: return true;
-    case RENAME: return true;
-    case REPLACECOLS: return true;
-    case ADDCOLS: return true;
+    case RENAMECOLUMN:
+    case RENAME:
+    case REPLACECOLS:
+    case ADDCOLS:
+    case ALTERLOCATION:
+    case UPDATECOLUMNS: return true;
     // RENAMEPARTITION is handled in RenamePartitionDesc
     default: return false;
     }

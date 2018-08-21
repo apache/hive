@@ -1994,7 +1994,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     addLocationToOutputs(newLocation);
     AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, newLocation, partSpec);
-
+    Table tbl = getTable(tableName);
+    if (AcidUtils.isTransactionalTable(tbl)) {
+      setAcidDdlDesc(alterTblDesc);
+    }
     addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc)));
@@ -2279,6 +2282,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTblDesc.setOldName(tableName);
     alterTblDesc.setIsCascade(isCascade);
     alterTblDesc.setPartSpec(partSpec);
+    Table tbl = getTable(tableName);
+    if (AcidUtils.isTransactionalTable(tbl)) {
+      setAcidDdlDesc(alterTblDesc);
+    }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
             alterTblDesc), conf));
