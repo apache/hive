@@ -700,7 +700,7 @@ public class Serializer {
            final int batchIndex = sel[logical];
            if (inputIsNull[batchIndex]) {
              //Add NULL
-             nullSetter.accept(batchIndex, fieldVector, hiveVector);
+             nullSetter.accept(logical, fieldVector, hiveVector);
            } else {
              //Add row batchIndex
              valueSetter.accept(logical, batchIndex, fieldVector, hiveVector, typeInfo);
