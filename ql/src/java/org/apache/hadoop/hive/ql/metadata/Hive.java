@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
@@ -4342,16 +4343,52 @@ private void constructOneLBLocationMap(FileStatus fSta,
           listNewFilesRecursively(destFs, destf, newFiles);
         }
       } else {
+        final Map<Future<Boolean>, Path> moveFutures = Maps.newLinkedHashMapWithExpectedSize(srcs.length);
+        final int moveFilesThreadCount = HiveConf.getIntVar(conf, ConfVars.HIVE_MOVE_FILES_THREAD_COUNT);
+        final ExecutorService pool = moveFilesThreadCount > 0
+            ? Executors.newFixedThreadPool(
+                moveFilesThreadCount,
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Replace-Thread-%d").build())
+            : MoreExecutors.newDirectExecutorService();
+        final SessionState parentSession = SessionState.get();
         // its either a file or glob
         for (FileStatus src : srcs) {
           Path destFile = new Path(destf, src.getPath().getName());
-          if (!moveFile(conf, src.getPath(), destFile, true, isSrcLocal, isManaged)) {
+          moveFutures.put(
+              pool.submit(
+                  new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                      SessionState.setCurrentSessionState(parentSession);
+                      return moveFile(
+                          conf, src.getPath(), destFile, true, isSrcLocal, isManaged);
+                    }
+                  }),
+              destFile);
+        }
+
+        pool.shutdown();
+        for (Map.Entry<Future<Boolean>, Path> moveFuture : moveFutures.entrySet()) {
+          boolean moveFailed;
+          try {
+            moveFailed = !moveFuture.getKey().get();
+          } catch (InterruptedException | ExecutionException e) {
+            pool.shutdownNow();
+            if (e.getCause() instanceof IOException) {
+              throw (IOException) e.getCause();
+            }
+            if (e.getCause() instanceof HiveException) {
+              throw (HiveException) e.getCause();
+            }
+            throw handlePoolException(pool, e);
+          }
+          if (moveFailed) {
             throw new IOException("Error moving: " + srcf + " into: " + destf);
           }
 
           // Add file paths of the files that will be moved to the destination if the caller needs it
           if (null != newFiles) {
-            newFiles.add(destFile);
+            newFiles.add(moveFuture.getValue());
           }
         }
       }
