@@ -534,6 +534,7 @@ public interface IMetaStoreClient {
    * @throws TException
    *           A thrift communication error occurred
    */
+  @Deprecated // TODO: deprecate all methods without a catalog here; a single layer (e.g. Hive.java) should handle current-catalog
   void dropTable(String dbname, String tableName, boolean deleteData,
       boolean ignoreUnknownTab, boolean ifPurge) throws MetaException, TException,
       NoSuchObjectException;
@@ -2079,7 +2080,7 @@ public interface IMetaStoreClient {
       throws InvalidOperationException, MetaException, TException;
 
 
-  void alter_partition(String dbName, String tblName, Partition newPart,
+  void alter_partition(String catName, String dbName, String tblName, Partition newPart,
       EnvironmentContext environmentContext, String writeIdList)
       throws InvalidOperationException, MetaException, TException;
 

@@ -2061,11 +2061,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void alter_partition(String dbName, String tblName, Partition newPart,
+  public void alter_partition(String catName, String dbName, String tblName, Partition newPart,
       EnvironmentContext environmentContext, String writeIdList)
       throws InvalidOperationException, MetaException, TException {
     AlterPartitionsRequest req = new AlterPartitionsRequest(
         dbName, tblName, Lists.newArrayList(newPart));
+    req.setCatName(catName);
     req.setEnvironmentContext(environmentContext);
     req.setValidWriteIdList(writeIdList);
     client.alter_partitions_req(req);

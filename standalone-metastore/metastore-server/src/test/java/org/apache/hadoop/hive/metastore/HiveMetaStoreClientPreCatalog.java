@@ -3516,7 +3516,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void alter_partition(String dbName, String tblName, Partition newPart,
+  public void alter_partition(String catName, String dbName, String tblName, Partition newPart,
       EnvironmentContext environmentContext, String writeIdList)
       throws InvalidOperationException, MetaException, TException {
     throw new UnsupportedOperationException();
