@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +70,8 @@ public class MiniDruidCluster extends AbstractService {
                   "druid.coordinator.period", "PT10S",
                   "druid.manager.segments.pollDuration", "PT10S"
           );
+  private static final int MIN_PORT_NUMBER = 60000;
+  private static final int MAX_PORT_NUMBER = 65535;
 
   private final DruidNode historical;
 
@@ -81,6 +85,7 @@ public class MiniDruidCluster extends AbstractService {
   private final File dataDirectory;
 
   private final File logDirectory;
+  private final String derbyURI;
 
   public MiniDruidCluster(String name) {
     this(name, "/tmp/miniDruid/log", "/tmp/miniDruid/data", 2181, null);
@@ -91,11 +96,14 @@ public class MiniDruidCluster extends AbstractService {
     super(name);
     this.dataDirectory = new File(tmpDir, "druid-data");
     this.logDirectory = new File(logDir);
+    int derbyPort = findPort(MIN_PORT_NUMBER, MAX_PORT_NUMBER);
+
 
     ensureCleanDirectory(dataDirectory);
 
-    String derbyURI = String
-            .format("jdbc:derby://localhost:1527/%s/druid_derby/metadata.db;create=true",
+    derbyURI = String
+            .format("jdbc:derby://localhost:%s/%s/druid_derby/metadata.db;create=true",
+                    derbyPort,
                     dataDirectory.getAbsolutePath()
             );
     String segmentsCache = String
@@ -110,6 +118,7 @@ public class MiniDruidCluster extends AbstractService {
     Map<String, String> coordinatorProperties = coordinatorMapBuilder.putAll(COMMON_DRUID_CONF)
             .putAll(COMMON_COORDINATOR_INDEXER)
             .put("druid.metadata.storage.connector.connectURI", derbyURI)
+            .put("druid.metadata.storage.connector.port", String.valueOf(derbyPort))
             .put("druid.indexer.logs.directory", indexingLogDir)
             .put("druid.zk.service.host", "localhost:" + zookeeperPort)
             .put("druid.coordinator.startDelay", "PT1S")
@@ -134,6 +143,53 @@ public class MiniDruidCluster extends AbstractService {
     );
     druidNodes = Arrays.asList(coordinator, historical, broker);
 
+  }
+
+  private int findPort(int start, int end) {
+    int port = start;
+    while (!available(port)) {
+      port++;
+      if (port == end) {
+        throw  new RuntimeException("can not find free port for range " + start + ":" + end);
+      }
+    }
+    return port;
+  }
+
+  /**
+   * Checks to see if a specific port is available.
+   *
+   * @param port the port to check for availability
+   */
+  public static boolean available(int port) {
+    if (port < MIN_PORT_NUMBER || port > MAX_PORT_NUMBER) {
+      throw new IllegalArgumentException("Invalid start port: " + port);
+    }
+
+    ServerSocket ss = null;
+    DatagramSocket ds = null;
+    try {
+      ss = new ServerSocket(port);
+      ss.setReuseAddress(true);
+      ds = new DatagramSocket(port);
+      ds.setReuseAddress(true);
+      return true;
+    } catch (IOException e) {
+    } finally {
+      if (ds != null) {
+        ds.close();
+      }
+
+      if (ss != null) {
+        try {
+          ss.close();
+        } catch (IOException e) {
+          /* should not be thrown */
+        }
+      }
+    }
+
+    return false;
   }
 
   private static void ensureCleanDirectory(File dir){
@@ -189,9 +245,7 @@ public class MiniDruidCluster extends AbstractService {
 
 
   public String getMetadataURI() {
-    return String.format("jdbc:derby://localhost:1527/%s/druid_derby/metadata.db",
-            dataDirectory.getAbsolutePath()
-    );
+    return derbyURI;
   }
 
   public String getDeepStorageDir() {
