@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.lang.reflect.Field;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -38,6 +37,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.lang.reflect.*;
+import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -57,6 +58,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -95,6 +97,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 public abstract class TestHiveMetaStore {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStore.class);
@@ -3097,5 +3101,56 @@ public abstract class TestHiveMetaStore {
     }
     int size = allUuids.size();
     assertEquals(numAPICallsPerThread * parallelCalls, size);
+  }
+
+  /**
+   * While altering partition(s), verify DO NOT calculate partition statistics if
+   * <ol>
+   *   <li>table property DO_NOT_UPDATE_STATS is true</li>
+   *   <li>STATS_AUTO_GATHER is false</li>
+   *   <li>Is View</li>
+   * </ol>
+   */
+  @Test
+  public void testUpdatePartitionStat_doesNotUpdateStats() throws Exception {
+    final String DB_NAME = "db1";
+    final String TABLE_NAME = "tbl1";
+    Table tbl = new TableBuilder()
+        .setDbName(DB_NAME)
+        .setTableName(TABLE_NAME)
+        .addCol("id", "int")
+        .addTableParam(StatsSetupConst.DO_NOT_UPDATE_STATS, "true")
+        .build(null);
+    List<String> vals = new ArrayList<>(2);
+    vals.add("col1");
+    vals.add("col2");
+    Partition part = new Partition();
+    part.setDbName(DB_NAME);
+    part.setTableName(TABLE_NAME);
+    part.setValues(vals);
+    part.setParameters(new HashMap<>());
+    part.setSd(tbl.getSd().deepCopy());
+    part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
+    part.getSd().setLocation(tbl.getSd().getLocation() + "/partCol=1");
+    Warehouse wh = mock(Warehouse.class);
+    //Execute initializeAddedPartition() and it should not trigger updatePartitionStatsFast() as DO_NOT_UPDATE_STATS is true
+    HiveMetaStore.HMSHandler hms = new HiveMetaStore.HMSHandler("", conf, false);
+    Method m = hms.getClass().getDeclaredMethod("initializeAddedPartition", Table.class, Partition.class, boolean.class);
+    m.setAccessible(true);
+    //Invoke initializeAddedPartition();
+    m.invoke(hms, tbl, part, false);
+    verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
+
+    //Remove tbl's DO_NOT_UPDATE_STATS & set STATS_AUTO_GATHER = false
+    tbl.unsetParameters();
+    MetastoreConf.setBoolVar(conf, ConfVars.STATS_AUTO_GATHER, false);
+    m.invoke(hms, tbl, part, false);
+    verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
+
+    //Set STATS_AUTO_GATHER = true and set tbl as a VIRTUAL_VIEW
+    MetastoreConf.setBoolVar(conf, ConfVars.STATS_AUTO_GATHER, true);
+    tbl.setTableType("VIRTUAL_VIEW");
+    m.invoke(hms, tbl, part, false);
+    verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
   }
 }
