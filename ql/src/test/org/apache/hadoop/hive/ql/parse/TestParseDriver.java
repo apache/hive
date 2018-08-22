@@ -19,11 +19,20 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestParseDriver {
   ParseDriver parseDriver = new ParseDriver();
+
+  @Test
+  public void atFirstWarmup() throws Exception {
+    // this test method is here to do an initial call to parsedriver; and prevent any tests with timeouts to be the first.
+    parseDriver.parse("select 1");
+  }
 
   @Test
   public void testParse() throws Exception {
@@ -114,4 +123,95 @@ public class TestParseDriver {
       assertTree((ASTNode) astNode1.getChild(i), (ASTNode) astNode2.getChild(i));
     }
   }
+
+  @Test(timeout = 1000)
+  public void testNestedFunctionCalls() throws Exception {
+    // Expectation here is not to run into a timeout
+    parseDriver.parse(
+        "select greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,"
+            + "greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,"
+            + "greatest(1,greatest(1,(greatest(1,greatest(1,2)))))))))))))))))))");
+  }
+
+  @Test(timeout = 1000)
+  public void testHIVE18624() throws Exception {
+    // Expectation here is not to run into a timeout
+    parseDriver.parse("EXPLAIN\n" +
+        "SELECT DISTINCT\n" +
+        "\n" +
+        "\n" +
+        "  IF(lower('a') <= lower('a')\n" +
+        "  ,'a'\n" +
+        "  ,IF(('a' IS NULL AND from_unixtime(UNIX_TIMESTAMP()) <= 'a')\n" +
+        "  ,'a'\n" +
+        "  ,IF(if('a' = 'a', TRUE, FALSE) = 1\n" +
+        "  ,'a'\n" +
+        "  ,IF(('a' = 1 and lower('a') NOT IN ('a', 'a')\n" +
+        "       and lower(if('a' = 'a','a','a')) <= lower('a'))\n" +
+        "      OR ('a' like 'a' OR 'a' like 'a')\n" +
+        "      OR 'a' in ('a','a')\n" +
+        "  ,'a'\n" +
+        "  ,IF(if(lower('a') in ('a', 'a') and 'a'='a', TRUE, FALSE) = 1\n" +
+        "  ,'a'\n" +
+        "  ,IF('a'='a' and unix_timestamp(if('a' = 'a',cast('a' as string),coalesce('a',cast('a' as string),from_unixtime(unix_timestamp())))) <= unix_timestamp(concat_ws('a',cast(lower('a') as string),'00:00:00')) + 9*3600\n"
+        +
+        "  ,'a'\n" +
+        "\n" +
+        "  ,If(lower('a') <= lower('a')\n" +
+        "      and if(lower('a') in ('a', 'a') and 'a'<>'a', TRUE, FALSE) <> 1\n" +
+        "  ,'a'\n" +
+        "  ,IF('a'=1 AND 'a'=1\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' = 1 and COALESCE(cast('a' as int),0) = 0\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' = 'a'\n" +
+        "  ,'a'\n" +
+        "\n" +
+        "  ,If('a' = 'a' AND lower('a')>lower(if(lower('a')<1830,'a',cast(date_add('a',1) as timestamp)))\n" +
+        "  ,'a'\n" +
+        "\n" +
+        "\n" +
+        "\n" +
+        "  ,IF('a' = 1\n" +
+        "\n" +
+        "  ,IF('a' in ('a', 'a') and ((unix_timestamp('a')-unix_timestamp('a')) / 60) > 30 and 'a' = 1\n" +
+        "\n" +
+        "\n" +
+        "  ,'a', 'a')\n" +
+        "\n" +
+        "\n" +
+        "  ,IF(if('a' = 'a', FALSE, TRUE ) = 1 AND 'a' IS NULL\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' = 1 and 'a'>0\n" +
+        "  , 'a'\n" +
+        "\n" +
+        "  ,IF('a' = 1 AND 'a' ='a'\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' is not null and 'a' is not null and 'a' > 'a'\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' = 1\n" +
+        "  ,'a'\n" +
+        "\n" +
+        "  ,IF('a' = 'a'\n" +
+        "  ,'a'\n" +
+        "\n" +
+        "  ,If('a' = 1\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' = 1\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' = 1\n" +
+        "  ,'a'\n" +
+        "\n" +
+        "  ,IF('a' ='a' and 'a' ='a' and cast(unix_timestamp('a') as  int) + 93600 < cast(unix_timestamp()  as int)\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' = 'a'\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' = 'a' and 'a' in ('a','a','a')\n" +
+        "  ,'a'\n" +
+        "  ,IF('a' = 'a'\n" +
+        "  ,'a','a'))\n" +
+        "      )))))))))))))))))))))))\n" +
+        "AS test_comp_exp");
+  }
+
 }
