@@ -57,6 +57,7 @@ import org.apache.orc.impl.OrcIndex;
 import org.apache.orc.impl.OutStream;
 import org.apache.orc.impl.RecordReaderUtils;
 import org.apache.orc.impl.StreamName;
+import org.apache.orc.impl.RecordReaderImpl.SargApplier;
 import org.apache.orc.impl.StreamName.Area;
 import org.apache.orc.impl.WriterImpl;
 import org.apache.orc.StripeInformation;
@@ -323,15 +324,17 @@ class EncodedReaderImpl implements EncodedReader {
       trace.logColumnRead(i, colRgIx, enc.getKind());
     }
     CreateHelper listToRead = new CreateHelper();
-    boolean hasIndexOnlyCols = false;
+    boolean hasIndexOnlyCols = false, hasAnyNonData = false;
     for (OrcProto.Stream stream : streamList) {
       long length = stream.getLength();
       int colIx = stream.getColumn();
       OrcProto.Stream.Kind streamKind = stream.getKind();
-      if (!physicalFileIncludes[colIx] || StreamName.getArea(streamKind) != StreamName.Area.DATA) {
-        // We have a stream for included column, but in future it might have no data streams.
-        // It's more like "has at least one column included that has an index stream".
-        hasIndexOnlyCols = hasIndexOnlyCols || physicalFileIncludes[colIx];
+      boolean isIndexCol = StreamName.getArea(streamKind) != StreamName.Area.DATA;
+      hasAnyNonData = hasAnyNonData || isIndexCol;
+      // We have a stream for included column, but in future it might have no data streams.
+      // It's more like "has at least one column included that has an index stream".
+      hasIndexOnlyCols = hasIndexOnlyCols || (isIndexCol && physicalFileIncludes[colIx]);
+      if (!physicalFileIncludes[colIx] || isIndexCol) {
         if (isTracingEnabled) {
           LOG.trace("Skipping stream for column " + colIx + ": "
               + streamKind + " at " + offset + ", " + length);
@@ -367,8 +370,22 @@ class EncodedReaderImpl implements EncodedReader {
     boolean hasFileId = this.fileKey != null;
     if (listToRead.get() == null) {
       // No data to read for this stripe. Check if we have some included index-only columns.
-      // TODO: there may be a bug here. Could there be partial RG filtering on index-only column?
-      if (hasIndexOnlyCols && (rgs == null)) {
+      // For example, count(1) would have the root column, that has no data stream, included.
+      // It may also happen that we have a column included with no streams whatsoever. That
+      // should only be possible if the file has no index streams.
+      boolean hasAnyIncludes = false;
+      if (!hasIndexOnlyCols) {
+        for (int i = 0; i < physicalFileIncludes.length; ++i) {
+          if (!physicalFileIncludes[i]) continue;
+          hasAnyIncludes = true;
+          break;
+        }
+      }
+      boolean nonProjectionRead = hasIndexOnlyCols || (!hasAnyNonData && hasAnyIncludes);
+
+      // TODO: Could there be partial RG filtering w/no projection?
+      //       We should probably just disable filtering for such cases if they exist.
+      if (nonProjectionRead && (rgs == SargApplier.READ_ALL_RGS)) {
         OrcEncodedColumnBatch ecb = POOLS.ecbPool.take();
         ecb.init(fileKey, stripeIx, OrcEncodedColumnBatch.ALL_RGS, physicalFileIncludes.length);
         try {
@@ -1004,7 +1021,7 @@ class EncodedReaderImpl implements EncodedReader {
       if (current instanceof CacheChunk) {
         // 2a. This is a decoded compression buffer, add as is.
         CacheChunk cc = (CacheChunk)current;
-        if (isTracingEnabled) { // TODO# HERE unaccompanied lock
+        if (isTracingEnabled) {
           LOG.trace("Locking " + cc.getBuffer() + " due to reuse");
         }
         cacheWrapper.reuseBuffer(cc.getBuffer());
