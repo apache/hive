@@ -9219,166 +9219,160 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       Configuration conf, Lock startLock, Condition startCondition,
       AtomicBoolean startedServing) throws Throwable {
-    try {
-      isMetaStoreRemote = true;
-      // Server will create new threads up to max as necessary. After an idle
-      // period, it will destroy threads to keep the number of threads in the
-      // pool to min.
-      long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
-      int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
-      int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
-      boolean tcpKeepAlive = MetastoreConf.getBoolVar(conf, ConfVars.TCP_KEEP_ALIVE);
-      boolean useFramedTransport = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
-      boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
-      boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
-      useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
+    isMetaStoreRemote = true;
+    // Server will create new threads up to max as necessary. After an idle
+    // period, it will destroy threads to keep the number of threads in the
+    // pool to min.
+    long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
+    int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
+    int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
+    boolean tcpKeepAlive = MetastoreConf.getBoolVar(conf, ConfVars.TCP_KEEP_ALIVE);
+    boolean useFramedTransport = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
+    boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
+    boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
+    useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
 
-      if (useSasl) {
-        // we are in secure mode. Login using keytab
-        String kerberosName = SecurityUtil
-            .getServerPrincipal(MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL), "0.0.0.0");
-        String keyTabFile = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
-        UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
-      }
-
-      TProcessor processor;
-      TTransportFactory transFactory;
-      final TProtocolFactory protocolFactory;
-      final TProtocolFactory inputProtoFactory;
-      if (useCompactProtocol) {
-        protocolFactory = new TCompactProtocol.Factory();
-        inputProtoFactory = new TCompactProtocol.Factory(maxMessageSize, maxMessageSize);
-      } else {
-        protocolFactory = new TBinaryProtocol.Factory();
-        inputProtoFactory = new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize);
-      }
-      HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
-          false);
-      IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
-
-      TServerSocket serverSocket;
-
-      if (useSasl) {
-        // we are in secure mode.
-        if (useFramedTransport) {
-          throw new HiveMetaException("Framed transport is not supported with SASL enabled.");
-        }
-        saslServer = bridge.createServer(
-            MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE),
-            MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL),
-            MetastoreConf.getVar(conf, ConfVars.CLIENT_KERBEROS_PRINCIPAL));
-        // Start delegation token manager
-        delegationTokenManager = new MetastoreDelegationTokenManager();
-        delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler, HadoopThriftAuthBridge.Server.ServerMode.METASTORE);
-        saslServer.setSecretManager(delegationTokenManager.getSecretManager());
-        transFactory = saslServer.createTransportFactory(
-                MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
-        processor = saslServer.wrapProcessor(
-          new ThriftHiveMetastore.Processor<>(handler));
-
-        LOG.info("Starting DB backed MetaStore Server in Secure Mode");
-      } else {
-        // we are in unsecure mode.
-        if (MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
-          transFactory = useFramedTransport ?
-              new ChainedTTransportFactory(new TFramedTransport.Factory(),
-                  new TUGIContainingTransport.Factory())
-              : new TUGIContainingTransport.Factory();
-
-          processor = new TUGIBasedProcessor<>(handler);
-          LOG.info("Starting DB backed MetaStore Server with SetUGI enabled");
-        } else {
-          transFactory = useFramedTransport ?
-              new TFramedTransport.Factory() : new TTransportFactory();
-          processor = new TSetIpAddressProcessor<>(handler);
-          LOG.info("Starting DB backed MetaStore Server");
-        }
-      }
-
-      if (!useSSL) {
-        serverSocket = SecurityUtils.getServerSocket(null, port);
-      } else {
-        String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
-        if (keyStorePath.isEmpty()) {
-          throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH.toString()
-              + " Not configured for SSL connection");
-        }
-        String keyStorePassword =
-            MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
-
-        // enable SSL support for HMS
-        List<String> sslVersionBlacklist = new ArrayList<>();
-        for (String sslVersion : MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",")) {
-          sslVersionBlacklist.add(sslVersion);
-        }
-
-        serverSocket = SecurityUtils.getServerSSLSocket(null, port, keyStorePath,
-            keyStorePassword, sslVersionBlacklist);
-      }
-
-      if (tcpKeepAlive) {
-        serverSocket = new TServerSocketKeepAlive(serverSocket);
-      }
-
-      // Metrics will have already been initialized if we're using them since HMSHandler
-      // initializes them.
-      openConnections = Metrics.getOrCreateGauge(MetricsConstants.OPEN_CONNECTIONS);
-
-      TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverSocket)
-          .processor(processor)
-          .transportFactory(transFactory)
-          .protocolFactory(protocolFactory)
-          .inputProtocolFactory(inputProtoFactory)
-          .minWorkerThreads(minWorkerThreads)
-          .maxWorkerThreads(maxWorkerThreads);
-
-      TServer tServer = new TThreadPoolServer(args);
-      TServerEventHandler tServerEventHandler = new TServerEventHandler() {
-        @Override
-        public void preServe() {
-        }
-
-        @Override
-        public ServerContext createContext(TProtocol tProtocol, TProtocol tProtocol1) {
-          openConnections.incrementAndGet();
-          return null;
-        }
-
-        @Override
-        public void deleteContext(ServerContext serverContext, TProtocol tProtocol, TProtocol tProtocol1) {
-          openConnections.decrementAndGet();
-          // If the IMetaStoreClient#close was called, HMSHandler#shutdown would have already
-          // cleaned up thread local RawStore. Otherwise, do it now.
-          cleanupRawStore();
-        }
-
-        @Override
-        public void processContext(ServerContext serverContext, TTransport tTransport, TTransport tTransport1) {
-        }
-      };
-
-      tServer.setServerEventHandler(tServerEventHandler);
-      HMSHandler.LOG.info("Started the new metaserver on port [" + port
-          + "]...");
-      HMSHandler.LOG.info("Options.minWorkerThreads = "
-          + minWorkerThreads);
-      HMSHandler.LOG.info("Options.maxWorkerThreads = "
-          + maxWorkerThreads);
-      HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
-      HMSHandler.LOG.info("Enable SSL = " + useSSL);
-
-      boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
-      HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
-
-      if (startLock != null) {
-        signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
-      }
-      tServer.serve();
-    } catch (Throwable x) {
-      x.printStackTrace();
-      HMSHandler.LOG.error(StringUtils.stringifyException(x));
-      throw x;
+    if (useSasl) {
+      // we are in secure mode. Login using keytab
+      String kerberosName = SecurityUtil
+          .getServerPrincipal(MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL), "0.0.0.0");
+      String keyTabFile = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
+      UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
     }
+
+    TProcessor processor;
+    TTransportFactory transFactory;
+    final TProtocolFactory protocolFactory;
+    final TProtocolFactory inputProtoFactory;
+    if (useCompactProtocol) {
+      protocolFactory = new TCompactProtocol.Factory();
+      inputProtoFactory = new TCompactProtocol.Factory(maxMessageSize, maxMessageSize);
+    } else {
+      protocolFactory = new TBinaryProtocol.Factory();
+      inputProtoFactory = new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize);
+    }
+    HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
+        false);
+    IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+
+    TServerSocket serverSocket;
+
+    if (useSasl) {
+      // we are in secure mode.
+      if (useFramedTransport) {
+        throw new HiveMetaException("Framed transport is not supported with SASL enabled.");
+      }
+      saslServer = bridge.createServer(
+          MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE),
+          MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL),
+          MetastoreConf.getVar(conf, ConfVars.CLIENT_KERBEROS_PRINCIPAL));
+      // Start delegation token manager
+      delegationTokenManager = new MetastoreDelegationTokenManager();
+      delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler, HadoopThriftAuthBridge.Server.ServerMode.METASTORE);
+      saslServer.setSecretManager(delegationTokenManager.getSecretManager());
+      transFactory = saslServer.createTransportFactory(
+              MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+      processor = saslServer.wrapProcessor(
+        new ThriftHiveMetastore.Processor<>(handler));
+
+      LOG.info("Starting DB backed MetaStore Server in Secure Mode");
+    } else {
+      // we are in unsecure mode.
+      if (MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
+        transFactory = useFramedTransport ?
+            new ChainedTTransportFactory(new TFramedTransport.Factory(),
+                new TUGIContainingTransport.Factory())
+            : new TUGIContainingTransport.Factory();
+
+        processor = new TUGIBasedProcessor<>(handler);
+        LOG.info("Starting DB backed MetaStore Server with SetUGI enabled");
+      } else {
+        transFactory = useFramedTransport ?
+            new TFramedTransport.Factory() : new TTransportFactory();
+        processor = new TSetIpAddressProcessor<>(handler);
+        LOG.info("Starting DB backed MetaStore Server");
+      }
+    }
+
+    if (!useSSL) {
+      serverSocket = SecurityUtils.getServerSocket(null, port);
+    } else {
+      String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
+      if (keyStorePath.isEmpty()) {
+        throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH.toString()
+            + " Not configured for SSL connection");
+      }
+      String keyStorePassword =
+          MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
+
+      // enable SSL support for HMS
+      List<String> sslVersionBlacklist = new ArrayList<>();
+      for (String sslVersion : MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",")) {
+        sslVersionBlacklist.add(sslVersion);
+      }
+
+      serverSocket = SecurityUtils.getServerSSLSocket(null, port, keyStorePath,
+          keyStorePassword, sslVersionBlacklist);
+    }
+
+    if (tcpKeepAlive) {
+      serverSocket = new TServerSocketKeepAlive(serverSocket);
+    }
+
+    // Metrics will have already been initialized if we're using them since HMSHandler
+    // initializes them.
+    openConnections = Metrics.getOrCreateGauge(MetricsConstants.OPEN_CONNECTIONS);
+
+    TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverSocket)
+        .processor(processor)
+        .transportFactory(transFactory)
+        .protocolFactory(protocolFactory)
+        .inputProtocolFactory(inputProtoFactory)
+        .minWorkerThreads(minWorkerThreads)
+        .maxWorkerThreads(maxWorkerThreads);
+
+    TServer tServer = new TThreadPoolServer(args);
+    TServerEventHandler tServerEventHandler = new TServerEventHandler() {
+      @Override
+      public void preServe() {
+      }
+
+      @Override
+      public ServerContext createContext(TProtocol tProtocol, TProtocol tProtocol1) {
+        openConnections.incrementAndGet();
+        return null;
+      }
+
+      @Override
+      public void deleteContext(ServerContext serverContext, TProtocol tProtocol, TProtocol tProtocol1) {
+        openConnections.decrementAndGet();
+        // If the IMetaStoreClient#close was called, HMSHandler#shutdown would have already
+        // cleaned up thread local RawStore. Otherwise, do it now.
+        cleanupRawStore();
+      }
+
+      @Override
+      public void processContext(ServerContext serverContext, TTransport tTransport, TTransport tTransport1) {
+      }
+    };
+
+    tServer.setServerEventHandler(tServerEventHandler);
+    HMSHandler.LOG.info("Started the new metaserver on port [" + port
+        + "]...");
+    HMSHandler.LOG.info("Options.minWorkerThreads = "
+        + minWorkerThreads);
+    HMSHandler.LOG.info("Options.maxWorkerThreads = "
+        + maxWorkerThreads);
+    HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
+    HMSHandler.LOG.info("Enable SSL = " + useSSL);
+
+    boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
+    HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
+
+    if (startLock != null) {
+      signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
+    }
+    tServer.serve();
   }
 
   private static void cleanupRawStore() {
