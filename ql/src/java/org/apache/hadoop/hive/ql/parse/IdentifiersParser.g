@@ -420,7 +420,7 @@ atomExpression
     | whenExpression
     | (subQueryExpression)=> (subQueryExpression)
         -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
-    | (function) => function
+    | (functionName LPAREN) => function
     | tableOrColumn
     | expressionsInParenthesis[true]
     ;

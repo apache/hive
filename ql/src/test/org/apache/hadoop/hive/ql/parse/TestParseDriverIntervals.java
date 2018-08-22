@@ -74,8 +74,9 @@ public class TestParseDriverIntervals {
     if (children != null) {
       for (Node c : children) {
         ASTNode r = findFunctionNode((ASTNode) c);
-        if (r != null)
+        if (r != null) {
           return r;
+        }
       }
     }
     return null;
