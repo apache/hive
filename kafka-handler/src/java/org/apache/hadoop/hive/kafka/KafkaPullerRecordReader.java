@@ -158,9 +158,6 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
   }
 
   @Override public void close() throws IOException {
-    if (!started) {
-      return;
-    }
     LOG.trace("total read bytes [{}]", readBytes);
     if (consumer != null) {
       consumer.wakeup();

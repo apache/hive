@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.kafka;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -26,6 +27,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 
 import java.io.IOException;
@@ -35,9 +37,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 
 /**
  * Constant, Table properties, Utilities class.
@@ -83,6 +82,12 @@ public final class KafkaStreamingUtils {
    */
   protected static final String CONSUMER_CONFIGURATION_PREFIX = "kafka.consumer";
 
+  /**
+   * Set of Kafka properties that the user can not set via DDLs
+   */
+  private static final HashSet FORBIDDEN_PROPERTIES =
+      new HashSet(ImmutableList.of(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, ConsumerConfig.AUTO_OFFSET_RESET_CONFIG));
+
   private KafkaStreamingUtils() {
   }
 
@@ -94,20 +99,27 @@ public final class KafkaStreamingUtils {
   static Properties consumerProperties(Configuration configuration) {
     final Properties props = new Properties();
     // we are managing the commit offset
-    props.setProperty("enable.auto.commit", "false");
+    props.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
     // we are seeking in the stream so no reset
-    props.setProperty("auto.offset.reset", "none");
+    props.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "none");
     String brokerEndPoint = configuration.get(HIVE_KAFKA_BOOTSTRAP_SERVERS);
+    if (brokerEndPoint == null || brokerEndPoint.isEmpty()) {
+      throw new IllegalArgumentException("Kafka Broker End Point is missing Please set Config "
+          + HIVE_KAFKA_BOOTSTRAP_SERVERS);
+    }
     props.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokerEndPoint);
-    props.setProperty(KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
-    props.setProperty(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
+    props.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
+    props.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
     // user can always override stuff
     final Map<String, String>
         kafkaProperties =
         configuration.getValByRegex("^" + CONSUMER_CONFIGURATION_PREFIX + "\\..*");
     for (Map.Entry<String, String> entry : kafkaProperties.entrySet()) {
-      props.setProperty(entry.getKey().substring(CONSUMER_CONFIGURATION_PREFIX.length() + 1),
-          entry.getValue());
+      String key = entry.getKey().substring(CONSUMER_CONFIGURATION_PREFIX.length() + 1);
+      if (FORBIDDEN_PROPERTIES.contains(key)) {
+        throw new IllegalArgumentException("Not suppose to set Kafka Property " + key);
+      }
+      props.setProperty(key, entry.getValue());
     }
     return props;
   }
@@ -116,23 +128,20 @@ public final class KafkaStreamingUtils {
     Set<String> jars = new HashSet<>();
     FileSystem localFs = FileSystem.getLocal(conf);
     jars.addAll(conf.getStringCollection("tmpjars"));
-    jars.addAll(Arrays.asList(classes).stream().filter(aClass -> aClass != null)
-        .map(clazz -> {
-          String path = Utilities.jarFinderGetJar(clazz);
-          if (path == null) {
-            throw new RuntimeException("Could not find jar for class "
-                + clazz
-                + " in order to ship it to the cluster.");
-          }
-          try {
-            if (!localFs.exists(new Path(path))) {
-              throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
-            }
-          } catch (IOException e) {
-            throw new RuntimeException(e);
-          }
-          return path;
-        }).collect(Collectors.toList()));
+    jars.addAll(Arrays.asList(classes).stream().filter(aClass -> aClass != null).map(clazz -> {
+      String path = Utilities.jarFinderGetJar(clazz);
+      if (path == null) {
+        throw new RuntimeException("Could not find jar for class " + clazz + " in order to ship it to the cluster.");
+      }
+      try {
+        if (!localFs.exists(new Path(path))) {
+          throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      return path;
+    }).collect(Collectors.toList()));
 
     if (jars.isEmpty()) {
       return;
