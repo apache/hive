@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -60,7 +61,7 @@ import java.util.function.Predicate;
  * Kafka Range trimmer, takes a full kafka scan and prune the scan based on a filter expression
  * it is a Best effort trimmer and it can not replace the filter it self, filtration still takes place in Hive executor.
  */
-public class KafkaScanTrimmer {
+class KafkaScanTrimmer {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaScanTrimmer.class);
   private final Map<TopicPartition, KafkaPullerInputSplit> fullHouse;
   private final KafkaConsumer kafkaConsumer;
@@ -69,7 +70,7 @@ public class KafkaScanTrimmer {
    * @param fullHouse     initial full scan to be pruned, this is a map of Topic partition to input split.
    * @param kafkaConsumer kafka consumer used to pull offsets for time filter if needed
    */
-  public KafkaScanTrimmer(Map<TopicPartition, KafkaPullerInputSplit> fullHouse, KafkaConsumer kafkaConsumer) {
+  KafkaScanTrimmer(Map<TopicPartition, KafkaPullerInputSplit> fullHouse, KafkaConsumer kafkaConsumer) {
     this.fullHouse = fullHouse;
     this.kafkaConsumer = kafkaConsumer;
   }
@@ -82,8 +83,8 @@ public class KafkaScanTrimmer {
    *
    * @return tiny house of of the full house based on filter expression
    */
-  public Map<TopicPartition, KafkaPullerInputSplit> computeOptimizedScan(ExprNodeGenericFuncDesc filterExpression) {
-    Map<TopicPartition, KafkaPullerInputSplit> optimizedScan = parse(filterExpression);
+  Map<TopicPartition, KafkaPullerInputSplit> computeOptimizedScan(ExprNodeGenericFuncDesc filterExpression) {
+    Map<TopicPartition, KafkaPullerInputSplit> optimizedScan = parseAndOptimize(filterExpression);
 
     if (LOG.isDebugEnabled()) {
       if (optimizedScan != null) {
@@ -108,11 +109,11 @@ public class KafkaScanTrimmer {
   }
 
   /**
-   * @param expression filter to parse and trim the full scan
+   * @param expression filter to parseAndOptimize and trim the full scan
    *
    * @return Map of optimized kafka range scans or null if it is impossible to optimize.
    */
-  @Nullable private Map<TopicPartition, KafkaPullerInputSplit> parse(ExprNodeDesc expression) {
+  @Nullable private Map<TopicPartition, KafkaPullerInputSplit> parseAndOptimize(ExprNodeDesc expression) {
     if (expression.getClass() != ExprNodeGenericFuncDesc.class) {
       return null;
     }
@@ -210,6 +211,7 @@ public class KafkaScanTrimmer {
 
     if (columnDesc.getColumn().equals(KafkaStreamingUtils.TIMESTAMP_COLUMN)) {
       long timestamp = ((Number) constantDesc.getValue()).longValue();
+      //noinspection unchecked
       return buildScanForTimesPredicate(fullHouse, operator, timestamp, flip, negation, kafkaConsumer);
     }
     return null;
@@ -226,7 +228,8 @@ public class KafkaScanTrimmer {
    *
    * @return filtered kafka scan
    */
-  @VisibleForTesting protected static Map<TopicPartition, KafkaPullerInputSplit> buildScanFromPartitionPredicate(
+
+  @VisibleForTesting static Map<TopicPartition, KafkaPullerInputSplit> buildScanFromPartitionPredicate(
       Map<TopicPartition, KafkaPullerInputSplit> fullScan,
       PredicateLeaf.Operator operator,
       int partitionConst,
@@ -277,8 +280,7 @@ public class KafkaScanTrimmer {
    *
    * @return optimized kafka scan
    */
-  @VisibleForTesting protected static Map<TopicPartition, KafkaPullerInputSplit> buildScanFromOffsetPredicate(
-      Map<TopicPartition, KafkaPullerInputSplit> fullScan,
+  @VisibleForTesting static Map<TopicPartition, KafkaPullerInputSplit> buildScanFromOffsetPredicate(Map<TopicPartition, KafkaPullerInputSplit> fullScan,
       PredicateLeaf.Operator operator,
       long offsetConst,
       boolean flip,
@@ -287,11 +289,7 @@ public class KafkaScanTrimmer {
     final long startOffset;
     final long endOffset;
 
-    if (flip == negation) {
-      isEndBound = true;
-    } else {
-      isEndBound = false;
-    }
+    isEndBound = flip == negation;
     switch (operator) {
     case LESS_THAN_EQUALS:
       if (isEndBound) {
@@ -367,13 +365,13 @@ public class KafkaScanTrimmer {
     return newScan;
   }
 
-  @Nullable protected static Map<TopicPartition, KafkaPullerInputSplit> buildScanForTimesPredicate(
+  @Nullable private static Map<TopicPartition, KafkaPullerInputSplit> buildScanForTimesPredicate(
       Map<TopicPartition, KafkaPullerInputSplit> fullHouse,
       PredicateLeaf.Operator operator,
       long timestamp,
       boolean flip,
       boolean negation,
-      KafkaConsumer consumer) {
+      KafkaConsumer<byte[], byte[]> consumer) {
     long
         increment =
         (flip && operator == PredicateLeaf.Operator.LESS_THAN
@@ -385,18 +383,17 @@ public class KafkaScanTrimmer {
         // Based on Kafka docs
         // NULL will be returned for that partition If the message format version in a partition is before 0.10.0
         Map<TopicPartition, OffsetAndTimestamp> offsetAndTimestamp = consumer.offsetsForTimes(timePartitionsMap);
-        final Map<TopicPartition, KafkaPullerInputSplit> newScan = Maps.toMap(fullHouse.keySet(), tp -> {
+        return Maps.toMap(fullHouse.keySet(), tp -> {
           KafkaPullerInputSplit existing = fullHouse.get(tp);
           OffsetAndTimestamp foundOffsetAndTime = offsetAndTimestamp.get(tp);
           //Null in case filter doesn't match or field not existing ie old broker thus return empty scan.
           final long startOffset = foundOffsetAndTime == null ? existing.getEndOffset() : foundOffsetAndTime.offset();
-          return new KafkaPullerInputSplit(tp.topic(),
+          return new KafkaPullerInputSplit(Objects.requireNonNull(tp).topic(),
               tp.partition(),
               startOffset,
               existing.getEndOffset(),
               existing.getPath());
         });
-        return newScan;
       } catch (Exception e) {
         LOG.error("Error while looking up offsets for time", e);
         //Bailout when can not figure out offsets for times.
@@ -418,10 +415,10 @@ public class KafkaScanTrimmer {
     fullHouse.forEach((tp, input) -> currentScan.put(tp, KafkaPullerInputSplit.copyOf(input)));
 
     for (ExprNodeDesc child : expr.getChildren()) {
-      Map<TopicPartition, KafkaPullerInputSplit> scan = parse(child);
+      Map<TopicPartition, KafkaPullerInputSplit> scan = parseAndOptimize(child);
       if (scan != null) {
         Set<TopicPartition> currentKeys = ImmutableSet.copyOf(currentScan.keySet());
-        currentKeys.stream().forEach(key -> {
+        currentKeys.forEach(key -> {
           KafkaPullerInputSplit newSplit = scan.get(key);
           KafkaPullerInputSplit oldSplit = currentScan.get(key);
           currentScan.remove(key);
@@ -441,7 +438,7 @@ public class KafkaScanTrimmer {
   @Nullable private Map<TopicPartition, KafkaPullerInputSplit> pushOrOp(ExprNodeGenericFuncDesc expr) {
     final Map<TopicPartition, KafkaPullerInputSplit> currentScan = new HashMap<>();
     for (ExprNodeDesc child : expr.getChildren()) {
-      Map<TopicPartition, KafkaPullerInputSplit> scan = parse(child);
+      Map<TopicPartition, KafkaPullerInputSplit> scan = parseAndOptimize(child);
       if (scan == null) {
         // if any of the children is unknown bailout
         return null;
@@ -455,7 +452,7 @@ public class KafkaScanTrimmer {
     return currentScan;
   }
 
-  private static ExprNodeDesc getColumnExpr(ExprNodeDesc expr) {
+  @SuppressWarnings("Duplicates") private static ExprNodeDesc getColumnExpr(ExprNodeDesc expr) {
     if (expr instanceof ExprNodeColumnDesc) {
       return expr;
     }
