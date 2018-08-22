@@ -1,0 +1,265 @@
+PREHOOK: query: drop table cross_numbers
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table cross_numbers
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table cross_numbers(i string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cross_numbers
+POSTHOOK: query: create table cross_numbers(i string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cross_numbers
+PREHOOK: query: insert into table cross_numbers select key from src limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@cross_numbers
+POSTHOOK: query: insert into table cross_numbers select key from src limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@cross_numbers
+POSTHOOK: Lineage: cross_numbers.i SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: drop table lots_of_rows
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table lots_of_rows
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table lots_of_rows(key string) stored as orc tblproperties("transactional"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lots_of_rows
+POSTHOOK: query: create table lots_of_rows(key string) stored as orc tblproperties("transactional"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lots_of_rows
+Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: insert into table lots_of_rows select concat(key, '', i) from src cross join cross_numbers
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cross_numbers
+PREHOOK: Input: default@src
+PREHOOK: Output: default@lots_of_rows
+POSTHOOK: query: insert into table lots_of_rows select concat(key, '', i) from src cross join cross_numbers
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cross_numbers
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@lots_of_rows
+POSTHOOK: Lineage: lots_of_rows.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (cross_numbers)cross_numbers.FieldSchema(name:i, type:string, comment:null), ]
+PREHOOK: query: drop table testacid1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table testacid1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testacid1(id string, id2 string) clustered by (id2) into 2 buckets stored as orc tblproperties("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testacid1
+POSTHOOK: query: create table testacid1(id string, id2 string) clustered by (id2) into 2 buckets stored as orc tblproperties("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testacid1
+PREHOOK: query: insert into table testacid1 select key, key from lots_of_rows
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lots_of_rows
+PREHOOK: Output: default@testacid1
+POSTHOOK: query: insert into table testacid1 select key, key from lots_of_rows
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lots_of_rows
+POSTHOOK: Output: default@testacid1
+POSTHOOK: Lineage: testacid1.id SIMPLE [(lots_of_rows)lots_of_rows.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: testacid1.id2 SIMPLE [(lots_of_rows)lots_of_rows.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: drop table lots_of_row
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table lots_of_row
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: select * from testacid1 order by id limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testacid1 order by id limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+0128	0128
+0128	0128
+0128	0128
+0150	0150
+0150	0150
+0150	0150
+0165	0165
+0165	0165
+0165	0165
+0193	0193
+0193	0193
+0193	0193
+0213	0213
+0213	0213
+0213	0213
+0224	0224
+0224	0224
+0224	0224
+0238	0238
+0238	0238
+0238	0238
+0255	0255
+0255	0255
+0255	0255
+0265	0265
+0265	0265
+0265	0265
+027	027
+027	027
+027	027
+PREHOOK: query: select sum(hash(*)) from testacid1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from testacid1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+8838111640064
+PREHOOK: query: select count(id) from testacid1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(id) from testacid1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+10000
+PREHOOK: query: select count(1) from testacid1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from testacid1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+10000
+PREHOOK: query: select count(1) from testacid1 where id = '0128'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from testacid1 where id = '0128'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+3
+PREHOOK: query: explain update testacid1 set id = '206' where id = '0128'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update testacid1 set id = '206' where id = '0128'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: testacid1
+                  filterExpr: (id = '0128') (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 1800000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id = '0128') (type: boolean)
+                    Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), id2 (type: string)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        sort order: +
+                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                        Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), '206' (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.testacid1
+                  Write Type: UPDATE
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.testacid1
+          Write Type: UPDATE
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: update testacid1 set id = '206' where id = '0128'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testacid1
+PREHOOK: Output: default@testacid1
+POSTHOOK: query: update testacid1 set id = '206' where id = '0128'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testacid1
+POSTHOOK: Output: default@testacid1
+PREHOOK: query: select * from testacid1 order by id limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testacid1 order by id limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testacid1
+#### A masked pattern was here ####
+0150	0150
+0150	0150
+0150	0150
+0165	0165
+0165	0165
+0165	0165
+0193	0193
+0193	0193
+0193	0193
+0213	0213
+0213	0213
+0213	0213
+0224	0224
+0224	0224
+0224	0224
+0238	0238
+0238	0238
+0238	0238
+0255	0255
+0255	0255
+0255	0255
+0265	0265
+0265	0265
+0265	0265
+027	027
+027	027
+027	027
+0273	0273
+0273	0273
+0273	0273
