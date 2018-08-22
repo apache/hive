@@ -62,3 +62,63 @@ SELECT `__time`
 FROM druid_table_test_ts
 WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
     OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10;
+
+-- (-∞‥+∞)
+EXPLAIN
+SELECT `__time`
+FROM druid_table_test_ts;
+
+-- (-∞‥2012-03-01 00:00:00)
+EXPLAIN
+SELECT `__time`
+FROM druid_table_test_ts
+WHERE `__time` < '2012-03-01 00:00:00';
+
+-- [2010-01-01 00:00:00‥2012-03-01 00:00:00)
+EXPLAIN
+SELECT `__time`
+FROM druid_table_test_ts
+WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00';
+
+-- [2010-01-01 00:00:00‥2011-01-01 00:00:00)
+EXPLAIN
+SELECT `__time`
+FROM druid_table_test_ts
+WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
+    AND `__time` < '2011-01-01 00:00:00';
+
+-- [2010-01-01 00:00:00‥2011-01-01 00:00:00]
+EXPLAIN
+SELECT `__time`
+FROM druid_table_test_ts
+WHERE `__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00';
+
+-- [2010-01-01 00:00:00‥2011-01-01 00:00:00],[2012-01-01 00:00:00‥2013-01-01 00:00:00]
+EXPLAIN
+SELECT `__time`
+FROM druid_table_test_ts
+WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
+    OR (`__time` BETWEEN '2012-01-01 00:00:00' AND '2013-01-01 00:00:00');
+
+-- OVERLAP [2010-01-01 00:00:00‥2012-01-01 00:00:00]
+EXPLAIN
+SELECT `__time`
+FROM druid_table_test_ts
+WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
+    OR (`__time` BETWEEN '2010-06-01 00:00:00' AND '2012-01-01 00:00:00');
+
+-- IN: MULTIPLE INTERVALS [2010-01-01 00:00:00‥2010-01-01 00:00:00),[2011-01-01 00:00:00‥2011-01-01 00:00:00)
+EXPLAIN
+SELECT `__time`
+FROM druid_table_test_ts
+WHERE `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00');
+
+EXPLAIN
+SELECT `__time`, cstring2
+FROM druid_table_test_ts
+WHERE cstring2 = 'user1' AND `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00');
+
+EXPLAIN
+SELECT `__time`, cstring2
+FROM druid_table_test_ts
+WHERE cstring2 = 'user1' OR `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00');
