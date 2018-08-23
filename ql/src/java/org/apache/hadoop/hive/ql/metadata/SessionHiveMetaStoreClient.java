@@ -948,7 +948,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
        *
        */
       private List<Partition> getPartitions(List<String> partialPartVals) throws MetaException {
-        String partNameMatcher = MetaStoreUtils.makePartNameMatcher(tTable, partialPartVals);
+        String partNameMatcher = MetaStoreUtils.makePartNameMatcher(tTable, partialPartVals, ".*");
         List<Partition> matchedPartitions = new ArrayList<>();
         for(String key : parts.keySet()) {
           if(key.matches(partNameMatcher)) {

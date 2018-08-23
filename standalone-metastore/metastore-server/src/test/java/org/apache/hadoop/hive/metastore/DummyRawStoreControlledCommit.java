@@ -18,6 +18,21 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
@@ -376,11 +391,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<Partition> getPartitionSpecsByFilterAndProjection(String catName, String dbName, String tblName,
-                                                                List<String> fieldList, String paramKeys, String excludeFlag)
+  public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
+      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException {
-    return objectStore.getPartitionSpecsByFilterAndProjection(catName,
-        dbName, tblName, fieldList, paramKeys, excludeFlag);
+    return objectStore.getPartitionSpecsByFilterAndProjection(table, projectionSpec, filterSpec);
   }
 
   @Override
