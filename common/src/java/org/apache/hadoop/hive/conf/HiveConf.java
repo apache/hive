@@ -2478,7 +2478,7 @@ public class HiveConf extends Configuration {
         "allows two concurrent writes to the same partition but still lets lock manager prevent\n" +
         "DROP TABLE etc. when the table is being written to"),
     TXN_OVERWRITE_X_LOCK("hive.txn.xlock.iow", true,
-        "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\b" +
+        "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\n" +
             "transactional tables.  This ensures that inserts (w/o overwrite) running concurrently\n" +
             "are not hidden by the INSERT OVERWRITE."),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,

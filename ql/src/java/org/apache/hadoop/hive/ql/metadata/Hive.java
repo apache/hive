@@ -682,11 +682,12 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws TException
    */
+  @Deprecated
   public void alterPartition(String tblName, Partition newPart,
       EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
     String[] names = Utilities.getDbTableName(tblName);
-    alterPartition(names[0], names[1], newPart, environmentContext, transactional);
+    alterPartition(null, names[0], names[1], newPart, environmentContext, transactional);
   }
 
   /**
@@ -706,10 +707,13 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws TException
    */
-  public void alterPartition(String dbName, String tblName, Partition newPart,
+  public void alterPartition(String catName, String dbName, String tblName, Partition newPart,
                              EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
     try {
+      if (catName == null) {
+        catName = getDefaultCatalog(conf);
+      }
       validatePartition(newPart);
       String location = newPart.getLocation();
       if (location != null) {
@@ -728,7 +732,7 @@ public class Hive {
           LOG.warn("Cannot get a table snapshot for " + tblName);
         }
       }
-      getSynchronizedMSC().alter_partition(
+      getSynchronizedMSC().alter_partition(catName,
           dbName, tblName, newPart.getTPartition(), environmentContext,
           tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
 
@@ -849,6 +853,7 @@ public class Hive {
     }
   }
 
+  // TODO: this whole path won't work with catalogs
   public void alterDatabase(String dbName, Database db)
       throws HiveException {
     try {
@@ -871,6 +876,8 @@ public class Hive {
   public void createTable(Table tbl) throws HiveException {
     createTable(tbl, false);
   }
+
+  // TODO: from here down dozens of methods do not support catalog. I got tired marking them.
 
   /**
    * Creates the table with the given objects. It takes additional arguments for
@@ -1071,12 +1078,12 @@ public class Hive {
   public void truncateTable(String dbDotTableName, Map<String, String> partSpec) throws HiveException {
     try {
       Table table = getTable(dbDotTableName, true);
-      // TODO: we should refactor code to make sure snapshot is always obtained in the same layer e.g. Hive.java
       AcidUtils.TableSnapshot snapshot = null;
       if (AcidUtils.isTransactionalTable(table)) {
         snapshot = AcidUtils.getTableSnapshot(conf, table, true);
       }
 
+      // TODO: APIs with catalog names
       List<String> partNames = ((null == partSpec)
         ? null : getPartitionNames(table.getDbName(), table.getTableName(), partSpec, (short) -1));
       if (snapshot == null) {
@@ -1130,6 +1137,7 @@ public class Hive {
    *              if there's an internal error or if the table doesn't exist
    */
   public Table getTable(final String dbName, final String tableName) throws HiveException {
+     // TODO: catalog... etc everywhere
     if (tableName.contains(".")) {
       String[] names = Utilities.getDbTableName(tableName);
       return this.getTable(names[0], names[1], true);
@@ -2117,7 +2125,7 @@ public class Hive {
       ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
     LOG.debug("Altering existing partition " + newTPart.getSpec());
-    getSynchronizedMSC().alter_partition(
+    getSynchronizedMSC().alter_partition(tbl.getCatName(),
         tbl.getDbName(), tbl.getTableName(), newTPart.getTPartition(), new EnvironmentContext(),
         tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
   }
@@ -2591,6 +2599,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public List<Partition> createPartitions(AddPartitionDesc addPartitionDesc) throws HiveException {
+    // TODO: catalog name everywhere in this method
     Table tbl = getTable(addPartitionDesc.getDbName(), addPartitionDesc.getTableName());
     int size = addPartitionDesc.getPartitionCount();
     List<org.apache.hadoop.hive.metastore.api.Partition> in =
@@ -2799,7 +2808,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
       fullName = tbl.getFullyQualifiedName();
     }
-    alterPartition(fullName, new Partition(tbl, tpart), null, true);
+    alterPartition(tbl.getCatalogName(), tbl.getDbName(), tbl.getTableName(),
+        new Partition(tbl, tpart), null, true);
   }
 
   private void alterPartitionSpecInMemory(Table tbl,

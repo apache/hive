@@ -271,6 +271,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     if(ctx.isExplainPlan()) {
       try {
         //so that "explain" doesn't "leak" tmp tables
+        // TODO: catalog
         db.dropTable(newTable.getDbName(), newTable.getTableName(), true, true, true);
       } catch(HiveException ex) {
         LOG.warn("Unable to drop " + newTableName + " due to: " + ex.getMessage(), ex);
@@ -544,6 +545,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     Context rewrittenCtx;
     try {
       rewrittenCtx = new Context(conf);
+      rewrittenCtx.setHDFSCleanup(true);
       // We keep track of all the contexts that are created by this query
       // so we can clear them when we finish execution
       ctx.addRewrittenStatementContext(rewrittenCtx);
