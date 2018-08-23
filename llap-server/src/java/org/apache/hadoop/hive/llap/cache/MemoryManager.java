@@ -23,7 +23,5 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public interface MemoryManager extends LlapOomDebugDump {
   void releaseMemory(long memUsage);
   void updateMaxSize(long maxSize);
-  /** TODO: temporary method until we get a better allocator. */
-  long forceReservedMemory(int allocationSize, int count);
   void reserveMemory(long memoryToReserve, AtomicBoolean isStopped);
 }

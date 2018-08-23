@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
@@ -83,8 +82,9 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
       while (evicted < memoryToReserve && iter.hasNext()) {
         LlapCacheableBuffer buffer = iter.next();
         long memUsage = buffer.getMemoryUsage();
-        if (memUsage < minSize || (minSize > 0  && !(buffer instanceof LlapDataBuffer))) continue;
-        if (buffer.invalidate()) {
+        if (memUsage < minSize || (minSize > 0
+            && !(buffer instanceof LlapAllocatorBuffer))) continue;
+        if (LlapCacheableBuffer.INVALIDATE_OK == buffer.invalidate()) {
           iter.remove();
           evicted += memUsage;
           evictionListener.notifyEvicted(buffer);
@@ -127,15 +127,5 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
     if (parentDebugDump != null) {
       parentDebugDump.debugDumpShort(sb);
     }
-  }
-
-  @Override
-  public long tryEvictContiguousData(int allocationSize, int count) {
-    long evicted = evictInternal(allocationSize * count, allocationSize);
-    int remainingCount = count - (int)(evicted / allocationSize);
-    if (remainingCount > 0) {
-      evicted += evictInternal(allocationSize * remainingCount, -1);
-    }
-    return evicted;
   }
 }

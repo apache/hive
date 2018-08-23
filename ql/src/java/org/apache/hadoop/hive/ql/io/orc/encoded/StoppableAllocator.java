@@ -20,10 +20,11 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.Allocator.BufferObjectFactory;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 
 public interface StoppableAllocator extends Allocator {
   /** Stoppable allocate method specific to branch-2. */
-  void allocateMultiple(MemoryBuffer[] dest, int size, AtomicBoolean isStopped)
+  void allocateMultiple(MemoryBuffer[] dest, int size, BufferObjectFactory factory, AtomicBoolean isStopped)
       throws AllocatorOutOfMemoryException;
 }

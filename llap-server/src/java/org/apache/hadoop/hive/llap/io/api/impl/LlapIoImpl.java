@@ -116,7 +116,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     OrcMetadataCache metadataCache = null;
     LowLevelCache cache = null;
     SerDeLowLevelCacheImpl serdeCache = null; // TODO: extract interface when needed
-    BufferUsageManager bufferManager = null;
+    BufferUsageManager bufferManagerOrc = null, bufferManagerGeneric = null;
     boolean isEncodeEnabled = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED);
     if (useLowLevelCache) {
       // Memory manager uses cache policy to trigger evictions, so create the policy first.
@@ -172,12 +172,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       cachePolicy.setParentDebugDumper(e);
 
       cacheImpl.startThreads(); // Start the cache threads.
-      bufferManager = cacheImpl; // Cache also serves as buffer manager.
+      bufferManagerOrc = cacheImpl; // Cache also serves as buffer manager.
+      bufferManagerGeneric = serdeCache;
     } else {
       this.allocator = new SimpleAllocator(conf);
       memoryDumpRoot = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
-      bufferManager = sbm;
+      bufferManagerOrc = bufferManagerGeneric = sbm;
       cache = sbm;
     }
     // IO thread pool. Listening is used for unhandled errors for now (TODO: remove?)
@@ -189,9 +190,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     // TODO: this should depends on input format and be in a map, or something.
     FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
     this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, cache, bufferManager, conf, cacheMetrics, ioMetrics, tracePool);
+        metadataCache, cache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
-        serdeCache, bufferManager, conf, cacheMetrics, ioMetrics, tracePool) : null;
+        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool) : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();

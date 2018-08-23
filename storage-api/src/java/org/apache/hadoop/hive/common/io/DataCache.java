@@ -100,4 +100,10 @@ public interface DataCache {
    * @return the allocator
    */
   Allocator getAllocator();
+
+  /**
+   * Gets the buffer object factory associated with this DataCache, to use with allocator.
+   * @return the factory
+   */
+  Allocator.BufferObjectFactory getDataBufferFactory();
 }

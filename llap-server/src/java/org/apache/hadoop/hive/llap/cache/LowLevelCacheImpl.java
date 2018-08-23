@@ -390,7 +390,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   private static final ByteBuffer fakeBuf = ByteBuffer.wrap(new byte[1]);
   public static LlapDataBuffer allocateFake() {
     LlapDataBuffer fake = new LlapDataBuffer();
-    fake.initialize(-1, fakeBuf, 0, 1);
+    fake.initialize(fakeBuf, 0, 1);
     return fake;
   }
 
@@ -420,7 +420,6 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         throws InterruptedException {
       // Iterate thru the file cache. This is best-effort.
       Iterator<Map.Entry<Long, LlapDataBuffer>> subIter = fc.getCache().entrySet().iterator();
-      boolean isEmpty = true;
       while (subIter.hasNext()) {
         long time = -1;
         isPastEndTime.value = isPastEndTime.value || ((time = System.nanoTime()) >= endTime);
@@ -428,8 +427,6 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
             ? 1 : (endTime - time) / (1000000L * leftToCheck));
         if (subIter.next().getValue().isInvalid()) {
           subIter.remove();
-        } else {
-          isEmpty = false;
         }
         --leftToCheck;
       }
@@ -478,17 +475,21 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   @Override
   public void debugDumpShort(StringBuilder sb) {
     sb.append("\nORC cache state ");
-    int allLocked = 0, allUnlocked = 0, allEvicted = 0;
+    int allLocked = 0, allUnlocked = 0, allEvicted = 0, allMoving = 0;
     for (Map.Entry<Object, FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> e :
       cache.entrySet()) {
       if (!e.getValue().incRef()) continue;
       try {
-        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0;
+        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0, fileMoving = 0;
         if (e.getValue().getCache().isEmpty()) continue;
         for (Map.Entry<Long, LlapDataBuffer> e2 : e.getValue().getCache().entrySet()) {
-          int newRc = e2.getValue().incRef();
+          int newRc = e2.getValue().tryIncRef();
           if (newRc < 0) {
-            ++fileEvicted;
+            if (newRc == LlapAllocatorBuffer.INCREF_EVICTED) {
+              ++fileEvicted;
+            } else if (newRc == LlapAllocatorBuffer.INCREF_FAILED) {
+              ++fileMoving;
+            }
             continue;
           }
           try {
@@ -504,13 +505,14 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         allLocked += fileLocked;
         allUnlocked += fileUnlocked;
         allEvicted += fileEvicted;
-        sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, "
-            + fileUnlocked + " unlocked, " + fileEvicted + " evicted");
+        allMoving += fileMoving;
+        sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, " + fileUnlocked
+            + " unlocked, " + fileEvicted + " evicted, " + fileMoving + " being moved");
       } finally {
         e.getValue().decRef();
       }
     }
-    sb.append("\nORC cache summary: " + allLocked + " locked, "
-        + allUnlocked + " unlocked, " + allEvicted + " evicted");
+    sb.append("\nORC cache summary: " + allLocked + " locked, " + allUnlocked + " unlocked, "
+        + allEvicted + " evicted, " + allMoving + " being moved");
   }
 }

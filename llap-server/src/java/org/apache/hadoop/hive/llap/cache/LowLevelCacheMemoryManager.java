@@ -99,17 +99,15 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
           result = false;
           break; // Test code path where we don't do more than one attempt.
         }
-        didDumpIoState = logEvictionIssue(++badCallCount, didDumpIoState);
-        waitTimeMs = Math.min(1000, waitTimeMs << 1);
-        assert waitTimeMs > 0;
-        try {
-          Thread.sleep(waitTimeMs);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
+
+        if (isStopped != null && isStopped.get()) {
           result = false;
           break;
         }
-        if (isStopped != null && isStopped.get()) {
+        try {
+          Thread.sleep(badCallCount > 9 ? 1000 : (1 << badCallCount));
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
           result = false;
           break;
         }
@@ -137,46 +135,6 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     }
     metrics.incrCacheCapacityUsed(reservedTotalMetric - evictedTotalMetric);
     return result;
-  }
-
-
-  private boolean logEvictionIssue(int badCallCount, boolean didDumpIoState) {
-    if (badCallCount <= LOCKING_DEBUG_DUMP_THRESHOLD) return didDumpIoState;
-    String ioStateDump = maybeDumpIoState(didDumpIoState);
-    if (ioStateDump == null) {
-      LlapIoImpl.LOG.warn("Cannot evict blocks for " + badCallCount + " calls; cache full?");
-      return didDumpIoState;
-    } else {
-      LlapIoImpl.LOG.warn("Cannot evict blocks; IO state:\n " + ioStateDump);
-      return true;
-    }
-  }
-
-  private String maybeDumpIoState(boolean didDumpIoState) {
-    if (didDumpIoState) return null; // No more than once per reader.
-    long now = System.nanoTime(), last = lastCacheDumpNs.get();
-    while (true) {
-      if (last != 0 && (now - last) < LOCKING_DEBUG_DUMP_PERIOD_NS) {
-        return null; // We have recently dumped IO state into log.
-      }
-      if (lastCacheDumpNs.compareAndSet(last, now)) break;
-      now = System.nanoTime();
-      last = lastCacheDumpNs.get();
-    }
-    try {
-      StringBuilder sb = new StringBuilder();
-      memoryDumpRoot.debugDumpShort(sb);
-      return sb.toString();
-    } catch (Throwable t) {
-      return "Failed to dump cache state: " + t.getClass() + " " + t.getMessage();
-    }
-  }
-
-
-  @Override
-  public long forceReservedMemory(int allocationSize, int count) {
-    if (evictor == null) return 0;
-    return evictor.tryEvictContiguousData(allocationSize, count);
   }
 
   @Override

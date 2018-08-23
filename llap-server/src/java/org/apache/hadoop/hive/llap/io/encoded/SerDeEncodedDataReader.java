@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.Allocator.BufferObjectFactory;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
@@ -46,10 +47,12 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
-import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
+import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
+import org.apache.hadoop.hive.llap.cache.LlapAllocatorBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.FileData;
+import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.LlapSerDeDataBuffer;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.StripeData;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -94,7 +97,6 @@ import org.apache.orc.OrcFile.Version;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.ColumnEncoding;
 import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.OutStream;
 import org.apache.orc.PhysicalWriter;
 import org.apache.orc.PhysicalWriter.OutputReceiver;
 import org.apache.orc.impl.SchemaEvolution;
@@ -151,6 +153,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
   private final SerDeLowLevelCacheImpl cache;
   private final BufferUsageManager bufferManager;
+  private final BufferObjectFactory bufferFactory;
   private final Configuration daemonConf;
   private final FileSplit split;
   private List<Integer> columnIds;
@@ -191,6 +194,12 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           throws IOException {
     this.cache = cache;
     this.bufferManager = bufferManager;
+    this.bufferFactory = new BufferObjectFactory() {
+      @Override
+      public MemoryBuffer create() {
+        return new SerDeLowLevelCacheImpl.LlapSerDeDataBuffer();
+      }
+    };
     this.parts = parts;
     this.daemonConf = new Configuration(daemonConf);
     // Disable dictionary encoding for the writer.
@@ -303,7 +312,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       private static String toString(List<MemoryBuffer> data) {
         String s = "";
         for (MemoryBuffer buffer : data) {
-          s += LlapDataBuffer.toDataString(buffer) + ", ";
+          s += buffer + ", ";
         }
         return s;
       }
@@ -331,6 +340,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private CacheStripeData currentStripe;
     private final List<CacheStripeData> stripes = new ArrayList<>();
     private final BufferUsageManager bufferManager;
+    private final Allocator.BufferObjectFactory bufferFactory;
     /**
      * For !doesSourceHaveIncludes case, stores global column IDs to verify writer columns.
      * For doesSourceHaveIncludes case, stores source column IDs used to map things.
@@ -344,13 +354,15 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private final AtomicBoolean isStopped;
 
     public CacheWriter(BufferUsageManager bufferManager, List<Integer> columnIds,
-        boolean[] writerIncludes, boolean doesSourceHaveIncludes, AtomicBoolean isStopped) {
+        boolean[] writerIncludes, boolean doesSourceHaveIncludes,
+        Allocator.BufferObjectFactory bufferFactory, AtomicBoolean isStopped) {
       this.bufferManager = bufferManager;
       assert writerIncludes != null; // Taken care of on higher level.
       this.writerIncludes = writerIncludes;
       this.doesSourceHaveIncludes = doesSourceHaveIncludes;
       this.columnIds = columnIds;
       this.isStopped = isStopped;
+      this.bufferFactory = bufferFactory;
       startStripe();
     }
 
@@ -438,7 +450,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         if (LlapIoImpl.LOG.isTraceEnabled()) {
           LlapIoImpl.LOG.trace("Creating cache receiver for " + name);
         }
-        CacheOutputReceiver cor = new CacheOutputReceiver(bufferManager, name, isStopped);
+        CacheOutputReceiver cor = new CacheOutputReceiver(bufferManager, bufferFactory, name, isStopped);
         or = cor;
         List<CacheOutputReceiver> list = colStreams.get(name.getColumn());
         if (list == null) {
@@ -568,6 +580,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
   private static final class CacheOutputReceiver implements CacheOutput, OutputReceiver {
     private final BufferUsageManager bufferManager;
+    private final BufferObjectFactory bufferFactory;
     private final StreamName name;
     private List<MemoryBuffer> buffers = null;
     private int lastBufferPos = -1;
@@ -576,8 +589,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private final StoppableAllocator allocator;
 
     public CacheOutputReceiver(
-        BufferUsageManager bufferManager, StreamName name, AtomicBoolean isStopped) {
+        BufferUsageManager bufferManager,
+        BufferObjectFactory bufferFactory, StreamName name, AtomicBoolean isStopped) {
       this.bufferManager = bufferManager;
+      this.bufferFactory = bufferFactory;
       Allocator alloc = bufferManager.getAllocator();
       this.allocator = alloc instanceof StoppableAllocator ? (StoppableAllocator) alloc : null;
       this.name = name;
@@ -598,12 +613,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
     private void allocateMultiple(MemoryBuffer[] dest, int size) {
       if (allocator != null) {
-        allocator.allocateMultiple(dest, size, isStopped);
+        allocator.allocateMultiple(dest, size, bufferFactory, isStopped);
       } else {
-        bufferManager.getAllocator().allocateMultiple(dest, size);
+        bufferManager.getAllocator().allocateMultiple(dest, size, bufferFactory);
       }
     }
-
 
     @Override
     public void output(ByteBuffer buffer) throws IOException {
@@ -629,7 +643,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       if (isNewBuffer) {
         MemoryBuffer[] dest = new MemoryBuffer[1];
         allocateMultiple(dest, size);
-        LlapDataBuffer newBuffer = (LlapDataBuffer)dest[0];
+        LlapSerDeDataBuffer newBuffer = (LlapSerDeDataBuffer)dest[0];
         bb = newBuffer.getByteBufferRaw();
         lastBufferPos = bb.position();
         buffers.add(newBuffer);
@@ -720,10 +734,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
   private void unlockAllBuffers(StripeData si) {
     for (int i = 0; i < si.getData().length; ++i) {
-      LlapDataBuffer[][] colData = si.getData()[i];
+      LlapSerDeDataBuffer[][] colData = si.getData()[i];
       if (colData == null) continue;
       for (int j = 0; j < colData.length; ++j) {
-        LlapDataBuffer[] streamData = colData[j];
+        LlapSerDeDataBuffer[] streamData = colData[j];
         if (streamData == null) continue;
         for (int k = 0; k < streamData.length; ++k) {
           bufferManager.decRefBuffer(streamData[k]);
@@ -760,10 +774,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
   private void lockAllBuffers(StripeData sd) {
     for (int i = 0; i < sd.getData().length; ++i) {
-      LlapDataBuffer[][] colData = sd.getData()[i];
+      LlapSerDeDataBuffer[][] colData = sd.getData()[i];
       if (colData == null) continue;
       for (int j = 0; j < colData.length; ++j) {
-        LlapDataBuffer[] streamData = colData[j];
+        LlapSerDeDataBuffer[] streamData = colData[j];
         if (streamData == null) continue;
         for (int k = 0; k < streamData.length; ++k) {
           boolean canLock = bufferManager.incRefBuffer(streamData[k]);
@@ -937,7 +951,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     logProcessOneSlice(stripeIx, diskData, cacheData);
 
     ColumnEncoding[] cacheEncodings = cacheData == null ? null : cacheData.getEncodings();
-    LlapDataBuffer[][][] cacheBuffers = cacheData == null ? null : cacheData.getData();
+    LlapSerDeDataBuffer[][][] cacheBuffers = cacheData == null ? null : cacheData.getData();
     long cacheRowCount = cacheData == null ? -1L : cacheData.getRowCount();
     SerDeStripeMetadata metadata = new SerDeStripeMetadata(stripeIx);
     StripeData sliceToCache = null;
@@ -963,7 +977,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       if (!hasAllData && splitIncludes[colIx]) {
         // The column has been read from disk.
         List<CacheWriter.CacheStreamData> streams = diskData.colStreams.get(colIx);
-        LlapDataBuffer[][] newCacheDataForCol = createArrayToCache(sliceToCache, colIx, streams);
+        LlapSerDeDataBuffer[][] newCacheDataForCol = createArrayToCache(sliceToCache, colIx, streams);
         if (streams == null) continue; // Struct column, such as root?
         Iterator<CacheWriter.CacheStreamData> iter = streams.iterator();
         while (iter.hasNext()) {
@@ -1026,7 +1040,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       return true; // Nothing to process.
     }
     ColumnEncoding[] cacheEncodings = cacheData == null ? null : cacheData.getEncodings();
-    LlapDataBuffer[][][] cacheBuffers = cacheData == null ? null : cacheData.getData();
+    LlapSerDeDataBuffer[][][] cacheBuffers = cacheData == null ? null : cacheData.getData();
     if (cacheData != null) {
       // Don't validate column count - no encodings for vectors.
       validateCacheAndDisk(cacheData, diskData.getRowCount(), -1, diskData);
@@ -1078,7 +1092,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       if (!splitIncludes[colIx]) continue;
       // The column has been read from disk.
       List<CacheWriter.CacheStreamData> streams = diskData.colStreams.get(colIx);
-      LlapDataBuffer[][] newCacheDataForCol = createArrayToCache(sliceToCache, colIx, streams);
+      LlapSerDeDataBuffer[][] newCacheDataForCol = createArrayToCache(sliceToCache, colIx, streams);
       if (streams == null) continue; // Struct column, such as root?
       Iterator<CacheWriter.CacheStreamData> iter = streams.iterator();
       while (iter.hasNext()) {
@@ -1132,28 +1146,28 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
 
-  private static LlapDataBuffer[][] createArrayToCache(
+  private static LlapSerDeDataBuffer[][] createArrayToCache(
       StripeData sliceToCache, int colIx, List<CacheWriter.CacheStreamData> streams) {
     if (LlapIoImpl.LOG.isTraceEnabled()) {
       LlapIoImpl.LOG.trace("Processing streams for column " + colIx + ": " + streams);
     }
-    LlapDataBuffer[][] newCacheDataForCol = sliceToCache.getData()[colIx]
-        = new LlapDataBuffer[OrcEncodedColumnBatch.MAX_DATA_STREAMS][];
+    LlapSerDeDataBuffer[][] newCacheDataForCol = sliceToCache.getData()[colIx]
+        = new LlapSerDeDataBuffer[OrcEncodedColumnBatch.MAX_DATA_STREAMS][];
     return newCacheDataForCol;
   }
 
   private static int setStreamDataToCache(
-      LlapDataBuffer[][] newCacheDataForCol, CacheWriter.CacheStreamData stream) {
+      LlapSerDeDataBuffer[][] newCacheDataForCol, CacheWriter.CacheStreamData stream) {
     int streamIx = stream.name.getKind().getNumber();
-    // This is kinda hacky - we "know" these are LlapDataBuffer-s.
-    newCacheDataForCol[streamIx] = stream.data.toArray(new LlapDataBuffer[stream.data.size()]);
+    // This is kinda hacky - we "know" these are LlaSerDeDataBuffer-s.
+    newCacheDataForCol[streamIx] = stream.data.toArray(new LlapSerDeDataBuffer[stream.data.size()]);
     return streamIx;
   }
 
-  private void processColumnCacheData(LlapDataBuffer[][][] cacheBuffers,
+  private void processColumnCacheData(LlapSerDeDataBuffer[][][] cacheBuffers,
       OrcEncodedColumnBatch ecb, int colIx) {
     // The column has been obtained from cache.
-    LlapDataBuffer[][] colData = cacheBuffers[colIx];
+    LlapSerDeDataBuffer[][] colData = cacheBuffers[colIx];
     if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
       LlapIoImpl.CACHE_LOGGER.trace("Processing cache data for column " + colIx + ": "
           + SerDeLowLevelCacheImpl.toString(colData));
@@ -1178,8 +1192,6 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
   private void discardUncachedBuffers(List<MemoryBuffer> list) {
     for (MemoryBuffer buffer : list) {
-      boolean isInvalidated = ((LlapDataBuffer)buffer).invalidate();
-      assert isInvalidated;
       bufferManager.getAllocator().deallocate(buffer);
     }
   }
@@ -1404,7 +1416,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       // TODO: move this into ctor? EW would need to create CacheWriter then
       List<Integer> cwColIds = writer.isOnlyWritingIncludedColumns() ? splitColumnIds : columnIds;
       writer.init(new CacheWriter(bufferManager, cwColIds, splitIncludes,
-          writer.isOnlyWritingIncludedColumns(), isStopped), daemonConf, split.getPath());
+          writer.isOnlyWritingIncludedColumns(), bufferFactory, isStopped), daemonConf, split.getPath());
       if (writer instanceof VectorDeserializeOrcWriter) {
         VectorDeserializeOrcWriter asyncWriter = (VectorDeserializeOrcWriter)writer;
         asyncWriter.startAsync(new AsyncCacheDataCallback());

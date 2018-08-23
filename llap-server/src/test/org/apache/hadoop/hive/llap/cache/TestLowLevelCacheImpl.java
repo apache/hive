@@ -59,7 +59,7 @@ public class TestLowLevelCacheImpl {
     public void allocateMultiple(MemoryBuffer[] dest, int size) {
       for (int i = 0; i < dest.length; ++i) {
         LlapDataBuffer buf = new LlapDataBuffer();
-        buf.initialize(0, null, -1, size);
+        buf.initialize(null, -1, size);
         dest[i] = buf;
       }
     }
@@ -85,6 +85,12 @@ public class TestLowLevelCacheImpl {
     @Override
     public MemoryBuffer createUnallocated() {
       return new LlapDataBuffer();
+    }
+
+    @Override
+    public void allocateMultiple(MemoryBuffer[] dest, int size,
+        BufferObjectFactory factory) throws AllocatorOutOfMemoryException {
+      allocateMultiple(dest, size);
     }
   }
 
@@ -113,11 +119,6 @@ public class TestLowLevelCacheImpl {
     }
 
     public void setParentDebugDumper(LlapOomDebugDump dumper) {
-    }
-
-    @Override
-    public long tryEvictContiguousData(int allocationSize, int count) {
-      return count * allocationSize;
     }
 
     @Override
@@ -249,7 +250,7 @@ Example code to test specific scenarios:
     evict(cache, fakes[2]);
     verifyCacheGet(cache, fn1, 1, 3, dr(1, 2), fakes[1]);
     verifyCacheGet(cache, fn2, 1, 2, dr(1, 2));
-    verifyRefcount(fakes, -1, 4, -1);
+    verifyRefcount(fakes, 0, 4, 0);
   }
 
   @Test
@@ -372,8 +373,8 @@ Example code to test specific scenarios:
                   continue;
                 }
                 ++gets;
-                LlapDataBuffer result = (LlapDataBuffer)((CacheChunk)iter).getBuffer();
-                assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), result.arenaIndex);
+                LlapAllocatorBuffer result = (LlapAllocatorBuffer)((CacheChunk)iter).getBuffer();
+                assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), result.getArenaIndex());
                 cache.decRefBuffer(result);
                 iter = iter.next;
               }
@@ -388,7 +389,7 @@ Example code to test specific scenarios:
               MemoryBuffer[] buffers = new MemoryBuffer[count];
               for (int j = 0; j < offsets.length; ++j) {
                 LlapDataBuffer buf = LowLevelCacheImpl.allocateFake();
-                buf.arenaIndex = makeFakeArenaIndex(fileIndex, offsets[j]);
+                buf.setNewAllocLocation(makeFakeArenaIndex(fileIndex, offsets[j]), 0);
                 buffers[j] = buf;
               }
               long[] mask = cache.putFileData(fileName, ranges, buffers, 0, Priority.NORMAL, null);
@@ -401,7 +402,7 @@ Example code to test specific scenarios:
               for (int j = 0; j < offsets.length; ++j) {
                 LlapDataBuffer buf = (LlapDataBuffer)(buffers[j]);
                 if ((maskVal & 1) == 1) {
-                  assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), buf.arenaIndex);
+                  assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), buf.getArenaIndex());
                 }
                 maskVal >>= 1;
                 cache.decRefBuffer(buf);
@@ -415,7 +416,7 @@ Example code to test specific scenarios:
       }
 
       private int makeFakeArenaIndex(int fileIndex, long offset) {
-        return (int)((fileIndex << 16) + offset);
+        return (int)((fileIndex << 12) + offset);
       }
     };
 
@@ -438,7 +439,7 @@ Example code to test specific scenarios:
             if (r instanceof CacheChunk) {
               LlapDataBuffer result = (LlapDataBuffer)((CacheChunk)r).getBuffer();
               cache.decRefBuffer(result);
-              if (victim == null && result.invalidate()) {
+              if (victim == null && result.invalidate() == LlapCacheableBuffer.INVALIDATE_OK) {
                 ++evictions;
                 victim = result;
               }
@@ -491,7 +492,7 @@ Example code to test specific scenarios:
     for (int i = 0; i < refCount; ++i) {
       victimBuffer.decRef();
     }
-    assertTrue(victimBuffer.invalidate());
+    assertTrue(LlapCacheableBuffer.INVALIDATE_OK == victimBuffer.invalidate());
     cache.notifyEvicted(victimBuffer);
   }
 

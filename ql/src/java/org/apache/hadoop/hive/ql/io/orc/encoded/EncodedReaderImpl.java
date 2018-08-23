@@ -406,7 +406,7 @@ class EncodedReaderImpl implements EncodedReader {
         hasError = false;
       } finally {
         // At this point, everything in the list is going to have a refcount of one. Unless it
-        // failed between the allocation and the incref for a single item, we should be ok. 
+        // failed between the allocation and the incref for a single item, we should be ok.
         if (hasError) {
           releaseInitialRefcounts(toRead.next);
           if (toRelease != null) {
@@ -456,7 +456,7 @@ class EncodedReaderImpl implements EncodedReader {
                   if (sctx.stripeLevelStream == null) {
                     sctx.stripeLevelStream = POOLS.csdPool.take();
                     // We will be using this for each RG while also sending RGs to processing.
-                    // To avoid buffers being unlocked, run refcount one ahead; so each RG 
+                    // To avoid buffers being unlocked, run refcount one ahead; so each RG
                     // processing will decref once, and the last one will unlock the buffers.
                     sctx.stripeLevelStream.incRef();
                     // For stripe-level streams we don't need the extra refcount on the block.
@@ -706,8 +706,8 @@ class EncodedReaderImpl implements EncodedReader {
       assert originalCbIndex >= 0;
       // Had the put succeeded for our new buffer, it would have refcount of 2 - 1 from put,
       // and 1 from notifyReused call above. "Old" buffer now has the 1 from put; new buffer
-      // is not in cache.
-      cacheWrapper.getAllocator().deallocate(getBuffer());
+      // is not in cache. releaseBuffer will decref the buffer, and also deallocate.
+      cacheWrapper.releaseBuffer(this.buffer);
       cacheWrapper.reuseBuffer(replacementBuffer);
       // Replace the buffer in our big range list, as well as in current results.
       this.buffer = replacementBuffer;
@@ -959,7 +959,7 @@ class EncodedReaderImpl implements EncodedReader {
    * to handle just for this case.
    * We could avoid copy in non-zcr case and manage the buffer that was not allocated by our
    * allocator. Uncompressed case is not mainline though so let's not complicate it.
-   * @param kind 
+   * @param kind
    */
   private DiskRangeList preReadUncompressedStream(long baseOffset, DiskRangeList start,
       long streamOffset, long streamEnd, Kind kind) throws IOException {
@@ -1137,9 +1137,9 @@ class EncodedReaderImpl implements EncodedReader {
 
   private void allocateMultiple(MemoryBuffer[] dest, int size) {
     if (allocator != null) {
-      allocator.allocateMultiple(dest, size, isStopped);
+      allocator.allocateMultiple(dest, size, cacheWrapper.getDataBufferFactory(), isStopped);
     } else {
-      cacheWrapper.getAllocator().allocateMultiple(dest, size);
+      cacheWrapper.getAllocator().allocateMultiple(dest, size, cacheWrapper.getDataBufferFactory());
     }
   }
 
@@ -1477,7 +1477,7 @@ class EncodedReaderImpl implements EncodedReader {
         ProcCacheChunk cc = addOneCompressionBlockByteBuffer(copy, isUncompressed, cbStartOffset,
             cbEndOffset, remaining, (BufferChunk)next, toDecompress, cacheBuffers, true);
         if (compressed.remaining() <= 0 && toRelease.remove(compressed)) {
-          releaseBuffer(compressed, true); // We copied the entire buffer. 
+          releaseBuffer(compressed, true); // We copied the entire buffer.
         } // else there's more data to process; will be handled in next call.
         return cc;
       }

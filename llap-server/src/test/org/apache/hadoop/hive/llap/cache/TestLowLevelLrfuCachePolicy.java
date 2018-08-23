@@ -29,7 +29,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -204,61 +203,6 @@ public class TestLowLevelLrfuCachePolicy {
     assertTrue(evicted.isInvalid());
     assertNotSame(locked, evicted);
     unlock(lrfu, locked);
-  }
-  
-
-  @Test
-  public void testForceEvictBySize() {
-    int heapSize = 12;
-    LOG.info("Testing force-eviction out of order");
-    Configuration conf = new Configuration();
-    ArrayList<LlapDataBuffer> sizeTwo = new ArrayList<LlapDataBuffer>(4),
-        sizeOne = new ArrayList<LlapDataBuffer>(4);
-    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.45f); // size of LFU heap is 4
-    EvictionTracker et = new EvictionTracker();
-    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
-    lrfu.setEvictionListener(et);
-    for (int i = 0; i < 2; ++i) {
-      sizeTwo.add(cacheSizeTwoFake(et, lrfu));
-      for (int j = 0; j < 2; ++j) {
-        LlapDataBuffer fake = LowLevelCacheImpl.allocateFake();
-        assertTrue(cache(null, lrfu, et, fake));
-        sizeOne.add(fake);
-      }
-      sizeTwo.add(cacheSizeTwoFake(et, lrfu));
-    }
-    // Now we should have two in the heap and two in the list, which is an implementation detail.
-    // Evict only big blocks.
-    et.evicted.clear();
-    assertEquals(8, lrfu.tryEvictContiguousData(2, 4));
-    for (int i = 0; i < sizeTwo.size(); ++i) {
-      LlapDataBuffer block = et.evicted.get(i);
-      assertTrue(block.isInvalid());
-      assertSame(sizeTwo.get(i), block);
-    }
-    et.evicted.clear();
-    // Evict small blocks when no big ones are available.
-    assertEquals(2, lrfu.tryEvictContiguousData(2, 1));
-    for (int i = 0; i < 2; ++i) {
-	  LlapDataBuffer block = et.evicted.get(i);
-	  assertTrue(block.isInvalid());
-	  assertSame(sizeOne.get(i), block);
-	}
-    et.evicted.clear();
-    // Evict the rest.
-    assertEquals(2, lrfu.evictSomeBlocks(3));
-    for (int i = 2; i < sizeOne.size(); ++i) {
-      LlapDataBuffer block = et.evicted.get(i - 2);
-      assertTrue(block.isInvalid());
-      assertSame(sizeOne.get(i), block);
-    }
-  }
-
-  private LlapDataBuffer cacheSizeTwoFake(EvictionTracker et, LowLevelLrfuCachePolicy lrfu) {
-    LlapDataBuffer fake = new LlapDataBuffer();
-    fake.initialize(-1, ByteBuffer.wrap(new byte[2]), 0, 2);
-    assertTrue(cache(null, lrfu, et, fake));
-    return fake;
   }
 
   // Buffers in test are fakes not linked to cache; notify cache policy explicitly.
