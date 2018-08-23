@@ -23,14 +23,13 @@
 package org.apache.hive.beeline;
 
 class XMLAttributeOutputFormat extends AbstractOutputFormat {
-  private final BeeLine beeLine;
   private final StringBuilder buf = new StringBuilder();
 
   /**
    * @param beeLine
    */
   XMLAttributeOutputFormat(BeeLine beeLine) {
-    this.beeLine = beeLine;
+    super(beeLine);
   }
 
   @Override

@@ -27,6 +27,11 @@ package org.apache.hive.beeline;
  *
  */
 abstract class AbstractOutputFormat implements OutputFormat {
+  protected final BeeLine beeLine;
+
+  public AbstractOutputFormat(BeeLine beeLine) {
+    this.beeLine = beeLine;
+  }
 
   public int print(Rows rows) {
     int count = 0;
