@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,52 +42,53 @@ import java.util.stream.Collectors;
 /**
  * Constant, Table properties, Utilities class.
  */
-public final class KafkaStreamingUtils {
+final class KafkaStreamingUtils {
 
   /**
    * MANDATORY Table property indicating kafka topic backing the table
    */
-  public static final String HIVE_KAFKA_TOPIC = "kafka.topic";
+  static final String HIVE_KAFKA_TOPIC = "kafka.topic";
   /**
    * MANDATORY Table property indicating kafka broker(s) connection string.
    */
-  public static final String HIVE_KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
+  static final String HIVE_KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
   /**
    * Table property indicating which delegate serde to be used, NOT MANDATORY defaults to {@link KafkaJsonSerDe}
    */
-  public static final String SERDE_CLASS_NAME = "kafka.serde.class";
+  static final String SERDE_CLASS_NAME = "kafka.serde.class";
   /**
    * Table property indicating poll/fetch timeout period in millis.
    * FYI this is independent from internal Kafka consumer timeouts, defaults to {@DEFAULT_CONSUMER_POLL_TIMEOUT_MS}
    */
-  public static final String HIVE_KAFKA_POLL_TIMEOUT = "hive.kafka.poll.timeout.ms";
+  static final String HIVE_KAFKA_POLL_TIMEOUT = "hive.kafka.poll.timeout.ms";
   /**
    * default poll timeout for fetching metadata and record batch
    */
-  public static final long DEFAULT_CONSUMER_POLL_TIMEOUT_MS = 5000L; // 5 seconds
+  static final long DEFAULT_CONSUMER_POLL_TIMEOUT_MS = 5000L; // 5 seconds
   /**
    * Record Timestamp column name, added as extra meta column of type long
    */
-  public static final String TIMESTAMP_COLUMN = "__timestamp";
+  static final String TIMESTAMP_COLUMN = "__timestamp";
   /**
    * Record Kafka Partition column name added as extra meta column of type int
    */
-  public static final String PARTITION_COLUMN = "__partition";
+  static final String PARTITION_COLUMN = "__partition";
   /**
    * Record offset column name added as extra metadata column to row as long
    */
-  public static final String OFFSET_COLUMN = "__offset";
+  static final String OFFSET_COLUMN = "__offset";
   /**
    * Table property prefix used to inject kafka consumer properties, e.g "kafka.consumer.max.poll.records" = "5000"
    * this will lead to inject max.poll.records=5000 to the Kafka Consumer. NOT MANDATORY defaults to nothing
    */
-  protected static final String CONSUMER_CONFIGURATION_PREFIX = "kafka.consumer";
+  static final String CONSUMER_CONFIGURATION_PREFIX = "kafka.consumer";
 
   /**
    * Set of Kafka properties that the user can not set via DDLs
    */
-  private static final HashSet FORBIDDEN_PROPERTIES =
-      new HashSet(ImmutableList.of(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, ConsumerConfig.AUTO_OFFSET_RESET_CONFIG));
+  static final HashSet<String> FORBIDDEN_PROPERTIES =
+      new HashSet<>(ImmutableList.of(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
+          ConsumerConfig.AUTO_OFFSET_RESET_CONFIG));
 
   private KafkaStreamingUtils() {
   }
@@ -128,7 +130,7 @@ public final class KafkaStreamingUtils {
     Set<String> jars = new HashSet<>();
     FileSystem localFs = FileSystem.getLocal(conf);
     jars.addAll(conf.getStringCollection("tmpjars"));
-    jars.addAll(Arrays.asList(classes).stream().filter(aClass -> aClass != null).map(clazz -> {
+    jars.addAll(Arrays.stream(classes).filter(Objects::nonNull).map(clazz -> {
       String path = Utilities.jarFinderGetJar(clazz);
       if (path == null) {
         throw new RuntimeException("Could not find jar for class " + clazz + " in order to ship it to the cluster.");
@@ -146,12 +148,13 @@ public final class KafkaStreamingUtils {
     if (jars.isEmpty()) {
       return;
     }
-    conf.set("tmpjars", StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
+    conf.set("tmpjars", StringUtils.arrayToString(jars.toArray(new String[0])));
   }
 
   static AbstractSerDe createDelegate(String className) {
     final Class<? extends AbstractSerDe> clazz;
     try {
+      //noinspection unchecked
       clazz = (Class<? extends AbstractSerDe>) Class.forName(className);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);

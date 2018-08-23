@@ -91,6 +91,9 @@ public class KafkaStorageHandler implements HiveStorageHandler {
             .startsWith(KafkaStreamingUtils.CONSUMER_CONFIGURATION_PREFIX))
         .forEach(entry -> {
           String key = entry.getKey().toString().substring(KafkaStreamingUtils.CONSUMER_CONFIGURATION_PREFIX.length() + 1);
+          if (KafkaStreamingUtils.FORBIDDEN_PROPERTIES.contains(key)) {
+            throw new IllegalArgumentException("Not suppose to set Kafka Property " + key);
+          }
           String value = entry.getValue().toString();
           jobProperties.put(key, value);
           LOG.info("Setting extra job properties: key [{}] -> value [{}]", key, value);

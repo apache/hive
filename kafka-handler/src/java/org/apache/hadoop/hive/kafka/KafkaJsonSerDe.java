@@ -81,7 +81,7 @@ import java.util.stream.Collectors;
 public class KafkaJsonSerDe extends AbstractSerDe {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaJsonSerDe.class);
   private static final DateTimeFormatter TS_PARSER = createAutoParser();
-  protected static Function<TypeInfo, ObjectInspector>
+  static Function<TypeInfo, ObjectInspector>
       typeInfoToObjectInspector = typeInfo ->
       PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
           TypeInfoFactory.getPrimitiveTypeInfo(typeInfo.getTypeName()));

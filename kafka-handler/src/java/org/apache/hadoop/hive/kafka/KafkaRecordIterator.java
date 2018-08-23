@@ -73,7 +73,7 @@ public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte
    * @param endOffset      requested end position. If null will read up to current last
    * @param pollTimeoutMs  poll time out in ms
    */
-  public KafkaRecordIterator(Consumer<byte[], byte[]> consumer,
+  KafkaRecordIterator(Consumer<byte[], byte[]> consumer,
       TopicPartition topicPartition,
       @Nullable Long startOffset,
       @Nullable Long endOffset,

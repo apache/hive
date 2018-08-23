@@ -38,7 +38,7 @@ import java.util.Properties;
 /**
  * Kafka Records Reader implementation.
  */
-public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRecordWritable>
+@SuppressWarnings("UnstableApiUsage") public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRecordWritable>
     implements org.apache.hadoop.mapred.RecordReader<NullWritable, KafkaRecordWritable> {
 
   private static final Logger LOG = LoggerFactory.getLogger(KafkaPullerRecordReader.class);
@@ -49,17 +49,12 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
   private KafkaRecordWritable currentWritableValue;
   private Iterator<ConsumerRecord<byte[], byte[]>> recordsCursor = null;
 
-  private TopicPartition topicPartition;
-  private long startOffset;
-  private long endOffset;
-
   private long totalNumberRecords = 0L;
   private long consumedRecords = 0L;
   private long readBytes = 0L;
-  private long pollTimeout;
   private volatile boolean started = false;
 
-  public KafkaPullerRecordReader() {
+  @SuppressWarnings("WeakerAccess") public KafkaPullerRecordReader() {
   }
 
   private void initConsumer() {
@@ -69,28 +64,28 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
       String brokerString = properties.getProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG);
       Preconditions.checkNotNull(brokerString, "broker end point can not be null");
       LOG.info("Starting Consumer with Kafka broker string [{}]", brokerString);
-      consumer = new KafkaConsumer(properties);
+      consumer = new KafkaConsumer<>(properties);
       closer.register(consumer);
     }
   }
 
-  public KafkaPullerRecordReader(KafkaPullerInputSplit inputSplit, Configuration jobConf) {
+  @SuppressWarnings("WeakerAccess") public KafkaPullerRecordReader(KafkaPullerInputSplit inputSplit,
+      Configuration jobConf) {
     initialize(inputSplit, jobConf);
   }
 
   private synchronized void initialize(KafkaPullerInputSplit inputSplit, Configuration jobConf) {
     if (!started) {
       this.config = jobConf;
-      this.startOffset = inputSplit.getStartOffset();
-      this.endOffset = inputSplit.getEndOffset();
-      this.topicPartition = new TopicPartition(inputSplit.getTopic(), inputSplit.getPartition());
+      long startOffset = inputSplit.getStartOffset();
+      long endOffset = inputSplit.getEndOffset();
+      TopicPartition topicPartition = new TopicPartition(inputSplit.getTopic(), inputSplit.getPartition());
       Preconditions.checkState(startOffset >= 0 && startOffset <= endOffset,
-          "Start [%s] has to be positive and less or equal than End [%s]",
-          startOffset,
-          endOffset);
+          "Start [%s] has to be positive and less or equal than End [%s]", startOffset, endOffset);
       totalNumberRecords += endOffset - startOffset;
       initConsumer();
-      pollTimeout =
+      long
+          pollTimeout =
           config.getLong(KafkaStreamingUtils.HIVE_KAFKA_POLL_TIMEOUT,
               KafkaStreamingUtils.DEFAULT_CONSUMER_POLL_TIMEOUT_MS);
       LOG.debug("Consumer poll timeout [{}] ms", pollTimeout);
@@ -126,11 +121,11 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
     return new KafkaRecordWritable();
   }
 
-  @Override public long getPos() throws IOException {
+  @Override public long getPos() {
     return -1;
   }
 
-  @Override public boolean nextKeyValue() throws IOException {
+  @Override public boolean nextKeyValue() {
     currentWritableValue = new KafkaRecordWritable();
     if (next(NullWritable.get(), currentWritableValue)) {
       return true;
@@ -139,15 +134,15 @@ public class KafkaPullerRecordReader extends RecordReader<NullWritable, KafkaRec
     return false;
   }
 
-  @Override public NullWritable getCurrentKey() throws IOException, InterruptedException {
+  @Override public NullWritable getCurrentKey() {
     return NullWritable.get();
   }
 
-  @Override public KafkaRecordWritable getCurrentValue() throws IOException, InterruptedException {
+  @Override public KafkaRecordWritable getCurrentValue() {
     return Preconditions.checkNotNull(currentWritableValue);
   }
 
-  @Override public float getProgress() throws IOException {
+  @Override public float getProgress() {
     if (consumedRecords == 0) {
       return 0f;
     }

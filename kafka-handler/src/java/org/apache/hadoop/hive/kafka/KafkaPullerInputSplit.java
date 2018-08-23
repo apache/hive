@@ -34,14 +34,15 @@ import java.util.List;
 /**
  * Kafka Hadoop Input Split Class.
  */
-public class KafkaPullerInputSplit extends FileSplit implements org.apache.hadoop.mapred.InputSplit {
+@SuppressWarnings("WeakerAccess") public class KafkaPullerInputSplit extends FileSplit
+    implements org.apache.hadoop.mapred.InputSplit {
   private String topic;
   private long startOffset;
   private int partition;
   private long endOffset;
 
   public KafkaPullerInputSplit() {
-    super((Path) null, 0, 0, (String[]) null);
+    super(null, 0, 0, (String[]) null);
   }
 
   public KafkaPullerInputSplit(String topic, int partition, long startOffset, long endOffset, Path dummyPath) {
@@ -60,7 +61,7 @@ public class KafkaPullerInputSplit extends FileSplit implements org.apache.hadoo
     return 0;
   }
 
-  @Override public String[] getLocations() throws IOException {
+  @Override public String[] getLocations() {
     return new String[0];
   }
 
@@ -103,14 +104,14 @@ public class KafkaPullerInputSplit extends FileSplit implements org.apache.hadoo
   /**
    * Compute the intersection of 2 splits. Splits must share the same topic and partition number.
    *
-   * @param split1
-   * @param split2
+   * @param split1 left split
+   * @param split2 right split
    *
    * @return new split that represents range intersection or null if it is not overlapping
    */
   @Nullable public static KafkaPullerInputSplit intersectRange(KafkaPullerInputSplit split1,
       KafkaPullerInputSplit split2) {
-    assert (split1.topic == split2.topic);
+    assert (split1.topic.equals(split2.topic));
     assert (split1.partition == split2.partition);
     final long startOffset = Math.max(split1.getStartOffset(), split2.getStartOffset());
     final long endOffset = Math.min(split1.getEndOffset(), split2.getEndOffset());
@@ -124,13 +125,13 @@ public class KafkaPullerInputSplit extends FileSplit implements org.apache.hadoo
   /**
    * Compute union of ranges between splits. Splits must share the same topic and partition
    *
-   * @param split1
-   * @param split2
+   * @param split1 left split
+   * @param split2 right split
    *
    * @return new split with a range including both splits.
    */
   public static KafkaPullerInputSplit unionRange(KafkaPullerInputSplit split1, KafkaPullerInputSplit split2) {
-    assert (split1.topic == split2.topic);
+    assert (split1.topic.equals(split2.topic));
     assert (split1.partition == split2.partition);
     final long startOffset = Math.min(split1.getStartOffset(), split2.getStartOffset());
     final long endOffset = Math.max(split1.getEndOffset(), split2.getEndOffset());
@@ -179,7 +180,7 @@ public class KafkaPullerInputSplit extends FileSplit implements org.apache.hadoo
         other.getPath());
   }
 
-  public KafkaPullerInputSplit clone() {
+  @SuppressWarnings("MethodDoesntCallSuperMethod") public KafkaPullerInputSplit clone() {
     return copyOf(this);
   }
 

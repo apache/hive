@@ -39,14 +39,14 @@ public class KafkaRecordWritable implements Writable {
   private long timestamp;
   private byte[] value;
 
-  public static KafkaRecordWritable fromKafkaRecord(ConsumerRecord<byte[], byte[]> consumerRecord) {
+  static KafkaRecordWritable fromKafkaRecord(ConsumerRecord<byte[], byte[]> consumerRecord) {
     return new KafkaRecordWritable(consumerRecord.partition(),
         consumerRecord.offset(),
         consumerRecord.timestamp(),
         consumerRecord.value());
   }
 
-  public void set(ConsumerRecord<byte[], byte[]> consumerRecord) {
+  void set(ConsumerRecord<byte[], byte[]> consumerRecord) {
     this.partition = consumerRecord.partition();
     this.timestamp = consumerRecord.timestamp();
     this.offset = consumerRecord.offset();
@@ -60,7 +60,7 @@ public class KafkaRecordWritable implements Writable {
     this.value = value;
   }
 
-  public KafkaRecordWritable() {
+  @SuppressWarnings("WeakerAccess") public KafkaRecordWritable() {
   }
 
   @Override public void write(DataOutput dataOutput) throws IOException {
@@ -84,19 +84,19 @@ public class KafkaRecordWritable implements Writable {
     }
   }
 
-  public int getPartition() {
+  int getPartition() {
     return partition;
   }
 
-  public long getOffset() {
+  long getOffset() {
     return offset;
   }
 
-  public long getTimestamp() {
+  long getTimestamp() {
     return timestamp;
   }
 
-  public byte[] getValue() {
+  byte[] getValue() {
     return value;
   }
 
