@@ -81,12 +81,12 @@ final class KafkaStreamingUtils {
   /**
    * Start offset given by the input split, this will reflect the actual start of TP or start given by split pruner
    */
-  static final String START_OFFSET_COUMN = "__start_offset";
+  static final String START_OFFSET_COLUMN = "__start_offset";
 
   /**
    * End offset given by input split at run time
    */
-  static final String END_OFFSET_COUMN = "__end_offset";
+  static final String END_OFFSET_COLUMN = "__end_offset";
   /**
    * Table property prefix used to inject kafka consumer properties, e.g "kafka.consumer.max.poll.records" = "5000"
    * this will lead to inject max.poll.records=5000 to the Kafka Consumer. NOT MANDATORY defaults to nothing
