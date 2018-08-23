@@ -103,6 +103,9 @@ public class TopNKeyPushdownProcessor implements NodeProcessor {
             case JoinDesc.RIGHT_OUTER_JOIN:
               pushdownThroughRightOuterJoin(topNKey);
               break;
+
+            default:
+              break;
           }
         }
         break;
@@ -111,6 +114,9 @@ public class TopNKeyPushdownProcessor implements NodeProcessor {
         if (hasSameTopNKeyDesc(parent, topNKey.getConf())) {
           parent.removeChildAndAdoptItsChildren(topNKey);
         }
+        break;
+
+      default:
         break;
     }
   }
