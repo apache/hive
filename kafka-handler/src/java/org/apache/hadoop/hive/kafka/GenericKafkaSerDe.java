@@ -69,10 +69,16 @@ public class GenericKafkaSerDe extends AbstractSerDe {
       METADATA_COLUMN_NAMES =
       ImmutableList.of(KafkaStreamingUtils.PARTITION_COLUMN,
           KafkaStreamingUtils.OFFSET_COLUMN,
-          KafkaStreamingUtils.TIMESTAMP_COLUMN);
+          KafkaStreamingUtils.TIMESTAMP_COLUMN,
+          KafkaStreamingUtils.START_OFFSET_COUMN,
+          KafkaStreamingUtils.END_OFFSET_COUMN);
   private static final ImmutableList<PrimitiveTypeInfo>
       METADATA_PRIMITIVE_TYPE_INFO =
-      ImmutableList.of(TypeInfoFactory.intTypeInfo, TypeInfoFactory.longTypeInfo, TypeInfoFactory.longTypeInfo);
+      ImmutableList.of(TypeInfoFactory.intTypeInfo,
+          TypeInfoFactory.longTypeInfo,
+          TypeInfoFactory.longTypeInfo,
+          TypeInfoFactory.longTypeInfo,
+          TypeInfoFactory.longTypeInfo);
 
   private AbstractSerDe delegateSerDe;
   private ObjectInspector objectInspector;
@@ -160,6 +166,10 @@ public class GenericKafkaSerDe extends AbstractSerDe {
         return new LongWritable(record.getOffset());
       case KafkaStreamingUtils.TIMESTAMP_COLUMN:
         return new LongWritable(record.getTimestamp());
+      case KafkaStreamingUtils.START_OFFSET_COUMN:
+        return new LongWritable(record.getStartOffset());
+      case KafkaStreamingUtils.END_OFFSET_COUMN:
+        return new LongWritable(record.getEndOffset());
       default:
         return delegateObjectInspector.getStructFieldData(row, delegateObjectInspector.getStructFieldRef(name));
       }

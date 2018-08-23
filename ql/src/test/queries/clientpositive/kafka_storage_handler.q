@@ -14,26 +14,32 @@ TBLPROPERTIES
 
 DESCRIBE EXTENDED kafka_table;
 
-Select `__partition` , `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+Select `__partition` ,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta FROM kafka_table;
 
 Select count(*) FROM kafka_table;
 
-Select `__partition`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+Select `__partition`, `__offset`,`__start_offset`,`__end_offset`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where `__timestamp` > 1533960760123;
-Select `__partition`, `__offset`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+Select `__partition`, `__offset` ,`__start_offset`,`__end_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where `__timestamp` > 533960760123;
 
-Select `__partition`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
-from kafka_table where `__offset` > 7 and `__partition` = 0 OR
-`__offset` = 4 and `__partition` = 0 OR `__offset` <= 1 and `__partition` = 0;
+from kafka_table where (`__offset` > 7 and `__partition` = 0 and `__offset` <9 ) OR
+`__offset` = 4 and `__partition` = 0 OR (`__offset` <= 1 and `__partition` = 0 and `__offset` > 0);
+
+Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5;
+
+Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5;
+
+Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5;
 
 -- Timestamp filter
 
-Select `__partition`, `__offset`, `user`  from kafka_table where
+Select `__partition`,`__start_offset`,`__end_offset`, `__offset`, `user`  from kafka_table where
 `__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS) ;
 
 -- non existing partition
@@ -224,5 +230,7 @@ select count(distinct `user`) from  wiki_kafka_avro_table;
 
 select sum(deltabucket), min(commentlength) from wiki_kafka_avro_table;
 
-select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090;
+select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
+`__partition`, `__start_offset`,`__end_offset`,`__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
+`isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090;
 

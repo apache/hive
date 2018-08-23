@@ -37,7 +37,7 @@ public class KafkaRecordWritableTest {
 
   @Test public void testWriteReadFields() throws IOException {
     ConsumerRecord<byte[], byte[]> record = new ConsumerRecord("topic", 0, 3L, "key".getBytes(), "value".getBytes());
-    KafkaRecordWritable kafkaRecordWritable = KafkaRecordWritable.fromKafkaRecord(record);
+    KafkaRecordWritable kafkaRecordWritable = new KafkaRecordWritable(record.partition(), record.offset(), record.timestamp(), record.value(), 0L, 100L);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream w = new DataOutputStream(baos);
     kafkaRecordWritable.write(w);

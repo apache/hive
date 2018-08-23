@@ -74,8 +74,9 @@ public class KafkaRecordIteratorTest {
       RECORDS =
       IntStream.range(0, RECORD_NUMBER).mapToObj(number -> {
         final byte[] value = ("VALUE-" + Integer.toString(number)).getBytes(Charset.forName("UTF-8"));
-        return new ConsumerRecord<byte[], byte[]>(TOPIC, 0, (long) number, 0L, null, 0L, 0, 0, KEY_BYTES, value);
+        return new ConsumerRecord<>(TOPIC, 0, (long) number, 0L, null, 0L, 0, 0, KEY_BYTES, value);
       }).collect(Collectors.toList());
+  public static final long POLL_TIMEOUT_MS = 900L;
   private static ZkUtils zkUtils;
   private static ZkClient zkClient;
   private static KafkaProducer<byte[], byte[]> producer;
@@ -89,7 +90,7 @@ public class KafkaRecordIteratorTest {
   public KafkaRecordIteratorTest() {
   }
 
-  @BeforeClass public static void setupCluster() throws IOException, InterruptedException {
+  @BeforeClass public static void setupCluster() throws IOException {
     LOG.info("init embedded Zookeeper");
     zkServer = new EmbeddedZookeeper();
     zkConnect = "127.0.0.1:" + zkServer.port();
@@ -119,40 +120,42 @@ public class KafkaRecordIteratorTest {
   }
 
   @Test public void testHasNextAbsoluteStartEnd() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, (long) RECORDS.size(), 200L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, (long) RECORDS.size(), POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
   @Test public void testHasNextGivenStartEnd() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 2L, 4L, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 2L, 4L, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS.stream()
         .filter((consumerRecord) -> consumerRecord.offset() >= 2L && consumerRecord.offset() < 4L)
         .collect(Collectors.toList()), this.kafkaRecordIterator);
   }
 
   @Test public void testHasNextNoOffsets() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
   @Test public void testHasNextLastRecord() {
     long startOffset = (long) (RECORDS.size() - 1);
     long lastOffset = (long) RECORDS.size();
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, startOffset, lastOffset, 100L);
+    this.kafkaRecordIterator =
+        new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, startOffset, lastOffset, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS.stream()
         .filter((consumerRecord) -> consumerRecord.offset() >= startOffset && consumerRecord.offset() < lastOffset)
         .collect(Collectors.toList()), this.kafkaRecordIterator);
   }
 
   @Test public void testHasNextFirstRecord() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 1L, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 1L, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS.stream()
         .filter((consumerRecord) -> consumerRecord.offset() >= 0L && consumerRecord.offset() < 1L)
         .collect(Collectors.toList()), this.kafkaRecordIterator);
   }
 
   @Test public void testHasNextNoStart() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, (Long) null, 10L, 100L);
+    this.kafkaRecordIterator =
+        new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, null, 10L, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS.stream()
         .filter((consumerRecord) -> consumerRecord.offset() >= 0L && consumerRecord.offset() < 10L)
         .collect(Collectors.toList()), this.kafkaRecordIterator);
@@ -160,27 +163,25 @@ public class KafkaRecordIteratorTest {
 
   @Test public void testHasNextNoEnd() {
     long lastOffset = (long) RECORDS.size();
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 5L, (Long) null, 100L);
+    this.kafkaRecordIterator =
+        new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 5L, null, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS.stream()
         .filter((consumerRecord) -> consumerRecord.offset() >= 5L && consumerRecord.offset() < lastOffset)
         .collect(Collectors.toList()), this.kafkaRecordIterator);
   }
 
   @Test public void testRecordReader() throws IOException {
-    InputSplit inputSplits = new KafkaPullerInputSplit(TOPIC, 0, 0L, 50L, null);
-    KafkaPullerRecordReader recordReader = new KafkaPullerRecordReader((KafkaPullerInputSplit) inputSplits, this.conf);
     List<KafkaRecordWritable>
         serRecords =
-        RECORDS.stream().map((aRecord) -> KafkaRecordWritable.fromKafkaRecord(aRecord)).collect(Collectors.toList());
-
-    for (int i = 0; i < 50; ++i) {
-      KafkaRecordWritable record = new KafkaRecordWritable();
-      Assert.assertTrue(recordReader.next((NullWritable) null, record));
-      Assert.assertEquals(serRecords.get(i), record);
-    }
-
-    recordReader.close();
-    recordReader = new KafkaPullerRecordReader();
+        RECORDS.stream()
+            .map((aRecord) -> new KafkaRecordWritable(aRecord.partition(),
+                aRecord.offset(),
+                aRecord.timestamp(),
+                aRecord.value(),
+                50L,
+                100L))
+            .collect(Collectors.toList());
+    KafkaPullerRecordReader recordReader = new KafkaPullerRecordReader();
     TaskAttemptContext context = new TaskAttemptContextImpl(this.conf, new TaskAttemptID());
     recordReader.initialize(new KafkaPullerInputSplit(TOPIC, 0, 50L, 100L, null), context);
 
@@ -194,38 +195,44 @@ public class KafkaRecordIteratorTest {
   }
 
   @Test(expected = TimeoutException.class) public void testPullingBeyondLimit() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 101L, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 101L, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
   @Test(expected = IllegalStateException.class) public void testPullingStartGreaterThanEnd() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 10L, 1L, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 10L, 1L, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
   @Test(expected = TimeoutException.class) public void testPullingFromEmptyTopic() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, new TopicPartition("noHere", 0), 0L, 100L, 100L);
+    this.kafkaRecordIterator =
+        new KafkaRecordIterator(this.consumer, new TopicPartition("noHere", 0), 0L, 100L, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
   @Test(expected = TimeoutException.class) public void testPullingFromEmptyPartition() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, new TopicPartition(TOPIC, 1), 0L, 100L, 100L);
+    this.kafkaRecordIterator =
+        new KafkaRecordIterator(this.consumer, new TopicPartition(TOPIC, 1), 0L, 100L, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
   @Test public void testStartIsEqualEnd() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 10L, 10L, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 10L, 10L, POLL_TIMEOUT_MS);
     this.compareIterator(ImmutableList.of(), this.kafkaRecordIterator);
   }
 
   @Test public void testStartIsTheLastOffset() {
     this.kafkaRecordIterator =
-        new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, new Long(RECORD_NUMBER), new Long(RECORD_NUMBER), 100L);
+        new KafkaRecordIterator(this.consumer,
+            TOPIC_PARTITION,
+            new Long(RECORD_NUMBER),
+            new Long(RECORD_NUMBER),
+            POLL_TIMEOUT_MS);
     this.compareIterator(ImmutableList.of(), this.kafkaRecordIterator);
   }
 
   @Test public void testStartIsTheFirstOffset() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 0L, 100L);
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 0L, POLL_TIMEOUT_MS);
     this.compareIterator(ImmutableList.of(), this.kafkaRecordIterator);
   }
 

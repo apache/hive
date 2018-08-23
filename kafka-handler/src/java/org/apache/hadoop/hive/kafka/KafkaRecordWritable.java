@@ -36,28 +36,32 @@ public class KafkaRecordWritable implements Writable {
 
   private int partition;
   private long offset;
+  private long startOffset;
+  private long endOffset;
   private long timestamp;
   private byte[] value;
 
-  static KafkaRecordWritable fromKafkaRecord(ConsumerRecord<byte[], byte[]> consumerRecord) {
-    return new KafkaRecordWritable(consumerRecord.partition(),
-        consumerRecord.offset(),
-        consumerRecord.timestamp(),
-        consumerRecord.value());
-  }
-
-  void set(ConsumerRecord<byte[], byte[]> consumerRecord) {
+  void set(ConsumerRecord<byte[], byte[]> consumerRecord, long startOffset, long endOffset) {
     this.partition = consumerRecord.partition();
     this.timestamp = consumerRecord.timestamp();
     this.offset = consumerRecord.offset();
     this.value = consumerRecord.value();
+    this.startOffset = startOffset;
+    this.endOffset = endOffset;
   }
 
-  private KafkaRecordWritable(int partition, long offset, long timestamp, byte[] value) {
+   KafkaRecordWritable(int partition,
+      long offset,
+      long timestamp,
+      byte[] value,
+      long startOffset,
+      long endOffset) {
     this.partition = partition;
     this.offset = offset;
     this.timestamp = timestamp;
     this.value = value;
+    this.startOffset = startOffset;
+    this.endOffset = endOffset;
   }
 
   @SuppressWarnings("WeakerAccess") public KafkaRecordWritable() {
@@ -67,6 +71,8 @@ public class KafkaRecordWritable implements Writable {
     dataOutput.writeLong(timestamp);
     dataOutput.writeInt(partition);
     dataOutput.writeLong(offset);
+    dataOutput.writeLong(startOffset);
+    dataOutput.writeLong(endOffset);
     dataOutput.writeInt(value.length);
     dataOutput.write(value);
   }
@@ -75,6 +81,8 @@ public class KafkaRecordWritable implements Writable {
     timestamp = dataInput.readLong();
     partition = dataInput.readInt();
     offset = dataInput.readLong();
+    startOffset = dataInput.readLong();
+    endOffset = dataInput.readLong();
     int size = dataInput.readInt();
     if (size > 0) {
       value = new byte[size];
@@ -100,6 +108,14 @@ public class KafkaRecordWritable implements Writable {
     return value;
   }
 
+  long getStartOffset() {
+    return startOffset;
+  }
+
+  long getEndOffset() {
+    return endOffset;
+  }
+
   @Override public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -107,18 +123,35 @@ public class KafkaRecordWritable implements Writable {
     if (!(o instanceof KafkaRecordWritable)) {
       return false;
     }
-    KafkaRecordWritable that = (KafkaRecordWritable) o;
-    return getPartition() == that.getPartition()
-        && getOffset() == that.getOffset()
-        && getTimestamp() == that.getTimestamp()
-        && Arrays.equals(getValue(), that.getValue());
+    KafkaRecordWritable writable = (KafkaRecordWritable) o;
+    return partition == writable.partition
+        && offset == writable.offset
+        && startOffset == writable.startOffset
+        && endOffset == writable.endOffset
+        && timestamp == writable.timestamp
+        && Arrays.equals(value, writable.value);
   }
 
   @Override public int hashCode() {
-
-    int result = Objects.hash(getPartition(), getOffset(), getTimestamp());
-    result = 31 * result + Arrays.hashCode(getValue());
+    int result = Objects.hash(partition, offset, startOffset, endOffset, timestamp);
+    result = 31 * result + Arrays.hashCode(value);
     return result;
   }
 
+  @Override public String toString() {
+    return "KafkaRecordWritable{"
+        + "partition="
+        + partition
+        + ", offset="
+        + offset
+        + ", startOffset="
+        + startOffset
+        + ", endOffset="
+        + endOffset
+        + ", timestamp="
+        + timestamp
+        + ", value="
+        + Arrays.toString(value)
+        + '}';
+  }
 }
