@@ -287,7 +287,7 @@ public class MetaStoreUtils {
     }
     return pvals;
   }
-  public static String makePartNameMatcher(Table table, List<String> partVals) throws MetaException {
+  public static String makePartNameMatcher(Table table, List<String> partVals, String defaultStr) throws MetaException {
     List<FieldSchema> partCols = table.getPartitionKeys();
     int numPartKeys = partCols.size();
     if (partVals.size() > numPartKeys) {
@@ -300,10 +300,10 @@ public class MetaStoreUtils {
     // or a regex of the form ".*"
     // This works because the "=" and "/" separating key names and partition key/values
     // are not escaped.
-    String partNameMatcher = Warehouse.makePartName(partCols, partVals, ".*");
+    String partNameMatcher = Warehouse.makePartName(partCols, partVals, defaultStr);
     // add ".*" to the regex to match anything else afterwards the partial spec.
     if (partVals.size() < numPartKeys) {
-      partNameMatcher += ".*";
+      partNameMatcher += defaultStr;
     }
     return partNameMatcher;
   }

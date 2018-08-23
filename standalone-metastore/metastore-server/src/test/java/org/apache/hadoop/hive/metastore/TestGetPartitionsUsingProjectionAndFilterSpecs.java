@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
@@ -71,8 +72,8 @@ import static org.apache.hadoop.hive.metastore.ColumnType.SERIALIZATION_FORMAT;
  * directSQL code path
  */
 @Category(MetastoreCheckinTest.class)
-public class TestGetPartitionsUsingProjection {
-  private static final Logger LOG = LoggerFactory.getLogger(TestGetPartitionsUsingProjection.class);
+public class TestGetPartitionsUsingProjectionAndFilterSpecs {
+  private static final Logger LOG = LoggerFactory.getLogger(TestGetPartitionsUsingProjectionAndFilterSpecs.class);
   protected static Configuration conf = MetastoreConf.newMetastoreConf();
   private static int port;
   private static final String dbName = "test_projection_db";
@@ -622,20 +623,208 @@ public class TestGetPartitionsUsingProjection {
     }
   }
 
-  @Test(expected = TException.class)
+  @Test
+  public void testGetPartitionsWithFilterExpr() throws TException {
+    runGetPartitionsUsingExpr();
+  }
+
+  @Test
+  public void testGetPartitionsUsingNames() throws Exception {
+    runGetPartitionsUsingNames();
+  }
+
+  @Test
+  public void testGetPartitionsUsingValues() throws Exception {
+    runGetPartitionsUsingVals();
+  }
+
+  @Test
+  public void testGetPartitionsUsingExprWithJDO() throws Exception {
+    // disable direct SQL to make sure
+    client.setMetaConf(ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
+    runGetPartitionsUsingExpr();
+  }
+
+  @Test
+  public void testGetPartitionsUsingValuesWithJDO() throws Exception {
+    // disable direct SQL to make sure
+    client.setMetaConf(ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
+    runGetPartitionsUsingVals();
+  }
+
+  @Test
+  public void testGetPartitionsUsingNamesWithJDO() throws Exception {
+    // disable direct SQL to make sure
+    client.setMetaConf(ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
+    runGetPartitionsUsingNames();
+  }
+
+  @Test(expected = MetaException.class)
+  public void testInvalidFilterByNames() throws Exception {
+    runWithInvalidFilterByNames();
+  }
+
+  @Test(expected = MetaException.class)
+  public void testInvalidFilterByNamesWithJDO() throws Exception {
+    // disable direct SQL to make sure
+    client.setMetaConf(ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
+    runWithInvalidFilterByNames();
+  }
+
+  @Test(expected = MetaException.class)
   public void testInvalidProjectFieldNames() throws TException {
+    runWithInvalidFieldNames(Arrays.asList("values", "invalid.field.name"));
+  }
+
+  @Test(expected = MetaException.class)
+  public void testInvalidProjectFieldNames2() throws TException {
+    runWithInvalidFieldNames(Arrays.asList(""));
+  }
+
+  @Test(expected = MetaException.class)
+  public void testInvalidProjectFieldNamesWithJDO() throws TException {
+    // disable direct SQL to make sure
+    client.setMetaConf(ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
+    runWithInvalidFieldNames(Arrays.asList("values", "invalid.field.name"));
+  }
+
+  @Test(expected = MetaException.class)
+  public void testInvalidProjectFieldNames2WithJDO() throws TException {
+    // disable direct SQL to make sure
+    client.setMetaConf(ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
+    runWithInvalidFieldNames(Arrays.asList(""));
+  }
+
+  private void runWithInvalidFilterByNames() throws TException {
     GetPartitionsRequest request = getGetPartitionsRequest();
     GetPartitionsProjectionSpec projectSpec = request.getProjectionSpec();
-    projectSpec.setFieldList(Arrays.asList("values", "invalid.field.name"));
+    projectSpec.setFieldList(Arrays.asList("sd.location"));
+    request.getFilterSpec().setFilterMode(PartitionFilterMode.BY_NAMES);
+    // filter mode is set but not filters are provided
     client.getPartitionsWithSpecs(request);
   }
 
-  @Test(expected = TException.class)
-  public void testInvalidProjectFieldNames2() throws TException {
+  private void runWithInvalidFieldNames(List<String> values) throws TException {
     GetPartitionsRequest request = getGetPartitionsRequest();
     GetPartitionsProjectionSpec projectSpec = request.getProjectionSpec();
-    projectSpec.setFieldList(Arrays.asList(""));
+    projectSpec.setFieldList(values);
     client.getPartitionsWithSpecs(request);
+  }
+
+  private void runGetPartitionsUsingExpr() throws TException {
+    // test simple case first
+    getPartitionsWithExpr(Arrays.asList("state=\"CA\""), 2);
+    // Logical AND in filter
+    getPartitionsWithExpr(Arrays.asList("state=\"CA\" AND city=\"PaloAlto\""), 1);
+    // empty result set
+    getPartitionsWithExpr(Arrays.asList("state=\"CA\" AND city=\"Seattle\""), 0);
+
+    // NOT operator
+    getPartitionsWithExpr(Arrays.asList("state=\"CA\" AND city !=\"PaloAlto\""), 1);
+    // nested expr
+    getPartitionsWithExpr(Arrays
+            .asList("(state=\"CA\" AND city !=\"PaloAlto\") OR (state=\"WA\" AND city = \"Seattle\")"),
+        2);
+
+    // multiple filters
+    getPartitionsWithExpr(Arrays.asList("state=\"CA\"", "city=\"PaloAlto\""), 1);
+    getPartitionsWithExpr(
+        Arrays.asList("state=\"CA\" OR state=\"WA\"", "city=\"PaloAlto\" OR city=\"Seattle\""), 2);
+    // test empty result
+    getPartitionsWithExpr(Arrays.asList("state=\"AZ\"", "city=\"Tucson\""), 0);
+  }
+
+  private void getPartitionsWithExpr(List<String> filters, int expectedPartition) throws TException {
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    GetPartitionsProjectionSpec projectSpec = request.getProjectionSpec();
+    projectSpec.setFieldList(Arrays.asList("sd.location"));
+    request.getFilterSpec().setFilterMode(PartitionFilterMode.BY_EXPR);
+    request.getFilterSpec().setFilters(filters);
+
+    GetPartitionsResponse response = client.getPartitionsWithSpecs(request);
+    Assert.assertNotNull(response);
+    if (expectedPartition > 0) {
+      PartitionSpecWithSharedSD partitionSpecWithSharedSD =
+          response.getPartitionSpec().get(0).getSharedSDPartitionSpec();
+      Assert.assertNotNull(partitionSpecWithSharedSD);
+      Assert.assertEquals("Invalid number of partitions returned", expectedPartition,
+          partitionSpecWithSharedSD.getPartitionsSize());
+    } else {
+      Assert.assertTrue(
+          "Partition spec should have been empty since filter doesn't match with any partitions",
+          response.getPartitionSpec().isEmpty());
+    }
+  }
+
+  private void getPartitionsWithVals(List<String> filters, int expectedPartitions)
+      throws TException {
+    // get partitions from "trusted" API
+    List<Partition> partitions = client.listPartitions(dbName, tblName, filters, (short) -1);
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    GetPartitionsProjectionSpec projectSpec = request.getProjectionSpec();
+    projectSpec.setFieldList(Arrays.asList("sd.location"));
+    request.getFilterSpec().setFilterMode(PartitionFilterMode.BY_VALUES);
+    request.getFilterSpec().setFilters(filters);
+
+    GetPartitionsResponse response = client.getPartitionsWithSpecs(request);
+    Assert.assertNotNull(response);
+    if (expectedPartitions > 0) {
+      PartitionSpecWithSharedSD partitionSpecWithSharedSD =
+          response.getPartitionSpec().get(0).getSharedSDPartitionSpec();
+      Assert.assertNotNull(partitionSpecWithSharedSD);
+      Assert.assertEquals("Invalid number of partitions returned", expectedPartitions,
+          partitionSpecWithSharedSD.getPartitionsSize());
+      verifyLocations(partitions, partitionSpecWithSharedSD.getSd(),
+          partitionSpecWithSharedSD.getPartitions());
+    } else {
+      Assert.assertTrue(
+          "Partition spec should have been empty since filter doesn't match with any partitions",
+          response.getPartitionSpec().isEmpty());
+    }
+  }
+
+  private void runGetPartitionsUsingVals() throws TException {
+    // top level val set
+    getPartitionsWithVals(Arrays.asList("CA"), 2);
+    // exactly one partition
+    getPartitionsWithVals(Arrays.asList("CA", "PaloAlto"), 1);
+    // non-existing partition should return zero partitions
+    getPartitionsWithVals(Arrays.asList("CA", "CityDoesNotExist"), 0);
+  }
+
+  private void getPartitionsWithNames(List<String> names, int expectedPartitionCount) throws TException {
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    GetPartitionsProjectionSpec projectSpec = request.getProjectionSpec();
+    projectSpec.setFieldList(Arrays.asList("sd.location"));
+    request.getFilterSpec().setFilterMode(PartitionFilterMode.BY_NAMES);
+    request.getFilterSpec().setFilters(names);
+
+    GetPartitionsResponse response = client.getPartitionsWithSpecs(request);
+    Assert.assertNotNull(response);
+    if (expectedPartitionCount > 0) {
+      PartitionSpecWithSharedSD partitionSpecWithSharedSD =
+          response.getPartitionSpec().get(0).getSharedSDPartitionSpec();
+      Assert.assertNotNull(partitionSpecWithSharedSD);
+      Assert.assertEquals("Invalid number of partitions returned", expectedPartitionCount,
+          partitionSpecWithSharedSD.getPartitionsSize());
+      List<Partition> origPartitions = client.getPartitionsByNames(dbName, tblName, names);
+      verifyLocations(origPartitions, partitionSpecWithSharedSD.getSd(), partitionSpecWithSharedSD.getPartitions());
+    } else {
+      Assert.assertTrue(
+          "Partition spec should have been empty since filter doesn't match with any partitions",
+          response.getPartitionSpec().isEmpty());
+    }
+  }
+
+  private void runGetPartitionsUsingNames() throws TException {
+    List<String> names = client.listPartitionNames(dbName, tblName, (short) -1);
+    // remove one to make sure that the test is really looking at 3 names
+    names.remove(names.size() - 1);
+    getPartitionsWithNames(names, 3);
+    // filter mode is set. Empty filter names. So no partitions should be returned
+    getPartitionsWithNames(Arrays.asList(""), 0);
+    // invalid name
+    getPartitionsWithNames(Arrays.asList("invalidPartitionName"), 0);
   }
 
   private void validateBasic(GetPartitionsResponse response) throws TException {
@@ -667,6 +856,21 @@ public class TestGetPartitionsUsingProjection {
     request.setTblName(tblName);
     request.setDbName(dbName);
     return request;
+  }
+
+  private void verifyLocations(List<Partition> origPartitions, StorageDescriptor sharedSD,
+      List<PartitionWithoutSD> partitionWithoutSDS) {
+    int i=0;
+    for (Partition origPart : origPartitions) {
+      // in case of location sharedSD has the base location and partition has relative location
+      Assert.assertEquals("Location does not match", origPart.getSd().getLocation(),
+          sharedSD.getLocation() + partitionWithoutSDS.get(i).getRelativePath());
+      Assert.assertNull("values were not requested but are still set",
+          partitionWithoutSDS.get(i).getValues());
+      Assert.assertNull("Parameters were not requested but are still set",
+          partitionWithoutSDS.get(i).getParameters());
+      i++;
+    }
   }
 
   private <K, V> void validateMap(Map<K, V> aMap, Map<K, V> bMap) {

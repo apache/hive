@@ -1274,13 +1274,10 @@ public class CachedStore implements RawStore, Configurable {
   /**
    * getPartitionSpecsByFilterAndProjection interface is currently non-cacheable.
    */
-  public List<Partition> getPartitionSpecsByFilterAndProjection(String catName, String dbName,
-                                                                String tblName,
-                                                                List<String> fieldList,
-                                                                String includeParamKeyPattern,
-      String excludeParamKeysPattern) throws MetaException, NoSuchObjectException {
-    return rawStore.getPartitionSpecsByFilterAndProjection(catName, dbName, tblName, fieldList,
-        includeParamKeyPattern, excludeParamKeysPattern);
+  public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
+      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
+      throws MetaException, NoSuchObjectException {
+    return rawStore.getPartitionSpecsByFilterAndProjection(table, projectionSpec, filterSpec);
   }
 
   @Override

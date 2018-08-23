@@ -4698,24 +4698,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       GetPartitionsResponse response = null;
       Exception ex = null;
       try {
-        List<String> fieldList = null;
-        String paramkeyPattern = null;
-        String excludeParamKeyPattern = null;
-        if (request.isSetProjectionSpec()) {
-          GetPartitionsProjectionSpec partitionsProjectSpec = request.getProjectionSpec();
-          fieldList = partitionsProjectSpec.getFieldList();
-          if (partitionsProjectSpec.isSetIncludeParamKeyPattern()) {
-            paramkeyPattern = partitionsProjectSpec.getIncludeParamKeyPattern();
-          }
-          if (partitionsProjectSpec.isSetExcludeParamKeyPattern()) {
-            excludeParamKeyPattern = partitionsProjectSpec.getExcludeParamKeyPattern();
-          }
-        }
-        String dbName = parsedDbName[DB_NAME];
-        Table table = get_table_core(catName, dbName, tableName);
+        Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
         List<Partition> partitions = getMS()
-            .getPartitionSpecsByFilterAndProjection(catName, dbName, tableName, fieldList, paramkeyPattern,
-                excludeParamKeyPattern);
+            .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
+                request.getFilterSpec());
         List<PartitionSpec> partitionSpecs =
             MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
         response = new GetPartitionsResponse();

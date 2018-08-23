@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -563,19 +564,59 @@ class MetaStoreDirectSql {
    * @param excludeParamKeyPattern The SQL regex paterrn which is used to exclude the parameter keys. Can include _ or %
    *                               When this pattern is set, all the partition parameters where key is NOT LIKE the pattern
    *                               are returned. This is applied in conjunction with the includeParamKeyPattern if it is set.
+   * @param filterSpec             The filterSpec from <code>GetPartitionsRequest</code> which includes the filter mode (BY_EXPR, BY_VALUES or BY_NAMES)
+   *                               and the list of filter strings to be used to filter the results
+   * @param filter                 SqlFilterForPushDown which is set in the <code>canUseDirectSql</code> method before this method is called.
+   *                               The filter is used only when the mode is BY_EXPR
    * @return
    * @throws MetaException
    */
-  public List<Partition> getPartitionSpecsUsingProjection(Table tbl,
-      final List<String> partitionFields, final String includeParamKeyPattern, final String excludeParamKeyPattern)
+  public List<Partition> getPartitionsUsingProjectionAndFilterSpec(Table tbl,
+      final List<String> partitionFields, final String includeParamKeyPattern,
+      final String excludeParamKeyPattern, GetPartitionsFilterSpec filterSpec, SqlFilterForPushdown filter)
       throws MetaException {
     final String tblName = tbl.getTableName();
     final String dbName = tbl.getDbName();
     final String catName = tbl.getCatName();
-    //TODO add support for filter
-    List<Long> partitionIds =
-        getPartitionIdsViaSqlFilter(catName, dbName, tblName, null, Collections.<String>emptyList(),
-            Collections.<String>emptyList(), null);
+    List<Long> partitionIds = null;
+    if (filterSpec.isSetFilterMode()) {
+      List<String> filters = filterSpec.getFilters();
+      if (filters == null || filters.isEmpty()) {
+        throw new MetaException("Invalid filter expressions in the filter spec");
+      }
+      switch(filterSpec.getFilterMode()) {
+      case BY_EXPR:
+        partitionIds =
+            getPartitionIdsViaSqlFilter(catName, dbName, tblName, filter.filter, filter.params,
+                filter.joins, null);
+        break;
+      case BY_NAMES:
+        String partNamesFilter =
+            "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(filterSpec.getFilters().size())
+                + ")";
+        partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, partNamesFilter,
+            filterSpec.getFilters(), Collections.EMPTY_LIST, null);
+        break;
+      case BY_VALUES:
+        // we are going to use the SQL regex pattern in the LIKE clause below. So the default string
+        // is _% and not .*
+        String partNameMatcher = MetaStoreUtils.makePartNameMatcher(tbl, filters, "_%");
+        String partNamesLikeFilter =
+            "" + PARTITIONS + ".\"PART_NAME\" LIKE (?)";
+        partitionIds =
+            getPartitionIdsViaSqlFilter(catName, dbName, tblName, partNamesLikeFilter, Arrays.asList(partNameMatcher),
+                Collections.EMPTY_LIST, null);
+        break;
+        default:
+          throw new MetaException("Unsupported filter mode " + filterSpec.getFilterMode());
+      }
+    } else {
+      // there is no filter mode. Fetch all the partition ids
+      partitionIds =
+          getPartitionIdsViaSqlFilter(catName, dbName, tblName, null, Collections.EMPTY_LIST,
+              Collections.EMPTY_LIST, null);
+    }
+
     if (partitionIds.isEmpty()) {
       return Collections.emptyList();
     }
