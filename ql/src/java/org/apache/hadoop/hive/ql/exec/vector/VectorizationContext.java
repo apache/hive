@@ -2074,6 +2074,8 @@ public class VectorizationContext {
 
       // Elt is a special case because it can take variable number of arguments.
       ve = getEltExpression(childExpr, returnType);
+    } else if (udf instanceof GenericUDFGrouping) {
+      ve = getGroupingExpression((GenericUDFGrouping) udf, childExpr, returnType);
     } else if (udf instanceof GenericUDFBridge) {
       ve = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode,
           returnType);
@@ -2193,6 +2195,53 @@ public class VectorizationContext {
 
     freeNonColumns(vectorChildren);
     return vectorElt;
+  }
+
+  private VectorExpression getGroupingExpression(GenericUDFGrouping udf,
+      List<ExprNodeDesc> childExprs, TypeInfo returnType)
+          throws HiveException {
+
+    ExprNodeDesc childExpr0 = childExprs.get(0);
+    if (!(childExpr0 instanceof ExprNodeColumnDesc)) {
+      return null;
+    }
+    ExprNodeColumnDesc groupingIdColDesc = (ExprNodeColumnDesc) childExpr0;
+    int groupingIdColNum = getInputColumnIndex(groupingIdColDesc.getColumn());
+
+    final int indexCount = childExprs.size() - 1;
+    int[] indices = new int[indexCount];
+    for (int i = 0; i < indexCount; i++) {
+      ExprNodeDesc indexChildExpr = childExprs.get(i + 1);
+      if (!(indexChildExpr instanceof ExprNodeConstantDesc)) {
+        return null;
+      }
+      Object scalarObject = ((ExprNodeConstantDesc) indexChildExpr).getValue();
+      final int index;
+      if (scalarObject instanceof Integer) {
+        index = (int) scalarObject;
+      } else if (scalarObject instanceof Long) {
+        index = (int) ((long) scalarObject);
+      } else {
+        return null;
+      }
+      indices[i] = index;
+    }
+
+    final int outputColumnNum = ocm.allocateOutputColumn(returnType);
+    final VectorExpression ve;
+    if (indices.length == 1) {
+      ve = new GroupingColumn(groupingIdColNum, indices[0], outputColumnNum);
+    } else {
+      ve = new GroupingColumns(groupingIdColNum, indices, outputColumnNum);
+    }
+
+    ve.setInputTypeInfos(groupingIdColDesc.getTypeInfo());
+    ve.setInputDataTypePhysicalVariations(DataTypePhysicalVariation.NONE);
+
+    ve.setOutputTypeInfo(returnType);
+    ve.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
+
+    return ve;
   }
 
   public enum InConstantType {
