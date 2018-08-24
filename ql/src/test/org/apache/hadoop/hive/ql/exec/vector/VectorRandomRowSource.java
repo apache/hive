@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -86,7 +85,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hive.common.util.DateUtils;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 
@@ -286,7 +284,7 @@ public class VectorRandomRowSource {
   }
 
   public enum SupportedTypes {
-    ALL, PRIMITIVES, ALL_EXCEPT_MAP
+    ALL, PRIMITIVES, ALL_EXCEPT_MAP, ALL_EXCEPT_MAP_UNION
   }
 
   public void init(Random r, SupportedTypes supportedTypes, int maxComplexDepth) {
@@ -363,6 +361,17 @@ public class VectorRandomRowSource {
       "map"
   };
 
+  private static String[] possibleHiveComplexTypeNamesWithoutMap = {
+      "array",
+      "struct",
+      "uniontype"
+  };
+
+  private static String[] possibleHiveComplexTypeNamesWithoutMapUnion = {
+      "array",
+      "struct"
+  };
+
   public static String getRandomTypeName(Random random, SupportedTypes supportedTypes,
       Set<String> allowedTypeNameSet) {
 
@@ -376,7 +385,12 @@ public class VectorRandomRowSource {
           typeName = possibleHivePrimitiveTypeNames[random.nextInt(possibleHivePrimitiveTypeNames.length)];
           break;
         case ALL_EXCEPT_MAP:
-          typeName = possibleHiveComplexTypeNames[random.nextInt(possibleHiveComplexTypeNames.length - 1)];
+          typeName = possibleHiveComplexTypeNamesWithoutMap[random.nextInt(
+              possibleHiveComplexTypeNamesWithoutMap.length)];
+          break;
+        case ALL_EXCEPT_MAP_UNION:
+          typeName = possibleHiveComplexTypeNamesWithoutMapUnion[random.nextInt(
+              possibleHiveComplexTypeNamesWithoutMapUnion.length)];
           break;
         case ALL:
           typeName = possibleHiveComplexTypeNames[random.nextInt(possibleHiveComplexTypeNames.length)];
@@ -583,10 +597,16 @@ public class VectorRandomRowSource {
         if (allTypes) {
           switch (supportedTypes) {
           case ALL:
-            columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length;
+            columnCount = possibleHivePrimitiveTypeNames.length +
+                possibleHiveComplexTypeNames.length;
             break;
           case ALL_EXCEPT_MAP:
-            columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length - 1;
+            columnCount = possibleHivePrimitiveTypeNames.length +
+                possibleHiveComplexTypeNamesWithoutMap.length;
+            break;
+          case ALL_EXCEPT_MAP_UNION:
+            columnCount = possibleHivePrimitiveTypeNames.length +
+                possibleHiveComplexTypeNamesWithoutMapUnion.length;
             break;
           case PRIMITIVES:
             columnCount = possibleHivePrimitiveTypeNames.length;
@@ -627,7 +647,10 @@ public class VectorRandomRowSource {
             maxTypeNum = possibleHivePrimitiveTypeNames.length;
             break;
           case ALL_EXCEPT_MAP:
-            maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length - 1;
+            maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNamesWithoutMap.length - 1;
+            break;
+          case ALL_EXCEPT_MAP_UNION:
+            maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNamesWithoutMapUnion.length;
             break;
           case ALL:
             maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length;
@@ -656,9 +679,23 @@ public class VectorRandomRowSource {
         if (typeNum < possibleHivePrimitiveTypeNames.length) {
           typeName = possibleHivePrimitiveTypeNames[typeNum];
         } else {
-          typeName = possibleHiveComplexTypeNames[typeNum - possibleHivePrimitiveTypeNames.length];
+          switch (supportedTypes) {
+            case ALL:
+              typeName = possibleHiveComplexTypeNames[typeNum -
+                  possibleHivePrimitiveTypeNames.length];
+              break;
+            case ALL_EXCEPT_MAP:
+              typeName = possibleHiveComplexTypeNamesWithoutMap[typeNum -
+                  possibleHivePrimitiveTypeNames.length];
+              break;
+            case ALL_EXCEPT_MAP_UNION:
+              typeName = possibleHiveComplexTypeNamesWithoutMapUnion[typeNum -
+                  possibleHivePrimitiveTypeNames.length];
+              break;
+            default:
+              throw new IllegalArgumentException();
+          }
         }
-
       }
 
       String decoratedTypeName =

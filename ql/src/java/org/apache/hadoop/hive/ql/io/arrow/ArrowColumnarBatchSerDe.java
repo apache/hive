@@ -233,17 +233,16 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   }
 
   static ListColumnVector toStructListVector(MapColumnVector mapVector) {
-    final StructColumnVector structVector;
-    final ListColumnVector structListVector;
-    structVector = new StructColumnVector();
-    structVector.fields = new ColumnVector[] {mapVector.keys, mapVector.values};
-    structListVector = new ListColumnVector();
-    structListVector.child = structVector;
-    structListVector.childCount = mapVector.childCount;
+    final StructColumnVector structVector =
+        new StructColumnVector(mapVector.childCount, mapVector.keys, mapVector.values);
+    final ListColumnVector structListVector =
+        new ListColumnVector(mapVector.isNull.length, structVector);
     structListVector.isRepeating = mapVector.isRepeating;
     structListVector.noNulls = mapVector.noNulls;
-    System.arraycopy(mapVector.offsets, 0, structListVector.offsets, 0, mapVector.childCount);
-    System.arraycopy(mapVector.lengths, 0, structListVector.lengths, 0, mapVector.childCount);
+
+    System.arraycopy(mapVector.offsets, 0, structListVector.offsets, 0, mapVector.offsets.length);
+    System.arraycopy(mapVector.lengths, 0, structListVector.lengths, 0, mapVector.lengths.length);
+    System.arraycopy(mapVector.isNull, 0, structListVector.isNull, 0, mapVector.isNull.length);
     return structListVector;
   }
 

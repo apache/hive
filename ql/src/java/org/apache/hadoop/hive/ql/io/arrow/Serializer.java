@@ -181,6 +181,8 @@ public class Serializer {
   public ArrowWrapperWritable serializeBatch(VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     rootVector.setValueCount(0);
 
+    final int size = isNative ? vectorizedRowBatch.size : batchSize;
+
     for (int fieldIndex = 0; fieldIndex < vectorizedRowBatch.projectionSize; fieldIndex++) {
       final int projectedColumn = vectorizedRowBatch.projectedColumns[fieldIndex];
       final ColumnVector hiveVector = vectorizedRowBatch.cols[projectedColumn];
@@ -195,20 +197,18 @@ public class Serializer {
       }
       final FieldVector arrowVector = rootVector.addOrGet(fieldName, fieldType, FieldVector.class);
       if(fieldExists) {
-        arrowVector.setValueCount(isNative ? vectorizedRowBatch.size : batchSize);
+        arrowVector.setValueCount(size);
       } else {
-        arrowVector.setInitialCapacity(isNative ? vectorizedRowBatch.size : batchSize);
+        arrowVector.setInitialCapacity(size);
         arrowVector.allocateNew();
       }
-      write(arrowVector, hiveVector, fieldTypeInfo, isNative ? vectorizedRowBatch.size : batchSize, vectorizedRowBatch, isNative);
+      write(arrowVector, hiveVector, fieldTypeInfo, size, vectorizedRowBatch, isNative);
     }
     if(!isNative) {
       //Only mutate batches that are constructed by this serde
       vectorizedRowBatch.reset();
-      rootVector.setValueCount(batchSize);
-    } else {
-      rootVector.setValueCount(vectorizedRowBatch.size);
     }
+    rootVector.setValueCount(size);
 
     batchSize = 0;
     VectorSchemaRoot vectorSchemaRoot = new VectorSchemaRoot(rootVector);
@@ -266,7 +266,6 @@ public class Serializer {
       case STRUCT:
         return ArrowType.Struct.INSTANCE;
       case MAP:
-        return ArrowType.List.INSTANCE;
       case UNION:
       default:
         throw new IllegalArgumentException();
@@ -288,29 +287,9 @@ public class Serializer {
       case UNION:
         writeUnion(arrowVector, hiveVector, typeInfo, size, vectorizedRowBatch, isNative);
         break;
-      case MAP:
-        writeMap((ListVector) arrowVector, (MapColumnVector) hiveVector, (MapTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
-        break;
       default:
         throw new IllegalArgumentException();
       }
-  }
-
-  private static void writeMap(ListVector arrowVector, MapColumnVector hiveVector, MapTypeInfo typeInfo,
-      int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
-    final ListTypeInfo structListTypeInfo = toStructListTypeInfo(typeInfo);
-    final ListColumnVector structListVector = toStructListVector(hiveVector);
-
-    write(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative);
-
-    final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
-    for (int rowIndex = 0; rowIndex < size; rowIndex++) {
-      if (hiveVector.isNull[rowIndex]) {
-        BitVectorHelper.setValidityBit(validityBuffer, rowIndex, 0);
-      } else {
-        BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
-      }
-    }
   }
 
   private static void writeUnion(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo,

@@ -136,15 +136,13 @@ class Deserializer {
       case LIST:
         readList(arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo);
         break;
-      case MAP:
-        readMap(arrowVector, (MapColumnVector) hiveVector, (MapTypeInfo) typeInfo);
-        break;
       case STRUCT:
         readStruct(arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo);
         break;
       case UNION:
         readUnion(arrowVector, (UnionColumnVector) hiveVector, (UnionTypeInfo) typeInfo);
         break;
+      case MAP:
       default:
         throw new IllegalArgumentException();
     }
@@ -405,24 +403,6 @@ class Deserializer {
         hiveVector.lengths[i] = offsets.getInt((i + 1) * OFFSET_WIDTH) - offset;
       }
     }
-  }
-
-  private void readMap(FieldVector arrowVector, MapColumnVector hiveVector, MapTypeInfo typeInfo) {
-    final int size = arrowVector.getValueCount();
-    final ListTypeInfo mapStructListTypeInfo = toStructListTypeInfo(typeInfo);
-    final ListColumnVector mapStructListVector = toStructListVector(hiveVector);
-    final StructColumnVector mapStructVector = (StructColumnVector) mapStructListVector.child;
-
-    read(arrowVector, mapStructListVector, mapStructListTypeInfo);
-
-    hiveVector.isRepeating = mapStructListVector.isRepeating;
-    hiveVector.childCount = mapStructListVector.childCount;
-    hiveVector.noNulls = mapStructListVector.noNulls;
-    hiveVector.keys = mapStructVector.fields[0];
-    hiveVector.values = mapStructVector.fields[1];
-    System.arraycopy(mapStructListVector.offsets, 0, hiveVector.offsets, 0, size);
-    System.arraycopy(mapStructListVector.lengths, 0, hiveVector.lengths, 0, size);
-    System.arraycopy(mapStructListVector.isNull, 0, hiveVector.isNull, 0, size);
   }
 
   private void readStruct(FieldVector arrowVector, StructColumnVector hiveVector, StructTypeInfo typeInfo) {
