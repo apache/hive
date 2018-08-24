@@ -30,12 +30,12 @@ import com.google.common.base.Preconditions;
 /**
  * This class evaluates double sum() for a PTF group.
  */
-public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
+public class VectorPTFEvaluatorStreamingDoubleSum extends VectorPTFEvaluatorBase {
 
-  protected boolean isGroupResultNull;
+  protected boolean isNull;
   protected double sum;
 
-  public VectorPTFEvaluatorDoubleSum(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
+  public VectorPTFEvaluatorStreamingDoubleSum(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
       int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
     resetEvaluator();
@@ -47,8 +47,6 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
 
     evaluateInputExpr(batch);
 
-    // Sum all non-null double column values; maintain isGroupResultNull.
-
     // We do not filter when PTF is in reducer.
     Preconditions.checkState(!batch.selectedInUse);
 
@@ -57,67 +55,88 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
       return;
     }
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
+
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
+    double[] outputVector = outputColVector.vector;
+
     if (doubleColVector.isRepeating) {
 
       if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
-        if (isGroupResultNull) {
 
-          // First aggregation calculation for group.
-          sum = doubleColVector.vector[0] * batch.size;
-          isGroupResultNull = false;
-        } else {
-          sum += doubleColVector.vector[0] * batch.size;
+        // We have a repeated value.
+        isNull = false;
+        final double repeatedValue = doubleColVector.vector[0];
+
+        for (int i = 0; i < size; i++) {
+          sum += repeatedValue;
+
+          // Output row i SUM.
+          outputVector[i] = sum;
         }
+      } else {
+        if (isNull) {
+          outputColVector.isNull[0] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous SUM.
+          outputVector[0] = sum;
+        }
+        outputColVector.isRepeating = true;
       }
     } else if (doubleColVector.noNulls) {
+      isNull = false;
       double[] vector = doubleColVector.vector;
-      double varSum = vector[0];
-      for (int i = 1; i < size; i++) {
-        varSum += vector[i];
-      }
-      if (isGroupResultNull) {
+      for (int i = 0; i < size; i++) {
+        sum += vector[i];
 
-        // First aggregation calculation for group.
-        sum = varSum;
-        isGroupResultNull = false;
-      } else {
-        sum += varSum;
+        // Output row i SUM.
+        outputVector[i] = sum;
       }
     } else {
       boolean[] batchIsNull = doubleColVector.isNull;
       int i = 0;
       while (batchIsNull[i]) {
+        if (isNull) {
+          outputColVector.isNull[i] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous SUM.
+          outputVector[i] = sum;
+        }
         if (++i >= size) {
           return;
         }
       }
+
+      isNull = false;
       double[] vector = doubleColVector.vector;
-      double varSum = vector[i++];
+
+      sum += vector[i];
+
+      // Output row i sum.
+      outputVector[i++] = sum;
+
       for (; i < size; i++) {
         if (!batchIsNull[i]) {
-          varSum += vector[i];
-        }
-      }
-      if (isGroupResultNull) {
+          sum += vector[i];
 
-        // First aggregation calculation for group.
-        sum = varSum;
-        isGroupResultNull = false;
-      } else {
-        sum += varSum;
+          // Output row i sum.
+          outputVector[i] = sum;
+        } else {
+
+          // Continue previous SUM.
+          outputVector[i] = sum;
+        }
       }
     }
   }
 
   @Override
   public boolean streamsResult() {
-    // We must evaluate whole group before producing a result.
-    return false;
-  }
-
-  @Override
-  public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    // No group value.
+    return true;
   }
 
   @Override
@@ -126,13 +145,8 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public double getDoubleGroupResult() {
-    return sum;
-  }
-
-  @Override
   public void resetEvaluator() {
-    isGroupResultNull = true;
+    isNull = true;
     sum = 0.0;
   }
 }

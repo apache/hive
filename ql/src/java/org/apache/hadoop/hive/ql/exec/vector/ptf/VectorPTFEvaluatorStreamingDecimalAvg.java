@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.ptf;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -30,19 +31,19 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import com.google.common.base.Preconditions;
 
 /**
- * This class evaluates HiveDecimal avg() for a PTF group.
+ * This class evaluates streaming HiveDecimal avg() for a PTF group.
  *
- * Sum up non-null column values; group result is sum / non-null count.
+ * Stream average non-null column values and output sum / non-null count as we go along.
  */
-public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
+public class VectorPTFEvaluatorStreamingDecimalAvg extends VectorPTFEvaluatorBase {
 
-  protected boolean isGroupResultNull;
+  protected boolean isNull;
   protected HiveDecimalWritable sum;
   private int nonNullGroupCount;
   private HiveDecimalWritable temp;
   private HiveDecimalWritable avg;
 
-  public VectorPTFEvaluatorDecimalAvg(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
+  public VectorPTFEvaluatorStreamingDecimalAvg(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
       int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
     sum = new HiveDecimalWritable();
@@ -68,83 +69,105 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
       return;
     }
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
+
+    DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
+
     if (decimalColVector.isRepeating) {
 
       if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
 
-        // We have a repeated value.  The sum increases by value * batch.size.
-        temp.setFromLong(batch.size);
-        if (isGroupResultNull) {
+        // We have a repeated value.
+        isNull = false;
+        HiveDecimalWritable repeatedValue = decimalColVector.vector[0];
 
-          // First aggregation calculation for group.
-          sum.set(decimalColVector.vector[0]);
-          sum.mutateMultiply(temp);
-          isGroupResultNull = false;
-        } else {
-          temp.mutateMultiply(decimalColVector.vector[0]);
-          sum.mutateAdd(temp);
+        for (int i = 0; i < size; i++) {
+          sum.mutateAdd(repeatedValue);
+          nonNullGroupCount++;
+
+          // Output row i AVG.
+          avg.set(sum);
+          temp.setFromLong(nonNullGroupCount);
+          avg.mutateDivide(temp);
+          outputColVector.set(i, avg);
         }
-        nonNullGroupCount += size;
+      } else {
+        if (isNull) {
+          outputColVector.isNull[0] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous AVG.
+          outputColVector.set(0, avg);
+        }
+        outputColVector.isRepeating = true;
       }
     } else if (decimalColVector.noNulls) {
+      isNull = false;
       HiveDecimalWritable[] vector = decimalColVector.vector;
-      if (isGroupResultNull) {
-
-        // First aggregation calculation for group.
-        sum.set(vector[0]);
-        isGroupResultNull = false;
-      } else {
-        sum.mutateAdd(vector[0]);
-      }
-      for (int i = 1; i < size; i++) {
+      for (int i = 0; i < size; i++) {
         sum.mutateAdd(vector[i]);
+        nonNullGroupCount++;
+
+        // Output row i AVG.
+        avg.set(sum);
+        temp.setFromLong(nonNullGroupCount);
+        avg.mutateDivide(temp);
+        outputColVector.set(i, avg);
       }
-      nonNullGroupCount += size;
     } else {
       boolean[] batchIsNull = decimalColVector.isNull;
       int i = 0;
       while (batchIsNull[i]) {
+        if (isNull) {
+          outputColVector.isNull[i] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous AVG.
+          outputColVector.set(i, avg);
+        }
         if (++i >= size) {
           return;
         }
       }
-      HiveDecimalWritable[] vector = decimalColVector.vector;
-      if (isGroupResultNull) {
 
-        // First aggregation calculation for group.
-        sum.set(vector[i++]);
-        isGroupResultNull = false;
-      } else {
-        sum.mutateAdd(vector[i++]);
-      }
+      isNull = false;
+      HiveDecimalWritable[] vector = decimalColVector.vector;
+
+      sum.mutateAdd(vector[i]);
       nonNullGroupCount++;
+
+      // Output row i AVG.
+      avg.set(sum);
+      temp.setFromLong(nonNullGroupCount);
+      avg.mutateDivide(temp);
+
+      outputColVector.set(i++, avg);
+
       for (; i < size; i++) {
         if (!batchIsNull[i]) {
           sum.mutateAdd(vector[i]);
           nonNullGroupCount++;
+
+          avg.set(sum);
+          temp.setFromLong(nonNullGroupCount);
+          avg.mutateDivide(temp);
+
+          // Output row i AVG.
+          outputColVector.set(i, avg);
+        } else {
+
+          // Continue previous AVG.
+          outputColVector.set(i, avg);
         }
       }
-    }
-  }
-
-  @Override
-  public void doLastBatchWork() {
-    if (!isGroupResultNull) {
-      avg.set(sum);
-      temp.setFromLong(nonNullGroupCount);
-      avg.mutateDivide(temp);
     }
   }
 
   @Override
   public boolean streamsResult() {
-    // We must evaluate whole group before producing a result.
-    return false;
-  }
-
-  @Override
-  public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    // No group value.
+    return true;
   }
 
   @Override
@@ -153,13 +176,8 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public HiveDecimalWritable getDecimalGroupResult() {
-    return avg;
-  }
-
-  @Override
   public void resetEvaluator() {
-    isGroupResultNull = true;
+    isNull = true;
     sum.set(HiveDecimal.ZERO);
     nonNullGroupCount = 0;
     avg.set(HiveDecimal.ZERO);

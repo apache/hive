@@ -44,7 +44,8 @@ public class VectorPTFEvaluatorDecimalMax extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -97,15 +98,15 @@ public class VectorPTFEvaluatorDecimalMax extends VectorPTFEvaluatorBase {
           return;
         }
       }
+
       HiveDecimalWritable[] vector = decimalColVector.vector;
+
+      final HiveDecimalWritable firstValue = vector[i++];
       if (isGroupResultNull) {
-        max.set(vector[i++]);
+        max.set(firstValue);
         isGroupResultNull = false;
-      } else {
-        final HiveDecimalWritable dec = vector[i++];
-        if (dec.compareTo(max) == 1) {
-          max.set(dec);
-        }
+      } else if (firstValue.compareTo(max) == 1) {
+        max.set(firstValue);
       }
       for (; i < size; i++) {
         if (!batchIsNull[i]) {
@@ -116,6 +117,12 @@ public class VectorPTFEvaluatorDecimalMax extends VectorPTFEvaluatorBase {
         }
       }
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override
@@ -133,11 +140,9 @@ public class VectorPTFEvaluatorDecimalMax extends VectorPTFEvaluatorBase {
     return max;
   }
 
-  private static HiveDecimal MIN_VALUE = HiveDecimal.create("-99999999999999999999999999999999999999");
-
   @Override
   public void resetEvaluator() {
     isGroupResultNull = true;
-    max.set(MIN_VALUE);
+    max.setFromLong(0);
   }
 }

@@ -28,18 +28,14 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import com.google.common.base.Preconditions;
 
 /**
- * This class evaluates long avg() for a PTF group.
- *
- * Sum up non-null column values; group result is sum / non-null count.
+ * This class evaluates long max() for a PTF group.
  */
-public class VectorPTFEvaluatorLongAvg extends VectorPTFEvaluatorBase {
+public class VectorPTFEvaluatorStreamingLongMax extends VectorPTFEvaluatorBase {
 
-  protected boolean isGroupResultNull;
-  protected long sum;
-  private int nonNullGroupCount;
-  private double avg;
+  protected boolean isNull;
+  protected long max;
 
-  public VectorPTFEvaluatorLongAvg(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
+  public VectorPTFEvaluatorStreamingLongMax(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
       int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
     resetEvaluator();
@@ -51,8 +47,7 @@ public class VectorPTFEvaluatorLongAvg extends VectorPTFEvaluatorBase {
 
     evaluateInputExpr(batch);
 
-    // Sum all non-null long column values for avg; maintain isGroupResultNull; after last row of
-    // last group batch compute the group avg when sum is non-null.
+    // Determine maximum of all non-null long column values; maintain isNull.
 
     // We do not filter when PTF is in reducer.
     Preconditions.checkState(!batch.selectedInUse);
@@ -62,97 +57,108 @@ public class VectorPTFEvaluatorLongAvg extends VectorPTFEvaluatorBase {
       return;
     }
     LongColumnVector longColVector = ((LongColumnVector) batch.cols[inputColumnNum]);
+
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
+    long[] outputVector = outputColVector.vector;
+
     if (longColVector.isRepeating) {
 
       if (longColVector.noNulls || !longColVector.isNull[0]) {
 
-        // We have a repeated value.  The sum increases by value * batch.size.
-        if (isGroupResultNull) {
+        // We have a repeated value but we only need to evaluate once for MIN/MAX.
+        final long repeatedMax = longColVector.vector[0];
 
-          // First aggregation calculation for group.
-          sum = longColVector.vector[0] * batch.size;
-          isGroupResultNull = false;
-        } else {
-          sum += longColVector.vector[0] * batch.size;
+        if (isNull) {
+          max = repeatedMax;
+          isNull = false;
+        } else if (repeatedMax > max) {
+          max = repeatedMax;
         }
-        nonNullGroupCount += size;
+        outputVector[0] = max;
+      } else if (isNull) {
+        outputColVector.isNull[0] = true;
+        outputColVector.noNulls = false;
+      } else {
+
+        // Continue previous MAX.
+        outputVector[0] = max;
       }
+      outputColVector.isRepeating = true;
     } else if (longColVector.noNulls) {
       long[] vector = longColVector.vector;
-      long varSum = vector[0];
-      for (int i = 1; i < size; i++) {
-        varSum += vector[i];
-      }
-      nonNullGroupCount += size;
-      if (isGroupResultNull) {
-
-        // First aggregation calculation for group.
-        sum = varSum;
-        isGroupResultNull = false;
-      } else {
-        sum += varSum;
+      for (int i = 0; i < size; i++) {
+        final long value = vector[i];
+        if (isNull) {
+          max = value;
+          isNull = false;
+        } else if (value > max) {
+          max = value;
+        }
+        outputVector[i] = max;
       }
     } else {
       boolean[] batchIsNull = longColVector.isNull;
       int i = 0;
       while (batchIsNull[i]) {
+        if (isNull) {
+          outputColVector.isNull[i] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous MAX.
+          outputVector[i] = max;
+        }
         if (++i >= size) {
           return;
         }
       }
+
       long[] vector = longColVector.vector;
-      long varSum = vector[i++];
-      nonNullGroupCount++;
+
+      final long firstValue = vector[i];
+      if (isNull) {
+        max = firstValue;
+        isNull = false;
+      } else if (firstValue > max) {
+        max = firstValue;
+      }
+
+      // Output row i max.
+      outputVector[i++] = max;
+
       for (; i < size; i++) {
         if (!batchIsNull[i]) {
-          varSum += vector[i];
-          nonNullGroupCount++;
+          final long value = vector[i];
+          if (isNull) {
+            max = value;
+            isNull = false;
+          } else if (value > max) {
+            max = value;
+          }
+          outputVector[i] = max;
+        } else {
+
+          // Continue previous MAX.
+          outputVector[i] = max;
         }
       }
-      if (isGroupResultNull) {
-
-        // First aggregation calculation for group.
-        sum = varSum;
-        isGroupResultNull = false;
-      } else {
-        sum += varSum;
-      }
-    }
-  }
-
-  @Override
-  public void doLastBatchWork() {
-    if (!isGroupResultNull) {
-      avg = ((double) sum) / nonNullGroupCount;
     }
   }
 
   @Override
   public boolean streamsResult() {
-    // We must evaluate whole group before producing a result.
-    return false;
-  }
-
-  @Override
-  public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    // No group value.
+    return true;
   }
 
   @Override
   public Type getResultColumnVectorType() {
-    return Type.DOUBLE;
-  }
-
-  @Override
-  public double getDoubleGroupResult() {
-    return avg;
+    return Type.LONG;
   }
 
   @Override
   public void resetEvaluator() {
-    isGroupResultNull = true;
-    sum = 0;
-    nonNullGroupCount = 0;
-    avg = 0.0;
+    isNull = true;
+    max = 0;
   }
 }

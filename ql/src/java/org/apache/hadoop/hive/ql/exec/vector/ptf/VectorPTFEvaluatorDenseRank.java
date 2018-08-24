@@ -41,7 +41,8 @@ public class VectorPTFEvaluatorDenseRank extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -50,12 +51,14 @@ public class VectorPTFEvaluatorDenseRank extends VectorPTFEvaluatorBase {
     longColVector.isRepeating = true;
     longColVector.isNull[0] = false;
     longColVector.vector[0] = denseRank;
-
-    if (isLastGroupBatch) {
-      denseRank++;
-    }
   }
 
+  @Override
+  public void doLastBatchWork() {
+    denseRank++;
+  }
+
+  @Override
   public boolean streamsResult() {
     // No group value.
     return true;

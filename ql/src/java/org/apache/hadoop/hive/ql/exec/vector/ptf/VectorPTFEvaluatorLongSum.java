@@ -41,7 +41,8 @@ public class VectorPTFEvaluatorLongSum extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -106,6 +107,12 @@ public class VectorPTFEvaluatorLongSum extends VectorPTFEvaluatorBase {
         sum += varSum;
       }
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

@@ -28,14 +28,14 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import com.google.common.base.Preconditions;
 
 /**
- * This class evaluates double sum() for a PTF group.
+ * This class evaluates double max() for a PTF group.
  */
-public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
+public class VectorPTFEvaluatorStreamingDoubleMax extends VectorPTFEvaluatorBase {
 
-  protected boolean isGroupResultNull;
-  protected double sum;
+  protected boolean isNull;
+  protected double max;
 
-  public VectorPTFEvaluatorDoubleSum(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
+  public VectorPTFEvaluatorStreamingDoubleMax(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
       int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
     resetEvaluator();
@@ -47,7 +47,7 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
 
     evaluateInputExpr(batch);
 
-    // Sum all non-null double column values; maintain isGroupResultNull.
+    // Determine maximum of all non-null double column values; maintain isNull.
 
     // We do not filter when PTF is in reducer.
     Preconditions.checkState(!batch.selectedInUse);
@@ -57,67 +57,98 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
       return;
     }
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
+
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
+    double[] outputVector = outputColVector.vector;
+
     if (doubleColVector.isRepeating) {
 
       if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
-        if (isGroupResultNull) {
 
-          // First aggregation calculation for group.
-          sum = doubleColVector.vector[0] * batch.size;
-          isGroupResultNull = false;
-        } else {
-          sum += doubleColVector.vector[0] * batch.size;
+        // We have a repeated value but we only need to evaluate once for MIN/MAX.
+        final double repeatedMax = doubleColVector.vector[0];
+
+        if (isNull) {
+          max = repeatedMax;
+          isNull = false;
+        } else if (repeatedMax > max) {
+          max = repeatedMax;
         }
+        outputVector[0] = max;
+      } else if (isNull) {
+        outputColVector.isNull[0] = true;
+        outputColVector.noNulls = false;
+      } else {
+
+        // Continue previous MAX.
+        outputVector[0] = max;
       }
+      outputColVector.isRepeating = true;
     } else if (doubleColVector.noNulls) {
       double[] vector = doubleColVector.vector;
-      double varSum = vector[0];
-      for (int i = 1; i < size; i++) {
-        varSum += vector[i];
-      }
-      if (isGroupResultNull) {
-
-        // First aggregation calculation for group.
-        sum = varSum;
-        isGroupResultNull = false;
-      } else {
-        sum += varSum;
+      for (int i = 0; i < size; i++) {
+        final double value = vector[i];
+        if (isNull) {
+          max = value;
+          isNull = false;
+        } else if (value > max) {
+          max = value;
+        }
+        outputVector[i] = max;
       }
     } else {
       boolean[] batchIsNull = doubleColVector.isNull;
       int i = 0;
       while (batchIsNull[i]) {
+        if (isNull) {
+          outputColVector.isNull[i] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous MAX.
+          outputVector[i] = max;
+        }
         if (++i >= size) {
           return;
         }
       }
+
       double[] vector = doubleColVector.vector;
-      double varSum = vector[i++];
+
+      final double firstValue = vector[i];
+      if (isNull) {
+        max = firstValue;
+        isNull = false;
+      } else if (firstValue > max) {
+        max = firstValue;
+      }
+
+      // Output row i max.
+      outputVector[i++] = max;
+
       for (; i < size; i++) {
         if (!batchIsNull[i]) {
-          varSum += vector[i];
-        }
-      }
-      if (isGroupResultNull) {
+          final double value = vector[i];
+          if (isNull) {
+            max = value;
+            isNull = false;
+          } else if (value > max) {
+            max = value;
+          }
+          outputVector[i] = max;
+        } else {
 
-        // First aggregation calculation for group.
-        sum = varSum;
-        isGroupResultNull = false;
-      } else {
-        sum += varSum;
+          // Continue previous MAX.
+          outputVector[i] = max;
+        }
       }
     }
   }
 
   @Override
   public boolean streamsResult() {
-    // We must evaluate whole group before producing a result.
-    return false;
-  }
-
-  @Override
-  public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    // No group value.
+    return true;
   }
 
   @Override
@@ -126,13 +157,8 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public double getDoubleGroupResult() {
-    return sum;
-  }
-
-  @Override
   public void resetEvaluator() {
-    isGroupResultNull = true;
-    sum = 0.0;
+    isNull = true;
+    max = 0.0;
   }
 }
