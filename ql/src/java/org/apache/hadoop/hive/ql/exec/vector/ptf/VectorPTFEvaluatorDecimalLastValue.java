@@ -54,7 +54,8 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -64,9 +65,6 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
     // We do not filter when PTF is in reducer.
     Preconditions.checkState(!batch.selectedInUse);
 
-    if (!isLastGroupBatch) {
-      return;
-    }
     final int size = batch.size;
     if (size == 0) {
       return;
@@ -92,6 +90,12 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
         isGroupResultNull = true;
       }
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

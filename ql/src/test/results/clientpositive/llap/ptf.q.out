@@ -72,7 +72,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -561,7 +561,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -1612,7 +1612,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -1788,7 +1788,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -2025,7 +2025,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -3807,7 +3807,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)

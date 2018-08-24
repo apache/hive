@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
@@ -30,22 +28,14 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import com.google.common.base.Preconditions;
 
 /**
- * This class evaluates double avg() for a PTF group.
- *
- * Sum up non-null column values; group result is sum / non-null count.
+ * This class evaluates double sum() for a PTF group.
  */
-public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
+public class VectorPTFEvaluatorStreamingDoubleSum extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDoubleAvg.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
-  protected boolean isGroupResultNull;
+  protected boolean isNull;
   protected double sum;
-  private int nonNullGroupCount;
-  private double avg;
 
-  public VectorPTFEvaluatorDoubleAvg(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
+  public VectorPTFEvaluatorStreamingDoubleSum(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
       int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
     resetEvaluator();
@@ -57,9 +47,6 @@ public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
 
     evaluateInputExpr(batch);
 
-    // Sum all non-null double column values for avg; maintain isGroupResultNull; after last row of
-    // last group batch compute the group avg when sum is non-null.
-
     // We do not filter when PTF is in reducer.
     Preconditions.checkState(!batch.selectedInUse);
 
@@ -68,80 +55,88 @@ public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
       return;
     }
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
+
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
+    double[] outputVector = outputColVector.vector;
+
     if (doubleColVector.isRepeating) {
 
       if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
 
-        // We have a repeated value.  The sum increases by value * batch.size.
-        if (isGroupResultNull) {
+        // We have a repeated value.
+        isNull = false;
+        final double repeatedValue = doubleColVector.vector[0];
 
-          // First aggregation calculation for group.
-          sum = doubleColVector.vector[0] * batch.size;
-          isGroupResultNull = false;
-        } else {
-          sum += doubleColVector.vector[0] * batch.size;
+        for (int i = 0; i < size; i++) {
+          sum += repeatedValue;
+
+          // Output row i SUM.
+          outputVector[i] = sum;
         }
-        nonNullGroupCount += size;
+      } else {
+        if (isNull) {
+          outputColVector.isNull[0] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous SUM.
+          outputVector[0] = sum;
+        }
+        outputColVector.isRepeating = true;
       }
     } else if (doubleColVector.noNulls) {
+      isNull = false;
       double[] vector = doubleColVector.vector;
-      double varSum = vector[0];
-      for (int i = 1; i < size; i++) {
-        varSum += vector[i];
-      }
-      nonNullGroupCount += size;
-      if (isGroupResultNull) {
+      for (int i = 0; i < size; i++) {
+        sum += vector[i];
 
-        // First aggregation calculation for group.
-        sum = varSum;
-        isGroupResultNull = false;
-      } else {
-        sum += varSum;
+        // Output row i SUM.
+        outputVector[i] = sum;
       }
     } else {
       boolean[] batchIsNull = doubleColVector.isNull;
       int i = 0;
       while (batchIsNull[i]) {
+        if (isNull) {
+          outputColVector.isNull[i] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous SUM.
+          outputVector[i] = sum;
+        }
         if (++i >= size) {
           return;
         }
       }
+
+      isNull = false;
       double[] vector = doubleColVector.vector;
-      double varSum = vector[i++];
-      nonNullGroupCount++;
+
+      sum += vector[i];
+
+      // Output row i sum.
+      outputVector[i++] = sum;
+
       for (; i < size; i++) {
         if (!batchIsNull[i]) {
-          varSum += vector[i];
-          nonNullGroupCount++;
+          sum += vector[i];
+
+          // Output row i sum.
+          outputVector[i] = sum;
+        } else {
+
+          // Continue previous SUM.
+          outputVector[i] = sum;
         }
       }
-      if (isGroupResultNull) {
-
-        // First aggregation calculation for group.
-        sum = varSum;
-        isGroupResultNull = false;
-      } else {
-        sum += varSum;
-      }
-    }
-  }
-
-  @Override
-  public void doLastBatchWork() {
-    if (!isGroupResultNull) {
-      avg = sum / nonNullGroupCount;
     }
   }
 
   @Override
   public boolean streamsResult() {
-    // We must evaluate whole group before producing a result.
-    return false;
-  }
-
-  @Override
-  public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    // No group value.
+    return true;
   }
 
   @Override
@@ -150,15 +145,8 @@ public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public double getDoubleGroupResult() {
-    return avg;
-  }
-
-  @Override
   public void resetEvaluator() {
-    isGroupResultNull = true;
+    isNull = true;
     sum = 0.0;
-    nonNullGroupCount = 0;
-    avg = 0.0;
   }
 }

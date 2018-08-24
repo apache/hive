@@ -168,7 +168,10 @@ public class VectorPTFGroupBatches {
 
     // Streaming evaluators fill in their results during the evaluate call.
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
-      evaluator.evaluateGroupBatch(batch, isLastGroupBatch);
+      evaluator.evaluateGroupBatch(batch);
+      if (isLastGroupBatch) {
+        evaluator.doLastBatchWork();
+      }
     }
   }
 
@@ -176,7 +179,10 @@ public class VectorPTFGroupBatches {
       throws HiveException {
 
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
-      evaluator.evaluateGroupBatch(batch, isLastGroupBatch);
+      evaluator.evaluateGroupBatch(batch);
+      if (isLastGroupBatch) {
+        evaluator.doLastBatchWork();
+      }
     }
   }
 

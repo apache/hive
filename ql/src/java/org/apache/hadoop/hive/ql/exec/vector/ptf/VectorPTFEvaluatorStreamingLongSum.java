@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
@@ -30,18 +28,14 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import com.google.common.base.Preconditions;
 
 /**
- * This class evaluates long min() for a PTF group.
+ * This class evaluates long sum() for a PTF group.
  */
-public class VectorPTFEvaluatorLongMin extends VectorPTFEvaluatorBase {
+public class VectorPTFEvaluatorStreamingLongSum extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorLongMin.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  protected boolean isNull;
+  protected long sum;
 
-  protected boolean isGroupResultNull;
-  protected long min;
-
-  public VectorPTFEvaluatorLongMin(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
+  public VectorPTFEvaluatorStreamingLongSum(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
       int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
     resetEvaluator();
@@ -53,7 +47,7 @@ public class VectorPTFEvaluatorLongMin extends VectorPTFEvaluatorBase {
 
     evaluateInputExpr(batch);
 
-    // Determine minimum of all non-null long column values; maintain isGroupResultNull.
+    // Sum all non-null long column values; maintain isNull.
 
     // We do not filter when PTF is in reducer.
     Preconditions.checkState(!batch.selectedInUse);
@@ -63,70 +57,88 @@ public class VectorPTFEvaluatorLongMin extends VectorPTFEvaluatorBase {
       return;
     }
     LongColumnVector longColVector = ((LongColumnVector) batch.cols[inputColumnNum]);
+
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
+    long[] outputVector = outputColVector.vector;
+
     if (longColVector.isRepeating) {
 
       if (longColVector.noNulls || !longColVector.isNull[0]) {
-        if (isGroupResultNull) {
-          min = longColVector.vector[0];
-          isGroupResultNull = false;
-        } else {
-          final long repeatedMin = longColVector.vector[0];
-          if (repeatedMin < min) {
-            min = repeatedMin;
-          }
+
+        // We have a repeated value.
+        isNull = false;
+        final long repeatedValue = longColVector.vector[0];
+
+        for (int i = 0; i < size; i++) {
+          sum += repeatedValue;
+
+          // Output row i sum.
+          outputVector[i] = sum;
         }
+      } else {
+        if (isNull) {
+          outputColVector.isNull[0] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous SUM.
+          outputVector[0] = sum;
+        }
+        outputColVector.isRepeating = true;
       }
     } else if (longColVector.noNulls) {
+      isNull = false;
       long[] vector = longColVector.vector;
-      long varMin = vector[0];
-      for (int i = 1; i < size; i++) {
-        final long l = vector[i];
-        if (l < varMin) {
-          varMin = l;
-        }
-      }
-      if (isGroupResultNull) {
-        min = varMin;
-        isGroupResultNull = false;
-      } else if (varMin < min) {
-        min = varMin;
+      for (int i = 0; i < size; i++) {
+        sum += vector[i];
+
+        // Output row i sum.
+        outputVector[i] = sum;
       }
     } else {
       boolean[] batchIsNull = longColVector.isNull;
       int i = 0;
       while (batchIsNull[i]) {
+        if (isNull) {
+          outputColVector.isNull[i] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous SUM.
+          outputVector[i] = sum;
+        }
         if (++i >= size) {
           return;
         }
       }
+
+      isNull = false;
       long[] vector = longColVector.vector;
-      long varMin = vector[i++];
+
+      sum += vector[i];
+
+      // Output row i sum.
+      outputVector[i++] = sum;
+
       for (; i < size; i++) {
         if (!batchIsNull[i]) {
-          final long l = vector[i];
-          if (l < varMin) {
-            varMin = l;
-          }
+          sum += vector[i];
+
+          // Output row i sum.
+          outputVector[i] = sum;
+        } else {
+
+          // Continue previous SUM.
+          outputVector[i] = sum;
         }
-      }
-      if (isGroupResultNull) {
-        min = varMin;
-        isGroupResultNull = false;
-      } else if (varMin < min) {
-        min = varMin;
       }
     }
   }
 
   @Override
   public boolean streamsResult() {
-    // We must evaluate whole group before producing a result.
-    return false;
-  }
-
-  @Override
-  public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    // No group value.
+    return true;
   }
 
   @Override
@@ -135,13 +147,8 @@ public class VectorPTFEvaluatorLongMin extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public long getLongGroupResult() {
-    return min;
-  }
-
-  @Override
   public void resetEvaluator() {
-    isGroupResultNull = true;
-    min = Long.MAX_VALUE;
+    isNull = true;
+    sum = 0;
   }
 }
