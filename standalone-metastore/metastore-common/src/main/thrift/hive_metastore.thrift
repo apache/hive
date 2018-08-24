@@ -2221,7 +2221,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
-  WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
+  WriteNotificationLogResponse add_write_notification_log(1:WriteNotificationLogRequest rqst)
 
   // Repl Change Management api
   CmRecycleResponse cm_recycle(1:CmRecycleRequest request) throws(1:MetaException o1)

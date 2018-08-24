@@ -71,6 +71,7 @@ class OperatorType:
   RCFILEMERGE = 23
   MERGEJOIN = 24
   SPARKPRUNINGSINK = 25
+  TOPNKEY = 26
 
   _VALUES_TO_NAMES = {
     0: "JOIN",
@@ -99,6 +100,7 @@ class OperatorType:
     23: "RCFILEMERGE",
     24: "MERGEJOIN",
     25: "SPARKPRUNINGSINK",
+    26: "TOPNKEY",
   }
 
   _NAMES_TO_VALUES = {
@@ -128,6 +130,7 @@ class OperatorType:
     "RCFILEMERGE": 23,
     "MERGEJOIN": 24,
     "SPARKPRUNINGSINK": 25,
+    "TOPNKEY": 26,
   }
 
 class TaskType:
