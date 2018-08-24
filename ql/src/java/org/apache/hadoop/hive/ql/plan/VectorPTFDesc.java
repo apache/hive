@@ -50,6 +50,19 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongSum;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorRank;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorRowNumber;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimalAvg;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimalMax;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimalMin;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimalSum;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDoubleAvg;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDoubleMax;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDoubleMin;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDoubleSum;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongAvg;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongMax;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongMin;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongSum;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
@@ -138,27 +151,46 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       WindowFrameDef windowFrameDef, Type columnVectorType, VectorExpression inputVectorExpression,
       int outputColumnNum) {
 
+    final boolean isRowEndCurrent =
+        (windowFrameDef.getWindowType() == WindowType.ROWS &&
+         windowFrameDef.getEnd().isCurrentRow());
+
     VectorPTFEvaluatorBase evaluator;
     switch (functionType) {
     case ROW_NUMBER:
-      evaluator = new VectorPTFEvaluatorRowNumber(windowFrameDef, inputVectorExpression, outputColumnNum);
+      evaluator =
+          new VectorPTFEvaluatorRowNumber(windowFrameDef, inputVectorExpression, outputColumnNum);
       break;
     case RANK:
-      evaluator = new VectorPTFEvaluatorRank(windowFrameDef, inputVectorExpression, outputColumnNum);
+      evaluator =
+          new VectorPTFEvaluatorRank(windowFrameDef, inputVectorExpression, outputColumnNum);
       break;
     case DENSE_RANK:
-      evaluator = new VectorPTFEvaluatorDenseRank(windowFrameDef, inputVectorExpression, outputColumnNum);
+      evaluator =
+          new VectorPTFEvaluatorDenseRank(windowFrameDef, inputVectorExpression, outputColumnNum);
       break;
     case MIN:
       switch (columnVectorType) {
       case LONG:
-        evaluator = new VectorPTFEvaluatorLongMin(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorLongMin(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingLongMin(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DOUBLE:
-        evaluator = new VectorPTFEvaluatorDoubleMin(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorDoubleMin(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDoubleMin(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DECIMAL:
-        evaluator = new VectorPTFEvaluatorDecimalMin(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorDecimalMin(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDecimalMin(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
@@ -167,13 +199,25 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     case MAX:
       switch (columnVectorType) {
       case LONG:
-        evaluator = new VectorPTFEvaluatorLongMax(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorLongMax(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingLongMax(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DOUBLE:
-        evaluator = new VectorPTFEvaluatorDoubleMax(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorDoubleMax(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDoubleMax(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DECIMAL:
-        evaluator = new VectorPTFEvaluatorDecimalMax(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorDecimalMax(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDecimalMax(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
@@ -182,13 +226,25 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     case SUM:
       switch (columnVectorType) {
       case LONG:
-        evaluator = new VectorPTFEvaluatorLongSum(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorLongSum(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingLongSum(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DOUBLE:
-        evaluator = new VectorPTFEvaluatorDoubleSum(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorDoubleSum(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDoubleSum(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DECIMAL:
-        evaluator = new VectorPTFEvaluatorDecimalSum(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorDecimalSum(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDecimalSum(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
@@ -197,13 +253,25 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     case AVG:
       switch (columnVectorType) {
       case LONG:
-        evaluator = new VectorPTFEvaluatorLongAvg(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorLongAvg(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingLongAvg(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DOUBLE:
-        evaluator = new VectorPTFEvaluatorDoubleAvg(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorDoubleAvg(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDoubleAvg(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DECIMAL:
-        evaluator = new VectorPTFEvaluatorDecimalAvg(windowFrameDef, inputVectorExpression, outputColumnNum);
+        evaluator = !isRowEndCurrent ?
+            new VectorPTFEvaluatorDecimalAvg(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDecimalAvg(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);

@@ -73,13 +73,18 @@ public abstract class VectorPTFEvaluatorBase {
   }
 
   // Evaluate the aggregation over one of the group's batches.
-  public abstract void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) throws HiveException;
+  public abstract void evaluateGroupBatch(VectorizedRowBatch batch)
+      throws HiveException;
+
+  // Do any work necessary after the last batch for a group has been processed.  Necessary
+  // for both streaming and non-streaming evaluators..
+  public void doLastBatchWork() {
+    // By default, do nothing.
+  }
 
   // Returns true if the aggregation result will be streamed.
-  public boolean streamsResult() {
-    // Assume it is not streamjng by default.
-    return false;
-  }
+  // Otherwise, we must evaluate whole group before producing a result.
+  public abstract boolean streamsResult();
 
   public int getOutputColumnNum() {
     return outputColumnNum;
@@ -88,7 +93,7 @@ public abstract class VectorPTFEvaluatorBase {
   // After processing all the group's batches with evaluateGroupBatch, is the non-streaming
   // aggregation result null?
   public boolean isGroupResultNull() {
-    return false;
+    throw new RuntimeException("Not implemented");
   }
 
   // What is the ColumnVector type of the aggregation result?

@@ -42,7 +42,8 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -56,13 +57,15 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
     longColVector.isNull[0] = false;
     longColVector.vector[0] = rank;
     groupCount += batch.size;
-
-    if (isLastGroupBatch) {
-      rank += groupCount;
-      groupCount = 0;
-    }
   }
 
+  @Override
+  public void doLastBatchWork() {
+    rank += groupCount;
+    groupCount = 0;
+  }
+
+  @Override
   public boolean streamsResult() {
     // No group value.
     return true;

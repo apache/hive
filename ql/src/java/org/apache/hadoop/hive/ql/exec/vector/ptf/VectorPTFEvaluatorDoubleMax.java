@@ -41,7 +41,8 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -64,7 +65,7 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
           isGroupResultNull = false;
         } else {
           final double repeatedMax = doubleColVector.vector[0];
-          if (repeatedMax < max) {
+          if (repeatedMax > max) {
             max = repeatedMax;
           }
         }
@@ -112,6 +113,12 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
   }
 
   @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
+  }
+
+  @Override
   public boolean isGroupResultNull() {
     return isGroupResultNull;
   }
@@ -129,6 +136,6 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
   @Override
   public void resetEvaluator() {
     isGroupResultNull = true;
-    max = Double.MIN_VALUE;
+    max = 0.0;
   }
 }

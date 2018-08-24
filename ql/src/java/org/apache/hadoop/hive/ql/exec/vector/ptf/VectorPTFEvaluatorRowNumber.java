@@ -40,7 +40,8 @@ public class VectorPTFEvaluatorRowNumber extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -53,11 +54,13 @@ public class VectorPTFEvaluatorRowNumber extends VectorPTFEvaluatorBase {
     }
   }
 
+  @Override
   public boolean streamsResult() {
     // No group value.
     return true;
   }
 
+  @Override
   public boolean isGroupResultNull() {
     return false;
   }

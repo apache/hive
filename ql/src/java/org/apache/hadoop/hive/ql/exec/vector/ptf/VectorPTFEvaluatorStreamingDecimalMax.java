@@ -30,24 +30,17 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import com.google.common.base.Preconditions;
 
 /**
- * This class evaluates HiveDecimal avg() for a PTF group.
- *
- * Sum up non-null column values; group result is sum / non-null count.
+ * This class evaluates HiveDecimal max() for a PTF group.
  */
-public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
+public class VectorPTFEvaluatorStreamingDecimalMax extends VectorPTFEvaluatorBase {
 
-  protected boolean isGroupResultNull;
-  protected HiveDecimalWritable sum;
-  private int nonNullGroupCount;
-  private HiveDecimalWritable temp;
-  private HiveDecimalWritable avg;
+  protected boolean isNull;
+  protected HiveDecimalWritable max;
 
-  public VectorPTFEvaluatorDecimalAvg(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
+  public VectorPTFEvaluatorStreamingDecimalMax(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
       int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
-    sum = new HiveDecimalWritable();
-    temp = new HiveDecimalWritable();
-    avg = new HiveDecimalWritable();
+    max = new HiveDecimalWritable();
     resetEvaluator();
   }
 
@@ -57,8 +50,7 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
 
     evaluateInputExpr(batch);
 
-    // Sum all non-null decimal column values for avg; maintain isGroupResultNull; after last row of
-    // last group batch compute the group avg when sum is non-null.
+    // Determine maximum of all non-null decimal column values; maintain isNull.
 
     // We do not filter when PTF is in reducer.
     Preconditions.checkState(!batch.selectedInUse);
@@ -68,83 +60,94 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
       return;
     }
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
+
+    DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
+
     if (decimalColVector.isRepeating) {
 
       if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
 
-        // We have a repeated value.  The sum increases by value * batch.size.
-        temp.setFromLong(batch.size);
-        if (isGroupResultNull) {
-
-          // First aggregation calculation for group.
-          sum.set(decimalColVector.vector[0]);
-          sum.mutateMultiply(temp);
-          isGroupResultNull = false;
-        } else {
-          temp.mutateMultiply(decimalColVector.vector[0]);
-          sum.mutateAdd(temp);
+        HiveDecimalWritable repeatedMax = decimalColVector.vector[0];
+        if (isNull) {
+          max.set(repeatedMax);
+          isNull = false;
+        } else if (repeatedMax.compareTo(max) == 1) {
+          max.set(repeatedMax);
         }
-        nonNullGroupCount += size;
+        outputColVector.set(0, max);
+      } else if (isNull) {
+        outputColVector.isNull[0] = true;
+        outputColVector.noNulls = false;
+      } else {
+
+        // Continue previous MAX.
+        outputColVector.set(0, max);
       }
+      outputColVector.isRepeating = true;
     } else if (decimalColVector.noNulls) {
       HiveDecimalWritable[] vector = decimalColVector.vector;
-      if (isGroupResultNull) {
-
-        // First aggregation calculation for group.
-        sum.set(vector[0]);
-        isGroupResultNull = false;
-      } else {
-        sum.mutateAdd(vector[0]);
+      for (int i = 0; i < size; i++) {
+        final HiveDecimalWritable value = vector[i];
+        if (isNull) {
+          max.set(value);
+          isNull = false;
+        } else if (value.compareTo(max) == 1) {
+          max.set(value);
+        }
+        outputColVector.set(i, max);
       }
-      for (int i = 1; i < size; i++) {
-        sum.mutateAdd(vector[i]);
-      }
-      nonNullGroupCount += size;
     } else {
       boolean[] batchIsNull = decimalColVector.isNull;
       int i = 0;
       while (batchIsNull[i]) {
+        if (isNull) {
+          outputColVector.isNull[i] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous MAX.
+          outputColVector.set(i, max);
+        }
         if (++i >= size) {
           return;
         }
       }
-      HiveDecimalWritable[] vector = decimalColVector.vector;
-      if (isGroupResultNull) {
 
-        // First aggregation calculation for group.
-        sum.set(vector[i++]);
-        isGroupResultNull = false;
-      } else {
-        sum.mutateAdd(vector[i++]);
+      HiveDecimalWritable[] vector = decimalColVector.vector;
+
+      final HiveDecimalWritable firstValue = vector[i];
+      if (isNull) {
+        max.set(firstValue);
+        isNull = false;
+      } else if (firstValue.compareTo(max) == 1) {
+        max.set(firstValue);
       }
-      nonNullGroupCount++;
+
+      outputColVector.set(i++, max);
+
       for (; i < size; i++) {
         if (!batchIsNull[i]) {
-          sum.mutateAdd(vector[i]);
-          nonNullGroupCount++;
+          final HiveDecimalWritable value = vector[i];
+          if (isNull) {
+            max.set(value);
+            isNull = false;
+          } else if (value.compareTo(max) == 1) {
+            max.set(value);
+          }
+          outputColVector.set(i, max);
+        } else {
+
+          // Continue previous MAX.
+          outputColVector.set(i, max);
         }
       }
-    }
-  }
-
-  @Override
-  public void doLastBatchWork() {
-    if (!isGroupResultNull) {
-      avg.set(sum);
-      temp.setFromLong(nonNullGroupCount);
-      avg.mutateDivide(temp);
     }
   }
 
   @Override
   public boolean streamsResult() {
-    // We must evaluate whole group before producing a result.
-    return false;
-  }
-
-  @Override
-  public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    // No group value.
+    return true;
   }
 
   @Override
@@ -153,15 +156,8 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public HiveDecimalWritable getDecimalGroupResult() {
-    return avg;
-  }
-
-  @Override
   public void resetEvaluator() {
-    isGroupResultNull = true;
-    sum.set(HiveDecimal.ZERO);
-    nonNullGroupCount = 0;
-    avg.set(HiveDecimal.ZERO);
+    isNull = true;
+    max.set(HiveDecimal.ZERO);
   }
 }

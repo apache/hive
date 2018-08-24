@@ -30,20 +30,17 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import com.google.common.base.Preconditions;
 
 /**
- * This class evaluates HiveDecimal last_value() for a PTF group.
- *
- * We capture the last value from the last batch.  It can be NULL.
- * It becomes the group value.
+ * This class evaluates HiveDecimal sum() for a PTF group.
  */
-public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
+public class VectorPTFEvaluatorStreamingDecimalSum extends VectorPTFEvaluatorBase {
 
-  protected boolean isGroupResultNull;
-  protected HiveDecimalWritable lastValue;
+  protected boolean isNull;
+  protected HiveDecimalWritable sum;
 
-  public VectorPTFEvaluatorDecimalLastValue(WindowFrameDef windowFrameDef,
-      VectorExpression inputVecExpr, int outputColumnNum) {
+  public VectorPTFEvaluatorStreamingDecimalSum(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
+      int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
-    lastValue = new HiveDecimalWritable();
+    sum = new HiveDecimalWritable();
     resetEvaluator();
   }
 
@@ -53,7 +50,7 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
 
     evaluateInputExpr(batch);
 
-    // Last row of last batch determines isGroupResultNull and decimal lastValue.
+    // Sum all non-null decimal column values; maintain isGroupResultNull.
 
     // We do not filter when PTF is in reducer.
     Preconditions.checkState(!batch.selectedInUse);
@@ -63,37 +60,85 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
       return;
     }
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
+
+    DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
+
     if (decimalColVector.isRepeating) {
 
       if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
-        lastValue.set(decimalColVector.vector[0]);
-        isGroupResultNull = false;
+
+        // We have a repeated value.
+        isNull = false;
+        HiveDecimalWritable repeatedValue = decimalColVector.vector[0];
+
+        for (int i = 0; i < size; i++) {
+          sum.mutateAdd(repeatedValue);
+
+          // Output row i SUM.
+          outputColVector.set(i, sum);
+        }
       } else {
-        isGroupResultNull = true;
+        if (isNull) {
+          outputColVector.isNull[0] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous SUM.
+          outputColVector.set(0, sum);
+        }
+        outputColVector.isRepeating = true;
       }
     } else if (decimalColVector.noNulls) {
-      lastValue.set(decimalColVector.vector[size - 1]);
-      isGroupResultNull = false;
+      isNull = false;
+      HiveDecimalWritable[] vector = decimalColVector.vector;
+      for (int i = 0; i < size; i++) {
+        sum.mutateAdd(vector[i]);
+
+        // Output row i sum.
+        outputColVector.set(i, sum);
+      }
     } else {
-      final int lastBatchIndex = size - 1;
-      if (!decimalColVector.isNull[lastBatchIndex]) {
-        lastValue.set(decimalColVector.vector[lastBatchIndex]);
-        isGroupResultNull = false;
-      } else {
-        isGroupResultNull = true;
+      boolean[] batchIsNull = decimalColVector.isNull;
+      int i = 0;
+      while (batchIsNull[i]) {
+        if (isNull) {
+          outputColVector.isNull[i] = true;
+          outputColVector.noNulls = false;
+        } else {
+
+          // Continue previous SUM.
+          outputColVector.set(i, sum);
+        }
+        if (++i >= size) {
+          return;
+        }
+      }
+
+      isNull = false;
+      HiveDecimalWritable[] vector = decimalColVector.vector;
+
+      sum.mutateAdd(vector[i++]);
+
+      // Output row i sum.
+      outputColVector.set(i, sum);
+
+      for (; i < size; i++) {
+        if (!batchIsNull[i]) {
+          sum.mutateAdd(vector[i]);
+          outputColVector.set(i, sum);
+        } else {
+
+          // Continue previous SUM.
+          outputColVector.set(i, sum);
+        }
       }
     }
   }
 
   @Override
   public boolean streamsResult() {
-    // We must evaluate whole group before producing a result.
-    return false;
-  }
-
-  @Override
-  public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    // No group value.
+    return true;
   }
 
   @Override
@@ -102,13 +147,8 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public HiveDecimalWritable getDecimalGroupResult() {
-    return lastValue;
-  }
-
-  @Override
   public void resetEvaluator() {
-    isGroupResultNull = true;
-    lastValue.set(HiveDecimal.ZERO);
+    isNull = true;
+    sum.set(HiveDecimal.ZERO);;
   }
 }
