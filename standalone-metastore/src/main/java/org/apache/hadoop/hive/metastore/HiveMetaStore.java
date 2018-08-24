@@ -7311,7 +7311,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
-            throws MetaException, NoSuchObjectException {
+            throws TException {
       Table tableObj = getTblObject(rqst.getDb(), rqst.getTable());
       Partition ptnObj = getPartitionObj(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals(), tableObj);
       addTxnWriteNotificationLog(tableObj, ptnObj, rqst);
