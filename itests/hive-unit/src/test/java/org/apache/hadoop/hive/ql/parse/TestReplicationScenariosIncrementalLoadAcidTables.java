@@ -154,7 +154,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     appendCreateAsSelect(tableName, tableNameMM, selectStmtList, expectedValues);
     appendImport(tableName, tableNameMM, selectStmtList, expectedValues);
     appendInsertOverwrite(tableName, tableNameMM, selectStmtList, expectedValues);
-    //appendLoadLocal(tableName, tableNameMM, selectStmtList, expectedValues);
+    appendLoadLocal(tableName, tableNameMM, selectStmtList, expectedValues);
     appendInsertUnion(tableName, tableNameMM, selectStmtList, expectedValues);
     appendMultiStatementTxn(selectStmtList, expectedValues);
     appendMultiStatementTxnUpdateDelete(selectStmtList, expectedValues);
@@ -525,18 +525,37 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
                 .run("create table " + tableNameOp + "_nopart as select * from " + tableName + "_nopart");
         break;
       case REPL_TEST_ACID_INSERT_LOADLOCAL:
-        primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
+        // For simplicity setting key and value as same value
+        StringBuilder buf = new StringBuilder();
+        boolean nextVal = false;
+        for (String key : resultArray) {
+          if (nextVal) {
+            buf.append(',');
+          }
+          buf.append('(');
+          buf.append(key);
+          buf.append(',');
+          buf.append(key);
+          buf.append(')');
+          nextVal = true;
+        }
+
+        primary.run("CREATE TABLE " + tableNameOp + "_temp (key int, value int) STORED AS ORC")
+        .run("INSERT INTO TABLE " + tableNameOp + "_temp VALUES " + buf.toString())
+        .run("SELECT key FROM " + tableNameOp + "_temp")
+        .verifyResults(resultArray)
+        .run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
               "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
         .run("SHOW TABLES LIKE '" + tableNameOp + "'")
         .verifyResult(tableNameOp)
-        .run("INSERT OVERWRITE LOCAL DIRECTORY './test.dat' SELECT a.* FROM " + tableName + " a")
-        .run("LOAD DATA LOCAL INPATH './test.dat' OVERWRITE INTO TABLE " + tableNameOp +
+        .run("INSERT OVERWRITE LOCAL DIRECTORY './test.dat' STORED AS ORC SELECT * FROM " + tableNameOp + "_temp")
+        .run("LOAD DATA LOCAL INPATH './test.dat/000000_0' OVERWRITE INTO TABLE " + tableNameOp +
                 " PARTITION (load_date='2008-08-15')")
         .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
                       "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
         .run("SHOW TABLES LIKE '" + tableNameOp + "_nopart'")
         .verifyResult(tableNameOp + "_nopart")
-        .run("LOAD DATA LOCAL INPATH './test.dat' OVERWRITE INTO TABLE " + tableNameOp + "_nopart");
+        .run("LOAD DATA LOCAL INPATH './test.dat/000000_0' OVERWRITE INTO TABLE " + tableNameOp + "_nopart");
         break;
       case REPL_TEST_ACID_INSERT_UNION:
         primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
