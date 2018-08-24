@@ -52,8 +52,6 @@ import static org.apache.hadoop.hive.common.StatsSetupConst.NUM_FILES;
 import static org.apache.hadoop.hive.common.StatsSetupConst.NUM_ERASURE_CODED_FILES;
 import static org.apache.hadoop.hive.common.StatsSetupConst.STATS_GENERATED;
 import static org.apache.hadoop.hive.common.StatsSetupConst.TOTAL_SIZE;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.updateTableStatsSlow;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isFastStatsSame;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -65,7 +63,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Category(MetastoreUnitTest.class)
-public class TestMetaStoreUtils {
+public class TestMetaStoreServerUtils {
 
   private static final String DB_NAME = "db1";
   private static final String TABLE_NAME = "tbl1";
@@ -78,7 +76,7 @@ public class TestMetaStoreUtils {
 
   private Database db;
 
-  public TestMetaStoreUtils() {
+  public TestMetaStoreServerUtils() {
     try {
       db = new DatabaseBuilder().setName(DB_NAME).build(null);
     } catch (TException e) {
@@ -166,7 +164,7 @@ public class TestMetaStoreUtils {
         TOTAL_SIZE, String.valueOf(2 * fileLength),
         NUM_ERASURE_CODED_FILES, "1"
     );
-    updateTableStatsSlow(db, tbl, wh, false, false, null);
+    MetaStoreServerUtils.updateTableStatsSlow(db, tbl, wh, false, false, null);
     assertThat(tbl.getParameters(), is(expected));
 
     // Verify that when stats are already present and forceRecompute is specified they are recomputed
@@ -178,7 +176,7 @@ public class TestMetaStoreUtils {
         .addTableParam(TOTAL_SIZE, "0")
         .build(null);
     when(wh.getFileStatusesForUnpartitionedTable(db, tbl1)).thenReturn(fileStatus);
-    updateTableStatsSlow(db, tbl1, wh, false, true, null);
+    MetaStoreServerUtils.updateTableStatsSlow(db, tbl1, wh, false, true, null);
     assertThat(tbl1.getParameters(), is(expected));
 
     // Verify that COLUMN_STATS_ACCURATE is removed from params
@@ -189,7 +187,7 @@ public class TestMetaStoreUtils {
         .addTableParam(COLUMN_STATS_ACCURATE, "true")
         .build(null);
     when(wh.getFileStatusesForUnpartitionedTable(db, tbl2)).thenReturn(fileStatus);
-    updateTableStatsSlow(db, tbl2, wh, false, true, null);
+    MetaStoreServerUtils.updateTableStatsSlow(db, tbl2, wh, false, true, null);
     assertThat(tbl2.getParameters(), is(expected));
 
     EnvironmentContext context = new EnvironmentContext(ImmutableMap.of(STATS_GENERATED,
@@ -204,7 +202,7 @@ public class TestMetaStoreUtils {
         .addTableParam(COLUMN_STATS_ACCURATE, "foo") // The value doesn't matter
         .build(null);
     when(wh.getFileStatusesForUnpartitionedTable(db, tbl3)).thenReturn(fileStatus);
-    updateTableStatsSlow(db, tbl3, wh, false, true, context);
+    MetaStoreServerUtils.updateTableStatsSlow(db, tbl3, wh, false, true, context);
 
     Map<String, String> expected1 = ImmutableMap.of(NUM_FILES, "2",
         TOTAL_SIZE, String.valueOf(2 * fileLength),
@@ -232,10 +230,10 @@ public class TestMetaStoreUtils {
         .addTableParam(StatsSetupConst.DO_NOT_UPDATE_STATS, "false")
         .build(null);
     Warehouse wh = mock(Warehouse.class);
-    updateTableStatsSlow(db, tbl, wh, false, true, null);
+    MetaStoreServerUtils.updateTableStatsSlow(db, tbl, wh, false, true, null);
     assertThat(tbl.getParameters(), is(Collections.emptyMap()));
     verify(wh, never()).getFileStatusesForUnpartitionedTable(db, tbl);
-    updateTableStatsSlow(db, tbl1, wh, true, false, null);
+    MetaStoreServerUtils.updateTableStatsSlow(db, tbl1, wh, true, false, null);
     assertThat(tbl.getParameters(), is(Collections.emptyMap()));
     verify(wh, never()).getFileStatusesForUnpartitionedTable(db, tbl1);
   }
@@ -261,7 +259,7 @@ public class TestMetaStoreUtils {
         .build(null);
     Warehouse wh = mock(Warehouse.class);
     // newDir(true) => stats not updated
-    updateTableStatsSlow(db, tbl, wh, true, false, null);
+    MetaStoreServerUtils.updateTableStatsSlow(db, tbl, wh, true, false, null);
     verify(wh, never()).getFileStatusesForUnpartitionedTable(db, tbl);
 
     // partitioned table => stats not updated
@@ -271,7 +269,7 @@ public class TestMetaStoreUtils {
         .addCol("id", "int")
         .setPartCols(cols)
         .build(null);
-    updateTableStatsSlow(db, tbl1, wh, false, false, null);
+    MetaStoreServerUtils.updateTableStatsSlow(db, tbl1, wh, false, false, null);
     verify(wh, never()).getFileStatusesForUnpartitionedTable(db, tbl1);
 
     // Already contains stats => stats not updated when forceRecompute isn't set
@@ -281,65 +279,94 @@ public class TestMetaStoreUtils {
         .addCol("id", "int")
         .setTableParams(paramsWithStats)
         .build(null);
-    updateTableStatsSlow(db, tbl2, wh, false, false, null);
+    MetaStoreServerUtils.updateTableStatsSlow(db, tbl2, wh, false, false, null);
     verify(wh, never()).getFileStatusesForUnpartitionedTable(db, tbl2);
   }
 
   @Test
-  public void testIsFastStatsSameHandleNull() throws TException {
+  public void isFastStatsSameWithNullPartitions() {
+    Partition partition = new Partition();
+    assertFalse(MetaStoreServerUtils.isFastStatsSame(null, null));
+    assertFalse(MetaStoreServerUtils.isFastStatsSame(null, partition));
+    assertFalse(MetaStoreServerUtils.isFastStatsSame(partition, null));
+  }
 
-    FieldSchema fs = new FieldSchema("date", "string", "date column");
-    List<FieldSchema> cols = Collections.singletonList(fs);
+  @Test
+  public void isFastStatsSameWithNoMatchingStats() {
+    Partition oldPartition = new Partition();
+    Map<String, String> stats = new HashMap<>();
+    oldPartition.setParameters(stats);
+    assertFalse(MetaStoreServerUtils.isFastStatsSame(oldPartition, null));
+    stats.put("someKeyThatIsNotInFastStats","value");
+    oldPartition.setParameters(stats);
+    assertFalse(MetaStoreServerUtils.isFastStatsSame(oldPartition, null));
+  }
 
-    Table tbl = new TableBuilder()
-        .setDbName(DB_NAME)
-        .setTableName(TABLE_NAME)
-        .addCol("id", "int")
-        .build(null);
-    List<String> vals = new ArrayList<String>();
-    vals.add("val1");
-    Partition oldPart;
-    Partition newPart;
+  //Test case where one or all of the FAST_STATS parameters are not present in newPart
+  @Test
+  public void isFastStatsSameMatchingButOnlyOneStat() {
+    Partition oldPartition = new Partition();
+    Partition newPartition = new Partition();
+    Map<String, String> randomParams = new HashMap<String, String>();
+    randomParams.put("randomParam1", "randomVal1");
+    newPartition.setParameters(randomParams);
+    assertFalse(MetaStoreServerUtils.isFastStatsSame(oldPartition, newPartition));
+  }
 
-    PartitionBuilder partitionBuilder = new PartitionBuilder().inTable(tbl);
-    vals.forEach(val -> partitionBuilder.addValue(val));
-
-    oldPart = partitionBuilder.build(null);
-    newPart = partitionBuilder.build(null);
+  //Test case where all parameters are present and their values are same
+  @Test
+  public void isFastStatsSameMatching() {
+    Partition oldPartition = new Partition();
+    Partition newPartition = new Partition();
+    Map<String, String> stats = new HashMap<>();
 
     Map<String, String> oldParams = new HashMap<>();
     Map<String, String> newParams = new HashMap<>();
-
-    //Test case where all parameters are present and their values are same
     long testVal = 1;
     for (String key : FAST_STATS) {
       oldParams.put(key, String.valueOf(testVal));
       newParams.put(key, String.valueOf(testVal));
     }
-    oldPart.setParameters(oldParams);
-    newPart.setParameters(newParams);
-    assertTrue(isFastStatsSame(oldPart, newPart));
 
-    //Test case where all parameters are present and their values are different
+    oldPartition.setParameters(oldParams);
+    newPartition.setParameters(newParams);
+    assertTrue(MetaStoreServerUtils.isFastStatsSame(oldPartition, newPartition));
+  }
+
+  //Test case where all parameters are present and their values are different
+  @Test
+  public void isFastStatsSameDifferent() {
+    Partition oldPartition = new Partition();
+    Partition newPartition = new Partition();
+    Map<String, String> stats = new HashMap<>();
+
+    Map<String, String> oldParams = new HashMap<>();
+    Map<String, String> newParams = new HashMap<>();
+    long testVal = 1;
     for (String key : FAST_STATS) {
       oldParams.put(key, String.valueOf(testVal));
       newParams.put(key, String.valueOf(++testVal));
     }
-    oldPart.setParameters(oldParams);
-    newPart.setParameters(newParams);
-    assertFalse(isFastStatsSame(oldPart, newPart));
 
-    //Test case where newPart is null
-    assertFalse(isFastStatsSame(oldPart, null));
+    oldPartition.setParameters(oldParams);
+    newPartition.setParameters(newParams);
+    assertFalse(MetaStoreServerUtils.isFastStatsSame(oldPartition, newPartition));
+  }
 
-    //Test case where oldPart is null
-    assertFalse(isFastStatsSame(null, newPart));
-
-    //Test case where one or all of the FAST_STATS parameters are not present in newPart
-    Map<String, String> randomParams = new HashMap<String, String>();
-    randomParams.put("randomParam1", "randomVal1");
-    newPart.setParameters(randomParams);
-    assertFalse(isFastStatsSame(oldPart, newPart));
+  @Test
+  public void isFastStatsSameNullStatsInNew() {
+    Partition oldPartition = new Partition();
+    Partition newPartition = new Partition();
+    Map<String, String> oldParams = new HashMap<>();
+    Map<String, String> newParams = new HashMap<>();
+    long testVal = 1;
+    for (String key : FAST_STATS) {
+      oldParams.put(key, String.valueOf(testVal));
+      newParams.put(key, null);
+    }
+    oldPartition.setParameters(oldParams);
+    newPartition.setParameters(newParams);
+    assertFalse(MetaStoreServerUtils.isFastStatsSame(oldPartition, newPartition));
   }
 
   /**
