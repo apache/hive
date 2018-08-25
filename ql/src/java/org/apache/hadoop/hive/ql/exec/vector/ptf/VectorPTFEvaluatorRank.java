@@ -42,9 +42,8 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
   private int rank;
   private int groupCount;
 
-  public VectorPTFEvaluatorRank(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
-      int outputColumnNum) {
-    super(windowFrameDef, inputVecExpr, outputColumnNum);
+  public VectorPTFEvaluatorRank(WindowFrameDef windowFrameDef, int outputColumnNum) {
+    super(windowFrameDef, outputColumnNum);
     resetEvaluator();
   }
 
@@ -52,7 +51,7 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
+    // We don't evaluate input columns...
 
     /*
      * Do careful maintenance of the outputColVector.noNulls flag.
