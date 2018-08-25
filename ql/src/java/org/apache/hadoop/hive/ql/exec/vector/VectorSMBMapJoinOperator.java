@@ -131,7 +131,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator
 
     List<ExprNodeDesc> keyDesc = desc.getKeys().get(posBigTable);
     keyExpressions = vContext.getVectorExpressions(keyDesc);
-    keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyDesc);
+    keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyExpressions);
 
     Map<Byte, List<ExprNodeDesc>> exprs = desc.getExprs();
     bigTableValueExpressions = vContext.getVectorExpressions(exprs.get(posBigTable));

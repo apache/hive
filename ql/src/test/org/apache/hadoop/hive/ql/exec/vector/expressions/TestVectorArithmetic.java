@@ -26,9 +26,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
-import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -59,25 +57,16 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 
 import junit.framework.Assert;
 
@@ -437,7 +426,8 @@ public class TestVectorArithmetic {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, generationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
 
     Object[][] randomRows = rowSource.randomRows(100000);
