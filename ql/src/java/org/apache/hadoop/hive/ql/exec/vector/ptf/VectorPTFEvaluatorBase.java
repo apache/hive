@@ -65,6 +65,13 @@ public abstract class VectorPTFEvaluatorBase {
     this.outputColumnNum = outputColumnNum;
   }
 
+  public VectorPTFEvaluatorBase(WindowFrameDef windowFrameDef, int outputColumnNum) {
+    this.windowFrameDef = windowFrameDef;
+    inputVecExpr = null;
+    inputColumnNum = -1;
+    this.outputColumnNum = outputColumnNum;
+  }
+
   // Evaluate the aggregation input argument expression.
   public void evaluateInputExpr(VectorizedRowBatch batch) throws HiveException {
     if (inputVecExpr != null) {

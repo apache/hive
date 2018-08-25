@@ -1989,15 +1989,28 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
-                vectorized: false
+                reduceColumnNullOrder: aaz
+                reduceColumnSortOrder: ++-
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, KEY.reducesinkkey2:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -2019,13 +2032,33 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank]
+                      functionInputExpressions: [col 1:string]
+                      functionNames: [rank]
+                      keyInputColumns: [1, 0, 2]
+                      native: true
+                      nonKeyInputColumns: []
+                      orderExpressions: [col 1:string, col 2:int]
+                      outputColumns: [3, 1, 0, 2]
+                      outputTypes: [int, string, string, int]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [3]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -4097,7 +4130,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
+                notVectorizedReason: PTF operator: cume_dist not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4550,15 +4583,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
-                vectorized: false
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -4593,13 +4639,32 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingLongSum]
+                      functionInputExpressions: [col 0:string, col 0:string, col 2:int]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 0:string, col 1:string]
+                      outputColumns: [3, 4, 5, 1, 0, 2]
+                      outputTypes: [int, int, bigint, string, string, int]
+                      streamingColumns: [3, 4, 5]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 3, 4, 2, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -5539,15 +5604,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
         Reducer 5 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
-                vectorized: false
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -5582,13 +5660,32 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingLongSum]
+                      functionInputExpressions: [col 0:string, col 0:string, col 2:int]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 0:string, col 1:string]
+                      outputColumns: [3, 4, 5, 1, 0, 2]
+                      outputTypes: [int, int, bigint, string, string, int]
+                      streamingColumns: [3, 4, 5]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 3, 4, 2, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -5842,15 +5939,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
-                vectorized: false
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -5885,13 +5995,32 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingLongSum]
+                      functionInputExpressions: [col 0:string, col 0:string, col 2:int]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 0:string, col 1:string]
+                      outputColumns: [3, 4, 5, 1, 0, 2]
+                      outputTypes: [int, int, bigint, string, string, int]
+                      streamingColumns: [3, 4, 5]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 3, 4, 2, 5, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat

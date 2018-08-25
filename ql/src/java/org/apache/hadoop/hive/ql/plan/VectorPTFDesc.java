@@ -162,12 +162,10 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
           new VectorPTFEvaluatorRowNumber(windowFrameDef, inputVectorExpression, outputColumnNum);
       break;
     case RANK:
-      evaluator =
-          new VectorPTFEvaluatorRank(windowFrameDef, inputVectorExpression, outputColumnNum);
+      evaluator = new VectorPTFEvaluatorRank(windowFrameDef, outputColumnNum);
       break;
     case DENSE_RANK:
-      evaluator =
-          new VectorPTFEvaluatorDenseRank(windowFrameDef, inputVectorExpression, outputColumnNum);
+      evaluator = new VectorPTFEvaluatorDenseRank(windowFrameDef, outputColumnNum);
       break;
     case MIN:
       switch (columnVectorType) {

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec.vector.ptf;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
@@ -36,9 +35,8 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
   private int rank;
   private int groupCount;
 
-  public VectorPTFEvaluatorRank(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
-      int outputColumnNum) {
-    super(windowFrameDef, inputVecExpr, outputColumnNum);
+  public VectorPTFEvaluatorRank(WindowFrameDef windowFrameDef, int outputColumnNum) {
+    super(windowFrameDef, outputColumnNum);
     resetEvaluator();
   }
 
@@ -46,7 +44,7 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
+    // We don't evaluate input columns...
 
     /*
      * Do careful maintenance of the outputColVector.noNulls flag.
