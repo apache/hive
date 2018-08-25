@@ -75,8 +75,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [9, 10, 14]
-                        selectExpressions: StringGroupConcatColCol(col 0:string, col 1:string) -> 9:string, StringGroupConcatColCol(col 2:varchar(10), col 3:varchar(20)) -> 10:varchar(30), StringGroupColEqualStringGroupColumn(col 11:string, col 13:string)(children: StringGroupConcatColCol(col 0:string, col 1:string) -> 11:string, CastStringGroupToString(col 12:varchar(30))(children: StringGroupConcatColCol(col 2:varchar(10), col 3:varchar(20)) -> 12:varchar(30)) -> 13:string) -> 14:boolean
+                        projectedOutputColumnNums: [9, 10, 13]
+                        selectExpressions: StringGroupConcatColCol(col 0:string, col 1:string) -> 9:string, StringGroupConcatColCol(col 2:varchar(10), col 3:varchar(20)) -> 10:varchar(30), StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringGroupConcatColCol(col 0:string, col 1:string) -> 11:string, StringGroupConcatColCol(col 2:varchar(10), col 3:varchar(20)) -> 12:varchar(30)) -> 13:boolean
                     Statistics: Num rows: 1 Data size: 302 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 1
@@ -110,7 +110,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3]
                     dataColumns: c1:string, c2:string, c3:varchar(10), c4:varchar(20), d1:string, d2:string, d3:varchar(10), d4:varchar(10)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [string, string, string, string, string, bigint]
+                    scratchColumnTypeNames: [string, string, string, string, bigint]
 
   Stage: Stage-0
     Fetch Operator
@@ -180,8 +180,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [9, 10, 14]
-                        selectExpressions: StringUpper(col 1:string) -> 9:string, StringUpper(col 3:varchar(20)) -> 10:varchar(20), StringGroupColEqualStringGroupColumn(col 11:string, col 13:string)(children: StringUpper(col 1:string) -> 11:string, CastStringGroupToString(col 12:varchar(20))(children: StringUpper(col 3:varchar(20)) -> 12:varchar(20)) -> 13:string) -> 14:boolean
+                        projectedOutputColumnNums: [9, 10, 13]
+                        selectExpressions: StringUpper(col 1:string) -> 9:string, StringUpper(col 3:varchar(20)) -> 10:varchar(20), StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringUpper(col 1:string) -> 11:string, StringUpper(col 3:varchar(20)) -> 12:varchar(20)) -> 13:boolean
                     Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 1
@@ -215,7 +215,7 @@ STAGE PLANS:
                     includeColumns: [1, 3]
                     dataColumns: c1:string, c2:string, c3:varchar(10), c4:varchar(20), d1:string, d2:string, d3:varchar(10), d4:varchar(10)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [string, string, string, string, string, bigint]
+                    scratchColumnTypeNames: [string, string, string, string, bigint]
 
   Stage: Stage-0
     Fetch Operator
@@ -285,8 +285,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [9, 10, 14]
-                        selectExpressions: StringLower(col 1:string) -> 9:string, StringLower(col 3:varchar(20)) -> 10:varchar(20), StringGroupColEqualStringGroupColumn(col 11:string, col 13:string)(children: StringLower(col 1:string) -> 11:string, CastStringGroupToString(col 12:varchar(20))(children: StringLower(col 3:varchar(20)) -> 12:varchar(20)) -> 13:string) -> 14:boolean
+                        projectedOutputColumnNums: [9, 10, 13]
+                        selectExpressions: StringLower(col 1:string) -> 9:string, StringLower(col 3:varchar(20)) -> 10:varchar(20), StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringLower(col 1:string) -> 11:string, StringLower(col 3:varchar(20)) -> 12:varchar(20)) -> 13:boolean
                     Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 1
@@ -320,7 +320,7 @@ STAGE PLANS:
                     includeColumns: [1, 3]
                     dataColumns: c1:string, c2:string, c3:varchar(10), c4:varchar(20), d1:string, d2:string, d3:varchar(10), d4:varchar(10)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [string, string, string, string, string, bigint]
+                    scratchColumnTypeNames: [string, string, string, string, bigint]
 
   Stage: Stage-0
     Fetch Operator

@@ -475,7 +475,7 @@ STAGE PLANS:
                     0 CAST( _col1 AS STRING) (type: string)
                     1 _col1 (type: string)
                   Map Join Vectorization:
-                      bigTableKeyExpressions: CastStringGroupToString(col 1:char(10)) -> 3:string
+                      bigTableKeyExpressions: col 1:char(10)
                       bigTableValueExpressions: col 0:int, col 1:char(10)
                       className: VectorMapJoinOperator
                       native: false

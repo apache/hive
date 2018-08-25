@@ -525,7 +525,6 @@ STAGE PLANS:
                         Map-reduce partition columns: CAST( _col1 AS STRING) (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
-                            keyExpressions: CastStringGroupToString(col 1:char(10)) -> 3:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE

@@ -428,7 +428,8 @@ public class TestVectorBetweenIn {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, generationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
 
     List<String> columns = new ArrayList<String>();
@@ -550,7 +551,8 @@ public class TestVectorBetweenIn {
     VectorRandomRowSource structRowSource = new VectorRandomRowSource();
 
     structRowSource.initGenerationSpecSchema(
-        random, structGenerationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, structGenerationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         structExplicitDataTypePhysicalVariationList);
 
     Object[][] structRandomRows = structRowSource.randomRows(100000);
@@ -572,7 +574,8 @@ public class TestVectorBetweenIn {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, generationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
 
     Object[][] randomRows = rowSource.randomRows(100000);
@@ -704,7 +707,7 @@ public class TestVectorBetweenIn {
            continue;
          }
       case VECTOR_EXPRESSION:
-        if (!doVectorCastTest(
+        if (!doVectorBetweenInTest(
               typeInfo,
               betweenInVariation,
               compareList,
@@ -841,7 +844,7 @@ public class TestVectorBetweenIn {
     }
   }
 
-  private boolean doVectorCastTest(TypeInfo typeInfo,
+  private boolean doVectorBetweenInTest(TypeInfo typeInfo,
       BetweenInVariation betweenInVariation, List<Object> compareList,
       List<String> columns, String[] columnNames,
       TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
@@ -874,13 +877,24 @@ public class TestVectorBetweenIn {
                 VectorExpressionDescriptor.Mode.PROJECTION));
     vectorExpression.transientInit();
 
-    if (betweenInTestMode == BetweenInTestMode.VECTOR_EXPRESSION &&
-        vectorExpression instanceof VectorUDFAdaptor) {
-      System.out.println(
-          "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
-          " betweenInTestMode " + betweenInTestMode +
-          " betweenInVariation " + betweenInVariation +
-          " vectorExpression " + vectorExpression.toString());
+    if (betweenInTestMode == BetweenInTestMode.VECTOR_EXPRESSION) {
+      String vecExprString = vectorExpression.toString();
+      if (vectorExpression instanceof VectorUDFAdaptor) {
+        System.out.println(
+            "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
+            " betweenInTestMode " + betweenInTestMode +
+            " betweenInVariation " + betweenInVariation +
+            " vectorExpression " + vecExprString);
+      } else if (dataTypePhysicalVariations[0] == DataTypePhysicalVariation.DECIMAL_64) {
+        final String nameToCheck = vectorExpression.getClass().getSimpleName();
+        if (!nameToCheck.contains("Decimal64")) {
+          System.out.println(
+              "*EXPECTED DECIMAL_64 VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
+              " betweenInTestMode " + betweenInTestMode +
+              " betweenInVariation " + betweenInVariation +
+              " vectorExpression " + vecExprString);
+        }
+      }
     }
 
     // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
