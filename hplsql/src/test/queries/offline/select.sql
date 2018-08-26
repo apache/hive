@@ -6,6 +6,11 @@ SELECT *
   (
     select * from b
   );
+
+SELECT * 
+ FROM a 
+ JOIN b 
+  ON a.id = b.id;
   
 SELECT 
          *
