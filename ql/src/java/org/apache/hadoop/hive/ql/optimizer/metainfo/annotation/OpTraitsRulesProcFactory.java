@@ -110,6 +110,19 @@ public class OpTraitsRulesProcFactory {
           for (List<String> cols : parentOpTraits.getBucketColNames()) {
             for (String col : cols) {
               for (Entry<String, ExprNodeDesc> entry : rs.getColumnExprMap().entrySet()) {
+                // Make sure this entry is in key columns.
+                boolean isKey = false;
+                for (ExprNodeDesc keyDesc : rs.getConf().getKeyCols()) {
+                  if (keyDesc.isSame(entry.getValue())) {
+                    isKey = true;
+                    break;
+                  }
+                }
+
+                // skip if not a key
+                if (!isKey) {
+                  continue;
+                }
                 // Fetch the column expression. There should be atleast one.
                 Map<Integer, ExprNodeDesc> colMap = new HashMap<>();
                 boolean found = false;
