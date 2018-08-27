@@ -118,6 +118,7 @@ EXPLAIN SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table_alias`.`cdouble
 FROM `default`.`druid_table_n0` `druid_table_alias`
 GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE);
 
+
 SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table_alias`.`cdouble`)) AS `sum_calculation_4998925219892510720_ok`,
   CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE) AS `tmn___time_ok`
 FROM `default`.`druid_table_n0` `druid_table_alias`
@@ -139,3 +140,24 @@ SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1
  EXPLAIN SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2;
 
 DROP TABLE druid_table_n0;
+
+-- Tests for testing handling of date/time funtions on druid dimensions stored as strings
+CREATE TABLE druid_table_n1
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
+AS
+  SELECT cast (current_timestamp() as timestamp with local time zone) as `__time`,
+cast(datetime1 as string) as datetime1,
+cast(date1 as string) as date1,
+cast(time1 as string) as time1
+FROM TABLE (
+VALUES
+('2004-04-09 22:20:14', '2004-04-09','22:20:14'),
+('2004-04-04 22:50:16', '2004-04-04', '22:50:16'),
+('2004-04-12 04:40:49', '2004-04-12', '04:40:49'),
+('2004-04-11 00:00:00', '2004-04-11', null),
+('00:00:00 18:58:41', null, '18:58:41')) as q (datetime1, date1, time1);
+
+EXPLAIN SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1;
+
+SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1;
