@@ -67,8 +67,8 @@ public class MiniDruidCluster extends AbstractService {
                   "druid.indexer.logs.type", "file",
                   "druid.coordinator.asOverlord.enabled", "true",
                   "druid.coordinator.asOverlord.overlordService", "druid/overlord",
-                  "druid.coordinator.period", "PT10S",
-                  "druid.manager.segments.pollDuration", "PT10S"
+                  "druid.coordinator.period", "PT2S",
+                  "druid.manager.segments.pollDuration", "PT2S"
           );
   private static final int MIN_PORT_NUMBER = 60000;
   private static final int MAX_PORT_NUMBER = 65535;
