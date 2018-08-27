@@ -20,6 +20,7 @@ import java.util.TimeZone;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.parquet.hadoop.api.WriteSupport;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
@@ -62,5 +63,10 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
   @Override
   public void write(final ParquetHiveRecord record) {
     writer.write(record);
+  }
+
+  @Override
+  public String getName() {
+    return HiveVersionInfo.getVersion();
   }
 }
