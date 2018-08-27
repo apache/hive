@@ -20,13 +20,11 @@
 package org.apache.hadoop.hive.metastore.security;
 
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -139,7 +137,7 @@ public class MetastoreDelegationTokenManager {
   }
 
   private DelegationTokenStore getTokenStore(Configuration conf) throws IOException {
-    String tokenStoreClassName = SecurityUtils.getTokenStoreClassName(conf);
+    String tokenStoreClassName = MetaStoreServerUtils.getTokenStoreClassName(conf);
     try {
       Class<? extends DelegationTokenStore> storeClass =
           Class.forName(tokenStoreClassName).asSubclass(DelegationTokenStore.class);

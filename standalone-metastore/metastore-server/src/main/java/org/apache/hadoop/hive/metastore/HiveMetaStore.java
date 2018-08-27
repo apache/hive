@@ -1862,7 +1862,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
         if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
-            !MetaStoreServerUtils.isView(tbl)) {
+            !MetaStoreUtils.isView(tbl)) {
           MetaStoreServerUtils.updateTableStatsSlow(db, tbl, wh, madeDir, false, envContext);
         }
 
@@ -3804,7 +3804,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             updateStatsTbl = !Boolean.valueOf(tblParams.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
         }
         if (!MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) ||
-            MetaStoreServerUtils.isView(tbl) ||
+            MetaStoreUtils.isView(tbl) ||
             !updateStatsTbl) {
           return false;
         }
