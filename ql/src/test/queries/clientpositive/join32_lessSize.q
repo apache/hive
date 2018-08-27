@@ -6,7 +6,7 @@ CREATE TABLE dest_j2_n1(key STRING, value STRING, val2 STRING) STORED AS TEXTFIL
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
-set hive.auto.convert.join.noconditionaltask.size=6000;
+set hive.auto.convert.join.noconditionaltask.size=4000;
 
 -- Since the inputs are small, it should be automatically converted to mapjoin
 

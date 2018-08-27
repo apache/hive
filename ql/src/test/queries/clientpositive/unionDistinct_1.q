@@ -154,7 +154,7 @@ set hive.merge.mapfiles=false;
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
-set hive.auto.convert.join.noconditionaltask.size=15000;
+set hive.auto.convert.join.noconditionaltask.size=8000;
 
 -- Since the inputs are small, it should be automatically converted to mapjoin
 

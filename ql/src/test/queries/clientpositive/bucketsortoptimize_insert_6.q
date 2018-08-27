@@ -29,7 +29,7 @@ INSERT OVERWRITE TABLE test_table2_n3 PARTITION (ds = '1') SELECT key, key+1, va
 
 -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-only operation, since the sort-order matches
-set hive.auto.convert.join.noconditionaltask.size=800;
+set hive.auto.convert.join.noconditionaltask.size=400;
 EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
