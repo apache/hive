@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverUtils;
@@ -500,7 +501,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     // TODO: acid utils don't support catalogs
     GetValidWriteIdsRequest req = new GetValidWriteIdsRequest(
         Lists.newArrayList(fullTableName.getDbTable()), null);
-    return TxnUtils.createValidReaderWriteIdList(
+    return TxnCommonUtils.createValidReaderWriteIdList(
         txnHandler.getValidWriteIds(req).getTblValidWriteIds().get(0));
   }
 

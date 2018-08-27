@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.HiveStrictManagedUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -994,7 +995,7 @@ public class HiveStrictManagedMigration {
           String fqn = table.getDbName() + "." + table.getTableName();
           List<TableValidWriteIds> writeIdsObj = msc.getValidWriteIds(
               Lists.newArrayList(fqn), txns.toString());
-          String validWriteIds = TxnUtils.createValidTxnWriteIdList(txnId, writeIdsObj)
+          String validWriteIds = TxnCommonUtils.createValidTxnWriteIdList(txnId, writeIdsObj)
               .getTableValidWriteIdList(fqn).writeToString();
           long writeId = msc.allocateTableWriteId(txnId, table.getDbName(), table.getTableName());
           result = new TxnCtx(writeId, validWriteIds, txnId);

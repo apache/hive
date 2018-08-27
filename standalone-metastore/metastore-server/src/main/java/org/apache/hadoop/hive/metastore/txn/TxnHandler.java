@@ -1252,7 +1252,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         validTxnList = new ValidReadTxnList(rqst.getValidTxnList());
       } else {
         // Passing 0 for currentTxn means, this validTxnList is not wrt to any txn
-        validTxnList = TxnUtils.createValidReadTxnList(getOpenTxns(), 0);
+        validTxnList = TxnCommonUtils.createValidReadTxnList(getOpenTxns(), 0);
       }
       try {
         /**

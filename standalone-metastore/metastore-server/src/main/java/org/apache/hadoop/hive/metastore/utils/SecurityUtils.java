@@ -17,13 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.security.DBTokenStore;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenSelector;
-import org.apache.hadoop.hive.metastore.security.MemoryTokenStore;
-import org.apache.hadoop.hive.metastore.security.ZooKeeperTokenStore;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -31,31 +26,29 @@ import org.apache.hadoop.security.authentication.util.KerberosUtil;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.TokenSelector;
-import org.apache.zookeeper.client.ZooKeeperSaslClient;
-
-import javax.security.auth.login.AppConfigurationEntry;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
-import javax.security.auth.login.LoginException;
+import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SecurityUtils {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityUtils.class);
@@ -190,42 +183,6 @@ public class SecurityUtils {
     delegationToken.decodeFromUrlString(tokenStr);
     delegationToken.setService(new Text(tokenService));
     return delegationToken;
-  }
-
-  private static final String DELEGATION_TOKEN_STORE_CLS = "hive.cluster.delegation.token.store.class";
-
-  /**
-   * This method should be used to return the metastore specific tokenstore class name to main
-   * backwards compatibility
-   * 
-   * @param conf - HiveConf object
-   * @return the tokenStoreClass name from the HiveConf. It maps the hive specific tokenstoreclass
-   *         name to metastore module specific class name. For eg:
-   *         hive.cluster.delegation.token.store.class is set to
-   *         org.apache.hadoop.hive.thrift.MemoryTokenStore it returns the equivalent tokenstore
-   *         class defined in the metastore module which is
-   *         org.apache.hadoop.hive.metastore.security.MemoryTokenStore Similarly,
-   *         org.apache.hadoop.hive.thrift.DBTokenStore maps to
-   *         org.apache.hadoop.hive.metastore.security.DBTokenStore and
-   *         org.apache.hadoop.hive.thrift.ZooKeeperTokenStore maps to
-   *         org.apache.hadoop.hive.metastore.security.ZooKeeperTokenStore
-   */
-  public static String getTokenStoreClassName(Configuration conf) {
-    String tokenStoreClass = conf.get(DELEGATION_TOKEN_STORE_CLS, "");
-    if (StringUtils.isBlank(tokenStoreClass)) {
-      // default tokenstore is MemoryTokenStore
-      return MemoryTokenStore.class.getName();
-    }
-    switch (tokenStoreClass) {
-    case "org.apache.hadoop.hive.thrift.DBTokenStore":
-      return DBTokenStore.class.getName();
-    case "org.apache.hadoop.hive.thrift.MemoryTokenStore":
-      return MemoryTokenStore.class.getName();
-    case "org.apache.hadoop.hive.thrift.ZooKeeperTokenStore":
-      return ZooKeeperTokenStore.class.getName();
-    default:
-      return tokenStoreClass;
-    }
   }
 
 
