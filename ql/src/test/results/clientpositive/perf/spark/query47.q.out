@@ -484,6 +484,7 @@ STAGE PLANS:
                       Statistics: Num rows: 383325119 Data size: 33817053293 Basic stats: COMPLETE Column stats: NONE
                       value expressions: avg_window_0 (type: decimal(21,6)), _col6 (type: decimal(17,2))
         Reducer 16 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: decimal(21,6)), KEY.reducesinkkey4 (type: int), KEY.reducesinkkey5 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string), VALUE._col1 (type: decimal(17,2))
@@ -612,6 +613,7 @@ STAGE PLANS:
                   Statistics: Num rows: 383325119 Data size: 33817053293 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col6 (type: decimal(17,2))
         Reducer 24 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey4 (type: int), KEY.reducesinkkey5 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string), VALUE._col0 (type: decimal(17,2))
@@ -701,6 +703,7 @@ STAGE PLANS:
                   Statistics: Num rows: 383325119 Data size: 33817053293 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col6 (type: decimal(17,2))
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey4 (type: int), KEY.reducesinkkey5 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string), VALUE._col0 (type: decimal(17,2))

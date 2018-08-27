@@ -18,23 +18,37 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
-// cast string group to string (varchar to string, etc.)
-public class CastStringGroupToString extends StringUnaryUDFDirect {
-
+public class GroupingColumn extends MathFuncLongToLong {
   private static final long serialVersionUID = 1L;
 
-  public CastStringGroupToString() {
-    super();
+  private final long mask;
+
+  public GroupingColumn(int inputColumnNum, int index, int outputColumnNum) {
+    super(inputColumnNum, outputColumnNum);
+    this.mask = 1L << index;
   }
 
-  public CastStringGroupToString(int inputColumn, int outputColumnNum) {
-    super(inputColumn, outputColumnNum);
+  public GroupingColumn() {
+    super();
+
+    // Dummy final assignments.
+    mask = 0;
   }
 
   @Override
-  protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length, int i) {
-    outV.setVal(i, vector[i], start[i], length[i]);
+  protected long func(long v) {
+    return (v & mask) == 0 ? 0 : 1;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", mask " + mask;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return null;  // Not applicable.
   }
 }
