@@ -5341,10 +5341,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
-  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
+  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName, boolean ifNotExists)
       throws HiveException {
     try {
       getMSC().createResourcePlan(resourcePlan, copyFromName);
+    } catch (AlreadyExistsException e) {
+      if (!ifNotExists) {
+        throw new HiveException(e, ErrorMsg.RESOURCE_PLAN_ALREADY_EXISTS, resourcePlan.getName());
+      }
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -5368,9 +5372,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public void dropResourcePlan(String rpName) throws HiveException {
+  public void dropResourcePlan(String rpName, boolean ifExists) throws HiveException {
     try {
       getMSC().dropResourcePlan(rpName);
+    } catch (NoSuchObjectException e) {
+      if (!ifExists) {
+        throw new HiveException(e, ErrorMsg.RESOURCE_PLAN_NOT_EXISTS, rpName);
+      }
     } catch (Exception e) {
       throw new HiveException(e);
     }

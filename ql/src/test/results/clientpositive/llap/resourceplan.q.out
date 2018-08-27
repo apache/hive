@@ -3263,6 +3263,15 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	DISABLED	0	default
 plan_2	DISABLED	10	default
+PREHOOK: query: CREATE RESOURCE PLAN plan_2
+PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Resource plan plan_2 already exists
+PREHOOK: query: CREATE RESOURCE PLAN IF NOT EXISTS plan_2
+PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: CREATE RESOURCE PLAN IF NOT EXISTS plan_2
+POSTHOOK: type: CREATE RESOURCEPLAN
 FAILED: SemanticException Invalid create arguments (tok_create_rp plan_3 (tok_query_parallelism 5) (tok_default_pool all))
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_2
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -3580,6 +3589,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	10	default
+PREHOOK: query: DROP RESOURCE PLAN plan_99999
+PREHOOK: type: DROP RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Resource plan plan_99999 does not exist
+PREHOOK: query: DROP RESOURCE PLAN IF EXISTS plan_99999
+PREHOOK: type: DROP RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: DROP RESOURCE PLAN IF EXISTS plan_99999
+POSTHOOK: type: DROP RESOURCEPLAN
 PREHOOK: query: CREATE RESOURCE PLAN `table`
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
