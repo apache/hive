@@ -123,6 +123,22 @@ SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1
 
  EXPLAIN SELECT ctinyint > 2, count(*) from druid_table_alltypesorc GROUP BY ctinyint > 2;
 
+-- group by should be rewitten and pushed into druid
+-- simple gby with single constant key
+EXPLAIN SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 != 'en' group by 1.011;
+SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 != 'en' group by 1.011;
+
+-- gby with multiple constant keys
+EXPLAIN SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 != 'en' group by 1.011, 3.40;
+SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 != 'en' group by 1.011, 3.40;
+
+-- group by with constant folded key
+EXPLAIN SELECT sum(cint) FROM druid_table_alltypesorc WHERE cfloat= 0.011 group by cfloat;
+SELECT sum(cint) FROM druid_table_alltypesorc WHERE cfloat= 0.011 group by cfloat;
+
+-- group by key is referred in select
+EXPLAIN SELECT cfloat, sum(cint) FROM druid_table_alltypesorc WHERE cfloat= 0.011 group by cfloat;
+SELECT cfloat, sum(cint) FROM druid_table_alltypesorc WHERE cfloat= 0.011 group by cfloat;
 
 -- Tests for testing handling of date/time funtions on druid dimensions stored as strings
 CREATE TABLE druid_table_n1

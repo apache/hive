@@ -4804,20 +4804,20 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: ConstantVectorExpression(val 2008-04-08) -> 5:string
+                          keyExpressions: ConstantVectorExpression(val 1) -> 5:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
-                      keys: '2008-04-08' (type: string)
+                      keys: true (type: boolean)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string)
+                        key expressions: _col0 (type: boolean)
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: boolean)
                         Reduce Sink Vectorization:
-                            className: VectorReduceSinkStringOperator
+                            className: VectorReduceSinkLongOperator
                             keyColumnNums: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
@@ -4839,7 +4839,7 @@ STAGE PLANS:
                     dataColumns: key:string, value:string
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [string]
+                    scratchColumnTypeNames: [bigint]
         Reducer 2 
             Reduce Vectorization:
                 enabled: true
@@ -4913,7 +4913,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 1
-                    dataColumns: KEY._col0:string
+                    dataColumns: KEY._col0:boolean
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -4921,11 +4921,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string
+                    keyExpressions: col 0:boolean
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumnNums: []
-                keys: KEY._col0 (type: string)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -10669,20 +10669,20 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: ConstantVectorExpression(val 2008-04-08) -> 5:string
+                          keyExpressions: ConstantVectorExpression(val 1) -> 5:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
-                      keys: '2008-04-08' (type: string)
+                      keys: true (type: boolean)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string)
+                        key expressions: _col0 (type: boolean)
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: boolean)
                         Reduce Sink Vectorization:
-                            className: VectorReduceSinkStringOperator
+                            className: VectorReduceSinkLongOperator
                             keyColumnNums: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
@@ -10704,7 +10704,7 @@ STAGE PLANS:
                     dataColumns: key:string, value:string
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [string]
+                    scratchColumnTypeNames: [bigint]
         Reducer 4 
             Execution mode: vectorized
             Local Work:
@@ -10719,7 +10719,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 1
-                    dataColumns: KEY._col0:string
+                    dataColumns: KEY._col0:boolean
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -10727,11 +10727,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string
+                    keyExpressions: col 0:boolean
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumnNums: []
-                keys: KEY._col0 (type: string)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
