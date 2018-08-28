@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
@@ -55,7 +54,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
@@ -70,8 +68,6 @@ import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_SECOND;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.SECOND_PER_DAY;
-import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStructListTypeInfo;
-import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStructListVector;
 
 class Deserializer {
   private final ArrowColumnarBatchSerDe serDe;
@@ -281,25 +277,11 @@ class Deserializer {
               long second;
               int subSecondInNanos;
               switch (minorType) {
-                case TIMESTAMPMILLI:
-                case TIMESTAMPMILLITZ:
-                  {
-                    subSecondInNanos = (int) ((time % MILLIS_PER_SECOND) * NS_PER_MILLIS);
-                    second = time / MILLIS_PER_SECOND;
-                  }
-                  break;
                 case TIMESTAMPMICROTZ:
                 case TIMESTAMPMICRO:
                   {
                     subSecondInNanos = (int) ((time % MICROS_PER_SECOND) * NS_PER_MICROS);
                     second = time / MICROS_PER_SECOND;
-                  }
-                  break;
-                case TIMESTAMPNANOTZ:
-                case TIMESTAMPNANO:
-                  {
-                    subSecondInNanos = (int) (time % NS_PER_SECOND);
-                    second = time / NS_PER_SECOND;
                   }
                   break;
                 default:
@@ -314,7 +296,11 @@ class Deserializer {
                 subSecondInNanos += NS_PER_SECOND;
 
                 // Subtract one second from the second value because we added one second
-                second -= 1;
+                if (subSecondInNanos >= NS_PER_MILLIS) {
+                  second -= 2;
+                } else {
+                  second -= 1;
+                }
               }
               timestampColumnVector.time[i] = second * MILLIS_PER_SECOND;
               timestampColumnVector.nanos[i] = subSecondInNanos;

@@ -679,6 +679,9 @@ public class VectorRandomRowSource {
             if (supportedTypes == SupportedTypes.ALL_EXCEPT_MAP) {
               typeNum--;
             }
+            if (supportedTypes == SupportedTypes.ALL_EXCEPT_MAP_UNION) {
+              typeNum -= 2;
+            }
           }
         }
         if (typeNum < possibleHivePrimitiveTypeNames.length) {

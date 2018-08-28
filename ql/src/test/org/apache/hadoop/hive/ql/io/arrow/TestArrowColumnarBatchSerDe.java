@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.io.arrow;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -59,16 +58,12 @@ import org.apache.hadoop.io.Text;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -290,9 +285,7 @@ public class TestArrowColumnarBatchSerDe {
                 TimestampWritableV2 source = (TimestampWritableV2) row[fieldIndex];
                 TimestampWritableV2 deserialized =
                     (TimestampWritableV2) deserializedRow[fieldIndex];
-                long sourceMilli = source.getTimestamp().toEpochMilli();
-                long deserializedMilli = deserialized.getTimestamp().toEpochMilli();
-                assertEquals(sourceMilli, deserializedMilli);
+                assertEquals(source.getTimestamp().toEpochMilli(), deserialized.getTimestamp().toEpochMilli());
                 break;
               }
               case INTERVAL_DAY_TIME: {
@@ -337,9 +330,9 @@ public class TestArrowColumnarBatchSerDe {
   @Test
   public void testRandom() throws SerDeException {
     Random random = new Random(3);
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 100; i++) {
       VectorRandomRowSource source = new VectorRandomRowSource();
-      source.init(random, VectorRandomRowSource.SupportedTypes.ALL_EXCEPT_MAP_UNION, 0);
+      source.init(random, VectorRandomRowSource.SupportedTypes.ALL_EXCEPT_MAP_UNION, 0, true, true);
       Object[][] rows = source.randomRows(100);
 
       ArrowColumnarBatchSerDe serDe = new ArrowColumnarBatchSerDe();
