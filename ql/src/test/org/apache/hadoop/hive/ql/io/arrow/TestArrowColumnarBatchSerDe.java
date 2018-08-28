@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -66,9 +67,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class TestArrowColumnarBatchSerDe {
   private Configuration conf;
@@ -255,85 +254,93 @@ public class TestArrowColumnarBatchSerDe {
     if (serialized == null) {
       serialized = serDe.serialize(null, rowOI);
     }
-    String s = serialized.getVectorSchemaRoot().contentToTSVString();
     final Object[][] deserializedRows = (Object[][]) serDe.deserialize(serialized);
 
     for (int rowIndex = 0; rowIndex < Math.min(deserializedRows.length, rows.length); rowIndex++) {
       final Object[] row = rows[rowIndex];
       final Object[] deserializedRow = deserializedRows[rowIndex];
-      assertEquals(row.length, deserializedRow.length);
+      compareStruct(row, Arrays.asList(deserializedRow), rowOI);
+    }
+  }
 
-      final List<? extends StructField> fields = rowOI.getAllStructFieldRefs();
-      for (int fieldIndex = 0; fieldIndex < fields.size(); fieldIndex++) {
-        final StructField field = fields.get(fieldIndex);
-        final ObjectInspector fieldObjInspector = field.getFieldObjectInspector();
-        if (row[fieldIndex] == null && deserializedRow[fieldIndex] == null) {
-          continue;
-        }
-        switch (fieldObjInspector.getCategory()) {
-          case PRIMITIVE:
-            final PrimitiveObjectInspector primitiveObjInspector =
-                (PrimitiveObjectInspector) fieldObjInspector;
-            switch (primitiveObjInspector.getPrimitiveCategory()) {
-              case STRING:
-              case VARCHAR:
-              case CHAR:
-                assertEquals(Objects.toString(row[fieldIndex]),
-                    Objects.toString(deserializedRow[fieldIndex]));
-                break;
-              case TIMESTAMP: {
-                TimestampWritableV2 source = (TimestampWritableV2) row[fieldIndex];
-                TimestampWritableV2 deserialized =
-                    (TimestampWritableV2) deserializedRow[fieldIndex];
-                assertEquals(source.getTimestamp().toEpochMilli(), deserialized.getTimestamp().toEpochMilli());
-                break;
-              }
-              case INTERVAL_DAY_TIME: {
-                HiveIntervalDayTimeWritable source =
-                    (HiveIntervalDayTimeWritable) row[fieldIndex];
-                HiveIntervalDayTimeWritable deserialized =
-                    (HiveIntervalDayTimeWritable) deserializedRow[fieldIndex];
-                assertEquals(source.getHiveIntervalDayTime().getTotalSeconds(),
-                    deserialized.getHiveIntervalDayTime().getTotalSeconds());
-                assertEquals(source.getHiveIntervalDayTime().getNanos() / 1_000_000,
-                    deserialized.getHiveIntervalDayTime().getNanos() / 1_000_000);
-                break;
-              }
-              default:
-                assertEquals(row[fieldIndex], deserializedRow[fieldIndex]);
-                break;
-            }
-            break;
-          case STRUCT:
-            final Object[] rowStruct;
-            if (row[fieldIndex] instanceof ArrayList) {
-              rowStruct = ((ArrayList) row[fieldIndex]).toArray();
-            } else {
-              rowStruct = (Object[]) row[fieldIndex];
-            }
-            final List deserializedRowStruct = (List) deserializedRow[fieldIndex];
-            if (rowStruct == null) {
-              assertNull(deserializedRowStruct);
-            } else {
-              assertArrayEquals(rowStruct, deserializedRowStruct.toArray());
-            }
-            break;
-          case LIST:
-          case UNION:
-            assertEquals(row[fieldIndex], deserializedRow[fieldIndex]);
-            break;
-        }
+  private void compareStruct(Object struct, List deserializedStruct,
+      StructObjectInspector structObjectInspector) {
+    final List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
+    for (int fieldIndex = 0; fieldIndex < fields.size(); fieldIndex++) {
+      final StructField field = fields.get(fieldIndex);
+      final ObjectInspector fieldObjInspector = field.getFieldObjectInspector();
+      final Object value = structObjectInspector.getStructFieldData(struct, field);
+      final Object deserializedValue = deserializedStruct.get(fieldIndex);
+      compare(value, deserializedValue, fieldObjInspector);
+    }
+  }
+
+  private void compareList(Object list, List deserializedList,
+      ListObjectInspector listObjInspector) {
+    int length = listObjInspector.getListLength(list);
+    ObjectInspector elementObjInspector = listObjInspector.getListElementObjectInspector();
+    for (int i = 0; i < length; i++) {
+      Object value = listObjInspector.getListElement(list, i);
+      Object deserializedValue = deserializedList.get(i);
+      compare(value, deserializedValue, elementObjInspector);
+    }
+  }
+
+  private void compare(Object value, Object deserializedValue, ObjectInspector objInspector) {
+    if (value == null && deserializedValue == null) {
+      return;
+    }
+    switch (objInspector.getCategory()) {
+      case PRIMITIVE:
+        comparePrimitive(value, deserializedValue, (PrimitiveObjectInspector) objInspector);
+        break;
+      case STRUCT:
+        compareStruct(value, (List) deserializedValue, (StructObjectInspector) objInspector);
+        break;
+      case LIST:
+        compareList(value, (List) deserializedValue, (ListObjectInspector) objInspector);
+        break;
+    }
+  }
+
+  private void comparePrimitive(Object value, Object deserializedValue,
+      PrimitiveObjectInspector primitiveObjInspector) {
+    switch (primitiveObjInspector.getPrimitiveCategory()) {
+      case STRING:
+      case VARCHAR:
+      case CHAR:
+        assertEquals(Objects.toString(value), Objects.toString(deserializedValue));
+        break;
+      case TIMESTAMP: {
+        Timestamp source = ((TimestampWritableV2) value).getTimestamp();
+        Timestamp deserialized = ((TimestampWritableV2) deserializedValue).getTimestamp();
+        assertEquals(source.toEpochMilli(), deserialized.toEpochMilli());
+        break;
       }
+      case INTERVAL_DAY_TIME: {
+        HiveIntervalDayTime source =
+            ((HiveIntervalDayTimeWritable) value).getHiveIntervalDayTime();
+        HiveIntervalDayTime deserialized =
+            ((HiveIntervalDayTimeWritable) deserializedValue).getHiveIntervalDayTime();
+        assertEquals(source.getTotalSeconds(), deserialized.getTotalSeconds());
+        assertEquals(source.getNanos() / ArrowColumnarBatchSerDe.NS_PER_MILLIS,
+            deserialized.getNanos() / ArrowColumnarBatchSerDe.NS_PER_MILLIS);
+        break;
+      }
+      default:
+        assertEquals(value, deserializedValue);
+        break;
     }
   }
 
   @Test
   public void testRandom() throws SerDeException {
     Random random = new Random(3);
+    int numRows = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE);
     for (int i = 0; i < 100; i++) {
       VectorRandomRowSource source = new VectorRandomRowSource();
-      source.init(random, VectorRandomRowSource.SupportedTypes.ALL_EXCEPT_MAP_UNION, 0, true, true);
-      Object[][] rows = source.randomRows(100);
+      source.init(random, VectorRandomRowSource.SupportedTypes.ALL_EXCEPT_MAP_UNION, 4, true, true);
+      Object[][] rows = source.randomRows(numRows);
 
       ArrowColumnarBatchSerDe serDe = new ArrowColumnarBatchSerDe();
       StructObjectInspector structObjectInspector = initSerDe(serDe, source.typeInfos());

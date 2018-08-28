@@ -652,7 +652,7 @@ public class VectorRandomRowSource {
             maxTypeNum = possibleHivePrimitiveTypeNames.length;
             break;
           case ALL_EXCEPT_MAP:
-            maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNamesWithoutMap.length - 1;
+            maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNamesWithoutMap.length;
             break;
           case ALL_EXCEPT_MAP_UNION:
             maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNamesWithoutMapUnion.length;
