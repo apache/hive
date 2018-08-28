@@ -19,7 +19,9 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:hbasedb
 POSTHOOK: Output: hbaseDB@hbase_table_0
 Found 3 items
-#### A masked pattern was here ####
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: DROP DATABASE IF EXISTS hbaseDB CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:hbasedb
@@ -30,5 +32,5 @@ POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:hbasedb
 POSTHOOK: Output: database:hbasedb
 POSTHOOK: Output: hbasedb@hbase_table_0
-#### A masked pattern was here ####
+Command -ls hdfs://### HDFS PATH ### failed with exit code = 1
 Query returned non-zero code: 1, cause: null
