@@ -27,9 +27,6 @@ import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAssignRow;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -219,30 +216,6 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
       default:
         throw new IllegalArgumentException();
     }
-  }
-
-  static ListTypeInfo toStructListTypeInfo(MapTypeInfo mapTypeInfo) {
-    final StructTypeInfo structTypeInfo = new StructTypeInfo();
-    structTypeInfo.setAllStructFieldNames(Lists.newArrayList("keys", "values"));
-    structTypeInfo.setAllStructFieldTypeInfos(Lists.newArrayList(
-        mapTypeInfo.getMapKeyTypeInfo(), mapTypeInfo.getMapValueTypeInfo()));
-    final ListTypeInfo structListTypeInfo = new ListTypeInfo();
-    structListTypeInfo.setListElementTypeInfo(structTypeInfo);
-    return structListTypeInfo;
-  }
-
-  static ListColumnVector toStructListVector(MapColumnVector mapVector) {
-    final StructColumnVector structVector =
-        new StructColumnVector(mapVector.childCount, mapVector.keys, mapVector.values);
-    final ListColumnVector structListVector =
-        new ListColumnVector(mapVector.isNull.length, structVector);
-    structListVector.isRepeating = mapVector.isRepeating;
-    structListVector.noNulls = mapVector.noNulls;
-
-    System.arraycopy(mapVector.offsets, 0, structListVector.offsets, 0, mapVector.offsets.length);
-    System.arraycopy(mapVector.lengths, 0, structListVector.lengths, 0, mapVector.lengths.length);
-    System.arraycopy(mapVector.isNull, 0, structListVector.isNull, 0, mapVector.isNull.length);
-    return structListVector;
   }
 
   @Override
