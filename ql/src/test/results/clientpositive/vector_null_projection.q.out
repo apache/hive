@@ -135,14 +135,14 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    keys: null (type: void)
+                    keys: true (type: boolean)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: void)
+                      key expressions: _col0 (type: boolean)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: void)
+                      Map-reduce partition columns: _col0 (type: boolean)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b_n4
@@ -154,14 +154,14 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    keys: null (type: void)
+                    keys: true (type: boolean)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: void)
+                      key expressions: _col0 (type: boolean)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: void)
+                      Map-reduce partition columns: _col0 (type: boolean)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
       Map Vectorization:
           enabled: false
@@ -172,7 +172,7 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: void)
+          keys: KEY._col0 (type: boolean)
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
