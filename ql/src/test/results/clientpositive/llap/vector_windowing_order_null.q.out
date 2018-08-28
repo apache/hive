@@ -113,16 +113,28 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
-                vectorized: false
+                reduceColumnNullOrder: aza
+                reduceColumnSortOrder: +++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:string, KEY.reducesinkkey2:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey2 (type: bigint), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col2, _col3, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 2, 1]
                 Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -143,16 +155,39 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorStreamingLongSum]
+                      functionInputExpressions: [col 2:bigint]
+                      functionNames: [sum]
+                      keyInputColumns: [0, 2, 1]
+                      native: true
+                      nonKeyInputColumns: []
+                      orderExpressions: [col 1:string, col 2:bigint]
+                      outputColumns: [3, 0, 2, 1]
+                      outputTypes: [bigint, int, bigint, string]
+                      partitionExpressions: [col 0:int]
+                      streamingColumns: [3]
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: int), _col7 (type: string), _col3 (type: bigint), sum_window_0 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3]
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                     Limit
                       Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
                       Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
                         Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -245,16 +280,28 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
-                vectorized: false
+                reduceColumnNullOrder: aaa
+                reduceColumnSortOrder: ++-
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:double, KEY.reducesinkkey1:string, KEY.reducesinkkey2:float
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey2 (type: float), KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col4, _col5, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [2, 0, 1]
                 Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -275,16 +322,39 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorStreamingDoubleSum]
+                      functionInputExpressions: [col 2:float]
+                      functionNames: [sum]
+                      keyInputColumns: [2, 0, 1]
+                      native: true
+                      nonKeyInputColumns: []
+                      orderExpressions: [col 1:string, col 2:float]
+                      outputColumns: [3, 2, 0, 1]
+                      outputTypes: [double, float, double, string]
+                      partitionExpressions: [col 0:double]
+                      streamingColumns: [3]
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col5 (type: double), _col7 (type: string), _col4 (type: float), sum_window_0 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3]
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                     Limit
                       Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
                       Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
                         Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat

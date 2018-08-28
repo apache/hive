@@ -38,13 +38,20 @@ public class VectorPTFEvaluatorCountStar extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch) {
     // No input expression for COUNT(*).
     // evaluateInputExpr(batch);
 
     // Count all rows.
 
     count += batch.size;
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

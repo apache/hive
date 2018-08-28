@@ -228,6 +228,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -2823,6 +2824,18 @@ public class Vectorizer implements PhysicalPlanResolver {
         setOperatorIssue(functionName + " only UNBOUNDED start frame is supported");
         return false;
       }
+      List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
+      final boolean isSingleParameter =
+          (exprNodeDescList != null &&
+          exprNodeDescList.size() == 1);
+      final ExprNodeDesc singleExprNodeDesc =
+          (isSingleParameter ? exprNodeDescList.get(0) : null);
+      final TypeInfo singleTypeInfo =
+          (isSingleParameter ? singleExprNodeDesc.getTypeInfo() : null);
+      final PrimitiveCategory singlePrimitiveCategory =
+          (singleTypeInfo instanceof PrimitiveTypeInfo ?
+              ((PrimitiveTypeInfo) singleTypeInfo).getPrimitiveCategory() : null);
+
       switch (windowFrameDef.getWindowType()) {
       case RANGE:
         if (!windowFrameDef.getEnd().isCurrentRow()) {
@@ -2831,54 +2844,69 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
         break;
       case ROWS:
-        if (!windowFrameDef.isEndUnbounded()) {
-          setOperatorIssue(functionName + " UNBOUNDED end frame is not supported for ROWS window type");
-          return false;
+        {
+          boolean isRowEndCurrent =
+              (windowFrameDef.getEnd().isCurrentRow() &&
+              (supportedFunctionType == SupportedFunctionType.AVG ||
+               supportedFunctionType == SupportedFunctionType.MAX ||
+               supportedFunctionType == SupportedFunctionType.MIN ||
+               supportedFunctionType == SupportedFunctionType.SUM) &&
+              isSingleParameter &&
+              singlePrimitiveCategory != null);
+          if (!isRowEndCurrent && !windowFrameDef.isEndUnbounded()) {
+            setOperatorIssue(
+                functionName + " UNBOUNDED end frame is required for ROWS window type");
+            return false;
+          }
         }
         break;
       default:
         throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
       }
-      List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
-      if (exprNodeDescList != null && exprNodeDescList.size() > 1) {
-        setOperatorIssue("More than 1 argument expression of aggregation function " + functionName);
-        return false;
-      }
-      if (exprNodeDescList != null) {
-        ExprNodeDesc exprNodeDesc = exprNodeDescList.get(0);
 
-        if (containsLeadLag(exprNodeDesc)) {
-          setOperatorIssue("lead and lag function not supported in argument expression of aggregation function " + functionName);
-          return false;
-        }
+      // RANK/DENSE_RANK don't care about columns.
+      if (supportedFunctionType != SupportedFunctionType.RANK &&
+          supportedFunctionType != SupportedFunctionType.DENSE_RANK) {
 
-        if (supportedFunctionType != SupportedFunctionType.COUNT &&
-            supportedFunctionType != SupportedFunctionType.DENSE_RANK &&
-            supportedFunctionType != SupportedFunctionType.RANK) {
-
-          // COUNT, DENSE_RANK, and RANK do not care about column types.  The rest do.
-          TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
-          Category category = typeInfo.getCategory();
-          boolean isSupportedType;
-          if (category != Category.PRIMITIVE) {
-            isSupportedType = false;
-          } else {
-            ColumnVector.Type colVecType =
-                VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
-            switch (colVecType) {
-            case LONG:
-            case DOUBLE:
-            case DECIMAL:
-              isSupportedType = true;
-              break;
-            default:
-              isSupportedType = false;
-              break;
-            }
-          }
-          if (!isSupportedType) {
-            setOperatorIssue(typeInfo.getTypeName() + " data type not supported in argument expression of aggregation function " + functionName);
+        if (exprNodeDescList != null) {
+          if (exprNodeDescList.size() > 1) {
+            setOperatorIssue("More than 1 argument expression of aggregation function " + functionName);
             return false;
+          }
+
+          ExprNodeDesc exprNodeDesc = exprNodeDescList.get(0);
+
+          if (containsLeadLag(exprNodeDesc)) {
+            setOperatorIssue("lead and lag function not supported in argument expression of aggregation function " + functionName);
+            return false;
+          }
+
+          if (supportedFunctionType != SupportedFunctionType.COUNT) {
+
+            // COUNT does not care about column types.  The rest do.
+            TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
+            Category category = typeInfo.getCategory();
+            boolean isSupportedType;
+            if (category != Category.PRIMITIVE) {
+              isSupportedType = false;
+            } else {
+              ColumnVector.Type colVecType =
+                  VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+              switch (colVecType) {
+              case LONG:
+              case DOUBLE:
+              case DECIMAL:
+                isSupportedType = true;
+                break;
+              default:
+                isSupportedType = false;
+                break;
+              }
+            }
+            if (!isSupportedType) {
+              setOperatorIssue(typeInfo.getTypeName() + " data type not supported in argument expression of aggregation function " + functionName);
+              return false;
+            }
           }
         }
       }

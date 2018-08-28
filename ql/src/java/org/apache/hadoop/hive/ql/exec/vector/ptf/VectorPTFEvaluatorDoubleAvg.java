@@ -45,7 +45,8 @@ public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -117,12 +118,19 @@ public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
         sum += varSum;
       }
     }
+  }
 
-    if (isLastGroupBatch) {
-      if (!isGroupResultNull) {
-        avg = sum / nonNullGroupCount;
-      }
+  @Override
+  public void doLastBatchWork() {
+    if (!isGroupResultNull) {
+      avg = sum / nonNullGroupCount;
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

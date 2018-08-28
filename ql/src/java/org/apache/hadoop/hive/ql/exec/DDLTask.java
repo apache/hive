@@ -672,7 +672,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int createResourcePlan(Hive db, CreateResourcePlanDesc createResourcePlanDesc)
       throws HiveException {
     db.createResourcePlan(createResourcePlanDesc.getResourcePlan(),
-        createResourcePlanDesc.getCopyFromName());
+        createResourcePlanDesc.getCopyFromName(), createResourcePlanDesc.getIfNotExists());
     return 0;
   }
 
@@ -782,7 +782,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int dropResourcePlan(Hive db, DropResourcePlanDesc desc) throws HiveException {
-    db.dropResourcePlan(desc.getRpName());
+    db.dropResourcePlan(desc.getRpName(), desc.getIfExists());
     return 0;
   }
 
@@ -4839,7 +4839,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     catch (AlreadyExistsException ex) {
       //it would be better if AlreadyExistsException had an errorCode field....
-      throw new HiveException(ex, ErrorMsg.DATABSAE_ALREADY_EXISTS, crtDb.getName());
+      throw new HiveException(ex, ErrorMsg.DATABASE_ALREADY_EXISTS, crtDb.getName());
     }
     return 0;
   }

@@ -41,7 +41,8 @@ public class VectorPTFEvaluatorLongMax extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -109,6 +110,12 @@ public class VectorPTFEvaluatorLongMax extends VectorPTFEvaluatorBase {
         max = varMax;
       }
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

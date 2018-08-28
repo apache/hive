@@ -27,11 +27,13 @@ public class DropResourcePlanDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1258596919510047766L;
 
   private String rpName;
+  private boolean ifExists;
 
   public DropResourcePlanDesc() {}
 
-  public DropResourcePlanDesc(String rpName) {
+  public DropResourcePlanDesc(String rpName, boolean ifExists) {
     this.setRpName(rpName);
+    this.setIfExists(ifExists);
   }
 
   @Explain(displayName="resourcePlanName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -39,8 +41,18 @@ public class DropResourcePlanDesc extends DDLDesc implements Serializable {
     return rpName;
   }
 
+  @Explain(displayName="ifExists", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+      displayOnlyOnTrue = true)
+  public boolean getIfExists() {
+    return ifExists;
+  }
+
   public void setRpName(String rpName) {
     this.rpName = rpName;
+  }
+
+  public void setIfExists(boolean ifExists) {
+    this.ifExists = ifExists;
   }
 
 }

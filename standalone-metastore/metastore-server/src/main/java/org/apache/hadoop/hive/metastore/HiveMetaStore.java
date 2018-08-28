@@ -1862,7 +1862,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
         if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
-            !MetaStoreServerUtils.isView(tbl)) {
+            !MetaStoreUtils.isView(tbl)) {
           MetaStoreServerUtils.updateTableStatsSlow(db, tbl, wh, madeDir, false, envContext);
         }
 
@@ -3804,7 +3804,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             updateStatsTbl = !Boolean.valueOf(tblParams.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
         }
         if (!MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) ||
-            MetaStoreServerUtils.isView(tbl) ||
+            MetaStoreUtils.isView(tbl) ||
             !updateStatsTbl) {
           return false;
         }
@@ -7456,7 +7456,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
-            throws MetaException, NoSuchObjectException {
+            throws TException {
       Table tableObj = getTblObject(rqst.getDb(), rqst.getTable());
       Partition ptnObj = getPartitionObj(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals(), tableObj);
       addTxnWriteNotificationLog(tableObj, ptnObj, rqst);

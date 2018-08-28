@@ -245,46 +245,6 @@ public class MetaStoreUtils {
     return "TRUE".equalsIgnoreCase(tableParams.get(prop));
   }
 
-  // check if stats need to be (re)calculated
-  public static boolean requireCalStats(Partition oldPart,
-                                        Partition newPart, Table tbl,
-                                        EnvironmentContext environmentContext) {
-
-    if (environmentContext != null
-        && environmentContext.isSetProperties()
-        && StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(
-            StatsSetupConst.DO_NOT_UPDATE_STATS))) {
-      return false;
-    }
-
-    if (MetaStoreServerUtils.isView(tbl)) {
-      return false;
-    }
-
-    if  (oldPart == null && newPart == null) {
-      return true;
-    }
-
-    // requires to calculate stats if new partition doesn't have it
-    if ((newPart == null) || (newPart.getParameters() == null)
-        || !MetaStoreServerUtils.containsAllFastStats(newPart.getParameters())) {
-      return true;
-    }
-
-    if (environmentContext != null && environmentContext.isSetProperties()) {
-      String statsType = environmentContext.getProperties().get(StatsSetupConst.STATS_GENERATED);
-      // no matter STATS_GENERATED is USER or TASK, all need to re-calculate the stats:
-      // USER: alter table .. update statistics
-      // TASK: from some sql operation which could collect and compute stats
-      if (StatsSetupConst.TASK.equals(statsType) || StatsSetupConst.USER.equals(statsType)) {
-        return true;
-      }
-    }
-
-    // requires to calculate stats if new and old have different fast stats
-    return !MetaStoreServerUtils.isFastStatsSame(oldPart, newPart);
-  }
-
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
   public static boolean isInsertOnlyTableParam(Map<String, String> params) {
@@ -939,4 +899,10 @@ public class MetaStoreUtils {
     return catName;
   }
 
+  public static boolean isView(Table table) {
+    if (table == null) {
+      return false;
+    }
+    return TableType.VIRTUAL_VIEW.toString().equals(table.getTableType());
+  }
 }

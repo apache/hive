@@ -26,8 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -65,6 +63,8 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.junit.Assert;
 import org.junit.Test;
+
+import junit.framework.TestCase;
 
 /**
  * TestOperators.
@@ -442,6 +442,7 @@ public class TestOperators extends TestCase {
     ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
     long defaultNoConditionalTaskSize = 1024L * 1024L * 1024L;
     HiveConf hiveConf = new HiveConf();
+    hiveConf.setLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD, defaultNoConditionalTaskSize);
 
     LlapClusterStateForCompile llapInfo = null;
     if ("llap".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
@@ -449,8 +450,8 @@ public class TestOperators extends TestCase {
       llapInfo.initClusterInfo();
     }
     // execution mode not set, null is returned
-    assertEquals(defaultNoConditionalTaskSize, convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize,
-      hiveConf, llapInfo).getAdjustedNoConditionalTaskSize());
+    assertEquals(defaultNoConditionalTaskSize,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getAdjustedNoConditionalTaskSize());
     hiveConf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "llap");
 
     if ("llap".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
@@ -464,7 +465,7 @@ public class TestOperators extends TestCase {
     int maxSlots = 3;
     long expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * maxSlots));
     assertEquals(expectedSize,
-      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf, llapInfo)
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo)
         .getAdjustedNoConditionalTaskSize());
 
     // num executors is less than max executors per query (which is not expected case), default executors will be
@@ -473,18 +474,18 @@ public class TestOperators extends TestCase {
     hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "5");
     expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * chosenSlots));
     assertEquals(expectedSize,
-      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf, llapInfo)
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo)
         .getAdjustedNoConditionalTaskSize());
 
     // disable memory checking
     hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL.varname, "0");
     assertFalse(
-      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf, llapInfo).doMemoryMonitoring());
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).doMemoryMonitoring());
 
     // invalid inflation factor
     hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL.varname, "10000");
     hiveConf.set(HiveConf.ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR.varname, "0.0f");
     assertFalse(
-      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf, llapInfo).doMemoryMonitoring());
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).doMemoryMonitoring());
   }
 }

@@ -43637,7 +43637,11 @@ class add_write_notification_log_args:
    - rqst
   """
 
-  thrift_spec = None
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'rqst', (WriteNotificationLogRequest, WriteNotificationLogRequest.thrift_spec), None, ), # 1
+  )
+
   def __init__(self, rqst=None,):
     self.rqst = rqst
 
@@ -43650,7 +43654,7 @@ class add_write_notification_log_args:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-      if fid == -1:
+      if fid == 1:
         if ftype == TType.STRUCT:
           self.rqst = WriteNotificationLogRequest()
           self.rqst.read(iprot)
@@ -43667,7 +43671,7 @@ class add_write_notification_log_args:
       return
     oprot.writeStructBegin('add_write_notification_log_args')
     if self.rqst is not None:
-      oprot.writeFieldBegin('rqst', TType.STRUCT, -1)
+      oprot.writeFieldBegin('rqst', TType.STRUCT, 1)
       self.rqst.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

@@ -15,26 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.metastore.tools;
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions;
+/**
+ * Common constants for metastore tools.
+ */
+public final class Constants {
+  static final String OPT_HOST = "host";
+  static final String OPT_PORT = "port";
+  static final String OPT_DATABASE = "database";
+  static final String OPT_CONF = "conf";
+  static final String OPT_VERBOSE = "verbose";
+  static final int HMS_DEFAULT_PORT = 8093;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-
-// cast string group to string (varchar to string, etc.)
-public class CastStringGroupToString extends StringUnaryUDFDirect {
-
-  private static final long serialVersionUID = 1L;
-
-  public CastStringGroupToString() {
-    super();
-  }
-
-  public CastStringGroupToString(int inputColumn, int outputColumnNum) {
-    super(inputColumn, outputColumnNum);
-  }
-
-  @Override
-  protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length, int i) {
-    outV.setVal(i, vector[i], start[i], length[i]);
-  }
+  // Disable object construction
+  private Constants() {}
 }

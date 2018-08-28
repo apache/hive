@@ -47,7 +47,7 @@ select key,value from srcbucket_mapjoin_n18;
 analyze table tab1_n5 compute statistics for columns;
 
 -- A negative test as src is not bucketed.
-set hive.auto.convert.join.noconditionaltask.size=20000;
+set hive.auto.convert.join.noconditionaltask.size=12000;
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select a.key, a.value, b.value
@@ -98,7 +98,7 @@ insert overwrite table tab_part1 partition (ds='2008-04-08')
 select key,value from srcbucket_mapjoin_part_n20;
 analyze table tab_part1 compute statistics for columns;
 
-set hive.auto.convert.join.noconditionaltask.size=20000;
+set hive.auto.convert.join.noconditionaltask.size=12000;
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select count(*)
@@ -138,3 +138,22 @@ explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c
 set test.comment=External tables, bucket map join should be disabled;
 set test.comment;
 explain select a.key, b.key from tab_part_ext a join tab_part_ext c on a.key = c.key join tab_part_ext b on a.value = b.value;
+
+-- HIVE-20187 : Must not create BMJ
+create table my_fact(AMT decimal(20,3),bucket_col string ,join_col string )
+PARTITIONED BY (FISCAL_YEAR string ,ACCOUNTING_PERIOD string )
+CLUSTERED BY (bucket_col) INTO 10
+BUCKETS
+stored as ORC
+;
+create table my_dim(join_col string,filter_col string) stored as orc;
+
+INSERT INTO my_dim VALUES("1", "VAL1"), ("2", "VAL2"), ("3", "VAL3"), ("4", "VAL4");
+INSERT OVERWRITE TABLE my_fact PARTITION(FISCAL_YEAR="2015", ACCOUNTING_PERIOD="20") VALUES(1.11, "20", "1"), (1.11, "20", "1"), (1.12, "20", "2"), (1.12, "20", "3"), (1.12, "11", "3"), (1.12, "9", "3");
+
+explain  extended
+select bucket_col, my_dim.join_col as account1,my_fact.accounting_period
+FROM my_fact JOIN my_dim ON my_fact.join_col = my_dim.join_col
+WHERE my_fact.fiscal_year = '2015'
+AND my_dim.filter_col IN ( 'VAL1', 'VAL2' )
+and my_fact.accounting_period in (10);

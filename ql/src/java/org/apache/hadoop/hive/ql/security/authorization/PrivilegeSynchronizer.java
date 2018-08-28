@@ -44,19 +44,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * PrivilegeSynchonizer defines a thread to synchronize privileges from
+ * PrivilegeSynchronizer defines a thread to synchronize privileges from
  * external authorizer to Hive metastore.
  */
-public class PrivilegeSynchonizer implements Runnable {
+public class PrivilegeSynchronizer implements Runnable {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PrivilegeSynchonizer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PrivilegeSynchronizer.class);
   public static final String GRANTOR = "ranger";
   private IMetaStoreClient hiveClient;
-  private LeaderLatch privilegeSynchonizerLatch;
+  private LeaderLatch privilegeSynchronizerLatch;
   private HiveConf hiveConf;
   private PolicyProviderContainer policyProviderContainer;
 
-  public PrivilegeSynchonizer(LeaderLatch privilegeSynchonizerLatch,
+  public PrivilegeSynchronizer(LeaderLatch privilegeSynchronizerLatch,
       PolicyProviderContainer policyProviderContainer, HiveConf hiveConf) {
     this.hiveConf = new HiveConf(hiveConf);
     this.hiveConf.set(MetastoreConf.ConfVars.FILTER_HOOK.getVarname(), DefaultMetaStoreFilterHookImpl.class.getName());
@@ -65,7 +65,7 @@ public class PrivilegeSynchonizer implements Runnable {
     } catch (Exception e) {
       throw new RuntimeException("Error creating HiveMetastoreClient", e);
     }
-    this.privilegeSynchonizerLatch = privilegeSynchonizerLatch;
+    this.privilegeSynchronizerLatch = privilegeSynchronizerLatch;
     this.policyProviderContainer = policyProviderContainer;
     this.hiveConf = hiveConf;
   }
@@ -169,7 +169,7 @@ public class PrivilegeSynchonizer implements Runnable {
         for (HivePolicyProvider policyProvider : policyProviderContainer) {
           LOG.info("Start synchronize privilege " + policyProvider.getClass().getName());
           String authorizer = policyProvider.getClass().getSimpleName();
-          if (!privilegeSynchonizerLatch.await(interval, TimeUnit.SECONDS)) {
+          if (!privilegeSynchronizerLatch.await(interval, TimeUnit.SECONDS)) {
             LOG.info("Not selected as leader, skip");
             continue;
           }
@@ -214,11 +214,14 @@ public class PrivilegeSynchonizer implements Runnable {
           LOG.info("Success synchronize privilege " + policyProvider.getClass().getName() + ":" + numDb + " databases, "
                   + numTbl + " tables");
         }
-        // Wait if no exception happens, otherwise, retry immediately
-        LOG.info("Wait for " + interval + " seconds");
-        Thread.sleep(interval * 1000);
       } catch (Exception e) {
         LOG.error("Error initializing PrivilegeSynchronizer: " + e.getMessage(), e);
+      }
+      LOG.info("Wait for " + interval + " seconds");
+      try {
+        Thread.sleep(interval * 1000);
+      } catch (InterruptedException e) {
+        // do nothing
       }
     }
   }
