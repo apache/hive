@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 
 import org.apache.hadoop.hive.ql.MetaStoreDumpUtility;
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -63,9 +64,18 @@ public class CorePerfCliDriver extends CliAdapter{
     String cleanupScript = cliConfig.getCleanupScript();
     try {
       String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, hiveConfDir,
-          hadoopVer, initScript,
-          cleanupScript, false, null);
+
+      qt = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(hiveConfDir)
+            .withHadoopVer(hadoopVer)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(false)
+            .build());
 
       // do a one time initialization
       qt.newSession();
