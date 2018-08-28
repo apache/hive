@@ -21,6 +21,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
@@ -37,29 +38,25 @@ public class HBaseQTestUtil extends QTestUtil {
   /** A handle to this harness's cluster */
   private final Connection conn;
 
-  private HBaseTestSetup hbaseSetup = null;
-
   public HBaseQTestUtil(
     String outDir, String logDir, MiniClusterType miniMr, HBaseTestSetup setup,
     String initScript, String cleanupScript)
     throws Exception {
 
-    super(outDir, logDir, miniMr, null, "0.20", initScript, cleanupScript, false);
-    hbaseSetup = setup;
-    hbaseSetup.preTest(conf);
+    super(
+        QTestArguments.QTestArgumentsBuilder.instance()
+          .withOutDir(outDir)
+          .withLogDir(logDir)
+          .withClusterType(miniMr)
+          .withConfDir(null)
+          .withHadoopVer("0.20")
+          .withInitScript(initScript)
+          .withCleanupScript(cleanupScript)
+          .withLlapIo(false)
+          .withQTestSetup(setup)
+          .build());
+
     this.conn = setup.getConnection();
-    super.init();
-  }
-
-  @Override
-  public void init() throws Exception {
-    // defer
-  }
-
-  @Override
-  protected void initConfFromSetup() throws Exception {
-    super.initConfFromSetup();
-    hbaseSetup.preTest(conf);
   }
 
   @Override
@@ -105,9 +102,4 @@ public class HBaseQTestUtil extends QTestUtil {
     }
   }
 
-  @Override
-  public void clearTestSideEffects() throws Exception {
-    super.clearTestSideEffects();
-    hbaseSetup.preTest(conf);
-  }
 }
