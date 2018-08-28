@@ -3757,10 +3757,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } else if (isSrcLocal) {
       destFs.copyFromLocalFile(sourcePath, destFilePath);
     } else {
-      FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
+      if (!FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
           true,   // delete source
           false,  // overwrite destination
-          conf);
+          conf)) {
+        LOG.error("Copy failed for source: " + sourcePath + " to destination: " + destFilePath);
+        throw new IOException("File copy failed.");
+      }
     }
     return destFilePath;
   }
