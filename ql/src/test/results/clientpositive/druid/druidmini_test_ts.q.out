@@ -1,103 +1,52 @@
-PREHOOK: query: CREATE TABLE druid_table_test_ts
-STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
-TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
-AS
-SELECT `ctimestamp1` as `__time`,
-  cstring1,
-  cstring2,
-  cdouble,
-  cfloat,
-  ctinyint,
-  csmallint,
-  cint,
-  cbigint,
-  cboolean1,
-  cboolean2
-  FROM alltypesorc where ctimestamp1 IS NOT NULL
-PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: database:default
-PREHOOK: Output: default@druid_table_test_ts
-POSTHOOK: query: CREATE TABLE druid_table_test_ts
-STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
-TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
-AS
-SELECT `ctimestamp1` as `__time`,
-  cstring1,
-  cstring2,
-  cdouble,
-  cfloat,
-  ctinyint,
-  csmallint,
-  cint,
-  cbigint,
-  cboolean1,
-  cboolean2
-  FROM alltypesorc where ctimestamp1 IS NOT NULL
-POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@druid_table_test_ts
-POSTHOOK: Lineage: druid_table_test_ts.__time SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: druid_table_test_ts.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: SELECT count(*) FROM druid_table_test_ts
+PREHOOK: query: SELECT count(*) FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT count(*) FROM druid_table_test_ts
+POSTHOOK: query: SELECT count(*) FROM druid_table_alltypesorc
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 6105
 PREHOOK: query: SELECT floor_year(`__time`), SUM(cfloat), SUM(cdouble), SUM(ctinyint), SUM(csmallint),SUM(cint), SUM(cbigint)
-FROM druid_table_test_ts GROUP BY floor_year(`__time`)
+FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT floor_year(`__time`), SUM(cfloat), SUM(cdouble), SUM(ctinyint), SUM(csmallint),SUM(cint), SUM(cbigint)
-FROM druid_table_test_ts GROUP BY floor_year(`__time`)
+FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-01-01 00:00:00	-39590.24724686146	2.7308662809692383E7	-39967	7781089	1408069801800	10992545287
+1969-01-01 00:00:00.0 US/Pacific	-39590.24724686146	2.7308662809692383E7	-39967	7781089	1408069801800	10992545287
 PREHOOK: query: SELECT floor_year(`__time`), MIN(cfloat), MIN(cdouble), MIN(ctinyint), MIN(csmallint),MIN(cint), MIN(cbigint)
-FROM druid_table_test_ts GROUP BY floor_year(`__time`)
+FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT floor_year(`__time`), MIN(cfloat), MIN(cdouble), MIN(ctinyint), MIN(csmallint),MIN(cint), MIN(cbigint)
-FROM druid_table_test_ts GROUP BY floor_year(`__time`)
+FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-01-01 00:00:00	-1790.7781	-308691.84375	2	14255	-1073279343	-8577981133
+1969-01-01 00:00:00.0 US/Pacific	-1790.7781	-308691.84375	2	14255	-1073279343	-8577981133
 PREHOOK: query: SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
-FROM druid_table_test_ts GROUP BY floor_year(`__time`)
+FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
-FROM druid_table_test_ts GROUP BY floor_year(`__time`)
+FROM druid_table_alltypesorc GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-01-01 00:00:00	769.16394	1.9565518E7	-45	-8101	1276572707	4923772860
-PREHOOK: query: SELECT cstring1, SUM(cdouble) as s FROM druid_table_test_ts GROUP BY cstring1 ORDER BY s ASC LIMIT 10
+1969-01-01 00:00:00.0 US/Pacific	769.16394	1.9565518E7	-45	-8101	1276572707	4923772860
+PREHOOK: query: SELECT cstring1, SUM(cdouble) as s FROM druid_table_alltypesorc GROUP BY cstring1 ORDER BY s ASC LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT cstring1, SUM(cdouble) as s FROM druid_table_test_ts GROUP BY cstring1 ORDER BY s ASC LIMIT 10
+POSTHOOK: query: SELECT cstring1, SUM(cdouble) as s FROM druid_table_alltypesorc GROUP BY cstring1 ORDER BY s ASC LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1cGVWH7n1QU	-596096.6875
 821UdmGbkEf4j	-14161.827026367188
@@ -109,13 +58,13 @@ yv1js	0.0
 02vDyIVT752	0.0
 00PafC7v	0.0
 ytpx1RL8F2I	0.0
-PREHOOK: query: SELECT cstring2, MAX(cdouble) FROM druid_table_test_ts GROUP BY cstring2 ORDER BY cstring2 ASC LIMIT 10
+PREHOOK: query: SELECT cstring2, MAX(cdouble) FROM druid_table_alltypesorc GROUP BY cstring2 ORDER BY cstring2 ASC LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT cstring2, MAX(cdouble) FROM druid_table_test_ts GROUP BY cstring2 ORDER BY cstring2 ASC LIMIT 10
+POSTHOOK: query: SELECT cstring2, MAX(cdouble) FROM druid_table_alltypesorc GROUP BY cstring2 ORDER BY cstring2 ASC LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	1.9565518E7
 0034fkcXMQI3	15601.0
@@ -128,146 +77,146 @@ NULL	1.9565518E7
 017fFeQ3Gcsa83Xj2Vo0	0.0
 01EfkvNk6mjG44uxs	0.0
 PREHOOK: query: SELECT `__time`
-FROM druid_table_test_ts ORDER BY `__time` ASC LIMIT 10
+FROM druid_table_alltypesorc ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
-FROM druid_table_test_ts ORDER BY `__time` ASC LIMIT 10
+FROM druid_table_alltypesorc ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
 PREHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` < '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` < '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
 PREHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
 PREHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
 PREHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
 PREHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
     OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table_test_ts
+PREHOOK: Input: default@druid_table_alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
     OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table_test_ts
+POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
-1969-12-31 15:59:00
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
 PREHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -278,25 +227,25 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc
-            druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp)
+            expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` < '2012-03-01 00:00:00'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` < '2012-03-01 00:00:00'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -308,25 +257,25 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc
-            druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["1900-01-01T00:00:00.000Z/2012-03-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/2012-03-01T08:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp)
+            expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -338,26 +287,26 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc
-            druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["2010-01-01T00:00:00.000Z/2012-03-01T00:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["2010-01-01T08:00:00.000Z/2012-03-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp)
+            expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00'
 POSTHOOK: type: QUERY
@@ -370,25 +319,25 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc
-            druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["2010-01-01T00:00:00.000Z/2011-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["2010-01-01T08:00:00.000Z/2011-01-01T08:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp)
+            expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -400,26 +349,26 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc
-            druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["2010-01-01T00:00:00.000Z/2011-01-01T00:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["2010-01-01T08:00:00.000Z/2011-01-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp)
+            expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2012-01-01 00:00:00' AND '2013-01-01 00:00:00')
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2012-01-01 00:00:00' AND '2013-01-01 00:00:00')
 POSTHOOK: type: QUERY
@@ -432,26 +381,26 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc
-            druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["2010-01-01T00:00:00.000Z/2011-01-01T00:00:00.001Z","2012-01-01T00:00:00.000Z/2013-01-01T00:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["2010-01-01T08:00:00.000Z/2011-01-01T08:00:00.001Z","2012-01-01T08:00:00.000Z/2013-01-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp)
+            expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2010-06-01 00:00:00' AND '2012-01-01 00:00:00')
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2010-06-01 00:00:00' AND '2012-01-01 00:00:00')
 POSTHOOK: type: QUERY
@@ -464,25 +413,25 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc
-            druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["2010-01-01T00:00:00.000Z/2012-01-01T00:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["2010-01-01T08:00:00.000Z/2012-01-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp)
+            expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -494,25 +443,25 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc
-            druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["2010-01-01T00:00:00.000Z/2010-01-01T00:00:00.001Z","2011-01-01T00:00:00.000Z/2011-01-01T00:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["2010-01-01T08:00:00.000Z/2010-01-01T08:00:00.001Z","2011-01-01T08:00:00.000Z/2011-01-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp)
+            expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`, cstring2
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE cstring2 = 'user1' AND `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`, cstring2
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE cstring2 = 'user1' AND `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -524,25 +473,25 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc,vc0
-            druid.fieldTypes timestamp,string
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["2010-01-01T00:00:00.000Z/2010-01-01T00:00:00.001Z","2011-01-01T00:00:00.000Z/2011-01-01T00:00:00.001Z"],"filter":{"type":"selector","dimension":"cstring2","value":"user1"},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"'user1'","outputType":"STRING"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone,string
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["2010-01-01T08:00:00.000Z/2010-01-01T08:00:00.001Z","2011-01-01T08:00:00.000Z/2011-01-01T08:00:00.001Z"],"filter":{"type":"selector","dimension":"cstring2","value":"user1"},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"'user1'","outputType":"STRING"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp), vc0 (type: string)
+            expressions: vc (type: timestamp with local time zone), vc0 (type: string)
             outputColumnNames: _col0, _col1
             ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`, cstring2
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE cstring2 = 'user1' OR `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT `__time`, cstring2
-FROM druid_table_test_ts
+FROM druid_table_alltypesorc
 WHERE cstring2 = 'user1' OR `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -554,14 +503,14 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_test_ts
+          alias: druid_table_alltypesorc
           properties:
             druid.fieldNames vc,cstring2
-            druid.fieldTypes timestamp,string
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_test_ts","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"or","fields":[{"type":"selector","dimension":"cstring2","value":"user1"},{"type":"selector","dimension":"__time","value":"2010-01-01T00:00:00.000Z","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"selector","dimension":"__time","value":"2011-01-01T00:00:00.000Z","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","cstring2"],"resultFormat":"compactedList"}
+            druid.fieldTypes timestamp with local time zone,string
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"or","fields":[{"type":"selector","dimension":"cstring2","value":"user1"},{"type":"selector","dimension":"__time","value":"2010-01-01T08:00:00.000Z","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"selector","dimension":"__time","value":"2011-01-01T08:00:00.000Z","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","cstring2"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: timestamp), cstring2 (type: string)
+            expressions: vc (type: timestamp with local time zone), cstring2 (type: string)
             outputColumnNames: _col0, _col1
             ListSink
 

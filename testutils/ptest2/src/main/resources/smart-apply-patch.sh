@@ -90,5 +90,12 @@ fi
 
 echo Going to apply patch with: git apply -p$PLEVEL
 git apply -p$PLEVEL -3 $PATCH_FILE
+ret=$?
 
-cleanup $?
+# Fail if patch was empty
+if [[ -z $(git status --porcelain) ]]; then
+  echo "The patch had no effect. Was this change committed in another patch? Are you using the correct branch?"
+  cleanup 1
+fi
+
+cleanup $ret

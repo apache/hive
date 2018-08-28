@@ -79,7 +79,10 @@ import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
 import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.security.DBTokenStore;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.security.MemoryTokenStore;
+import org.apache.hadoop.hive.metastore.security.ZooKeeperTokenStore;
 import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.MachineList;
@@ -105,6 +108,7 @@ public class MetaStoreServerUtils {
       return org.apache.commons.lang.StringUtils.defaultString(string);
     }
   };
+  private static final String DELEGATION_TOKEN_STORE_CLS = "hive.cluster.delegation.token.store.class";
 
   /**
    * We have a need to sanity-check the map before conversion from persisted objects to
@@ -345,13 +349,6 @@ public class MetaStoreServerUtils {
    */
   public static boolean validateColumnName(String name) {
     return true;
-  }
-
-  public static boolean isView(Table table) {
-    if (table == null) {
-      return false;
-    }
-    return TableType.VIRTUAL_VIEW.toString().equals(table.getTableType());
   }
 
   /**
@@ -904,6 +901,80 @@ public class MetaStoreServerUtils {
 
   private static boolean isValidTypeChar(char c) {
     return Character.isLetterOrDigit(c) || c == '_';
+  }
+
+  // check if stats need to be (re)calculated
+  public static boolean requireCalStats(Partition oldPart,
+                                        Partition newPart, Table tbl,
+                                        EnvironmentContext environmentContext) {
+
+    if (environmentContext != null
+        && environmentContext.isSetProperties()
+        && StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(
+            StatsSetupConst.DO_NOT_UPDATE_STATS))) {
+      return false;
+    }
+
+    if (MetaStoreUtils.isView(tbl)) {
+      return false;
+    }
+
+    if  (oldPart == null && newPart == null) {
+      return true;
+    }
+
+    // requires to calculate stats if new partition doesn't have it
+    if ((newPart == null) || (newPart.getParameters() == null)
+        || !containsAllFastStats(newPart.getParameters())) {
+      return true;
+    }
+
+    if (environmentContext != null && environmentContext.isSetProperties()) {
+      String statsType = environmentContext.getProperties().get(StatsSetupConst.STATS_GENERATED);
+      // no matter STATS_GENERATED is USER or TASK, all need to re-calculate the stats:
+      // USER: alter table .. update statistics
+      // TASK: from some sql operation which could collect and compute stats
+      if (StatsSetupConst.TASK.equals(statsType) || StatsSetupConst.USER.equals(statsType)) {
+        return true;
+      }
+    }
+
+    // requires to calculate stats if new and old have different fast stats
+    return !isFastStatsSame(oldPart, newPart);
+  }
+
+  /**
+   * This method should be used to return the metastore specific tokenstore class name to main
+   * backwards compatibility
+   *
+   * @param conf - HiveConf object
+   * @return the tokenStoreClass name from the HiveConf. It maps the hive specific tokenstoreclass
+   *         name to metastore module specific class name. For eg:
+   *         hive.cluster.delegation.token.store.class is set to
+   *         org.apache.hadoop.hive.thrift.MemoryTokenStore it returns the equivalent tokenstore
+   *         class defined in the metastore module which is
+   *         org.apache.hadoop.hive.metastore.security.MemoryTokenStore Similarly,
+   *         org.apache.hadoop.hive.thrift.DBTokenStore maps to
+   *         org.apache.hadoop.hive.metastore.security.DBTokenStore and
+   *         org.apache.hadoop.hive.thrift.ZooKeeperTokenStore maps to
+   *         org.apache.hadoop.hive.metastore.security.ZooKeeperTokenStore
+   */
+  public static String getTokenStoreClassName(Configuration conf) {
+    String tokenStoreClass = conf.get(DELEGATION_TOKEN_STORE_CLS, "");
+    if (StringUtils.isBlank(tokenStoreClass)) {
+      // default tokenstore is MemoryTokenStore
+      return MemoryTokenStore.class.getName();
+    }
+    switch (tokenStoreClass) {
+    case "org.apache.hadoop.hive.thrift.DBTokenStore":
+      return DBTokenStore.class.getName();
+    case "org.apache.hadoop.hive.thrift.MemoryTokenStore":
+      return MemoryTokenStore.class.getName();
+    case "org.apache.hadoop.hive.thrift.ZooKeeperTokenStore":
+      return ZooKeeperTokenStore.class.getName();
+    default:
+      return tokenStoreClass;
+    }
   }
 
   // ColumnStatisticsObj with info about its db, table, partition (if table is partitioned)
