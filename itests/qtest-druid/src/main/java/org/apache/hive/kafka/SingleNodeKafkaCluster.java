@@ -51,6 +51,9 @@ public class SingleNodeKafkaCluster extends AbstractService {
     properties.setProperty("host.name", LOCALHOST);
     properties.setProperty("port", Integer.toString(BROKER_PORT));
     properties.setProperty("log.dir", logDir);
+    // This property is very important, we are sending form records with a specific time
+    // Thus need to make sure that they don't get DELETED
+    properties.setProperty("log.retention.hours", String.valueOf(Integer.MAX_VALUE));
     properties.setProperty("log.flush.interval.messages", String.valueOf(1));
     properties.setProperty("offsets.topic.replication.factor", String.valueOf(1));
     properties.setProperty("offsets.topic.num.partitions", String.valueOf(1));
@@ -120,10 +123,10 @@ public class SingleNodeKafkaCluster extends AbstractService {
       // 1534736225090 -> 08/19/2018 20:37:05
       IntStream.range(0, events.size())
           .mapToObj(i -> new ProducerRecord<>(topic,
-              null,
+              0,
               // 1534736225090 -> Mon Aug 20 2018 03:37:05
               1534736225090L + 1000 * 3600 * i,
-              "key".getBytes(),
+              ("key-" + i).getBytes(),
               events.get(i)))
           .forEach(r -> producer.send(r));
     }
