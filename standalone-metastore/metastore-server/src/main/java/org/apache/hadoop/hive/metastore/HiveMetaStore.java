@@ -2708,13 +2708,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (!transactionalListeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                 EventType.ALTER_PARTITION,
-                new AlterPartitionEvent(partition, partition, table, true, true, this));
+                new AlterPartitionEvent(partition, partition, table, true, true,
+                        writeId, this));
       }
 
       if (!listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners,
                 EventType.ALTER_PARTITION,
-                new AlterPartitionEvent(partition, partition, table, true, true, this));
+                new AlterPartitionEvent(partition, partition, table, true, true,
+                        writeId, this));
       }
 
       if (writeId > 0) {
@@ -2740,13 +2742,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!transactionalListeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventType.ALTER_TABLE,
-                    new AlterTableEvent(table, table, true, true, this));
+                    new AlterTableEvent(table, table, true, true,
+                            writeId, this));
           }
 
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                     EventType.ALTER_TABLE,
-                    new AlterTableEvent(table, table, true, true, this));
+                    new AlterTableEvent(table, table, true, true,
+                            writeId, this));
           }
 
           // TODO: this should actually pass thru and set writeId for txn stats.
@@ -4919,7 +4923,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
           MetaStoreListenerNotifier.notifyEvent(listeners,
                                                 EventType.ALTER_PARTITION,
-                                                new AlterPartitionEvent(oldPart, new_part, table, false, true, this),
+                                                new AlterPartitionEvent(oldPart, new_part, table, false,
+                                                        true, new_part.getWriteId(), this),
                                                 envContext);
         }
       } catch (InvalidObjectException e) {
@@ -5019,7 +5024,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                                                   EventType.ALTER_PARTITION,
-                                                  new AlterPartitionEvent(oldTmpPart, tmpPart, table, false, true, this));
+                                                  new AlterPartitionEvent(oldTmpPart, tmpPart, table, false,
+                                                   true, writeId, this));
           }
         }
       } catch (InvalidObjectException e) {

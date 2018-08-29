@@ -39,7 +39,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   String isTruncateOp;
 
   @JsonProperty
-  Long timestamp;
+  Long timestamp, writeId;
 
   @JsonProperty
   Map<String, String> keyValues;
@@ -54,7 +54,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   }
 
   public JSONAlterPartitionMessage(String server, String servicePrincipal, Table tableObj,
-      Partition partitionObjBefore, Partition partitionObjAfter, boolean isTruncateOp, Long timestamp) {
+      Partition partitionObjBefore, Partition partitionObjAfter, boolean isTruncateOp, Long writeId, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = tableObj.getDbName();
@@ -63,6 +63,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
     this.isTruncateOp = Boolean.toString(isTruncateOp);
     this.timestamp = timestamp;
     this.keyValues = JSONMessageFactory.getPartitionKeyValues(tableObj, partitionObjBefore);
+    this.writeId = writeId;
     try {
       this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
       this.partitionObjBeforeJson = JSONMessageFactory.createPartitionObjJson(partitionObjBefore);
@@ -140,6 +141,11 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   public String getPartitionObjAfterJson() {
     return partitionObjAfterJson;
+  }
+
+  @Override
+  public Long getWriteId() {
+    return writeId;
   }
 
   @Override
