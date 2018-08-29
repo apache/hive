@@ -532,13 +532,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven.surefire.version}</version>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <forkCount>${test.forkcount}</forkCount>
           <argLine>-Xmx2048m</argLine>
-          <failIfNoTests>false</failIfNoTests>
           <systemPropertyVariables>
             <build.dir>${project.build.directory}</build.dir>
             <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>
