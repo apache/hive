@@ -293,10 +293,10 @@ public class SharedCache {
         PartitionWrapper wrapper =
             partitionCache.remove(CacheUtils.buildPartitionCacheKey(partVal));
         isPartitionCacheDirty.set(true);
+        part = CacheUtils.assemble(wrapper, sharedCache);
         if (wrapper.getSdHash() != null) {
           sharedCache.decrSd(wrapper.getSdHash());
         }
-        part = CacheUtils.assemble(wrapper, sharedCache);
         // Remove col stats
         String partialKey = CacheUtils.buildPartitionCacheKey(partVal);
         Iterator<Entry<String, ColumnStatisticsObj>> iterator =
@@ -461,7 +461,11 @@ public class SharedCache {
     public void removeTableColStats(String colName) {
       try {
         tableLock.writeLock().lock();
-        tableColStatsCache.remove(colName);
+        if (colName == null) {
+          tableColStatsCache.clear();
+        } else {
+          tableColStatsCache.remove(colName);
+        }
         isTableColStatsCacheDirty.set(true);
       } finally {
         tableLock.writeLock().unlock();
