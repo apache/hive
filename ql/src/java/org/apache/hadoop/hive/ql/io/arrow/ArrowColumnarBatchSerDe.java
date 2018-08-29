@@ -218,6 +218,16 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
     }
   }
 
+  static ListTypeInfo toStructListTypeInfo(MapTypeInfo mapTypeInfo) {
+    final StructTypeInfo structTypeInfo = new StructTypeInfo();
+    structTypeInfo.setAllStructFieldNames(Lists.newArrayList("keys", "values"));
+    structTypeInfo.setAllStructFieldTypeInfos(Lists.newArrayList(
+        mapTypeInfo.getMapKeyTypeInfo(), mapTypeInfo.getMapValueTypeInfo()));
+    final ListTypeInfo structListTypeInfo = new ListTypeInfo();
+    structListTypeInfo.setListElementTypeInfo(structTypeInfo);
+    return structListTypeInfo;
+  }
+
   @Override
   public Class<? extends Writable> getSerializedClass() {
     return ArrowWrapperWritable.class;

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.arrow;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -61,6 +62,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -314,7 +316,9 @@ public class TestArrowColumnarBatchSerDe {
       case TIMESTAMP: {
         Timestamp source = ((TimestampWritableV2) value).getTimestamp();
         Timestamp deserialized = ((TimestampWritableV2) deserializedValue).getTimestamp();
-        assertEquals(source.toEpochMilli(), deserialized.toEpochMilli());
+        assertEquals(source.toSqlTimestamp().getTime(), deserialized.toSqlTimestamp().getTime());
+        assertEquals(source.getNanos() / ArrowColumnarBatchSerDe.NS_PER_MICROS,
+            deserialized.getNanos() / ArrowColumnarBatchSerDe.NS_PER_MICROS);
         break;
       }
       case INTERVAL_DAY_TIME: {
@@ -356,13 +360,17 @@ public class TestArrowColumnarBatchSerDe {
         {"datatypes.c3", "double"},
         {"datatypes.c4", "string"},
         {"datatypes.c5", "array<int>"},
+        {"datatypes.c6", "map<int,string>"},
+        {"datatypes.c7", "map<string,string>"},
         {"datatypes.c8", "struct<r:string,s:int,t:double>"},
         {"datatypes.c9", "tinyint"},
         {"datatypes.c10", "smallint"},
         {"datatypes.c11", "float"},
         {"datatypes.c12", "bigint"},
         {"datatypes.c13", "array<array<string>>"},
+        {"datatypes.c14", "map<int,map<int,int>>"},
         {"datatypes.c15", "struct<r:int,s:struct<a:int,b:string>>"},
+        {"datatypes.c16", "array<struct<m:map<string,string>,n:int>>"},
         {"datatypes.c17", "timestamp"},
         {"datatypes.c18", "decimal(16,7)"},
         {"datatypes.c19", "binary"},
@@ -379,6 +387,12 @@ public class TestArrowColumnarBatchSerDe {
             doubleW(0), // c3:double
             text("Hello"), // c4:string
             newArrayList(intW(0), intW(1), intW(2)), // c5:array<int>
+            Maps.toMap(
+                newArrayList(intW(0), intW(1), intW(2)),
+                input -> text("Number " + input)), // c6:map<int,string>
+            Maps.toMap(
+                newArrayList(text("apple"), text("banana"), text("carrot")),
+                input -> text(input.toString().toUpperCase())), // c7:map<string,string>
             new Object[] {text("0"), intW(1), doubleW(2)}, // c8:struct<r:string,s:int,t:double>
             byteW(0), // c9:tinyint
             shortW(0), // c10:smallint
@@ -387,11 +401,22 @@ public class TestArrowColumnarBatchSerDe {
             newArrayList(
                 newArrayList(text("a"), text("b"), text("c")),
                 newArrayList(text("A"), text("B"), text("C"))), // c13:array<array<string>>
+            Maps.toMap(
+                newArrayList(intW(0), intW(1), intW(2)),
+                x -> Maps.toMap(
+                    newArrayList(x, intW(x.get() * 2)),
+                    y -> y)), // c14:map<int,map<int,int>>
             new Object[] {
                 intW(0),
                 newArrayList(
                     intW(1),
                     text("Hello"))}, // c15:struct<r:int,s:struct<a:int,b:string>>
+            Collections.singletonList(
+                newArrayList(
+                    Maps.toMap(
+                        newArrayList(text("hello")),
+                        input -> text(input.toString().toUpperCase())),
+                    intW(0))), // c16:array<struct<m:map<string,string>,n:int>>
             new TimestampWritableV2(TIMESTAMP), // c17:timestamp
             decimalW(HiveDecimal.create(0, 0)), // c18:decimal(16,7)
             new BytesWritable("Hello".getBytes()), // c19:binary
@@ -401,7 +426,8 @@ public class TestArrowColumnarBatchSerDe {
             new BytesWritable("world!".getBytes()), // c23:binary
         }, {
             null, null, null, null, null, null, null, null, null, null, // c1-c10
-            null, null, null, null, null, null, null, null, null, // c21-c23
+            null, null, null, null, null, null, null, null, null, null, // c11-c20
+            null, null, null, // c21-c23
         }
     };
 

@@ -34,6 +34,7 @@ import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.holders.NullableIntervalDayHolder;
 import org.apache.arrow.vector.types.Types;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
@@ -62,12 +65,14 @@ import org.apache.hadoop.io.Writable;
 import java.util.List;
 
 import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MICROS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MICROS_PER_SECOND;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MILLIS_PER_SECOND;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MICROS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_SECOND;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.SECOND_PER_DAY;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStructListTypeInfo;
 
 class Deserializer {
   private final ArrowColumnarBatchSerDe serDe;
@@ -132,13 +137,15 @@ class Deserializer {
       case LIST:
         readList(arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo);
         break;
+      case MAP:
+        readMap(arrowVector, (MapColumnVector) hiveVector, (MapTypeInfo) typeInfo);
+        break;
       case STRUCT:
         readStruct(arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo);
         break;
       case UNION:
         readUnion(arrowVector, (UnionColumnVector) hiveVector, (UnionTypeInfo) typeInfo);
         break;
-      case MAP:
       default:
         throw new IllegalArgumentException();
     }
@@ -259,12 +266,8 @@ class Deserializer {
           }
         }
         break;
-      case TIMESTAMPMILLI:
-      case TIMESTAMPMILLITZ:
       case TIMESTAMPMICRO:
       case TIMESTAMPMICROTZ:
-      case TIMESTAMPNANO:
-      case TIMESTAMPNANOTZ:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -272,38 +275,19 @@ class Deserializer {
             } else {
               hiveVector.isNull[i] = false;
 
-              // Time = second + sub-second
-              final long time = ((TimeStampVector) arrowVector).get(i);
-              long second;
-              int subSecondInNanos;
-              switch (minorType) {
-                case TIMESTAMPMICROTZ:
-                case TIMESTAMPMICRO:
-                  {
-                    subSecondInNanos = (int) ((time % MICROS_PER_SECOND) * NS_PER_MICROS);
-                    second = time / MICROS_PER_SECOND;
-                  }
-                  break;
-                default:
-                  throw new IllegalArgumentException();
-              }
-
+              final long timeInMicros = ((TimeStampVector) arrowVector).get(i);
               final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
-              // A nanosecond value should not be negative
-              if (subSecondInNanos < 0) {
-
-                // So add one second to the negative nanosecond value to make it positive
-                subSecondInNanos += NS_PER_SECOND;
-
-                // Subtract one second from the second value because we added one second
-                if (subSecondInNanos >= NS_PER_MILLIS) {
-                  second -= 2;
-                } else {
-                  second -= 1;
+              long timeInMillis = timeInMicros / MICROS_PER_MILLIS;
+              int nanos = (int) (timeInMicros % MICROS_PER_SECOND) * NS_PER_MICROS;
+              if (nanos < 0) {
+                nanos += NS_PER_SECOND;
+                timeInMillis--;
+                if (nanos >= NS_PER_MILLIS) {
+                  timeInMillis -= MICROS_PER_MILLIS;
                 }
               }
-              timestampColumnVector.time[i] = second * MILLIS_PER_SECOND;
-              timestampColumnVector.nanos[i] = subSecondInNanos;
+              timestampColumnVector.time[i] = timeInMillis;
+              timestampColumnVector.nanos[i] = nanos;
             }
           }
         }
@@ -389,6 +373,28 @@ class Deserializer {
         hiveVector.lengths[i] = offsets.getInt((i + 1) * OFFSET_WIDTH) - offset;
       }
     }
+  }
+
+  private void readMap(FieldVector arrowVector, MapColumnVector hiveVector, MapTypeInfo typeInfo) {
+    final int size = arrowVector.getValueCount();
+    final int childSize = ((ListVector) arrowVector).getDataVector().getValueCount();
+    final ListTypeInfo mapStructListTypeInfo = toStructListTypeInfo(typeInfo);
+
+    final StructColumnVector mapStructVector =
+        new StructColumnVector(childSize, hiveVector.keys, hiveVector.values);
+    final ListColumnVector mapStructListVector =
+        new ListColumnVector(size, mapStructVector);
+
+    read(arrowVector, mapStructListVector, mapStructListTypeInfo);
+
+    hiveVector.isRepeating = mapStructListVector.isRepeating;
+    hiveVector.childCount = mapStructListVector.childCount;
+    hiveVector.noNulls = mapStructListVector.noNulls;
+    hiveVector.keys = mapStructVector.fields[0];
+    hiveVector.values = mapStructVector.fields[1];
+    System.arraycopy(mapStructListVector.offsets, 0, hiveVector.offsets, 0, size);
+    System.arraycopy(mapStructListVector.lengths, 0, hiveVector.lengths, 0, size);
+    System.arraycopy(mapStructListVector.isNull, 0, hiveVector.isNull, 0, size);
   }
 
   private void readStruct(FieldVector arrowVector, StructColumnVector hiveVector, StructTypeInfo typeInfo) {

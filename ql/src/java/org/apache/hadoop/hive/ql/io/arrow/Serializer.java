@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -83,6 +85,7 @@ import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MILLIS_
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MICROS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.SECOND_PER_DAY;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStructListTypeInfo;
 import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption.WRITABLE;
 import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils.getTypeInfoFromObjectInspector;
 
@@ -262,6 +265,7 @@ public class Serializer {
       case STRUCT:
         return ArrowType.Struct.INSTANCE;
       case MAP:
+        return ArrowType.List.INSTANCE;
       case UNION:
       default:
         throw new IllegalArgumentException();
@@ -283,9 +287,40 @@ public class Serializer {
       case UNION:
         writeUnion(arrowVector, hiveVector, typeInfo, size, vectorizedRowBatch, isNative);
         break;
+      case MAP:
+        writeMap((ListVector) arrowVector, (MapColumnVector) hiveVector, (MapTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
+        break;
       default:
         throw new IllegalArgumentException();
       }
+  }
+
+  private static void writeMap(ListVector arrowVector, MapColumnVector hiveVector,
+      MapTypeInfo typeInfo, int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
+
+    final ListTypeInfo structListTypeInfo = toStructListTypeInfo(typeInfo);
+    final StructColumnVector structVector =
+        new StructColumnVector(hiveVector.childCount, hiveVector.keys, hiveVector.values);
+    final ListColumnVector structListVector =
+        new ListColumnVector(hiveVector.isNull.length, structVector);
+
+    structListVector.childCount = hiveVector.childCount;
+    structListVector.isRepeating = hiveVector.isRepeating;
+    structListVector.noNulls = hiveVector.noNulls;
+    System.arraycopy(hiveVector.offsets, 0, structListVector.offsets, 0, hiveVector.isNull.length);
+    System.arraycopy(hiveVector.lengths, 0, structListVector.lengths, 0, hiveVector.isNull.length);
+    System.arraycopy(hiveVector.isNull, 0, structListVector.isNull, 0, hiveVector.isNull.length);
+
+    write(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative);
+
+    final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
+    for (int rowIndex = 0; rowIndex < size; rowIndex++) {
+      if (hiveVector.isNull[rowIndex]) {
+        BitVectorHelper.setValidityBit(validityBuffer, rowIndex, 0);
+      } else {
+        BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
+      }
+    }
   }
 
   private static void writeUnion(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo,
@@ -754,16 +789,10 @@ public class Serializer {
       -> {
     final TimeStampMicroTZVector timeStampMicroTZVector = (TimeStampMicroTZVector) arrowVector;
     final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
-    // Time = second + sub-second
-    final long secondInMillis = timestampColumnVector.getTime(j);
-    final long secondInMicros = (secondInMillis - secondInMillis % MILLIS_PER_SECOND) * MICROS_PER_MILLIS;
-    final long subSecondInMicros = timestampColumnVector.getNanos(j) / NS_PER_MICROS;
-    if ((secondInMillis > 0 && secondInMicros < 0) || (secondInMillis < 0 && secondInMicros > 0)) {
-      // If the timestamp cannot be represented in long microsecond, set it as a null value
-      timeStampMicroTZVector.setNull(i);
-    } else {
-      timeStampMicroTZVector.set(i, secondInMicros + subSecondInMicros);
-    }
+    final long timeInMicros = timestampColumnVector.time[j] / MICROS_PER_MILLIS
+        * MICROS_PER_MILLIS * MICROS_PER_MILLIS;
+    final long nanosInMicros = timestampColumnVector.nanos[j] / NS_PER_MICROS;
+    timeStampMicroTZVector.set(i, timeInMicros + nanosInMicros);
   };
 
   //binary
