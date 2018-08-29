@@ -334,7 +334,7 @@ public enum ErrorMsg {
       "A column on which a partition/table is list bucketed cannot be truncated."),
 
   TABLE_NOT_PARTITIONED(10241, "Table {0} is not a partitioned table", true),
-  DATABSAE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
+  DATABASE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
   CANNOT_REPLACE_COLUMNS(10243, "Replace columns is not supported for table {0}. SerDe may be incompatible.", true),
   BAD_LOCATION_VALUE(10244, "{0}  is not absolute.  Please specify a complete absolute uri."),
   UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported"),
@@ -467,7 +467,8 @@ public enum ErrorMsg {
     "insert-only transactional", true),
   LOAD_DATA_LAUNCH_JOB_IO_ERROR(10415, "Encountered I/O error while parsing rewritten load data into insert query"),
   LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
-
+  RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
+  RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
 
   //========================== 20000 range starts here ========================//
 
