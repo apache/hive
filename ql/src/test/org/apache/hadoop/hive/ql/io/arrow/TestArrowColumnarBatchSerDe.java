@@ -64,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
@@ -742,5 +743,82 @@ public class TestArrowColumnarBatchSerDe {
     };
 
     initAndSerializeAndDeserialize(schema, toStruct(BINARY_ROWS));
+  }
+
+  private Object[][] toMap(Object[][] rows) {
+    Map[][] array = new Map[rows.length][];
+    for (int rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      Object[] row = rows[rowIndex];
+      array[rowIndex] = new Map[row.length];
+      for (int fieldIndex = 0; fieldIndex < row.length; fieldIndex++) {
+        Map map = Maps.newHashMap();
+        map.put(new Text(String.valueOf(row[fieldIndex])), row[fieldIndex]);
+        array[rowIndex][fieldIndex] = map;
+      }
+    }
+    return array;
+  }
+
+  @Test
+  public void testMapInteger() throws SerDeException {
+    String[][] schema = {
+        {"tinyint_map", "map<string,tinyint>"},
+        {"smallint_map", "map<string,smallint>"},
+        {"int_map", "map<string,int>"},
+        {"bigint_map", "map<string,bigint>"},
+    };
+
+    initAndSerializeAndDeserialize(schema, toMap(INTEGER_ROWS));
+  }
+
+  @Test
+  public void testMapFloat() throws SerDeException {
+    String[][] schema = {
+        {"float_map", "map<string,float>"},
+        {"double_map", "map<string,double>"},
+    };
+
+    initAndSerializeAndDeserialize(schema, toMap(FLOAT_ROWS));
+  }
+
+  @Test
+  public void testMapString() throws SerDeException {
+    String[][] schema = {
+        {"string_map", "map<string,string>"},
+        {"char_map", "map<string,char(10)>"},
+        {"varchar_map", "map<string,varchar(10)>"},
+    };
+
+    initAndSerializeAndDeserialize(schema, toMap(STRING_ROWS));
+  }
+
+  @Test
+  public void testMapDTI() throws SerDeException {
+    String[][] schema = {
+        {"date_map", "map<string,date>"},
+        {"timestamp_map", "map<string,timestamp>"},
+        {"interval_year_month_map", "map<string,interval_year_month>"},
+        {"interval_day_time_map", "map<string,interval_day_time>"},
+    };
+
+    initAndSerializeAndDeserialize(schema, toMap(DTI_ROWS));
+  }
+
+  @Test
+  public void testMapBoolean() throws SerDeException {
+    String[][] schema = {
+        {"boolean_map", "map<string,boolean>"},
+    };
+
+    initAndSerializeAndDeserialize(schema, toMap(BOOLEAN_ROWS));
+  }
+
+  @Test
+  public void testMapBinary() throws SerDeException {
+    String[][] schema = {
+        {"binary_map", "map<string,binary>"},
+    };
+
+    initAndSerializeAndDeserialize(schema, toMap(BINARY_ROWS));
   }
 }
