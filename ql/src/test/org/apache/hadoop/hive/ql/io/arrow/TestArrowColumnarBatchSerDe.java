@@ -343,7 +343,7 @@ public class TestArrowColumnarBatchSerDe {
     int numRows = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE);
     for (int i = 0; i < 100; i++) {
       VectorRandomRowSource source = new VectorRandomRowSource();
-      source.init(random, VectorRandomRowSource.SupportedTypes.ALL_EXCEPT_MAP_UNION, 4, true, true);
+      source.init(random, VectorRandomRowSource.SupportedTypes.ALL_EXCEPT_UNION, 4, true, true);
       Object[][] rows = source.randomRows(numRows);
 
       ArrowColumnarBatchSerDe serDe = new ArrowColumnarBatchSerDe();

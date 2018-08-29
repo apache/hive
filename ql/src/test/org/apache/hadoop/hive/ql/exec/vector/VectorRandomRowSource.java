@@ -285,7 +285,7 @@ public class VectorRandomRowSource {
   }
 
   public enum SupportedTypes {
-    ALL, PRIMITIVES, ALL_EXCEPT_MAP, ALL_EXCEPT_MAP_UNION
+    ALL, PRIMITIVES, ALL_EXCEPT_MAP, ALL_EXCEPT_UNION
   }
 
   public void init(Random r, SupportedTypes supportedTypes, int maxComplexDepth, boolean allowNull,
@@ -394,7 +394,7 @@ public class VectorRandomRowSource {
           typeName = possibleHiveComplexTypeNamesWithoutMap[random.nextInt(
               possibleHiveComplexTypeNamesWithoutMap.length)];
           break;
-        case ALL_EXCEPT_MAP_UNION:
+        case ALL_EXCEPT_UNION:
           typeName = possibleHiveComplexTypeNamesWithoutUnion[random.nextInt(
               possibleHiveComplexTypeNamesWithoutUnion.length)];
           break;
@@ -610,7 +610,7 @@ public class VectorRandomRowSource {
             columnCount = possibleHivePrimitiveTypeNames.length +
                 possibleHiveComplexTypeNamesWithoutMap.length;
             break;
-          case ALL_EXCEPT_MAP_UNION:
+          case ALL_EXCEPT_UNION:
             columnCount = possibleHivePrimitiveTypeNames.length +
                 possibleHiveComplexTypeNamesWithoutUnion.length;
             break;
@@ -655,7 +655,7 @@ public class VectorRandomRowSource {
           case ALL_EXCEPT_MAP:
             maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNamesWithoutMap.length;
             break;
-          case ALL_EXCEPT_MAP_UNION:
+          case ALL_EXCEPT_UNION:
             maxTypeNum = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNamesWithoutUnion.length;
             break;
           case ALL:
@@ -680,7 +680,7 @@ public class VectorRandomRowSource {
             if (supportedTypes == SupportedTypes.ALL_EXCEPT_MAP) {
               typeNum--;
             }
-            if (supportedTypes == SupportedTypes.ALL_EXCEPT_MAP_UNION) {
+            if (supportedTypes == SupportedTypes.ALL_EXCEPT_UNION) {
               typeNum--;
             }
           }
@@ -697,7 +697,7 @@ public class VectorRandomRowSource {
               typeName = possibleHiveComplexTypeNamesWithoutMap[typeNum -
                   possibleHivePrimitiveTypeNames.length];
               break;
-            case ALL_EXCEPT_MAP_UNION:
+            case ALL_EXCEPT_UNION:
               typeName = possibleHiveComplexTypeNamesWithoutUnion[typeNum -
                   possibleHivePrimitiveTypeNames.length];
               break;
