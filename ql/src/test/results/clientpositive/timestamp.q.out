@@ -20,15 +20,15 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 1000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    keys: TIMESTAMP'2011-01-01 01:01:01' (type: timestamp)
+                    keys: true (type: boolean)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: timestamp)
+                      key expressions: _col0 (type: boolean)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: timestamp)
-                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map-reduce partition columns: _col0 (type: boolean)
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
           TableScan
             alias: src
@@ -40,22 +40,22 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 1000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    keys: TIMESTAMP'2011-01-01 01:01:01' (type: timestamp)
+                    keys: true (type: boolean)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: timestamp)
+                      key expressions: _col0 (type: boolean)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: timestamp)
-                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map-reduce partition columns: _col0 (type: boolean)
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: timestamp)
+          keys: KEY._col0 (type: boolean)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: TIMESTAMP'2011-01-01 01:01:01' (type: timestamp)
             outputColumnNames: _col0
@@ -108,15 +108,15 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 1000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    keys: TIMESTAMP'2011-01-01 01:01:01.123' (type: timestamp)
+                    keys: true (type: boolean)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: timestamp)
+                      key expressions: _col0 (type: boolean)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: timestamp)
-                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map-reduce partition columns: _col0 (type: boolean)
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
           TableScan
             alias: src
@@ -128,22 +128,22 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 1000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    keys: TIMESTAMP'2011-01-01 01:01:01.123' (type: timestamp)
+                    keys: true (type: boolean)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: timestamp)
+                      key expressions: _col0 (type: boolean)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: timestamp)
-                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map-reduce partition columns: _col0 (type: boolean)
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: timestamp)
+          keys: KEY._col0 (type: boolean)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: TIMESTAMP'2011-01-01 01:01:01.123' (type: timestamp)
             outputColumnNames: _col0

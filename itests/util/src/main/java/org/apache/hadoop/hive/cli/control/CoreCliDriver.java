@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -63,8 +64,18 @@ public class CoreCliDriver extends CliAdapter {
       qt = new ElapsedTimeLoggingWrapper<QTestUtil>() {
         @Override
         public QTestUtil invokeInternal() throws Exception {
-          return new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-              hiveConfDir, hadoopVer, initScript, cleanupScript, true, cliConfig.getFsType());
+          return new QTestUtil(
+              QTestArguments.QTestArgumentsBuilder.instance()
+                .withOutDir(cliConfig.getResultsDir())
+                .withLogDir(cliConfig.getLogDir())
+                .withClusterType(miniMR)
+                .withConfDir(hiveConfDir)
+                .withHadoopVer(hadoopVer)
+                .withInitScript(initScript)
+                .withCleanupScript(cleanupScript)
+                .withLlapIo(true)
+                .withFsType(cliConfig.getFsType())
+                .build());
         }
       }.invoke("QtestUtil instance created", LOG, true);
 

@@ -356,21 +356,21 @@ STAGE PLANS:
                 Statistics: Num rows: 10/10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(1)
-                  keys: 2 (type: int)
+                  keys: true (type: boolean)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1/1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int)
+                    key expressions: _col0 (type: boolean)
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
+                    Map-reduce partition columns: _col0 (type: boolean)
                     Statistics: Num rows: 1/1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
-          keys: KEY._col0 (type: int)
+          keys: KEY._col0 (type: boolean)
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1/1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -423,21 +423,21 @@ STAGE PLANS:
                 Statistics: Num rows: 1/1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(1)
-                  keys: 2 (type: int)
+                  keys: true (type: boolean)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1/1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int)
+                    key expressions: _col0 (type: boolean)
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
+                    Map-reduce partition columns: _col0 (type: boolean)
                     Statistics: Num rows: 1/1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
-          keys: KEY._col0 (type: int)
+          keys: KEY._col0 (type: boolean)
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1/1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
