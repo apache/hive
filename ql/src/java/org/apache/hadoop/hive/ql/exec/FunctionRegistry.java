@@ -1678,7 +1678,7 @@ public final class FunctionRegistry {
   }
 
   public static FunctionInfo registerPermanentFunction(String functionName,
-      String className, boolean registerToSession, FunctionResource[] resources) {
+      String className, boolean registerToSession, FunctionResource[] resources) throws SemanticException {
     return system.registerPermanentFunction(functionName, className, registerToSession, resources);
   }
 
