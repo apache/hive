@@ -211,12 +211,8 @@ public class Server {
             @FormParam("group") String group,
             @FormParam("permissions") String permissions)
     throws NotAuthorizedException, BusyException, BadParam,
-    ExecuteException, IOException {
-    verifyUser();
-    verifyParam(exec, "exec");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.run(getDoAsUser(), exec, false, group, permissions);
+    ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -228,15 +224,8 @@ public class Server {
   public Response listTables(@PathParam("db") String db,
                  @QueryParam("like") String tablePattern)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    if (!TempletonUtils.isset(tablePattern)) {
-      tablePattern = "*";
-    }
-    return d.listTables(getDoAsUser(), db, tablePattern);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -249,14 +238,8 @@ public class Server {
                 @PathParam("table") String table,
                 TableDesc desc)
     throws SimpleWebException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-    desc.table = table;
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.createTable(getDoAsUser(), db, desc);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -270,16 +253,8 @@ public class Server {
                   @PathParam("newTable") String newTable,
                   TableLikeDesc desc)
     throws SimpleWebException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(existingTable, ":existingTable");
-    verifyDdlParam(newTable, ":newTable");
-    desc.existingTable = existingTable;
-    desc.newTable = newTable;
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.createTableLike(getDoAsUser(), db, desc);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -294,18 +269,8 @@ public class Server {
                 @PathParam("table") String table,
                 @QueryParam("format") String format)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    if ("extended".equals(format)) {
-      return d.descExtendedTable(getDoAsUser(), db, table);
-    }
-    else {
-      return d.descTable(getDoAsUser(), db, table, false);
-    }
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -320,13 +285,8 @@ public class Server {
                 @QueryParam("group") String group,
                 @QueryParam("permissions") String permissions)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.dropTable(getDoAsUser(), db, table, ifExists, group, permissions);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -341,14 +301,8 @@ public class Server {
                 @FormParam("group") String group,
                 @FormParam("permissions") String permissions)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(oldTable, ":table");
-    verifyDdlParam(newTable, "rename");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.renameTable(getDoAsUser(), db, oldTable, newTable, group, permissions);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -361,14 +315,8 @@ public class Server {
                      @PathParam("table") String table,
                      @PathParam("property") String property)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-    verifyPropertyParam(property, ":property");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.descTableProperty(getDoAsUser(), db, table, property);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -380,13 +328,8 @@ public class Server {
   public Response listTableProperties(@PathParam("db") String db,
                     @PathParam("table") String table)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.listTableProperties(getDoAsUser(), db, table);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -400,15 +343,8 @@ public class Server {
                     @PathParam("property") String property,
                     TablePropertyDesc desc)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-    verifyPropertyParam(property, ":property");
-    desc.name = property;
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.addOneTableProperty(getDoAsUser(), db, table, desc);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -420,13 +356,8 @@ public class Server {
   public Response listPartitions(@PathParam("db") String db,
                    @PathParam("table") String table)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.listPartitions(getDoAsUser(), db, table);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -439,14 +370,8 @@ public class Server {
                   @PathParam("table") String table,
                   @PathParam("partition") String partition)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-    verifyParam(partition, ":partition");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.descOnePartition(getDoAsUser(), db, table, partition);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -460,14 +385,8 @@ public class Server {
                   @PathParam("partition") String partition,
                   PartitionDesc desc)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-    verifyParam(partition, ":partition");
-    desc.partition = partition;
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.addOnePartition(getDoAsUser(), db, table, desc);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -483,14 +402,8 @@ public class Server {
                   @QueryParam("group") String group,
                   @QueryParam("permissions") String permissions)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-    verifyParam(partition, ":partition");
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.dropPartition(getDoAsUser(), db, table, partition, ifExists,
-        group, permissions);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -501,14 +414,8 @@ public class Server {
   @Produces(MediaType.APPLICATION_JSON)
   public Response listDatabases(@QueryParam("like") String dbPattern)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    if (!TempletonUtils.isset(dbPattern)) {
-      dbPattern = "*";
-    }
-    return d.listDatabases(getDoAsUser(), dbPattern);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -520,11 +427,8 @@ public class Server {
   public Response descDatabase(@PathParam("db") String db,
                  @QueryParam("format") String format)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.descDatabase(getDoAsUser(), db, "extended".equals(format));
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -536,12 +440,8 @@ public class Server {
   public Response createDatabase(@PathParam("db") String db,
                    DatabaseDesc desc)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    desc.database = db;
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.createDatabase(getDoAsUser(), desc);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -556,15 +456,8 @@ public class Server {
                  @QueryParam("group") String group,
                  @QueryParam("permissions") String permissions)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    if (TempletonUtils.isset(option)) {
-      verifyDdlParam(option, "option");
-    }
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.dropDatabase(getDoAsUser(), db, ifExists, option,
-        group, permissions);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -577,13 +470,8 @@ public class Server {
   public Response listColumns(@PathParam("db") String db,
                 @PathParam("table") String table)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.listColumns(getDoAsUser(), db, table);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -596,14 +484,8 @@ public class Server {
                  @PathParam("table") String table,
                  @PathParam("column") String column)
     throws SimpleWebException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-    verifyParam(column, ":column");
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.descOneColumn(getDoAsUser(), db, table, column);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**
@@ -617,16 +499,8 @@ public class Server {
                  @PathParam("column") String column,
                  ColumnDesc desc)
     throws HcatException, NotAuthorizedException, BusyException,
-    BadParam, ExecuteException, IOException {
-    verifyUser();
-    verifyDdlParam(db, ":db");
-    verifyDdlParam(table, ":table");
-    verifyParam(column, ":column");
-    verifyParam(desc.type, "type");
-    desc.name = column;
-
-    HcatDelegator d = new HcatDelegator(appConf, execService);
-    return d.addOneColumn(getDoAsUser(), db, table, desc);
+    BadParam, ExecuteException, IOException, HttpGoneException {
+    throw new HttpGoneException("Hive DDL API is not supported anymore. Please use JDBC API");
   }
 
   /**

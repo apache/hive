@@ -144,8 +144,7 @@ public class TestWebHCatE2e {
   public void listDataBases() throws IOException {
     LOG.debug("+listDataBases()");
     MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/ddl/database", HTTP_METHOD_TYPE.GET);
-    Assert.assertEquals(p.getAssertMsg(), HttpStatus.OK_200, p.httpStatusCode);
-    Assert.assertEquals(p.getAssertMsg(), "{\"databases\":[\"default\"]}", p.responseBody);
+    Assert.assertEquals(p.getAssertMsg(), HttpStatus.GONE_410, p.httpStatusCode);
     LOG.debug("-listDataBases()");
   }
 
@@ -167,10 +166,7 @@ public class TestWebHCatE2e {
   public void dropTableNoSuchDB() throws IOException {
     MethodCallRetVal p = doHttpCall(templetonBaseUrl +
       "/ddl/database/no_such_db/table/t1", HTTP_METHOD_TYPE.DELETE);
-    Assert.assertEquals(p.getAssertMsg(), HttpStatus.NOT_FOUND_404, p.httpStatusCode);
-    Assert.assertEquals(p.getAssertMsg(),
-      ErrorMsg.DATABASE_NOT_EXISTS.getErrorCode(),
-      getErrorCode(p.responseBody));
+    Assert.assertEquals(p.getAssertMsg(), HttpStatus.GONE_410, p.httpStatusCode);
   }
 
   /**
@@ -182,8 +178,7 @@ public class TestWebHCatE2e {
     MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/ddl/database/no_such_db/table/t1",
       HTTP_METHOD_TYPE.DELETE, null, new NameValuePair[]
       {new NameValuePair("ifExists", "true")});
-    Assert.assertEquals(p.getAssertMsg(), HttpStatus.NOT_FOUND_404, p.httpStatusCode);
-    Assert.assertEquals(p.getAssertMsg(), ErrorMsg.DATABASE_NOT_EXISTS.getErrorCode(), getErrorCode(p.responseBody));
+    Assert.assertEquals(p.getAssertMsg(), HttpStatus.GONE_410, p.httpStatusCode);
   }
 
   /**
@@ -195,7 +190,7 @@ public class TestWebHCatE2e {
     MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/ddl/database/default/table/no_such_table",
       HTTP_METHOD_TYPE.DELETE, null, new NameValuePair[]
       {new NameValuePair("ifExists", "true")});
-    Assert.assertEquals(p.getAssertMsg(), HttpStatus.OK_200, p.httpStatusCode);
+    Assert.assertEquals(p.getAssertMsg(), HttpStatus.GONE_410, p.httpStatusCode);
   }
 
   @Ignore("not ready due to HIVE-4824")
@@ -209,7 +204,7 @@ public class TestWebHCatE2e {
     props.put("properties", props2);
     //{ "comment":"Hello there", "location":"file:///tmp/warehouse", "properties":{"a":"b"}}
     MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/ddl/database/newdb", HTTP_METHOD_TYPE.PUT, props, null);
-    Assert.assertEquals(p.getAssertMsg(), HttpStatus.OK_200, p.httpStatusCode);
+    Assert.assertEquals(p.getAssertMsg(), HttpStatus.GONE_410, p.httpStatusCode);
   }
 
   @Ignore("not ready due to HIVE-4824")
@@ -228,11 +223,11 @@ public class TestWebHCatE2e {
     format.put("storedAs", "rcfile");
     props.put("format", format);
     MethodCallRetVal createTbl = doHttpCall(templetonBaseUrl + "/ddl/database/default/table/test_table", HTTP_METHOD_TYPE.PUT, props, null);
-    Assert.assertEquals(createTbl.getAssertMsg(), HttpStatus.OK_200, createTbl.httpStatusCode);
+    Assert.assertEquals(createTbl.getAssertMsg(), HttpStatus.GONE_410, createTbl.httpStatusCode);
     LOG.info("createTable() resp: " + createTbl.responseBody);
 
     MethodCallRetVal descTbl = doHttpCall(templetonBaseUrl + "/ddl/database/default/table/test_table", HTTP_METHOD_TYPE.GET);
-    Assert.assertEquals(descTbl.getAssertMsg(), HttpStatus.OK_200, descTbl.httpStatusCode);
+    Assert.assertEquals(descTbl.getAssertMsg(), HttpStatus.GONE_410, descTbl.httpStatusCode);
   }
 
   @Ignore("not ready due to HIVE-4824")
@@ -240,11 +235,7 @@ public class TestWebHCatE2e {
   public void describeNoSuchTable() throws IOException {
     MethodCallRetVal p = doHttpCall(templetonBaseUrl +
       "/ddl/database/default/table/no_such_table", HTTP_METHOD_TYPE.GET);
-    Assert.assertEquals(p.getAssertMsg(), HttpStatus.NOT_FOUND_404,
-      p.httpStatusCode);
-    Assert.assertEquals(p.getAssertMsg(),
-      ErrorMsg.INVALID_TABLE.getErrorCode(),
-      getErrorCode(p.responseBody));
+    Assert.assertEquals(p.getAssertMsg(), HttpStatus.GONE_410, p.httpStatusCode);
   }
 
   @Test
