@@ -207,6 +207,25 @@ public class ProxyFileSystem extends FilterFileSystem {
     return ret;
   }
 
+  @Override //ref. HADOOP-12502
+  public RemoteIterator<FileStatus> listStatusIterator(Path f) throws IOException {
+    return new RemoteIterator<FileStatus>() {
+      private final RemoteIterator<FileStatus> orig =
+              ProxyFileSystem.super.listStatusIterator(swizzleParamPath(f));
+
+      @Override
+      public boolean hasNext() throws IOException {
+        return orig.hasNext();
+      }
+
+      @Override
+      public FileStatus next() throws IOException {
+        FileStatus ret = orig.next();
+        return swizzleFileStatus(ret, false);
+      }
+    };
+  }
+
   @Override
   public Path getHomeDirectory() {
     return swizzleReturnPath(super.getHomeDirectory());
