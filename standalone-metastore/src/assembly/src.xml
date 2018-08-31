@@ -18,9 +18,9 @@
 -->
 
 <assembly
-  xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+  xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/2.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
 
   <id>src</id>
 
@@ -28,26 +28,28 @@
     <format>tar.gz</format>
   </formats>
 
-  <baseDirectory>apache-hive-metastore-${project.version}-src</baseDirectory>
+  <baseDirectory>apache-${project.artifactId}-${project.version}-src</baseDirectory>
 
   <fileSets>
     <fileSet>
       <directory>${project.basedir}</directory>
-
-      <excludes>
-        <exclude>target/**</exclude>
-      </excludes>
-
       <includes>
-        <include>.checkstyle</include>
-        <include>.gitattributes</include>
-        <include>.gitignore</include>
-        <include>LICENSE</include>
-        <include>NOTICE</include>
+        <include>DEV-README</include>
+        <include>README*</include>
+        <include>LICENSE*</include>
+        <include>NOTICE*</include>
         <include>pom.xml</include>
-        <include>src/**/*</include>
       </includes>
-      <outputDirectory>/</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+      <excludes>
+        <exclude>**/*.log</exclude>
+        <exclude>**/*.iml</exclude>
+        <exclude>**/${project.build.directory}/**</exclude>
+      </excludes>
     </fileSet>
   </fileSets>
 </assembly>
