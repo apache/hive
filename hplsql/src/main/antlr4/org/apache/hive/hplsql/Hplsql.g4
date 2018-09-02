@@ -865,7 +865,8 @@ from_alias_clause :
         !_input.LT(1).getText().equalsIgnoreCase("GROUP") &&
         !_input.LT(1).getText().equalsIgnoreCase("ORDER") &&
         !_input.LT(1).getText().equalsIgnoreCase("LIMIT") &&
-        !_input.LT(1).getText().equalsIgnoreCase("WITH")}?
+        !_input.LT(1).getText().equalsIgnoreCase("WITH") &&
+        !_input.LT(1).getText().equalsIgnoreCase("JOIN")}?
        T_AS? ident (T_OPEN_P L_ID (T_COMMA L_ID)* T_CLOSE_P)? 
      ;
      
