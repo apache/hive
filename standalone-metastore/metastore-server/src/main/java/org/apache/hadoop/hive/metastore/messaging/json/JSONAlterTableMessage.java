@@ -36,7 +36,7 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   String isTruncateOp;
 
   @JsonProperty
-  Long timestamp;
+  Long timestamp, writeId;
 
   /**
    * Default constructor, needed for Jackson.
@@ -45,7 +45,7 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   }
 
   public JSONAlterTableMessage(String server, String servicePrincipal, Table tableObjBefore, Table tableObjAfter,
-      boolean isTruncateOp, Long timestamp) {
+      boolean isTruncateOp, Long writeId, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = tableObjBefore.getDbName();
@@ -53,6 +53,7 @@ public class JSONAlterTableMessage extends AlterTableMessage {
     this.tableType = tableObjBefore.getTableType();
     this.isTruncateOp = Boolean.toString(isTruncateOp);
     this.timestamp = timestamp;
+    this.writeId = writeId;
     try {
       this.tableObjBeforeJson = JSONMessageFactory.createTableObjJson(tableObjBefore);
       this.tableObjAfterJson = JSONMessageFactory.createTableObjJson(tableObjAfter);
@@ -115,6 +116,11 @@ public class JSONAlterTableMessage extends AlterTableMessage {
 
   public String getTableObjAfterJson() {
     return tableObjAfterJson ;
+  }
+
+  @Override
+  public Long getWriteId() {
+    return writeId ;
   }
 
   @Override

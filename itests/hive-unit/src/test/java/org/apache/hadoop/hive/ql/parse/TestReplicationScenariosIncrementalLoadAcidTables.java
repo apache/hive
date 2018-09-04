@@ -148,7 +148,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     appendInsert(tableName, tableNameMM, selectStmtList, expectedValues);
     appendDelete(selectStmtList, expectedValues);
     appendUpdate(selectStmtList, expectedValues);
-    //appendTruncate(selectStmtList, expectedValues);
+    appendTruncate(selectStmtList, expectedValues);
     appendInsertIntoFromSelect(tableName, tableNameMM, selectStmtList, expectedValues);
     appendMerge(selectStmtList, expectedValues);
     appendCreateAsSelect(tableName, tableNameMM, selectStmtList, expectedValues);
@@ -158,6 +158,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     appendInsertUnion(tableName, tableNameMM, selectStmtList, expectedValues);
     appendMultiStatementTxn(selectStmtList, expectedValues);
     appendMultiStatementTxnUpdateDelete(selectStmtList, expectedValues);
+    appendAlterTable(selectStmtList, expectedValues);
 
     verifyIncrementalLoad(selectStmtList, expectedValues, bootStrapDump.lastReplicationId);
   }
@@ -196,11 +197,46 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     truncateTable(primaryDbName, tableName);
     selectStmtList.add("select count(*) from " + tableName);
     expectedValues.add(new String[] {"0"});
+    selectStmtList.add("select count(*) from " + tableName + "_nopart");
+    expectedValues.add(new String[] {"0"});
 
     insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
     truncateTable(primaryDbName, tableNameMM);
     selectStmtList.add("select count(*) from " + tableNameMM);
     expectedValues.add(new String[] {"0"});
+    selectStmtList.add("select count(*) from " + tableNameMM + "_nopart");
+    expectedValues.add(new String[] {"0"});
+  }
+
+  private void appendAlterTable(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
+    String tableName = testName.getMethodName() + "testAlterTable";
+    String tableNameMM = tableName + "_MM";
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    primary.run("use " + primaryDbName)
+            .run("alter table " + tableName + " change value value1 int ")
+            .run("select value1 from " + tableName)
+            .verifyResults(new String[]{"1", "2", "3", "4", "5"})
+            .run("alter table " + tableName + "_nopart change value value1 int ")
+            .run("select value1 from " + tableName + "_nopart")
+            .verifyResults(new String[]{"1", "2", "3", "4", "5"});
+    selectStmtList.add("select value1 from " + tableName );
+    expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
+    selectStmtList.add("select value1 from " + tableName + "_nopart");
+    expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
+
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    primary.run("use " + primaryDbName)
+            .run("alter table " + tableNameMM + " change value value1 int ")
+            .run("select value1 from " + tableNameMM)
+            .verifyResults(new String[]{"1", "2", "3", "4", "5"})
+            .run("alter table " + tableNameMM + "_nopart change value value1 int ")
+            .run("select value1 from " + tableNameMM + "_nopart")
+            .verifyResults(new String[]{"1", "2", "3", "4", "5"});
+    selectStmtList.add("select value1 from " + tableNameMM );
+    expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
+    selectStmtList.add("select value1 from " + tableNameMM + "_nopart");
+    expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
   }
 
   private void appendInsertIntoFromSelect(String tableName, String tableNameMM,
