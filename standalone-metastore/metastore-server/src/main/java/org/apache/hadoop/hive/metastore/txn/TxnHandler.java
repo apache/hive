@@ -1701,7 +1701,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         commitHighWaterMark = lowestOpenTxnId;
       }
       int delCnt = stmt.executeUpdate("delete from WRITE_SET where ws_commit_id < " + commitHighWaterMark);
-      LOG.info("Deleted " + delCnt + " obsolete rows from WRTIE_SET");
+      LOG.info("Deleted {} obsolete rows from WRITE_SET", delCnt);
       dbConn.commit();
     } catch (SQLException ex) {
       LOG.warn("WriteSet GC failed due to " + getMessage(ex), ex);
