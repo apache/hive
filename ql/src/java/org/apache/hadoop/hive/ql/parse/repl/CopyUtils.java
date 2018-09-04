@@ -262,15 +262,17 @@ public class CopyUtils {
           RAW_RESERVED_VIRTUAL_PATH + destinationUri.getPath());
     }
 
-    FileUtils.distCp(
+    if (!FileUtils.distCp(
         sourceFs, // source file system
         srcList,  // list of source paths
         destination,
         false,
         usePrivilegedUser ? copyAsUser : null,
         hiveConf,
-        ShimLoader.getHadoopShims()
-    );
+        ShimLoader.getHadoopShims())) {
+      LOG.error("Distcp failed to copy files: " + srcList + " to destination: " + destination);
+      throw new IOException("Distcp operation failed.");
+    }
   }
 
   private void doRegularCopyOnce(FileSystem sourceFs, List<Path> srcList, FileSystem destinationFs,
@@ -319,7 +321,7 @@ public class CopyUtils {
       3. aggregate fileSize of all source Paths(can be directory /  file) is less than configured size.
       4. number of files of all source Paths(can be directory /  file) is less than configured size.
   */
-  private boolean regularCopy(FileSystem destinationFs, FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList)
+  boolean regularCopy(FileSystem destinationFs, FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList)
       throws IOException {
     if (hiveInTest) {
       return true;
