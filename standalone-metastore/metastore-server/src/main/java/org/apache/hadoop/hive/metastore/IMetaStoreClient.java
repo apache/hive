@@ -2824,7 +2824,7 @@ public interface IMetaStoreClient {
   /**
    * Get a structure that details valid write ids.
    * @param fullTableName full table name of format <db_name>.<table_name>
-   * @param writeId The write id to get the current txn
+   * @param writeId The write id to get the corresponding txn
    * @return list of valid write ids for the given table
    * @throws TException
    */

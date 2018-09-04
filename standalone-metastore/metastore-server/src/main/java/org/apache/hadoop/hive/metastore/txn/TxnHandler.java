@@ -1243,6 +1243,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     ResultSet rs = null;
     try {
       String[] names = TxnUtils.getDbTableName(fullTableName);
+      assert names.length == 2;
       String s = "select t2w_txnid from TXN_TO_WRITE_ID where  t2w_database = ? and t2w_table = ? and t2w_writeid = ?";
       pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(s));
       pst.setString(1, names[0]);
@@ -1256,10 +1257,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       throw new MetaException("invalid write id " + writeId + " for table " + fullTableName);
     } finally {
-      close(rs);
-      if (pst != null) {
-        pst.close();
-      }
+      close(rs, pst, null);
     }
   }
 

@@ -78,9 +78,7 @@ class CreateTableHandler extends AbstractEventHandler {
       }
     }
 
-    DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
-    dmd.write();
+    withinContext.createDmd(this).write();
   }
 
   private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
