@@ -2814,12 +2814,21 @@ public interface IMetaStoreClient {
   ValidTxnList getValidTxns(long currentTxn) throws TException;
 
   /**
-   * Get a structure that details valid transactions.
+   * Get a structure that details valid write ids.
    * @param fullTableName full table name of format <db_name>.<table_name>
    * @return list of valid write ids for the given table
    * @throws TException
    */
   ValidWriteIdList getValidWriteIds(String fullTableName) throws TException;
+
+  /**
+   * Get a structure that details valid write ids.
+   * @param fullTableName full table name of format <db_name>.<table_name>
+   * @param writeId The write id to get the corresponding txn
+   * @return list of valid write ids for the given table
+   * @throws TException
+   */
+  ValidWriteIdList getValidWriteIds(String fullTableName, Long writeId) throws TException;
 
   /**
    * Get a structure that details valid write ids list for all tables read by current txn.
