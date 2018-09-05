@@ -1952,7 +1952,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         try {
           ret = ToolRunner.run(fss, args.toArray(new String[0]));
         } catch (Exception e) {
-          e.printStackTrace();
           throw new HiveException(e);
         }
 
