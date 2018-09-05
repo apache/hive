@@ -616,6 +616,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_ALLOC_FRACTION", "ALLOC_FRACTION");
     xlateMap.put("KW_SCHEDULING_POLICY", "SCHEDULING_POLICY");
     xlateMap.put("KW_PATH", "PATH");
+    xlateMap.put("KW_AST", "AST");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -801,6 +802,7 @@ explainOption
     | KW_ANALYZE
     | KW_REOPTIMIZATION
     | KW_LOCKS
+    | KW_AST
     | (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
     ;
 
