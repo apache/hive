@@ -10,6 +10,7 @@ import kafka.utils.ZkUtils;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import com.google.common.base.Throwables;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.IntStream;
 
 /**
  * This class has the hooks to start and stop single node kafka cluster.
@@ -32,6 +34,10 @@ import java.util.Properties;
  */
 public class SingleNodeKafkaCluster extends AbstractService {
   private static final Logger log = LoggerFactory.getLogger(SingleNodeKafkaCluster.class);
+  private static final int BROKER_PORT = 9092;
+  private static final String LOCALHOST = "localhost";
+  private static final String LOCALHOST_9092 = String.format("%s:%s", LOCALHOST, BROKER_PORT);
+
 
   private final KafkaServerStartable serverStartable;
   private final String zkString;
@@ -42,9 +48,12 @@ public class SingleNodeKafkaCluster extends AbstractService {
     this.zkString = String.format("localhost:%d", zkPort);
     properties.setProperty("zookeeper.connect", zkString);
     properties.setProperty("broker.id", String.valueOf(1));
-    properties.setProperty("host.name", "localhost");
-    properties.setProperty("port", Integer.toString(9092));
+    properties.setProperty("host.name", LOCALHOST);
+    properties.setProperty("port", Integer.toString(BROKER_PORT));
     properties.setProperty("log.dir", logDir);
+    // This property is very important, we are sending form records with a specific time
+    // Thus need to make sure that they don't get DELETED
+    properties.setProperty("log.retention.hours", String.valueOf(Integer.MAX_VALUE));
     properties.setProperty("log.flush.interval.messages", String.valueOf(1));
     properties.setProperty("offsets.topic.replication.factor", String.valueOf(1));
     properties.setProperty("offsets.topic.num.partitions", String.valueOf(1));
@@ -80,7 +89,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
     createTopic(topicName);
     // set up kafka producer
     Properties properties = new Properties();
-    properties.put("bootstrap.servers", "localhost:9092");
+    properties.put("bootstrap.servers", LOCALHOST_9092);
     properties.put("acks", "1");
     properties.put("retries", "3");
 
@@ -91,12 +100,36 @@ public class SingleNodeKafkaCluster extends AbstractService {
     )){
       List<String> events = Files.readLines(datafile, Charset.forName("UTF-8"));
       for(String event : events){
-        producer.send(new ProducerRecord<String, String>(topicName, event));
+        producer.send(new ProducerRecord<>(topicName, event));
       }
     } catch (IOException e) {
       Throwables.propagate(e);
     }
+  }
 
+  public void createTopicWithData(String topic, List<byte []> events) {
+    createTopic(topic);
+    // set up kafka producer
+    Properties properties = new Properties();
+    properties.put("bootstrap.servers", LOCALHOST_9092);
+    properties.put("acks", "1");
+    properties.put("retries", "3");
+
+    try(KafkaProducer<byte[], byte[]> producer = new KafkaProducer<>(
+        properties,
+        new ByteArraySerializer(),
+        new ByteArraySerializer()
+    )){
+      // 1534736225090 -> 08/19/2018 20:37:05
+      IntStream.range(0, events.size())
+          .mapToObj(i -> new ProducerRecord<>(topic,
+              0,
+              // 1534736225090 -> Mon Aug 20 2018 03:37:05
+              1534736225090L + 1000 * 3600 * i,
+              ("key-" + i).getBytes(),
+              events.get(i)))
+          .forEach(r -> producer.send(r));
+    }
   }
 
   public void createTopic(String topic) {
