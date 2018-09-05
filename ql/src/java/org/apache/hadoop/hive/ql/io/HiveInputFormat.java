@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -822,10 +823,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return;
     }
 
-    // disable filter pushdown for mapreduce when there are more than one table aliases,
+    // disable filter pushdown for mapreduce(except for storage handlers) when there are more than one table aliases,
     // since we don't clone jobConf per alias
-    if (mrwork != null && mrwork.getAliases() != null && mrwork.getAliases().size() > 1 &&
-      jobConf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname).equals("mr")) {
+    if (mrwork != null && mrwork.getAliases() != null && mrwork.getAliases().size() > 1
+        && jobConf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname).equals("mr")
+        && (scanDesc.getTableMetadata() == null
+            || !(scanDesc.getTableMetadata().getStorageHandler() instanceof HiveStoragePredicateHandler))) {
       return;
     }
 
