@@ -86,7 +86,7 @@ import com.google.common.math.DoubleMath;
 public class ConvertJoinMapJoin implements NodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
-  private float hashTableLoadFactor;
+  public float hashTableLoadFactor;
   private long maxJoinMemory;
 
   @Override
@@ -251,24 +251,46 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return false;
   }
 
-  private long computeOnlineDataSize(Statistics statistics) {
-    // The datastructure doing the actual storage during mapjoins has some per row overhead
-    long onlineDataSize = 0;
-    long memoryOverHeadPerRow = 0;
-    long vLongEstimatedLength = 6; // LazyBinaryUtils.writeVLongToByteArray
-    memoryOverHeadPerRow += vLongEstimatedLength; // offset
-    memoryOverHeadPerRow += vLongEstimatedLength; // length
+  public long computeOnlineDataSize(Statistics statistics) {
+    return computeOnlineDataSizeFast3(statistics);
+  }
 
+  public long computeOnlineDataSizeFast2(Statistics statistics) {
+    return computeOnlineDataSizeGeneric(statistics,
+        -8, // the long key is stored in a slot
+        2 * 8 // maintenance structure consists of 2 longs
+    );
+  }
+
+  public long computeOnlineDataSizeFast3(Statistics statistics) {
+    // The datastructure doing the actual storage during mapjoins has no per row orhead;
+    // but uses a 192 bit wide table
+    return computeOnlineDataSizeGeneric(statistics,
+        0, // key is stored in a bytearray
+        3 * 8 // maintenance structure consists of 3 longs
+    );
+  }
+
+  public long computeOnlineDataSizeOptimized(Statistics statistics) {
+    // BytesBytesMultiHashMap
+    return computeOnlineDataSizeGeneric(statistics,
+        2 * 6, // 2 offsets are stored using:  LazyBinaryUtils.writeVLongToByteArray
+        8 // maintenance structure consists of 1 long
+    );
+  }
+
+
+  public long computeOnlineDataSizeGeneric(Statistics statistics, long overHeadPerRow, long overHeadPerSlot) {
+
+    long onlineDataSize = 0;
     long numRows = statistics.getNumRows();
     if (numRows <= 0) {
-      numRows=1;
+      numRows = 1;
     }
     long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
-
     onlineDataSize += statistics.getDataSize();
-    onlineDataSize += memoryOverHeadPerRow * statistics.getNumRows();
-    onlineDataSize += 8 * worstCaseNeededSlots; // every slot is a long
-
+    onlineDataSize += overHeadPerRow * statistics.getNumRows();
+    onlineDataSize += overHeadPerSlot * worstCaseNeededSlots;
     return onlineDataSize;
   }
 
