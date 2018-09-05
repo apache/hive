@@ -518,6 +518,7 @@ public class CliConfigs {
       super(CoreAccumuloCliDriver.class);
       try {
         setQueryDir("accumulo-handler/src/test/queries/positive");
+        excludeQuery("accumulo_joins.q");
 
         setResultsDir("accumulo-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/accumulo-handler/positive");
