@@ -63,6 +63,7 @@
     <module>packaging</module>
     <module>standalone-metastore</module>
     <module>upgrade-acid</module>
+    <module>kafka-handler</module>
   </modules>
 
   <properties>
@@ -80,6 +81,7 @@
 
     <!-- Test Properties -->
     <test.extra.path></test.extra.path>
+    <!--suppress UnresolvedMavenProperty -->
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.log4j.scheme>file://</test.log4j.scheme>
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
@@ -1480,7 +1482,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
             <configuration>
-              <failOnError>false</failOnError>
+              <additionalparam>-Xdoclint:none</additionalparam>
             </configuration>
             <executions>
               <execution>
@@ -1566,6 +1568,7 @@
       </build>
       <properties>
         <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop.cmd</hadoop.bin.path>
+        <!--suppress UnresolvedMavenProperty -->
         <test.extra.path>;${env.HADOOP_HOME}/bin</test.extra.path>
         <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
         <test.tmp.dir.uri>file:///${test.tmp.dir}</test.tmp.dir.uri>
