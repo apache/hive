@@ -9,7 +9,6 @@ set mapred.input.dir.recursive=true;
 
 -- list bucketing DML : dynamic partition and 2 stage query plan.
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
 -- create a skewed table
 create table list_bucketing_dynamic_part_n0 (key String, value String) 

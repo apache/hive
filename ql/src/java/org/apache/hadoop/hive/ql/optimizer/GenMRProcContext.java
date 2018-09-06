@@ -219,6 +219,17 @@ public class GenMRProcContext implements NodeProcessorCtx {
   }
 
   /**
+   * The context is reused across the rules. Reset so the following info is not
+   * incorrectly carried over to the following optimizations starting with the new TS.
+   */
+  public void reset() {
+    currTask = null;
+    currTopOp = null;
+    currUnionOp = null;
+    currAliasId = null;
+  }
+
+  /**
    * @return reducer to task mapping
    */
   public HashMap<Operator<? extends OperatorDesc>,

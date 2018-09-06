@@ -22,7 +22,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -31,8 +31,6 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerator.GenerateType;
 import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerator.GenerateType.GenerateCategory;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.Text;
 
 public class VectorColumnGroupGenerator {
 
@@ -232,7 +230,7 @@ public class VectorColumnGroupGenerator {
 
     case TIMESTAMP:
       {
-        Timestamp value = RandomTypeUtil.getRandTimestamp(random);
+        Timestamp value = RandomTypeUtil.getRandTimestamp(random).toSqlTimestamp();
         ((Timestamp[]) array)[rowIndex] = value;
       }
       break;

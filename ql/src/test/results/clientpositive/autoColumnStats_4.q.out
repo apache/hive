@@ -60,6 +60,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
+            filterExpr: cint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
@@ -198,9 +199,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
-	totalSize           	1907                
+	numRows             	10                  
+	rawDataSize         	0                   
+	totalSize           	1899                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -240,10 +244,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	4                   
-	totalSize           	3091                
+	numRows             	8                   
+	rawDataSize         	0                   
+	totalSize           	3275                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

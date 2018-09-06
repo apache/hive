@@ -76,6 +76,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 
 import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
@@ -206,6 +207,37 @@ public class TestJdbcDriver2 {
     stmt.execute("use " + testDbName);
     createTestTables(stmt, testDbName);
     stmt.close();
+  }
+
+
+  @Test
+  public void testExceucteUpdateCounts() throws Exception {
+    Statement stmt =  con.createStatement();
+    stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
+    stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
+        "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    stmt.execute("create table transactional_crud (a int, b int) stored as orc " +
+        "tblproperties('transactional'='true', 'transactional_properties'='default')");
+    int count = stmt.executeUpdate("insert into transactional_crud values(1,2),(3,4),(5,6)");
+    assertEquals("Statement insert", 3, count);
+    count = stmt.executeUpdate("update transactional_crud set b = 17 where a <= 3");
+    assertEquals("Statement update", 2, count);
+    count = stmt.executeUpdate("delete from transactional_crud where b = 6");
+    assertEquals("Statement delete", 1, count);
+
+    stmt.close();
+    PreparedStatement pStmt =
+        con.prepareStatement("update transactional_crud set b = ? where a = ? or a = ?");
+    pStmt.setInt(1, 15);
+    pStmt.setInt(2, 1);
+    pStmt.setInt(3, 3);
+    count = pStmt.executeUpdate();
+    assertEquals("2 row PreparedStatement update", 2, count);
+    pStmt.setInt(1, 19);
+    pStmt.setInt(2, 3);
+    pStmt.setInt(3, 3);
+    count = pStmt.executeUpdate();
+    assertEquals("1 row PreparedStatement update", 1, count);
   }
 
   @AfterClass
@@ -2927,6 +2959,27 @@ public class TestJdbcDriver2 {
     stmt.close();
   }
 
+  @Test
+  public void testReplErrorScenarios() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+
+    try {
+      // source of replication not set
+      stmt.execute("repl dump default");
+    } catch(SQLException e){
+      assertTrue(e.getErrorCode() == ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getErrorCode());
+    }
+
+    try {
+      // invalid load path
+      stmt.execute("repl load default1 from '/tmp/junk'");
+    } catch(SQLException e){
+      assertTrue(e.getErrorCode() == ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getErrorCode());
+    }
+
+    stmt.close();
+  }
+
   /**
    * Test {@link HiveStatement#executeAsync(String)} for an insert overwrite into a table
    * @throws Exception
@@ -2981,6 +3034,34 @@ public class TestJdbcDriver2 {
     } finally {
       stmt.execute("drop table " + tblName);
     }
+  }
+
+  @Test
+  public void testGetQueryId() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    HiveStatement stmt1 = (HiveStatement) con.createStatement();
+    stmt.executeAsync("create database query_id_test with dbproperties ('repl.source.for' = '1, 2, 3')");
+    String queryId = stmt.getQueryId();
+    assertFalse(queryId.isEmpty());
+    stmt.getUpdateCount();
+
+    stmt1.executeAsync("repl status query_id_test with ('hive.query.id' = 'hiveCustomTag')");
+    String queryId1 = stmt1.getQueryId();
+    assertFalse("hiveCustomTag".equals(queryId1));
+    assertFalse(queryId.equals(queryId1));
+    assertFalse(queryId1.isEmpty());
+    stmt1.getUpdateCount();
+
+    stmt.executeAsync("select count(*) from " + dataTypeTableName);
+    queryId = stmt.getQueryId();
+    assertFalse("hiveCustomTag".equals(queryId));
+    assertFalse(queryId.isEmpty());
+    assertFalse(queryId.equals(queryId1));
+    stmt.getUpdateCount();
+
+    stmt.execute("drop database query_id_test");
+    stmt.close();
+    stmt1.close();
   }
 
   // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException

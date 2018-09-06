@@ -88,7 +88,7 @@ STAGE PLANS:
             Statistics: Num rows: 30 Data size: 4712 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:id:int, 1:a:decimal(10,4), 2:b:decimal(15,8), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:id:int, 1:a:decimal(10,4)/DECIMAL_64, 2:b:decimal(15,8)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: id (type: int), a (type: decimal(10,4)), b (type: decimal(15,8))
               outputColumnNames: _col0, _col1, _col2
@@ -111,8 +111,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -120,7 +120,7 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 3
               includeColumns: [0, 1, 2]
-              dataColumns: id:int, a:decimal(10,4), b:decimal(15,8)
+              dataColumns: id:int, a:decimal(10,4)/DECIMAL_64, b:decimal(15,8)/DECIMAL_64
               partitionColumnCount: 0
               scratchColumnTypeNames: []
       Reduce Vectorization:

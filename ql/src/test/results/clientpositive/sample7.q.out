@@ -32,6 +32,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: (key > 100) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -96,7 +97,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: 000000_0
+            base file name: srcbucket
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -145,7 +146,7 @@ STAGE PLANS:
               name: default.srcbucket
             name: default.srcbucket
       Truncated Path -> Alias:
-        /srcbucket/000000_0 [s]
+        /srcbucket [s]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -434,33 +435,86 @@ order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n160
 #### A masked pattern was here ####
+105	val_105
+105	val_106
+105	val_106
 110	val_111
+113	val_113
+113	val_113
 116	val_116
 116	val_117
+117	val_118
+117	val_118
+119	val_119
+119	val_119
+119	val_119
+119	val_120
+119	val_120
+119	val_120
+121	val_122
+121	val_122
+123	val_124
+123	val_124
 126	val_126
 126	val_127
 126	val_127
 134	val_134
 134	val_134
 134	val_135
+137	val_137
+137	val_137
+137	val_138
+153	val_153
+153	val_154
+153	val_154
 156	val_156
 156	val_157
 156	val_157
+157	val_157
+157	val_158
+157	val_158
 158	val_158
+163	val_163
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+177	val_177
+177	val_178
+177	val_178
 178	val_178
 178	val_179
 178	val_179
 184	val_185
+187	val_187
+187	val_187
+187	val_187
+195	val_195
+195	val_195
+197	val_197
+197	val_197
+197	val_198
 206	val_207
 206	val_207
 206	val_207
 208	val_208
 208	val_208
 208	val_208
+221	val_221
+221	val_221
+229	val_229
+229	val_229
+237	val_237
+237	val_237
+243	val_244
+243	val_244
 244	val_244
 244	val_245
 244	val_245
 244	val_245
+249	val_249
+249	val_250
+249	val_250
 252	val_252
 252	val_253
 254	val_255
@@ -468,27 +522,40 @@ POSTHOOK: Input: default@dest1_n160
 256	val_256
 256	val_257
 266	val_266
+271	val_272
 272	val_272
 272	val_272
 272	val_273
 286	val_286
 286	val_287
+289	val_289
+289	val_290
 292	val_292
 292	val_293
 292	val_293
 304	val_305
+307	val_307
+307	val_307
 308	val_308
 308	val_309
 308	val_309
+315	val_315
 316	val_316
 316	val_316
 316	val_316
+317	val_317
+317	val_317
+317	val_318
 326	val_327
+327	val_327
+327	val_327
+327	val_327
 334	val_335
 336	val_336
 336	val_337
 338	val_338
 338	val_339
+339	val_339
 342	val_342
 342	val_342
 342	val_343
@@ -501,21 +568,45 @@ POSTHOOK: Input: default@dest1_n160
 348	val_348
 348	val_348
 348	val_349
+349	val_350
+349	val_350
+349	val_350
+349	val_350
 352	val_353
 352	val_353
+353	val_353
+353	val_353
+353	val_354
+355	val_356
+355	val_356
 360	val_360
 360	val_361
 362	val_362
 364	val_364
 364	val_365
+369	val_369
+369	val_369
+369	val_369
+369	val_370
+371	val_372
+371	val_372
+371	val_372
+371	val_372
+377	val_377
 378	val_378
 378	val_379
+391	val_392
+391	val_392
 392	val_392
 392	val_393
 392	val_393
 396	val_396
 396	val_396
 396	val_396
+399	val_399
+399	val_399
+399	val_400
+399	val_400
 402	val_402
 402	val_403
 402	val_403
@@ -525,15 +616,31 @@ POSTHOOK: Input: default@dest1_n160
 404	val_405
 404	val_405
 404	val_405
+407	val_407
+407	val_408
+407	val_408
+407	val_408
 408	val_409
 408	val_409
 410	val_411
+417	val_417
+417	val_417
+417	val_417
+419	val_419
+423	val_424
 426	val_427
+427	val_427
+427	val_428
+427	val_428
 440	val_441
 440	val_441
+449	val_449
 452	val_452
 458	val_458
 458	val_458
+463	val_463
+463	val_463
+463	val_464
 466	val_466
 466	val_466
 466	val_466
@@ -544,7 +651,11 @@ POSTHOOK: Input: default@dest1_n160
 478	val_478
 478	val_479
 478	val_479
+479	val_479
 482	val_482
 482	val_483
 484	val_484
 484	val_485
+497	val_497
+497	val_498
+497	val_498

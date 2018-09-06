@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -160,6 +161,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface, LlapWrappableInputFormatInterface,
   SelfDescribingInputFormatInterface, AcidInputFormat<NullWritable, OrcStruct>,
   CombineHiveInputFormat.AvoidSplitCombination, BatchToRowInputFormat {
+
+  @Override
+  public VectorizedSupport.Support[] getSupportedFeatures() {
+    return new VectorizedSupport.Support[] {VectorizedSupport.Support.DECIMAL_64};
+  }
 
   static enum SplitStrategyKind {
     HYBRID,
@@ -319,7 +325,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
      */
     TypeDescription schema = getDesiredRowTypeDescr(conf, false, Integer.MAX_VALUE);
 
-    Reader.Options options = new Reader.Options().range(offset, length);
+    Reader.Options options = new Reader.Options(conf).range(offset, length);
     options.schema(schema);
     boolean isOriginal = isOriginal(file);
     if (schema == null) {
@@ -328,7 +334,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     List<OrcProto.Type> types = OrcUtils.getOrcTypes(schema);
     options.include(genIncludedColumns(schema, conf));
     setSearchArgument(options, types, conf, isOriginal);
-    return file.rowsOptions(options);
+    return file.rowsOptions(options, conf);
   }
 
   public static boolean isOriginal(Reader file) {
@@ -2142,7 +2148,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
      */
     TypeDescription schema =
         OrcInputFormat.getDesiredRowTypeDescr(conf, true, Integer.MAX_VALUE);
-    Reader.Options readerOptions = new Reader.Options().schema(schema);
+    Reader.Options readerOptions = new Reader.Options(conf).schema(schema);
     // TODO: Convert genIncludedColumns and setSearchArgument to use TypeDescription.
     final List<OrcProto.Type> schemaTypes = OrcUtils.getOrcTypes(schema);
     readerOptions.include(OrcInputFormat.genIncludedColumns(schema, conf));
@@ -2391,7 +2397,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       mergerOptions.rootPath(deltaDirectory[0].getParent());
     }
     return new OrcRawRecordMerger(conf, collapseEvents, null, isOriginal,
-        bucket, validWriteIdList, new Reader.Options(), deltaDirectory, mergerOptions);
+        bucket, validWriteIdList, new Reader.Options(conf), deltaDirectory, mergerOptions);
   }
 
   /**
@@ -2576,8 +2582,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     if (haveSchemaEvolutionProperties) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using schema evolution configuration variables schema.evolution.columns " +
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Using schema evolution configuration variables schema.evolution.columns " +
             schemaEvolutionColumnNames.toString() +
             " / schema.evolution.columns.types " +
             schemaEvolutionTypeDescrs.toString() +
@@ -2619,8 +2625,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         schemaEvolutionTypeDescrs = Lists.newArrayList(schemaEvolutionTypeDescrs.subList(0, virtualColumnClipNum));
       }
 
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using column configuration variables columns " +
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Using column configuration variables columns " +
                 schemaEvolutionColumnNames.toString() +
                 " / columns.types " +
                 schemaEvolutionTypeDescrs.toString() +

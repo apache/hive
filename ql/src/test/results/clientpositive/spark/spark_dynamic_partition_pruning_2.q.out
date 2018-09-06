@@ -165,11 +165,11 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col1 (type: int)
@@ -177,15 +177,15 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
                             Target Columns: [Map 1 -> [dim_shops_id:int (dim_shops_id)]]
-                            Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
@@ -331,11 +331,11 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col1 (type: int)
@@ -705,11 +705,11 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col1 (type: int)
@@ -717,15 +717,15 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
                             Target Columns: [Map 1 -> [dim_shops_id:int (dim_shops_id)]]
-                            Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 

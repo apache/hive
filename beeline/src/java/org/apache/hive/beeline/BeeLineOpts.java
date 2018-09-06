@@ -48,7 +48,7 @@ import jline.console.completer.StringsCompleter;
 import jline.console.history.MemoryHistory;
 import org.apache.hadoop.hive.conf.HiveConf;
 
-class BeeLineOpts implements Completer {
+public class BeeLineOpts implements Completer {
   public static final int DEFAULT_MAX_WIDTH = 80;
   public static final int DEFAULT_MAX_HEIGHT = 80;
   public static final int DEFAULT_HEADER_INTERVAL = 100;
@@ -503,11 +503,12 @@ class BeeLineOpts implements Completer {
   public boolean getEscapeCRLF() {
     if (beeLine.isBeeLine()) {
       return escapeCRLF;
-    } else {
-      boolean flag;
-      HiveConf conf = beeLine.getCommands().getHiveConf(true);
-      flag = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
-      return flag;
+    } else { //hive cli
+      if(conf != null) {
+        return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
+      } else {
+        return false;
+      }
     }
   }
 

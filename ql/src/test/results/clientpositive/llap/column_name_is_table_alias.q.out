@@ -1,0 +1,34 @@
+PREHOOK: query: DROP TABLE IF EXISTS tableA
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS tableA
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS tableB
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS tableB
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE tableA (a INTEGER,z INTEGER)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tableA
+POSTHOOK: query: CREATE TABLE tableA (a INTEGER,z INTEGER)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tableA
+PREHOOK: query: CREATE TABLE tableB (a INTEGER,b INTEGER,z INTEGER)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tableB
+POSTHOOK: query: CREATE TABLE tableB (a INTEGER,b INTEGER,z INTEGER)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tableB
+PREHOOK: query: SELECT a.z, b.b FROM tableB AS b JOIN tableA AS a ON a.a=b.b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tablea
+PREHOOK: Input: default@tableb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.z, b.b FROM tableB AS b JOIN tableA AS a ON a.a=b.b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tablea
+POSTHOOK: Input: default@tableb
+#### A masked pattern was here ####

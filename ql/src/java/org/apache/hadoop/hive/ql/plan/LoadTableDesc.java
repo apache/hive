@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
@@ -38,11 +39,13 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private ListBucketingCtx lbCtx;
   private boolean inheritTableSpecs = true; //For partitions, flag controlling whether the current
                                             //table specs are to be used
+  private boolean inheritLocation = false; // A silly setting.
   private int stmtId;
   private Long currentWriteId;
   private boolean isInsertOverwrite;
 
   // TODO: the below seem like they should just be combined into partitionDesc
+  private Table mdTable;
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
 
@@ -71,6 +74,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     this.dpCtx = o.dpCtx;
     this.lbCtx = o.lbCtx;
     this.inheritTableSpecs = o.inheritTableSpecs;
+    this.inheritLocation = o.inheritLocation;
     this.currentWriteId = o.currentWriteId;
     this.table = o.table;
     this.partitionSpec = o.partitionSpec;
@@ -207,8 +211,14 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     return inheritTableSpecs;
   }
 
+  public boolean getInheritLocation() {
+    return inheritLocation;
+  }
+
   public void setInheritTableSpecs(boolean inheritTableSpecs) {
-    this.inheritTableSpecs = inheritTableSpecs;
+    // Set inheritLocation if this is set to true explicitly.
+    // TODO: Who actually needs this? Might just be some be pointless legacy code.
+    this.inheritTableSpecs = inheritLocation = inheritTableSpecs;
   }
 
   public boolean isInsertOverwrite() {
@@ -243,5 +253,13 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   //todo: should this not be passed in the c'tor?
   public void setStmtId(int stmtId) {
     this.stmtId = stmtId;
+  }
+
+  public Table getMdTable() {
+    return mdTable;
+  }
+
+  public void setMdTable(Table mdTable) {
+    this.mdTable = mdTable;
   }
 }

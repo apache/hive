@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -36,7 +34,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -52,16 +52,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 
 import junit.framework.Assert;
 
@@ -69,8 +65,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestVectorDateDiff {
-
-  private static final boolean corruptDateStrings = false;
 
   @Test
   public void testDateDate() throws Exception {
@@ -152,52 +146,6 @@ public class TestVectorDateDiff {
     }
   }
 
-  private static final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-  private Object randomDateStringFamily(
-      Random random, TypeInfo dateTimeStringTypeInfo, boolean wantWritable) {
-
-    String randomDateString = VectorRandomRowSource.randomPrimitiveDateStringObject(random);
-    if (corruptDateStrings && random.nextInt(40) == 39) {
-
-      // Randomly corrupt.
-      int index = random.nextInt(randomDateString.length());
-      char[] chars = randomDateString.toCharArray();
-      chars[index] = alphabet.charAt(random.nextInt(alphabet.length()));
-      randomDateString = String.valueOf(chars);
-    }
-
-    PrimitiveCategory dateTimeStringPrimitiveCategory =
-        ((PrimitiveTypeInfo) dateTimeStringTypeInfo).getPrimitiveCategory();
-    switch (dateTimeStringPrimitiveCategory) {
-    case STRING:
-      return randomDateString;
-    case CHAR:
-      {
-        HiveChar hiveChar =
-            new HiveChar(randomDateString, ((CharTypeInfo) dateTimeStringTypeInfo).getLength());
-        if (wantWritable) {
-          return new HiveCharWritable(hiveChar);
-        } else {
-          return hiveChar;
-        }
-      }
-    case VARCHAR:
-      {
-        HiveVarchar hiveVarchar =
-            new HiveVarchar(
-                randomDateString, ((VarcharTypeInfo) dateTimeStringTypeInfo).getLength());
-        if (wantWritable) {
-          return new HiveVarcharWritable(hiveVarchar);
-        } else {
-          return hiveVarchar;
-        }
-      }
-    default:
-      throw new RuntimeException("Unexpected string family category " + dateTimeStringPrimitiveCategory);
-    }
-  }
-
   private void doDateDiffTestsWithDiffColumnScalar(Random random, String dateTimeStringTypeName1,
       String dateTimeStringTypeName2, ColumnScalarMode columnScalarMode)
           throws Exception {
@@ -220,16 +168,23 @@ public class TestVectorDateDiff {
          dateTimeStringPrimitiveCategory2 == PrimitiveCategory.CHAR ||
          dateTimeStringPrimitiveCategory2 == PrimitiveCategory.VARCHAR);
 
-    List<String> explicitTypeNameList = new ArrayList<String>();
+    List<GenerationSpec> generationSpecList = new ArrayList<GenerationSpec>();
     List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList =
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
     ExprNodeDesc col1Expr;
     if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
         columnScalarMode == ColumnScalarMode.COLUMN_SCALAR) {
-      explicitTypeNameList.add(dateTimeStringTypeName1);
+      if (!isStringFamily1) {
+        generationSpecList.add(
+            GenerationSpec.createSameType(dateTimeStringTypeInfo1));
+      } else {
+        generationSpecList.add(
+            GenerationSpec.createStringFamilyOtherTypeValue(
+                dateTimeStringTypeInfo1, TypeInfoFactory.dateTypeInfo));
+      }
       explicitDataTypePhysicalVariationList.add(DataTypePhysicalVariation.NONE);
 
       String columnName = "col" + (columnNum++);
@@ -243,15 +198,23 @@ public class TestVectorDateDiff {
               random, (PrimitiveTypeInfo) dateTimeStringTypeInfo1);
       } else {
         scalar1Object =
-            randomDateStringFamily(
-                random, dateTimeStringTypeInfo1, /* wantWritable */ false);
+            VectorRandomRowSource.randomStringFamilyOtherTypeValue(
+                random, dateTimeStringTypeInfo1, TypeInfoFactory.dateTypeInfo, false);
       }
       col1Expr = new ExprNodeConstantDesc(dateTimeStringTypeInfo1, scalar1Object);
     }
     ExprNodeDesc col2Expr;
     if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
         columnScalarMode == ColumnScalarMode.SCALAR_COLUMN) {
-      explicitTypeNameList.add(dateTimeStringTypeName2);
+      if (!isStringFamily2) {
+        generationSpecList.add(
+            GenerationSpec.createSameType(dateTimeStringTypeInfo2));
+      } else {
+        generationSpecList.add(
+            GenerationSpec.createStringFamilyOtherTypeValue(
+                dateTimeStringTypeInfo2, TypeInfoFactory.dateTypeInfo));
+      }
+
       explicitDataTypePhysicalVariationList.add(DataTypePhysicalVariation.NONE);
 
       String columnName = "col" + (columnNum++);
@@ -265,8 +228,8 @@ public class TestVectorDateDiff {
               random, (PrimitiveTypeInfo) dateTimeStringTypeInfo2);
       } else {
         scalar2Object =
-            randomDateStringFamily(
-                random, dateTimeStringTypeInfo2, /* wantWritable */ false);
+            VectorRandomRowSource.randomStringFamilyOtherTypeValue(
+                random, dateTimeStringTypeInfo2, TypeInfoFactory.dateTypeInfo, false);
       }
       col2Expr = new ExprNodeConstantDesc(dateTimeStringTypeInfo2, scalar2Object);
     }
@@ -281,41 +244,12 @@ public class TestVectorDateDiff {
 
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
-    rowSource.initExplicitSchema(
-        random, explicitTypeNameList, /* maxComplexDepth */ 0, /* allowNull */ true,
+    rowSource.initGenerationSpecSchema(
+        random, generationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
 
     Object[][] randomRows = rowSource.randomRows(100000);
-
-    if (isStringFamily1) {
-      if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
-          columnScalarMode == ColumnScalarMode.COLUMN_SCALAR) {
-        for (int i = 0; i < randomRows.length; i++) {
-          Object[] row = randomRows[i];
-          Object object = row[columnNum - 1];
-          if (row[0] != null) {
-            row[0] =
-                randomDateStringFamily(
-                    random, dateTimeStringTypeInfo1, /* wantWritable */ true);
-          }
-        }
-      }
-    }
-
-    if (isStringFamily2) {
-      if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
-          columnScalarMode == ColumnScalarMode.SCALAR_COLUMN) {
-        for (int i = 0; i < randomRows.length; i++) {
-          Object[] row = randomRows[i];
-          Object object = row[columnNum - 1];
-          if (row[columnNum - 1] != null) {
-            row[columnNum - 1] =
-                randomDateStringFamily(
-                    random, dateTimeStringTypeInfo2, /* wantWritable */ true);
-          }
-        }
-      }
-    }
 
     VectorRandomBatchSource batchSource =
         VectorRandomBatchSource.createInterestingBatches(
@@ -424,12 +358,14 @@ public class TestVectorDateDiff {
       Object[][] randomRows, ColumnScalarMode columnScalarMode,
       ObjectInspector rowInspector, Object[] resultObjects) throws Exception {
 
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo " + dateTimeStringTypeInfo1.toString() +
         " dateTimeStringTypeInfo2 " + dateTimeStringTypeInfo2 +
         " dateDiffTestMode ROW_MODE" +
         " columnScalarMode " + columnScalarMode +
         " exprDesc " + exprDesc.toString());
+    */
 
     HiveConf hiveConf = new HiveConf();
     ExprNodeEvaluator evaluator =
@@ -494,18 +430,32 @@ public class TestVectorDateDiff {
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
 
+    if (dateDiffTestMode == DateDiffTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* dateTimeStringTypeInfo1 " + dateTimeStringTypeInfo1.toString() +
+          " dateTimeStringTypeInfo2 " + dateTimeStringTypeInfo2.toString() +
+          " dateDiffTestMode " + dateDiffTestMode +
+          " columnScalarMode " + columnScalarMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
+
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorExtractRow resultVectorExtractRow = new VectorExtractRow();
     resultVectorExtractRow.init(new TypeInfo[] { TypeInfoFactory.intTypeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo1 " + dateTimeStringTypeInfo1.toString() +
         " dateTimeStringTypeInfo2 " + dateTimeStringTypeInfo2.toString() +
         " dateDiffTestMode " + dateDiffTestMode +
         " columnScalarMode " + columnScalarMode +
         " vectorExpression " + vectorExpression.toString());
+    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;

@@ -18,15 +18,14 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -34,6 +33,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.apache.hadoop.hive.shims.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.ql.ErrorMsg.FILE_NOT_FOUND;
 
 //TODO: this object is created once to call one method and then immediately destroyed.
 //So it's basically just a roundabout way to pass arguments to a static method. Simplify?
@@ -157,11 +159,15 @@ public class FileOperations {
         }
         done = true;
       } catch (IOException e) {
+        if (e instanceof FileNotFoundException) {
+          logger.error("exporting data files in dir : " + dataPathList + " to " + exportRootDataDir + " failed");
+          throw new FileNotFoundException(FILE_NOT_FOUND.format(e.getMessage()));
+        }
         repeat++;
         logger.info("writeFilesList failed", e);
         if (repeat >= FileUtils.MAX_IO_ERROR_RETRY) {
           logger.error("exporting data files in dir : " + dataPathList + " to " + exportRootDataDir + " failed");
-          throw e;
+          throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
         }
 
         int sleepTime = FileUtils.getSleepTime(repeat - 1);

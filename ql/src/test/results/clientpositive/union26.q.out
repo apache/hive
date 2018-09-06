@@ -53,6 +53,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((ds = '2008-04-08') and (hr = '11') and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -65,6 +66,7 @@ STAGE PLANS:
                 value expressions: value (type: string)
           TableScan
             alias: b
+            filterExpr: ((ds = '2008-04-08') and (hr = '12') and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -110,6 +112,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: bigint)
           TableScan
             alias: srcpart
+            filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

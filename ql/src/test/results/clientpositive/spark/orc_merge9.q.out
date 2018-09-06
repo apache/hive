@@ -35,8 +35,8 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@ts_merge
 Found 2 items
--rw-r--r--   3 ### USER ### ### GROUP ###     246402 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###     246402 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       2298 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       2298 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select count(*) from ts_merge
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ts_merge
@@ -64,7 +64,7 @@ POSTHOOK: Input: default@ts_merge
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 50000
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###     457164 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       4260 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: create table a_merge like alltypesorc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -102,7 +102,7 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@a_merge
 Found 2 items
--rw-r--r--   3 ### USER ### ### GROUP ###     295711 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###     295765 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###     295616 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select count(*) from a_merge
 PREHOOK: type: QUERY
@@ -131,7 +131,7 @@ POSTHOOK: Input: default@a_merge
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 24576
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###     590654 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###     590716 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: insert into table a_merge select * from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -153,8 +153,8 @@ POSTHOOK: Lineage: a_merge.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSch
 POSTHOOK: Lineage: a_merge.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: a_merge.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 Found 2 items
--rw-r--r--   3 ### USER ### ### GROUP ###     590654 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###     295711 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###     590716 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###     295765 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select count(*) from a_merge
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_merge
@@ -182,4 +182,4 @@ POSTHOOK: Input: default@a_merge
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 36864
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###     885549 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###     885665 ### HDFS DATE ### hdfs://### HDFS PATH ###

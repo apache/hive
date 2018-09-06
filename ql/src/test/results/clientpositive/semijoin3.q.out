@@ -57,6 +57,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n59
+            filterExpr: (key = 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 0) (type: boolean)
@@ -70,6 +71,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2_n37
+            filterExpr: (key = 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 0) (type: boolean)

@@ -376,7 +376,9 @@ public class HiveStatement implements java.sql.Statement {
          * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
          */
         statusResp = client.GetOperationStatus(statusReq);
-        inPlaceUpdateStream.update(statusResp.getProgressUpdateResponse());
+        if(!isOperationComplete) {
+          inPlaceUpdateStream.update(statusResp.getProgressUpdateResponse());
+        }
         Utils.verifySuccessWithInfo(statusResp.getStatus());
         if (statusResp.isSetOperationState()) {
           switch (statusResp.getOperationState()) {
@@ -509,7 +511,8 @@ public class HiveStatement implements java.sql.Statement {
   @Override
   public int executeUpdate(String sql) throws SQLException {
     execute(sql);
-    return 0;
+    return getUpdateCount();
+    //return getLargeUpdateCount(); - not currently implemented... wrong type
   }
 
   /*

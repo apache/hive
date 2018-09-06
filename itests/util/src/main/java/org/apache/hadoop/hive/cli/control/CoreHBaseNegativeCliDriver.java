@@ -34,7 +34,6 @@ import org.junit.Before;
 public class CoreHBaseNegativeCliDriver extends CliAdapter {
 
   private HBaseQTestUtil qt;
-  private static HBaseTestSetup setup = new HBaseTestSetup();
 
   public CoreHBaseNegativeCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
@@ -42,20 +41,27 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
 
   @Override
   public void beforeClass() throws Exception {
-  }
-
-  // hmm..this looks a bit wierd...setup boots qtestutil...this part used to be in beforeclass
-  @Override
-  @Before
-  public void setUp() {
-
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
     try {
       qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
-      setup, initScript, cleanupScript);
+          new HBaseTestSetup(), initScript, cleanupScript);
+
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in static initialization: "+e.getMessage());
+    }
+  }
+
+  @Override
+  @Before
+  public void setUp() {
+    try {
+      qt.newSession();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -68,7 +74,8 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
   @After
   public void tearDown() {
     try {
-      qt.shutdown();
+      qt.clearPostTestEffects();
+      qt.clearTestSideEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -80,8 +87,14 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
   @Override
   @AfterClass
   public void shutdown() throws Exception {
-    // closeHBaseConnections
-    setup.tearDown();
+    try {
+      qt.shutdown();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in shutdown");
+    }
   }
 
   @Override
@@ -89,16 +102,8 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
-
       qt.addFile(fpath);
-
-      if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
-        return;
-      }
-
       qt.cliInit(new File(fpath));
-      qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);
       if (ecode == 0) {
         qt.failed(fname, null);
@@ -108,7 +113,6 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
       if (result.getReturnCode() != 0) {
         qt.failedDiff(result.getReturnCode(), fname, result.getCapturedOutput());
       }
-      qt.clearPostTestEffects();
 
     } catch (Exception e) {
       qt.failed(e, fname, null);

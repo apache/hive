@@ -62,18 +62,22 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     ADDFILEFORMAT("add fileformat"), ADDCLUSTERSORTCOLUMN("add cluster sort column"),
     RENAMECOLUMN("rename column"), ADDPARTITION("add partition"), TOUCH("touch"), ARCHIVE("archieve"),
     UNARCHIVE("unarchieve"), ALTERLOCATION("alter location"),
-    DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
+    DROPPARTITION("drop partition"),
+    RENAMEPARTITION("rename partition"), // Note: used in RenamePartitionDesc, not here.
+    ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
-    ALTERPARTITION("alter partition"), COMPACT("compact"),
+    ALTERPARTITION("alter partition"), // Note: this is never used in AlterTableDesc.
+    COMPACT("compact"),
     TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint"), ADDCONSTRAINT("add constraint"),
-    UPDATECOLUMNS("update columns"), OWNER("set owner");
+    UPDATECOLUMNS("update columns"), OWNER("set owner"),
+    UPDATESTATS("update stats"); // Note: used in ColumnStatsUpdateWork, not here.
     ;
 
     private final String name;
     private AlterTableTypes(String name) { this.name = name; }
     public String getName() { return name; }
 
-    public static final List<AlterTableTypes> nonNativeTableAllowedTypes = 
+    public static final List<AlterTableTypes> nonNativeTableAllowedTypes =
         ImmutableList.of(ADDPROPS, DROPPROPS, ADDCOLS);
   }
 
@@ -139,6 +143,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   ReplicationSpec replicationSpec;
   private Long writeId = null;
   PrincipalDesc ownerPrincipal;
+  private boolean isExplicitStatsUpdate, isFullAcidConversion;
 
   public AlterTableDesc() {
   }
@@ -960,11 +965,39 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
 
   @Override
   public boolean mayNeedWriteId() {
-    return getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS
-        && AcidUtils.isToInsertOnlyTable(null, getProps());
+    switch (getOp()) {
+    case ADDPROPS: {
+      return isExplicitStatsUpdate || AcidUtils.isToInsertOnlyTable(null, getProps())
+          || (AcidUtils.isTransactionalTable(getProps()) && !isFullAcidConversion);
+    }
+    case DROPPROPS: return isExplicitStatsUpdate;
+    // The check for the following ones is performed before setting AlterTableDesc into the acid field.
+    // These need write ID and stuff because they invalidate column stats.
+    case RENAMECOLUMN:
+    case RENAME:
+    case REPLACECOLS:
+    case ADDCOLS:
+    case ALTERLOCATION:
+    case UPDATECOLUMNS: return true;
+    // RENAMEPARTITION is handled in RenamePartitionDesc
+    default: return false;
+    }
   }
 
   public Long getWriteId() {
     return this.writeId;
+  }
+
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName() + " for " + getFullTableName();
+  }
+
+  public void setIsExplicitStatsUpdate(boolean b) {
+    this.isExplicitStatsUpdate = b;
+  }
+
+  public void setIsFullAcidConversion(boolean b) {
+    this.isFullAcidConversion = b;
   }
 }

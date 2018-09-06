@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.io.arrow;
 
 import io.netty.buffer.ArrowBuf;
-import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.BitVectorHelper;
@@ -31,26 +30,24 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.IntervalDayVector;
 import org.apache.arrow.vector.IntervalYearVector;
 import org.apache.arrow.vector.SmallIntVector;
-import org.apache.arrow.vector.TimeStampMicroVector;
+import org.apache.arrow.vector.TimeStampMicroTZVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.MapVector;
-import org.apache.arrow.vector.dictionary.Dictionary;
-import org.apache.arrow.vector.dictionary.DictionaryEncoder;
-import org.apache.arrow.vector.dictionary.DictionaryProvider;
+import org.apache.arrow.vector.complex.NullableMapVector;
+import org.apache.arrow.vector.types.TimeUnit;
 import org.apache.arrow.vector.types.Types;
 import org.apache.arrow.vector.types.pojo.ArrowType;
-import org.apache.arrow.vector.types.pojo.DictionaryEncoding;
-import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
@@ -61,29 +58,30 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAssignRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.arrow.memory.BufferAllocator;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_ALLOCATOR_LIMIT;
 import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MICROS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MILLIS_PER_SECOND;
@@ -95,36 +93,60 @@ import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStruc
 import static org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption.WRITABLE;
 import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils.getTypeInfoFromObjectInspector;
 
-class Serializer {
+public class Serializer {
   private final int MAX_BUFFERED_ROWS;
-
-  // Schema
-  private final StructTypeInfo structTypeInfo;
-  private final int fieldSize;
+  private final static byte[] EMPTY_BYTES = new byte[0];
 
   // Hive columns
   private final VectorizedRowBatch vectorizedRowBatch;
   private final VectorAssignRow vectorAssignRow;
   private int batchSize;
+  private BufferAllocator allocator;
+  private List<TypeInfo> fieldTypeInfos;
+  private List<String> fieldNames;
+  private int fieldSize;
 
-  private final Configuration conf;
-  private final BufferAllocator bufferAllocator;
-  private final boolean encode;
-  private long dictionaryId;
-  private DictionaryProvider.MapDictionaryProvider dictionaryProvider;
+  private final NullableMapVector rootVector;
+
+  //Constructor for non-serde serialization
+  public Serializer(Configuration conf, String attemptId, List<TypeInfo> typeInfos, List<String> fieldNames) {
+    this.fieldTypeInfos = typeInfos;
+    this.fieldNames = fieldNames;
+    long childAllocatorLimit = HiveConf.getLongVar(conf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
+    //Use per-task allocator for accounting only, no need to reserve per-task memory
+    long childAllocatorReservation = 0L;
+    //Break out accounting of direct memory per-task, so we can check no memory is leaked when task is completed
+    allocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf).newChildAllocator(
+        attemptId,
+        childAllocatorReservation,
+        childAllocatorLimit);
+    rootVector = NullableMapVector.empty(null, allocator);
+    //These last fields are unused in non-serde usage
+    vectorizedRowBatch = null;
+    vectorAssignRow = null;
+    MAX_BUFFERED_ROWS = 0;
+  }
 
   Serializer(ArrowColumnarBatchSerDe serDe) throws SerDeException {
     MAX_BUFFERED_ROWS = HiveConf.getIntVar(serDe.conf, HIVE_ARROW_BATCH_SIZE);
-    ArrowColumnarBatchSerDe.LOG.info("ArrowColumnarBatchSerDe max number of buffered columns: " +
-        MAX_BUFFERED_ROWS);
-    conf = serDe.conf;
-    bufferAllocator = serDe.rootAllocator;
-    encode = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ARROW_ENCODE);
+    long childAllocatorLimit = HiveConf.getLongVar(serDe.conf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
+    ArrowColumnarBatchSerDe.LOG.info("ArrowColumnarBatchSerDe max number of buffered columns: " + MAX_BUFFERED_ROWS);
+    String childAllocatorName = Thread.currentThread().getName();
+    //Use per-task allocator for accounting only, no need to reserve per-task memory
+    long childAllocatorReservation = 0L;
+    //Break out accounting of direct memory per-task, so we can check no memory is leaked when task is completed
+    allocator = serDe.rootAllocator.newChildAllocator(
+        childAllocatorName,
+        childAllocatorReservation,
+        childAllocatorLimit);
 
     // Schema
-    structTypeInfo = (StructTypeInfo) getTypeInfoFromObjectInspector(serDe.rowObjectInspector);
-    List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+    StructTypeInfo structTypeInfo = (StructTypeInfo) getTypeInfoFromObjectInspector(serDe.rowObjectInspector);
+    fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+    fieldNames = structTypeInfo.getAllStructFieldNames();
     fieldSize = fieldTypeInfos.size();
+    // Init Arrow stuffs
+    rootVector = NullableMapVector.empty(null, allocator);
 
     // Init Hive stuffs
     vectorizedRowBatch = new VectorizedRowBatch(fieldSize);
@@ -142,82 +164,66 @@ class Serializer {
     }
   }
 
-  private ArrowWrapperWritable serializeBatch() {
-    dictionaryProvider = new DictionaryProvider.MapDictionaryProvider();
-    final List<Field> fieldList = new ArrayList<>();
-    final List<FieldVector> vectorList = new ArrayList<>();
+  //Construct an emptyBatch which contains schema-only info
+  public ArrowWrapperWritable emptyBatch() {
+    rootVector.setValueCount(0);
+    for (int fieldIndex = 0; fieldIndex < fieldTypeInfos.size(); fieldIndex++) {
+      final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
+      final String fieldName = fieldNames.get(fieldIndex);
+      final FieldType fieldType = toFieldType(fieldTypeInfo);
+      final FieldVector arrowVector = rootVector.addOrGet(fieldName, fieldType, FieldVector.class);
+      arrowVector.setInitialCapacity(0);
+      arrowVector.allocateNew();
+    }
+    VectorSchemaRoot vectorSchemaRoot = new VectorSchemaRoot(rootVector);
+    return new ArrowWrapperWritable(vectorSchemaRoot, allocator, rootVector);
+  }
+
+  //Used for both:
+  //1. VectorizedRowBatch constructed by batching rows
+  //2. VectorizedRowBatch provided from upstream (isNative)
+  public ArrowWrapperWritable serializeBatch(VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
+    rootVector.setValueCount(0);
 
     for (int fieldIndex = 0; fieldIndex < vectorizedRowBatch.projectionSize; fieldIndex++) {
       final int projectedColumn = vectorizedRowBatch.projectedColumns[fieldIndex];
       final ColumnVector hiveVector = vectorizedRowBatch.cols[projectedColumn];
-      final TypeInfo fieldTypeInfo = structTypeInfo.getAllStructFieldTypeInfos().get(fieldIndex);
-      final String fieldName = structTypeInfo.getAllStructFieldNames().get(fieldIndex);
-      final Field field = toField(fieldName, fieldTypeInfo);
-      final FieldVector arrowVector = field.createVector(bufferAllocator);
-      arrowVector.setInitialCapacity(batchSize);
-      arrowVector.allocateNew();
-      vectorList.add(write(arrowVector, hiveVector, fieldTypeInfo, batchSize, encode));
-      fieldList.add(arrowVector.getField());
-      arrowVector.setValueCount(batchSize);
-    }
-    vectorizedRowBatch.reset();
-
-    VectorSchemaRoot vectorSchemaRoot = new VectorSchemaRoot(fieldList, vectorList, batchSize);
-    batchSize = 0;
-    return new ArrowWrapperWritable(vectorSchemaRoot, dictionaryProvider);
-  }
-
-  private Field toField(String fieldName, TypeInfo typeInfo) {
-    switch (typeInfo.getCategory()) {
-      case PRIMITIVE:
-        return new Field(fieldName, toFieldType(typeInfo), null);
-      case MAP:
-        return toField(fieldName, toStructListTypeInfo((MapTypeInfo) typeInfo));
-      case LIST:
-        {
-          final ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
-          final Field elementField = toField(null, listTypeInfo.getListElementTypeInfo());
-          final List<Field> children = Collections.singletonList(elementField);
-          return new Field(fieldName, toFieldType(typeInfo), children);
-        }
-      case STRUCT:
-        {
-          final List<Field> children = new ArrayList<>();
-          final StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-          final List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
-          final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
-          for (int i = 0; i < fieldNames.size(); i++) {
-            children.add(toField(fieldNames.get(i), fieldTypeInfos.get(i)));
-          }
-          return new Field(fieldName, toFieldType(typeInfo), children);
-        }
-      case UNION:
-      default:
-        throw new IllegalArgumentException();
-    }
-  }
-
-  private FieldType toFieldType(TypeInfo typeInfo) {
-    if (encode) {
-      if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
-        final PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
-        final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
-            primitiveTypeInfo.getPrimitiveCategory();
-        switch (primitiveCategory) {
-          case VARCHAR:
-          case CHAR:
-          case STRING:
-            {
-              return new FieldType(true, toArrowType(TypeInfoFactory.intTypeInfo),
-                  new DictionaryEncoding(dictionaryId++, false, null));
-            }
-        }
+      final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
+      final String fieldName = fieldNames.get(fieldIndex);
+      final FieldType fieldType = toFieldType(fieldTypeInfo);
+      //Reuse existing FieldVector buffers
+      //since we always call setValue or setNull for each row
+      boolean fieldExists = false;
+      if(rootVector.getChild(fieldName) != null) {
+        fieldExists = true;
       }
+      final FieldVector arrowVector = rootVector.addOrGet(fieldName, fieldType, FieldVector.class);
+      if(fieldExists) {
+        arrowVector.setValueCount(isNative ? vectorizedRowBatch.size : batchSize);
+      } else {
+        arrowVector.setInitialCapacity(isNative ? vectorizedRowBatch.size : batchSize);
+        arrowVector.allocateNew();
+      }
+      write(arrowVector, hiveVector, fieldTypeInfo, isNative ? vectorizedRowBatch.size : batchSize, vectorizedRowBatch, isNative);
     }
+    if(!isNative) {
+      //Only mutate batches that are constructed by this serde
+      vectorizedRowBatch.reset();
+      rootVector.setValueCount(batchSize);
+    } else {
+      rootVector.setValueCount(vectorizedRowBatch.size);
+    }
+
+    batchSize = 0;
+    VectorSchemaRoot vectorSchemaRoot = new VectorSchemaRoot(rootVector);
+    return new ArrowWrapperWritable(vectorSchemaRoot, allocator, rootVector);
+  }
+
+  private static FieldType toFieldType(TypeInfo typeInfo) {
     return new FieldType(true, toArrowType(typeInfo), null);
   }
 
-  private ArrowType toArrowType(TypeInfo typeInfo) {
+  private static ArrowType toArrowType(TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         switch (((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) {
@@ -242,8 +248,8 @@ class Serializer {
           case DATE:
             return Types.MinorType.DATEDAY.getType();
           case TIMESTAMP:
-            // HIVE-19723: Prefer microsecond because Spark supports it
-            return Types.MinorType.TIMESTAMPMICRO.getType();
+            // HIVE-19853: Prefer timestamp in microsecond with time zone because Spark supports it
+            return new ArrowType.Timestamp(TimeUnit.MICROSECOND, "UTC");
           case BINARY:
             return Types.MinorType.VARBINARY.getType();
           case DECIMAL:
@@ -271,37 +277,35 @@ class Serializer {
     }
   }
 
-  private FieldVector write(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo,
-      int size, boolean encode) {
+  private static void write(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo, int size,
+      VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
-        return writePrimitive(arrowVector, hiveVector, (PrimitiveTypeInfo) typeInfo, size, encode);
+        writePrimitive(arrowVector, hiveVector, typeInfo, size, vectorizedRowBatch, isNative);
+        break;
       case LIST:
-        return writeList((ListVector) arrowVector, (ListColumnVector) hiveVector,
-            (ListTypeInfo) typeInfo, size, encode);
+        writeList((ListVector) arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
+        break;
       case STRUCT:
-        {
-          @SuppressWarnings("unchecked")
-          FieldVector ret = writeStruct((MapVector) arrowVector, (StructColumnVector) hiveVector,
-              (StructTypeInfo) typeInfo, size, encode);
-          return ret;
-        }
+        writeStruct((MapVector) arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
+        break;
       case UNION:
-        return writeUnion(arrowVector, hiveVector, typeInfo, size, encode);
+        writeUnion(arrowVector, hiveVector, typeInfo, size, vectorizedRowBatch, isNative);
+        break;
       case MAP:
-        return writeMap((ListVector) arrowVector, (MapColumnVector) hiveVector,
-            (MapTypeInfo) typeInfo, size, encode);
+        writeMap((ListVector) arrowVector, (MapColumnVector) hiveVector, (MapTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
+        break;
       default:
         throw new IllegalArgumentException();
-    }
+      }
   }
 
-  private FieldVector writeMap(ListVector arrowVector, MapColumnVector hiveVector,
-      MapTypeInfo typeInfo, int size, boolean encode) {
+  private static void writeMap(ListVector arrowVector, MapColumnVector hiveVector, MapTypeInfo typeInfo,
+      int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final ListTypeInfo structListTypeInfo = toStructListTypeInfo(typeInfo);
     final ListColumnVector structListVector = toStructListVector(hiveVector);
 
-    write(arrowVector, structListVector, structListTypeInfo, size, encode);
+    write(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative);
 
     final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
@@ -311,12 +315,10 @@ class Serializer {
         BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
       }
     }
-
-    return arrowVector;
   }
 
-  private FieldVector writeUnion(FieldVector arrowVector, ColumnVector hiveVector,
-      TypeInfo typeInfo, int size, boolean encode) {
+  private static void writeUnion(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo,
+      int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
     final List<TypeInfo> objectTypeInfos = unionTypeInfo.getAllUnionObjectTypeInfos();
     final UnionColumnVector hiveUnionVector = (UnionColumnVector) hiveVector;
@@ -326,13 +328,11 @@ class Serializer {
     final ColumnVector hiveObjectVector = hiveObjectVectors[tag];
     final TypeInfo objectTypeInfo = objectTypeInfos.get(tag);
 
-    write(arrowVector, hiveObjectVector, objectTypeInfo, size, encode);
-
-    return arrowVector;
+    write(arrowVector, hiveObjectVector, objectTypeInfo, size, vectorizedRowBatch, isNative);
   }
 
-  private FieldVector writeStruct(MapVector arrowVector, StructColumnVector hiveVector,
-      StructTypeInfo typeInfo, int size, boolean encode) {
+  private static void writeStruct(MapVector arrowVector, StructColumnVector hiveVector,
+      StructTypeInfo typeInfo, int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final List<String> fieldNames = typeInfo.getAllStructFieldNames();
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
     final ColumnVector[] hiveFieldVectors = hiveVector.fields;
@@ -342,11 +342,12 @@ class Serializer {
       final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
       final ColumnVector hiveFieldVector = hiveFieldVectors[fieldIndex];
       final String fieldName = fieldNames.get(fieldIndex);
-      final FieldVector arrowFieldVector = arrowVector.addOrGet(fieldName,
-          toFieldType(fieldTypeInfos.get(fieldIndex)), FieldVector.class);
+      final FieldVector arrowFieldVector =
+          arrowVector.addOrGet(fieldName,
+              toFieldType(fieldTypeInfos.get(fieldIndex)), FieldVector.class);
       arrowFieldVector.setInitialCapacity(size);
       arrowFieldVector.allocateNew();
-      write(arrowFieldVector, hiveFieldVector, fieldTypeInfo, size, encode);
+      write(arrowFieldVector, hiveFieldVector, fieldTypeInfo, size, vectorizedRowBatch, isNative);
     }
 
     final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
@@ -357,14 +358,10 @@ class Serializer {
         BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
       }
     }
-
-    @SuppressWarnings("unchecked")
-    FieldVector ret = (FieldVector) arrowVector;
-    return ret;
   }
 
-  private FieldVector writeList(ListVector arrowVector, ListColumnVector hiveVector,
-      ListTypeInfo typeInfo, int size, boolean encode) {
+  private static void writeList(ListVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo, int size,
+      VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final int OFFSET_WIDTH = 4;
     final TypeInfo elementTypeInfo = typeInfo.getListElementTypeInfo();
     final ColumnVector hiveElementVector = hiveVector.child;
@@ -373,7 +370,7 @@ class Serializer {
     arrowElementVector.setInitialCapacity(hiveVector.childCount);
     arrowElementVector.allocateNew();
 
-    write(arrowElementVector, hiveElementVector, elementTypeInfo, hiveVector.childCount, encode);
+    write(arrowElementVector, hiveElementVector, elementTypeInfo, hiveVector.childCount, vectorizedRowBatch, isNative);
 
     final ArrowBuf offsetBuffer = arrowVector.getOffsetBuffer();
     int nextOffset = 0;
@@ -388,257 +385,259 @@ class Serializer {
       }
     }
     offsetBuffer.setInt(size * OFFSET_WIDTH, nextOffset);
-    return arrowVector;
   }
 
-  private FieldVector writePrimitive(FieldVector arrowVector, ColumnVector hiveVector,
-      PrimitiveTypeInfo primitiveTypeInfo, int size, boolean encode) {
-    switch (primitiveTypeInfo.getPrimitiveCategory()) {
-      case BOOLEAN:
-        {
-          final BitVector bitVector = (BitVector) arrowVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              bitVector.setNull(i);
-            } else {
-              bitVector.set(i, (int) ((LongColumnVector) hiveVector).vector[i]);
-            }
-          }
-          return bitVector;
+  //Handle cases for both internally constructed
+  //and externally provided (isNative) VectorRowBatch
+  private static void writePrimitive(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo, int size,
+      VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
+    final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
+        ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+    switch (primitiveCategory) {
+    case BOOLEAN:
+    {
+      if(isNative) {
+      writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, boolNullSetter, boolValueSetter, typeInfo);
+        return;
+      }
+      final BitVector bitVector = (BitVector) arrowVector;
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          boolNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          boolValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case BYTE:
-        {
-          final TinyIntVector tinyIntVector = (TinyIntVector) arrowVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              tinyIntVector.setNull(i);
-            } else {
-              tinyIntVector.set(i, (byte) ((LongColumnVector) hiveVector).vector[i]);
-            }
-          }
-          return tinyIntVector;
+      }
+    }
+    break;
+    case BYTE:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, byteNullSetter, byteValueSetter, typeInfo);
+        return;
+      }
+      final TinyIntVector tinyIntVector = (TinyIntVector) arrowVector;
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          byteNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          byteValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case SHORT:
-        {
-          final SmallIntVector smallIntVector = (SmallIntVector) arrowVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              smallIntVector.setNull(i);
-            } else {
-              smallIntVector.set(i, (short) ((LongColumnVector) hiveVector).vector[i]);
-            }
-          }
-          return smallIntVector;
+      }
+    }
+    break;
+    case SHORT:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, shortNullSetter, shortValueSetter, typeInfo);
+        return;
+      }
+      final SmallIntVector smallIntVector = (SmallIntVector) arrowVector;
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          shortNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          shortValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case INT:
-        {
-          final IntVector intVector = (IntVector) arrowVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              intVector.setNull(i);
-            } else {
-              intVector.set(i, (int) ((LongColumnVector) hiveVector).vector[i]);
-            }
-          }
-          return intVector;
+      }
+    }
+    break;
+    case INT:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, intNullSetter, intValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          intNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          intValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case LONG:
-        {
-          final BigIntVector bigIntVector = (BigIntVector) arrowVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              bigIntVector.setNull(i);
-            } else {
-              bigIntVector.set(i, ((LongColumnVector) hiveVector).vector[i]);
-            }
-          }
-          return bigIntVector;
+      }
+    }
+    break;
+    case LONG:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, longNullSetter, longValueSetter, typeInfo);
+        return;
+      }
+      final BigIntVector bigIntVector = (BigIntVector) arrowVector;
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          longNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          longValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case FLOAT:
-        {
-          final Float4Vector float4Vector = (Float4Vector) arrowVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              float4Vector.setNull(i);
-            } else {
-              float4Vector.set(i, (float) ((DoubleColumnVector) hiveVector).vector[i]);
-            }
-          }
-          return float4Vector;
+      }
+    }
+    break;
+    case FLOAT:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, floatNullSetter, floatValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          floatNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          floatValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case DOUBLE:
-        {
-          final Float8Vector float8Vector = (Float8Vector) arrowVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              float8Vector.setNull(i);
-            } else {
-              float8Vector.set(i, ((DoubleColumnVector) hiveVector).vector[i]);
-            }
-          }
-          return float8Vector;
+      }
+    }
+    break;
+    case DOUBLE:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, doubleNullSetter, doubleValueSetter, typeInfo);
+        return;
+      }
+      final Float8Vector float8Vector = (Float8Vector) arrowVector;
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          doubleNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          doubleValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case VARCHAR:
-      case CHAR:
-      case STRING:
-        {
-          if (encode) {
-            final BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
-            final VarCharVector varCharVector = (VarCharVector)
-                Types.MinorType.VARCHAR.getNewVector(null,
-                    FieldType.nullable(Types.MinorType.VARCHAR.getType()), bufferAllocator, null);
-            for (int i = 0; i < size; i++) {
-              if (hiveVector.isNull[i]) {
-                varCharVector.setNull(i);
-              } else {
-                varCharVector.setSafe(i, bytesVector.vector[i], bytesVector.start[i],
-                    bytesVector.length[i]);
-              }
-            }
-            arrowVector.setValueCount(size);
-
-            int j = 0;
-            final Set<ByteBuffer> occurrences = new HashSet<>();
-            for (int i = 0; i < size; i++) {
-              if (!bytesVector.isNull[i]) {
-                final ByteBuffer byteBuffer =
-                    ByteBuffer.wrap(bytesVector.vector[j], bytesVector.start[j],
-                        bytesVector.length[j]);
-                if (!occurrences.contains(byteBuffer)) {
-                  occurrences.add(byteBuffer);
-                }
-                j++;
-              }
-            }
-            final FieldType fieldType = arrowVector.getField().getFieldType();
-            final VarCharVector dictionaryVector = (VarCharVector) Types.MinorType.VARCHAR.
-                getNewVector(null, fieldType, bufferAllocator, null);
-            j = 0;
-            for (ByteBuffer occurrence : occurrences) {
-              final int start = occurrence.position();
-              final int length = occurrence.limit() - start;
-              dictionaryVector.setSafe(j++, occurrence.array(), start, length);
-            }
-            dictionaryVector.setValueCount(occurrences.size());
-            varCharVector.setValueCount(size);
-            final DictionaryEncoding dictionaryEncoding = arrowVector.getField().getDictionary();
-            final Dictionary dictionary = new Dictionary(dictionaryVector, dictionaryEncoding);
-            dictionaryProvider.put(dictionary);
-            final IntVector encodedVector = (IntVector) DictionaryEncoder.encode(varCharVector,
-                dictionary);
-            encodedVector.makeTransferPair(arrowVector).transfer();
-            return arrowVector;
-          } else {
-            final BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
-            final VarCharVector varCharVector = (VarCharVector) arrowVector;
-            for (int i = 0; i < size; i++) {
-              if (hiveVector.isNull[i]) {
-                varCharVector.setNull(i);
-              } else {
-                varCharVector.setSafe(i, bytesVector.vector[i], bytesVector.start[i],
-                    bytesVector.length[i]);
-              }
-            }
-            varCharVector.setValueCount(size);
-
-            return varCharVector;
-          }
+      }
+    }
+    break;
+    case CHAR:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, charNullSetter, charValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          charNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          charValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case DATE:
-        {
-          final DateDayVector dateDayVector = (DateDayVector) arrowVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              dateDayVector.setNull(i);
-            } else {
-              dateDayVector.set(i, (int) ((LongColumnVector) hiveVector).vector[i]);
-            }
-          }
-          return dateDayVector;
+      }
+    }
+    break;
+    case STRING:
+    case VARCHAR:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, stringNullSetter, stringValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          stringNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          stringValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case TIMESTAMP:
-        {
-          final TimeStampMicroVector timeStampMicroVector = (TimeStampMicroVector) arrowVector;
-          final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              timeStampMicroVector.setNull(i);
-            } else {
-              // Time = second + sub-second
-              final long secondInMillis = timestampColumnVector.getTime(i);
-              final long secondInMicros = (secondInMillis - secondInMillis % MILLIS_PER_SECOND) * MICROS_PER_MILLIS;
-              final long subSecondInMicros = timestampColumnVector.getNanos(i) / NS_PER_MICROS;
-
-              if ((secondInMillis > 0 && secondInMicros < 0) || (secondInMillis < 0 && secondInMicros > 0)) {
-                // If the timestamp cannot be represented in long microsecond, set it as a null value
-                timeStampMicroVector.setNull(i);
-              } else {
-                timeStampMicroVector.set(i, secondInMicros + subSecondInMicros);
-              }
-            }
-          }
-          return timeStampMicroVector;
+      }
+    }
+    break;
+    case DATE:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, dateNullSetter, dateValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          dateNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          dateValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case BINARY:
-        {
-          final VarBinaryVector varBinaryVector = (VarBinaryVector) arrowVector;
-          final BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              varBinaryVector.setNull(i);
-            } else {
-              varBinaryVector.setSafe(i, bytesVector.vector[i], bytesVector.start[i], bytesVector.length[i]);
-            }
-          }
-          return varBinaryVector;
+      }
+    }
+    break;
+    case TIMESTAMP:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, timestampNullSetter, timestampValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          timestampNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          timestampValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case DECIMAL:
-        {
-          final DecimalVector decimalVector = (DecimalVector) arrowVector;
-          final int scale = decimalVector.getScale();
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              decimalVector.setNull(i);
-            } else {
-              decimalVector.set(i, ((DecimalColumnVector) hiveVector).vector[i].getHiveDecimal().
-                  bigDecimalValue().setScale(scale));
-            }
-          }
-          return decimalVector;
+      }
+    }
+    break;
+    case BINARY:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, binaryNullSetter, binaryValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          binaryNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          binaryValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
-      case INTERVAL_YEAR_MONTH:
-        {
-          final IntervalYearVector intervalYearVector = (IntervalYearVector) arrowVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              intervalYearVector.setNull(i);
-            } else {
-              intervalYearVector.set(i, (int) ((LongColumnVector) hiveVector).vector[i]);
-            }
-          }
-          return intervalYearVector;
+      }
+    }
+    break;
+    case DECIMAL:
+    {
+      if(isNative) {
+        if(hiveVector instanceof DecimalColumnVector) {
+          writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, decimalNullSetter, decimalValueSetter, typeInfo);
+        } else {
+          writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, decimalNullSetter, decimal64ValueSetter, typeInfo);
         }
-      case INTERVAL_DAY_TIME:
-        {
-          final IntervalDayVector intervalDayVector = (IntervalDayVector) arrowVector;
-          final IntervalDayTimeColumnVector intervalDayTimeColumnVector =
-              (IntervalDayTimeColumnVector) hiveVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              intervalDayVector.setNull(i);
-            } else {
-              final long totalSeconds = intervalDayTimeColumnVector.getTotalSeconds(i);
-              final long days = totalSeconds / SECOND_PER_DAY;
-              final long millis =
-                  (totalSeconds - days * SECOND_PER_DAY) * MILLIS_PER_SECOND +
-                      intervalDayTimeColumnVector.getNanos(i) / NS_PER_MILLIS;
-              intervalDayVector.set(i, (int) days, (int) millis);
-            }
-          }
-          return intervalDayVector;
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          decimalNullSetter.accept(i, arrowVector, hiveVector);
+        } else if(hiveVector instanceof DecimalColumnVector) {
+          decimalValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
+        } else if(hiveVector instanceof Decimal64ColumnVector) {
+          decimal64ValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
+        } else {
+          throw new IllegalArgumentException("Unsupported vector column type: " + hiveVector.getClass().getName());
         }
-      default:
-        throw new IllegalArgumentException();
+      }
+    }
+    break;
+    case INTERVAL_YEAR_MONTH:
+    {
+      if(isNative) {
+       writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, intervalYearMonthNullSetter, intervalYearMonthValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          intervalYearMonthNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          intervalYearMonthValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
+        }
+      }
+    }
+    break;
+    case INTERVAL_DAY_TIME:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, intervalDayTimeNullSetter, intervalDayTimeValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          intervalDayTimeNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          intervalDayTimeValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
+        }
+      }
+    }
+    break;
+    case VOID:
+    case UNKNOWN:
+    case TIMESTAMPLOCALTZ:
+    default:
+      throw new IllegalArgumentException();
     }
   }
 
@@ -646,7 +645,7 @@ class Serializer {
     // if row is null, it means there are no more rows (closeOp()).
     // another case can be that the buffer is full.
     if (obj == null) {
-      return serializeBatch();
+      return serializeBatch(vectorizedRowBatch, false);
     }
     List<Object> standardObjects = new ArrayList<Object>();
     ObjectInspectorUtils.copyToStandardObject(standardObjects, obj,
@@ -655,8 +654,231 @@ class Serializer {
     vectorAssignRow.assignRow(vectorizedRowBatch, batchSize, standardObjects, fieldSize);
     batchSize++;
     if (batchSize == MAX_BUFFERED_ROWS) {
-      return serializeBatch();
+      return serializeBatch(vectorizedRowBatch, false);
     }
     return null;
   }
+
+ //Use a provided nullSetter and valueSetter function to populate
+ //fieldVector from hiveVector
+ private static void writeGeneric(final FieldVector fieldVector, final ColumnVector hiveVector, final int size, final boolean selectedInUse, final int[] selected, final IntAndVectorsConsumer nullSetter, final IntIntAndVectorsConsumer valueSetter, TypeInfo typeInfo)
+  {
+     final boolean[] inputIsNull = hiveVector.isNull;
+     final int[] sel = selected;
+
+     if (hiveVector.isRepeating) {
+       if (hiveVector.noNulls || !inputIsNull[0]) {
+         for(int i = 0; i < size; i++) {
+           //Fill n rows with value in row 0
+           valueSetter.accept(i, 0, fieldVector, hiveVector, typeInfo);
+         }
+       } else {
+         for(int i = 0; i < size; i++) {
+           //Fill n rows with NULL
+           nullSetter.accept(i, fieldVector, hiveVector);
+         }
+       }
+       return;
+     }
+
+     if (hiveVector.noNulls) {
+       if (selectedInUse) {
+         for(int logical = 0; logical < size; logical++) {
+           final int batchIndex = sel[logical];
+           //Add row batchIndex
+           valueSetter.accept(logical, batchIndex, fieldVector, hiveVector, typeInfo);
+         }
+       } else {
+         for(int batchIndex = 0; batchIndex < size; batchIndex++) {
+           //Add row batchIndex
+           valueSetter.accept(batchIndex, batchIndex, fieldVector, hiveVector, typeInfo);
+         }
+       }
+     } else {
+       if (selectedInUse) {
+         for(int logical = 0; logical < size; logical++) {
+           final int batchIndex = sel[logical];
+           if (inputIsNull[batchIndex]) {
+             //Add NULL
+             nullSetter.accept(batchIndex, fieldVector, hiveVector);
+           } else {
+             //Add row batchIndex
+             valueSetter.accept(logical, batchIndex, fieldVector, hiveVector, typeInfo);
+          }
+        }
+       } else {
+         for(int batchIndex = 0; batchIndex < size; batchIndex++) {
+           if (inputIsNull[batchIndex]) {
+             //Add NULL
+             nullSetter.accept(batchIndex, fieldVector, hiveVector);
+           } else {
+             //Add row batchIndex
+             valueSetter.accept(batchIndex, batchIndex, fieldVector, hiveVector, typeInfo);
+         }
+       }
+     }
+   }
+  }
+
+  //nullSetters and valueSetter for each type
+
+  //bool
+  private static final IntAndVectorsConsumer boolNullSetter = (i, arrowVector, hiveVector)
+      -> ((BitVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer boolValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> ((BitVector) arrowVector).set(i, (int) ((LongColumnVector) hiveVector).vector[j]);
+
+  //byte
+  private static final IntAndVectorsConsumer byteNullSetter = (i, arrowVector, hiveVector)
+      -> ((TinyIntVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer byteValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> ((TinyIntVector) arrowVector).set(i, (byte) ((LongColumnVector) hiveVector).vector[j]);
+
+  //short
+  private static final IntAndVectorsConsumer shortNullSetter = (i, arrowVector, hiveVector)
+      -> ((SmallIntVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer shortValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> ((SmallIntVector) arrowVector).set(i, (short) ((LongColumnVector) hiveVector).vector[j]);
+
+  //int
+  private static final IntAndVectorsConsumer intNullSetter = (i, arrowVector, hiveVector)
+      -> ((IntVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer intValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> ((IntVector) arrowVector).set(i, (int) ((LongColumnVector) hiveVector).vector[j]);
+
+  //long
+  private static final IntAndVectorsConsumer longNullSetter = (i, arrowVector, hiveVector)
+      -> ((BigIntVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer longValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> ((BigIntVector) arrowVector).set(i, ((LongColumnVector) hiveVector).vector[j]);
+
+  //float
+  private static final IntAndVectorsConsumer floatNullSetter = (i, arrowVector, hiveVector)
+      -> ((Float4Vector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer floatValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> ((Float4Vector) arrowVector).set(i, (float) ((DoubleColumnVector) hiveVector).vector[j]);
+
+  //double
+  private static final IntAndVectorsConsumer doubleNullSetter = (i, arrowVector, hiveVector)
+      -> ((Float8Vector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer doubleValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> ((Float8Vector) arrowVector).set(i, ((DoubleColumnVector) hiveVector).vector[j]);
+
+  //string/varchar
+  private static final IntAndVectorsConsumer stringNullSetter = (i, arrowVector, hiveVector)
+      -> ((VarCharVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer stringValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> {
+    BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
+    ((VarCharVector) arrowVector).setSafe(i, bytesVector.vector[j], bytesVector.start[j], bytesVector.length[j]);
+  };
+
+  //fixed-length CHAR
+  private static final IntAndVectorsConsumer charNullSetter = (i, arrowVector, hiveVector)
+      -> ((VarCharVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer charValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> {
+    BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
+    VarCharVector varCharVector = (VarCharVector) arrowVector;
+    byte[] bytes = bytesVector.vector[j];
+    int length = bytesVector.length[j];
+    int start = bytesVector.start[j];
+
+    if (bytes == null) {
+      bytes = EMPTY_BYTES;
+      start = 0;
+      length = 0;
+    }
+
+    final CharTypeInfo charTypeInfo = (CharTypeInfo) typeInfo;
+    final int paddedLength = charTypeInfo.getLength();
+    final byte[] paddedBytes = StringExpr.padRight(bytes, start, length, paddedLength);
+    varCharVector.setSafe(i, paddedBytes, 0, paddedBytes.length);
+  };
+
+  //date
+  private static final IntAndVectorsConsumer dateNullSetter = (i, arrowVector, hiveVector)
+      -> ((DateDayVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer dateValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> ((DateDayVector) arrowVector).set(i, (int) ((LongColumnVector) hiveVector).vector[j]);
+
+  //timestamp
+  private static final IntAndVectorsConsumer timestampNullSetter = (i, arrowVector, hiveVector)
+      -> ((TimeStampMicroTZVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer timestampValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> {
+    final TimeStampMicroTZVector timeStampMicroTZVector = (TimeStampMicroTZVector) arrowVector;
+    final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
+    // Time = second + sub-second
+    final long secondInMillis = timestampColumnVector.getTime(j);
+    final long secondInMicros = (secondInMillis - secondInMillis % MILLIS_PER_SECOND) * MICROS_PER_MILLIS;
+    final long subSecondInMicros = timestampColumnVector.getNanos(j) / NS_PER_MICROS;
+    if ((secondInMillis > 0 && secondInMicros < 0) || (secondInMillis < 0 && secondInMicros > 0)) {
+      // If the timestamp cannot be represented in long microsecond, set it as a null value
+      timeStampMicroTZVector.setNull(i);
+    } else {
+      timeStampMicroTZVector.set(i, secondInMicros + subSecondInMicros);
+    }
+  };
+
+  //binary
+  private static final IntAndVectorsConsumer binaryNullSetter = (i, arrowVector, hiveVector)
+      -> ((VarBinaryVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer binaryValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> {
+    BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
+    ((VarBinaryVector) arrowVector).setSafe(i, bytesVector.vector[j], bytesVector.start[j], bytesVector.length[j]);
+  };
+
+  //decimal and decimal64
+  private static final IntAndVectorsConsumer decimalNullSetter = (i, arrowVector, hiveVector)
+      -> ((DecimalVector) arrowVector).setNull(i);
+  private static final IntIntAndVectorsConsumer decimalValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> {
+    final DecimalVector decimalVector = (DecimalVector) arrowVector;
+    final int scale = decimalVector.getScale();
+    decimalVector.set(i, ((DecimalColumnVector) hiveVector).vector[j].getHiveDecimal().bigDecimalValue().setScale(scale));
+  };
+  private static final IntIntAndVectorsConsumer decimal64ValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> {
+    final DecimalVector decimalVector = (DecimalVector) arrowVector;
+    final int scale = decimalVector.getScale();
+    HiveDecimalWritable decimalHolder = new HiveDecimalWritable();
+    decimalHolder.setFromLongAndScale(((Decimal64ColumnVector) hiveVector).vector[j], scale);
+    decimalVector.set(i, decimalHolder.getHiveDecimal().bigDecimalValue().setScale(scale));
+  };
+
+  //interval year
+  private static final IntAndVectorsConsumer intervalYearMonthNullSetter = (i, arrowVector, hiveVector)
+      -> ((IntervalYearVector) arrowVector).setNull(i);
+  private static IntIntAndVectorsConsumer intervalYearMonthValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> ((IntervalYearVector) arrowVector).set(i, (int) ((LongColumnVector) hiveVector).vector[j]);
+
+  //interval day
+  private static final IntAndVectorsConsumer intervalDayTimeNullSetter = (i, arrowVector, hiveVector)
+      -> ((IntervalDayVector) arrowVector).setNull(i);
+  private static IntIntAndVectorsConsumer intervalDayTimeValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
+      -> {
+    final IntervalDayVector intervalDayVector = (IntervalDayVector) arrowVector;
+    final IntervalDayTimeColumnVector intervalDayTimeColumnVector =
+        (IntervalDayTimeColumnVector) hiveVector;
+    long totalSeconds = intervalDayTimeColumnVector.getTotalSeconds(j);
+    final long days = totalSeconds / SECOND_PER_DAY;
+    final long millis =
+        (totalSeconds - days * SECOND_PER_DAY) * MILLIS_PER_SECOND +
+            intervalDayTimeColumnVector.getNanos(j) / NS_PER_MILLIS;
+    intervalDayVector.set(i, (int) days, (int) millis);
+  };
+
+  //Used for setting null at arrowVector[i]
+  private interface IntAndVectorsConsumer {
+    void accept(int i, FieldVector arrowVector, ColumnVector hiveVector);
+  }
+
+  //Used to copy value from hiveVector[j] -> arrowVector[i]
+  //since hiveVector might be referenced through vector.selected
+  private interface IntIntAndVectorsConsumer {
+    void accept(int i, int j, FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo);
+  }
+
 }

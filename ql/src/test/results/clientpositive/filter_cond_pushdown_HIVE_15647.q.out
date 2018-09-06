@@ -35,6 +35,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: sales
+            filterExpr: ((store_number = customer_id) and store_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((store_number = customer_id) and store_id is not null) (type: boolean)
@@ -46,6 +47,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: store
+            filterExpr: (store_id is not null and salad_bar) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (salad_bar and store_id is not null) (type: boolean)
@@ -125,6 +127,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: sales
+            filterExpr: ((store_number = customer_id) and store_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((store_number = customer_id) and store_id is not null) (type: boolean)
@@ -136,6 +139,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: store
+            filterExpr: (store_id is not null and salad_bar) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (salad_bar and store_id is not null) (type: boolean)
@@ -215,6 +219,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: sales
+            filterExpr: ((store_number = customer_id) and store_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((store_number = customer_id) and store_id is not null) (type: boolean)
@@ -226,6 +231,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: store
+            filterExpr: (store_id is not null and (salad_bar = true)) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((salad_bar = true) and store_id is not null) (type: boolean)
@@ -305,6 +311,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: sales
+            filterExpr: (store_id is not null and (store_number > customer_id)) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((store_number > customer_id) and store_id is not null) (type: boolean)
@@ -316,6 +323,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: store
+            filterExpr: (store_id is not null and (salad_bar = false)) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((salad_bar = false) and store_id is not null) (type: boolean)

@@ -29,9 +29,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hive.common.util.Murmur3;
@@ -39,13 +39,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
@@ -720,7 +718,7 @@ public final class ObjectInspectorUtils {
       case DATE:
         return ((DateObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
       case TIMESTAMP:
-        TimestampWritable t = ((TimestampObjectInspector) poi)
+        TimestampWritableV2 t = ((TimestampObjectInspector) poi)
             .getPrimitiveWritableObject(o);
         return t.hashCode();
       case TIMESTAMPLOCALTZ:
@@ -857,7 +855,7 @@ public final class ObjectInspectorUtils {
             byteBuffer.putInt(((DateObjectInspector) poi).getPrimitiveWritableObject(o).getDays());
             return Murmur3.hash32(byteBuffer.array(), 4);
           case TIMESTAMP: {
-            TimestampWritable t = ((TimestampObjectInspector) poi)
+            TimestampWritableV2 t = ((TimestampObjectInspector) poi)
                     .getPrimitiveWritableObject(o);
             return Murmur3.hash32(t.getBytes());
           }
@@ -938,6 +936,25 @@ public final class ObjectInspectorUtils {
       int r = compare(o1[i], oi1[i], o2[i], oi2[i]);
       if (r != 0) {
         return r;
+      }
+    }
+    return 0;
+  }
+
+  public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,
+                            ObjectInspector[] oi2, boolean[] columnSortOrderIsDesc) {
+    assert (o1.length == oi1.length);
+    assert (o2.length == oi2.length);
+    assert (o1.length == o2.length);
+
+    for (int i = 0; i < o1.length; i++) {
+      int r = compare(o1[i], oi1[i], o2[i], oi2[i]);
+      if (r != 0) {
+        if (columnSortOrderIsDesc[i]) {
+          return r;
+        } else {
+          return -r;
+        }
       }
     }
     return 0;
@@ -1112,16 +1129,16 @@ public final class ObjectInspectorUtils {
       }
 
       case DATE: {
-        DateWritable d1 = ((DateObjectInspector) poi1)
+        DateWritableV2 d1 = ((DateObjectInspector) poi1)
             .getPrimitiveWritableObject(o1);
-        DateWritable d2 = ((DateObjectInspector) poi2)
+        DateWritableV2 d2 = ((DateObjectInspector) poi2)
             .getPrimitiveWritableObject(o2);
         return d1.compareTo(d2);
       }
       case TIMESTAMP: {
-        TimestampWritable t1 = ((TimestampObjectInspector) poi1)
+        TimestampWritableV2 t1 = ((TimestampObjectInspector) poi1)
             .getPrimitiveWritableObject(o1);
-        TimestampWritable t2 = ((TimestampObjectInspector) poi2)
+        TimestampWritableV2 t2 = ((TimestampObjectInspector) poi2)
             .getPrimitiveWritableObject(o2);
         return t1.compareTo(t2);
       }

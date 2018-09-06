@@ -215,13 +215,14 @@
         <include>**/*</include>
       </includes>
       <excludes>
-        <exclude>**/upgrade.order.*</exclude> <!-- pick up upgrade order from standalone metastore-->
+        <!-- pick up upgrade order from standalone metastore, except hive, which does not exist in standalone metastore -->
+        <exclude>%regex[(!hive)/upgrade.order.*]</exclude>
       </excludes>
       <outputDirectory>scripts/metastore/upgrade</outputDirectory>
     </fileSet>
 
     <fileSet>
-      <directory>${project.parent.basedir}/standalone-metastore/src/main/sql</directory>
+      <directory>${project.parent.basedir}/standalone-metastore/metastore-server/src/main/sql</directory>
       <includes>
         <include>**/*</include>
       </includes>

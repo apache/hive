@@ -6,7 +6,6 @@ set mapred.input.dir.recursive=true;
 
 -- This tests that bucketing/sorting metadata is not inferred for tables with list bucketing
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
 -- create a skewed table
 CREATE TABLE list_bucketing_table (key STRING, value STRING) 

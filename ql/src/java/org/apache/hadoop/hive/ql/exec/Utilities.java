@@ -259,7 +259,12 @@ public final class Utilities {
    * VALUE: record value
    */
   public static enum ReduceField {
-    KEY, VALUE
+    KEY(0), VALUE(1);
+
+    int position;
+    ReduceField(int position) {
+      this.position = position;
+    };
   };
 
   public static List<String> reduceFieldNameList;
@@ -3758,32 +3763,6 @@ public final class Utilities {
   }
 
   /**
-   * Create a temp dir in specified baseDir
-   * This can go away once hive moves to support only JDK 7
-   *  and can use Files.createTempDirectory
-   *  Guava Files.createTempDir() does not take a base dir
-   * @param baseDir - directory under which new temp dir will be created
-   * @return File object for new temp dir
-   */
-  public static File createTempDir(String baseDir){
-    //try creating the temp dir MAX_ATTEMPTS times
-    final int MAX_ATTEMPS = 30;
-    for(int i = 0; i < MAX_ATTEMPS; i++){
-      //pick a random file name
-      String tempDirName = "tmp_" + ((int)(100000 * Math.random()));
-
-      //return if dir could successfully be created with that file name
-      File tempDir = new File(baseDir, tempDirName);
-      if(tempDir.mkdir()){
-        return tempDir;
-      }
-    }
-    throw new IllegalStateException("Failed to create a temp dir under "
-    + baseDir + " Giving up after " + MAX_ATTEMPS + " attempts");
-
-  }
-
-  /**
    * Skip header lines in the table file when reading the record.
    *
    * @param currRecReader
@@ -4298,14 +4277,15 @@ public final class Utilities {
       }
     }
 
-    HashSet<String> committed = new HashSet<>();
+    HashSet<Path> committed = new HashSet<>();
     for (Path mfp : manifests) {
       try (FSDataInputStream mdis = fs.open(mfp)) {
         int fileCount = mdis.readInt();
         for (int i = 0; i < fileCount; ++i) {
           String nextFile = mdis.readUTF();
           Utilities.FILE_OP_LOGGER.trace("Looking at committed file: {}", nextFile);
-          if (!committed.add(nextFile)) {
+          Path path = fs.makeQualified(new Path(nextFile));
+          if (!committed.add(path)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
         }
@@ -4366,7 +4346,7 @@ public final class Utilities {
   }
 
   private static void cleanMmDirectory(Path dir, FileSystem fs, String unionSuffix,
-      int lbLevels, HashSet<String> committed) throws IOException, HiveException {
+      int lbLevels, HashSet<Path> committed) throws IOException, HiveException {
     for (FileStatus child : fs.listStatus(dir)) {
       Path childPath = child.getPath();
       if (lbLevels > 0) {
@@ -4378,7 +4358,7 @@ public final class Utilities {
               "Recursion into LB directory {}; levels remaining ", childPath, lbLevels - 1);
           cleanMmDirectory(childPath, fs, unionSuffix, lbLevels - 1, committed);
         } else {
-          if (committed.contains(childPath.toString())) {
+          if (committed.contains(childPath)) {
             throw new HiveException("LB FSOP has commited "
                 + childPath + " outside of LB directory levels " + lbLevels);
           }
@@ -4388,12 +4368,12 @@ public final class Utilities {
       }
       // No more LB directories expected.
       if (unionSuffix == null) {
-        if (committed.remove(childPath.toString())) {
+        if (committed.remove(childPath)) {
           continue; // A good file.
         }
         deleteUncommitedFile(childPath, fs);
       } else if (!child.isDirectory()) {
-        if (committed.contains(childPath.toString())) {
+        if (committed.contains(childPath)) {
           throw new HiveException("Union FSOP has commited "
               + childPath + " outside of union directory " + unionSuffix);
         }

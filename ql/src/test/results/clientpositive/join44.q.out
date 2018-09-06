@@ -30,6 +30,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: (val1 is not null and val2 BETWEEN 2450816 AND 2451500) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (val1 is not null and val2 BETWEEN 2450816 AND 2451500) (type: boolean)
@@ -42,6 +43,7 @@ STAGE PLANS:
                 value expressions: val2 (type: int), val3 (type: int)
           TableScan
             alias: src2
+            filterExpr: (val1 is not null and val2 BETWEEN 2450816 AND 2451500) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (val1 is not null and val2 BETWEEN 2450816 AND 2451500) (type: boolean)

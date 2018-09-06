@@ -18,18 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.HashCodeUtil;
-
-import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * An bytes key hash map optimized for vector map join.
@@ -110,6 +105,10 @@ public abstract class VectorMapJoinFastBytesHashMap
 
   @Override
   public long getEstimatedMemorySize() {
-    return super.getEstimatedMemorySize() + valueStore.getEstimatedMemorySize() + keyStore.getEstimatedMemorySize();
+    long size = super.getEstimatedMemorySize();
+    size += valueStore.getEstimatedMemorySize();
+    // keyStore / valueStore back buffers are shared; so don't need:
+    // size += keyStore.getEstimatedMemorySize();
+    return size;
   }
 }

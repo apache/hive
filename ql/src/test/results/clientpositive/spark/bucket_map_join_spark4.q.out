@@ -66,6 +66,16 @@ POSTHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value` AS `val1`, `t4`.`value` AS `val2`, `t2`.`value` AS `val3`
+FROM (SELECT `key`, `value`
+FROM `default`.`tbl1_n0`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `value`
+FROM `default`.`tbl3`
+WHERE `value` IS NOT NULL) AS `t2` ON `t0`.`value` = `t2`.`value`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`tbl2_n0`
+WHERE `key` IS NOT NULL) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -80,6 +90,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -158,6 +169,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -241,6 +253,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -445,6 +458,16 @@ POSTHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value` AS `val1`, `t4`.`value` AS `val2`, `t2`.`value` AS `val3`
+FROM (SELECT `key`, `value`
+FROM `default`.`tbl1_n0`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `value`
+FROM `default`.`tbl3`
+WHERE `value` IS NOT NULL) AS `t2` ON `t0`.`value` = `t2`.`value`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`tbl2_n0`
+WHERE `key` IS NOT NULL) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -459,6 +482,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -537,6 +561,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -620,6 +645,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

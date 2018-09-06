@@ -56,7 +56,7 @@ public class UserHS2ConnectionFileParser implements HS2ConnectionFileParser {
       locations.add(
           System.getenv("HIVE_CONF_DIR") + File.separator + DEFAULT_CONNECTION_CONFIG_FILE_NAME);
     }
-    locations.add(ETC_HIVE_CONF_LOCATION + DEFAULT_CONNECTION_CONFIG_FILE_NAME);
+    locations.add(ETC_HIVE_CONF_LOCATION + File.separator + DEFAULT_CONNECTION_CONFIG_FILE_NAME);
   }
 
   @VisibleForTesting

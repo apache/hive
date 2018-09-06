@@ -17,20 +17,20 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryArray;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryMap;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryStruct;
@@ -301,7 +301,7 @@ public class VerifyLazy {
             throw new RuntimeException("Expected LazyDate");
           }
           Date value = ((LazyDate) primitiveObject).getWritableObject().get();
-          Date expected = ((DateWritable) expectedObject).get();
+          Date expected = ((DateWritableV2) expectedObject).get();
           if (!value.equals(expected)) {
             throw new RuntimeException("Date field mismatch (expected " + expected + " found " + value + ")");
           }
@@ -310,10 +310,10 @@ public class VerifyLazy {
       case TIMESTAMP:
         {
           if (!(primitiveObject instanceof LazyTimestamp)) {
-            throw new RuntimeException("TimestampWritable expected writable not TimestampWritable");
+            throw new RuntimeException("TimestampWritableV2 expected writable not TimestampWritableV2");
           }
           Timestamp value = ((LazyTimestamp) primitiveObject).getWritableObject().getTimestamp();
-          Timestamp expected = ((TimestampWritable) expectedObject).getTimestamp();
+          Timestamp expected = ((TimestampWritableV2) expectedObject).getTimestamp();
           if (!value.equals(expected)) {
             throw new RuntimeException("Timestamp field mismatch (expected " + expected + " found " + value + ")");
           }

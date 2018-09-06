@@ -14,7 +14,6 @@ set mapred.input.dir.recursive=true;
 -- However, some columns are repeated. So, union cannot be removed.
 -- It does not matter, whether the output is merged or not. In this case, merging is turned
 -- off
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n7, it might be easier
 -- to run the test only on hadoop 23. The union is removed, the select (which selects columns from
 -- both the sub-qeuries of the union) is pushed above the union.

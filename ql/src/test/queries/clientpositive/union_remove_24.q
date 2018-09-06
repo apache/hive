@@ -13,7 +13,6 @@ set mapred.input.dir.recursive=true;
 -- There is no need to write the temporary results of the sub-queries, and then read them 
 -- again to process the union. The union can be removed completely.
 -- One sub-query has a double and the other sub-query has a bigint.
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n28, it might be easier
 -- to run the test only on hadoop 23
 

@@ -35,6 +35,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_test
+            filterExpr: (dc = 4327269606205.029297) (type: boolean)
             Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (dc = 4327269606205.029297) (type: boolean)

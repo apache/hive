@@ -52,6 +52,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n98
+                  filterExpr: (id = 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
@@ -69,6 +70,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n61
+                  filterExpr: (id = 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
@@ -86,6 +88,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t3_n23
+                  filterExpr: (id = 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
@@ -166,6 +169,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n98
+                  filterExpr: (id = 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
@@ -183,6 +187,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t3_n23
+                  filterExpr: (id = 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
@@ -200,6 +205,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n61
+                  filterExpr: (id = 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
@@ -277,6 +283,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n98
+                  filterExpr: (id = 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
@@ -294,6 +301,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t3_n23
+                  filterExpr: (id = 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
@@ -311,6 +319,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n61
+                  filterExpr: (id = 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (id = 20) (type: boolean)

@@ -78,7 +78,7 @@ CREATE TABLE orc_create_people_staging (
   first_name string,
   last_name string,
   address string,
-  salary decimal,
+  salary decimal(38,0),
   start_date timestamp,
   state string);
 
@@ -90,7 +90,7 @@ CREATE TABLE orc_create_people (
   first_name string,
   last_name string,
   address string,
-  salary decimal,
+  salary decimal(38,0),
   start_date timestamp)
 PARTITIONED BY (state string)
 STORED AS orc;

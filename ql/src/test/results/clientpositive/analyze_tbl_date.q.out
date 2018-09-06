@@ -73,6 +73,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_table_n7
+            filterExpr: d is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: d is not null (type: boolean)

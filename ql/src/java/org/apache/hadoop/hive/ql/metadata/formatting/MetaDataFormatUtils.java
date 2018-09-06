@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -54,7 +55,7 @@ import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hive.common.util.HiveStringUtils;
 
 import com.google.common.collect.Lists;
@@ -107,7 +108,7 @@ public final class MetaDataFormatUtils {
       return "";
     }
 
-    DateWritable writableValue = new DateWritable((int) val.getDaysSinceEpoch());
+    DateWritableV2 writableValue = new DateWritableV2((int) val.getDaysSinceEpoch());
     return writableValue.toString();
   }
 
@@ -359,7 +360,7 @@ public final class MetaDataFormatUtils {
     getStorageDescriptorInfo(tableInfo, table.getTTable().getSd());
 
     if (table.isView() || table.isMaterializedView()) {
-      tableInfo.append(LINE_DELIM).append("# View Information").append(LINE_DELIM);
+      tableInfo.append(LINE_DELIM).append(table.isView() ? "# View Information" : "# Materialized View Information").append(LINE_DELIM);
       getViewInfo(tableInfo, table);
     }
 
@@ -367,9 +368,13 @@ public final class MetaDataFormatUtils {
   }
 
   private static void getViewInfo(StringBuilder tableInfo, Table tbl) {
-    formatOutput("View Original Text:", tbl.getViewOriginalText(), tableInfo);
-    formatOutput("View Expanded Text:", tbl.getViewExpandedText(), tableInfo);
-    formatOutput("View Rewrite Enabled:", tbl.isRewriteEnabled() ? "Yes" : "No", tableInfo);
+    formatOutput("Original Query:", tbl.getViewOriginalText(), tableInfo);
+    formatOutput("Expanded Query:", tbl.getViewExpandedText(), tableInfo);
+    if (tbl.isMaterializedView()) {
+      formatOutput("Rewrite Enabled:", tbl.isRewriteEnabled() ? "Yes" : "No", tableInfo);
+      formatOutput("Outdated for Rewriting:", tbl.isOutdatedForRewriting() == null ? "Unknown"
+          : tbl.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
+    }
   }
 
   private static void getStorageDescriptorInfo(StringBuilder tableInfo,
@@ -474,10 +479,16 @@ public final class MetaDataFormatUtils {
     List<String> keys = new ArrayList<String>(params.keySet());
     Collections.sort(keys);
     for (String key : keys) {
+      String value = params.get(key);
+      if (key.equals(StatsSetupConst.NUM_ERASURE_CODED_FILES)) {
+        if ("0".equals(value)) {
+          continue;
+        }
+      }
       tableInfo.append(FIELD_DELIM); // Ensures all params are indented.
       formatOutput(key,
-          escapeUnicode ? StringEscapeUtils.escapeJava(params.get(key))
-              : HiveStringUtils.escapeJava(params.get(key)),
+          escapeUnicode ? StringEscapeUtils.escapeJava(value)
+              : HiveStringUtils.escapeJava(value),
           tableInfo, isOutputPadded);
     }
   }

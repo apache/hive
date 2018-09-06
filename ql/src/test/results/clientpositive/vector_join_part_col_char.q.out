@@ -115,6 +115,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c1
+            filterExpr: gpa is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: name (type: string), age (type: int), gpa (type: char(50))
@@ -128,6 +129,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: string), _col1 (type: int)
           TableScan
             alias: c2
+            filterExpr: gpa is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 203 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: name (type: string), age (type: int), gpa (type: char(5))

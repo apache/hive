@@ -131,8 +131,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -270,8 +270,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -409,8 +409,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -548,8 +548,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -658,6 +658,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_date_1
+            filterExpr: ((dt1 = dt1) and (dt1 <> dt2) and (dt1 < dt2) and (dt1 <= dt2) and (dt2 > dt1) and (dt2 >= dt1)) (type: boolean)
             Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -691,8 +692,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -802,6 +803,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_date_1
+            filterExpr: ((dt1 = DATE'2001-01-01') and (dt1 <> DATE'1970-01-01')) (type: boolean)
             Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -836,8 +838,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -910,6 +912,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_date_1
+            filterExpr: (dt1) IN (DATE'1970-01-01', DATE'2001-01-01') (type: boolean)
             Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -920,7 +923,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterLongColumnInList(col 0:date, values [0, 11323])
               predicate: (dt1) IN (DATE'1970-01-01', DATE'2001-01-01') (type: boolean)
-              Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: dt1 (type: date)
                 outputColumnNames: _col0
@@ -928,13 +931,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -943,8 +946,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

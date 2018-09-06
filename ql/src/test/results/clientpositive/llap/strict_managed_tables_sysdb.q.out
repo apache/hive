@@ -1,0 +1,3436 @@
+PREHOOK: query: create external table smt_sysdb_src_buck (key int, value string) clustered by(value) into 2 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_src_buck
+POSTHOOK: query: create external table smt_sysdb_src_buck (key int, value string) clustered by(value) into 2 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_src_buck
+PREHOOK: query: create external table smt_sysdb_src_skew (key int) skewed by (key) on (1,2,3)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_src_skew
+POSTHOOK: query: create external table smt_sysdb_src_skew (key int) skewed by (key) on (1,2,3)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_src_skew
+PREHOOK: query: CREATE TABLE smt_sysdb_scr_txn (key int, value string)
+    CLUSTERED BY (key) INTO 2 BUCKETS STORED AS ORC
+    TBLPROPERTIES (
+      "transactional"="true",
+      "compactor.mapreduce.map.memory.mb"="2048",
+      "compactorthreshold.hive.compactor.delta.num.threshold"="4",
+      "compactorthreshold.hive.compactor.delta.pct.threshold"="0.5")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_scr_txn
+POSTHOOK: query: CREATE TABLE smt_sysdb_scr_txn (key int, value string)
+    CLUSTERED BY (key) INTO 2 BUCKETS STORED AS ORC
+    TBLPROPERTIES (
+      "transactional"="true",
+      "compactor.mapreduce.map.memory.mb"="2048",
+      "compactorthreshold.hive.compactor.delta.num.threshold"="4",
+      "compactorthreshold.hive.compactor.delta.pct.threshold"="0.5")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_scr_txn
+PREHOOK: query: CREATE TEMPORARY TABLE smt_sysdb_src_tmp (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_src_tmp
+POSTHOOK: query: CREATE TEMPORARY TABLE smt_sysdb_src_tmp (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_src_tmp
+PREHOOK: query: CREATE EXTERNAL TABLE smt_sysdb_moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint, f varchar(10), g char(3))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_moretypes
+POSTHOOK: query: CREATE EXTERNAL TABLE smt_sysdb_moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint, f varchar(10), g char(3))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_moretypes
+PREHOOK: query: CREATE VIEW smt_sysdb_view
+    AS select smt_sysdb_src_buck.key, smt_sysdb_scr_txn.value
+       from smt_sysdb_src_buck, smt_sysdb_scr_txn where smt_sysdb_src_buck.key = smt_sysdb_scr_txn.key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@smt_sysdb_scr_txn
+PREHOOK: Input: default@smt_sysdb_src_buck
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt_sysdb_view
+POSTHOOK: query: CREATE VIEW smt_sysdb_view
+    AS select smt_sysdb_src_buck.key, smt_sysdb_scr_txn.value
+       from smt_sysdb_src_buck, smt_sysdb_scr_txn where smt_sysdb_src_buck.key = smt_sysdb_scr_txn.key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@smt_sysdb_scr_txn
+POSTHOOK: Input: default@smt_sysdb_src_buck
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt_sysdb_view
+POSTHOOK: Lineage: smt_sysdb_view.key SIMPLE [(smt_sysdb_src_buck)smt_sysdb_src_buck.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smt_sysdb_view.value SIMPLE [(smt_sysdb_scr_txn)smt_sysdb_scr_txn.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: show grant user hive_test_user
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user
+POSTHOOK: type: SHOW_GRANT
+default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_moretypes			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_moretypes			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_moretypes			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_moretypes			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_scr_txn			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_scr_txn			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_scr_txn			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_scr_txn			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_src_buck			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_src_buck			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_src_buck			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_src_buck			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_src_skew			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_src_skew			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_src_skew			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_src_skew			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	smt_sysdb_view			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	smt_sysdb_view			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	smt_sysdb_view			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	smt_sysdb_view			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:SYS
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:SYS
+PREHOOK: query: USE SYS
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sys
+POSTHOOK: query: USE SYS
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `BUCKETING_COLS` (
+  `SD_ID` bigint,
+  `BUCKET_COL_NAME` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_BUCKETING_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"BUCKET_COL_NAME\",
+  \"INTEGER_IDX\"
+FROM
+  \"BUCKETING_COLS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@BUCKETING_COLS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `BUCKETING_COLS` (
+  `SD_ID` bigint,
+  `BUCKET_COL_NAME` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_BUCKETING_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"BUCKET_COL_NAME\",
+  \"INTEGER_IDX\"
+FROM
+  \"BUCKETING_COLS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@BUCKETING_COLS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `CDS` (
+  `CD_ID` bigint,
+  CONSTRAINT `SYS_PK_CDS` PRIMARY KEY (`CD_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CD_ID\"
+FROM
+  \"CDS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@CDS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `CDS` (
+  `CD_ID` bigint,
+  CONSTRAINT `SYS_PK_CDS` PRIMARY KEY (`CD_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CD_ID\"
+FROM
+  \"CDS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@CDS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
+  `CD_ID` bigint,
+  `COMMENT` string,
+  `COLUMN_NAME` string,
+  `TYPE_NAME` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_COLUMN_V2` PRIMARY KEY (`CD_ID`,`COLUMN_NAME`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CD_ID\",
+  \"COMMENT\",
+  \"COLUMN_NAME\",
+  \"TYPE_NAME\",
+  \"INTEGER_IDX\"
+FROM
+  \"COLUMNS_V2\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@COLUMNS_V2
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
+  `CD_ID` bigint,
+  `COMMENT` string,
+  `COLUMN_NAME` string,
+  `TYPE_NAME` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_COLUMN_V2` PRIMARY KEY (`CD_ID`,`COLUMN_NAME`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CD_ID\",
+  \"COMMENT\",
+  \"COLUMN_NAME\",
+  \"TYPE_NAME\",
+  \"INTEGER_IDX\"
+FROM
+  \"COLUMNS_V2\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@COLUMNS_V2
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DATABASE_PARAMS` (
+  `DB_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_DATABASE_PARAMS` PRIMARY KEY (`DB_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"DB_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"DATABASE_PARAMS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@DATABASE_PARAMS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DATABASE_PARAMS` (
+  `DB_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_DATABASE_PARAMS` PRIMARY KEY (`DB_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"DB_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"DATABASE_PARAMS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@DATABASE_PARAMS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DBS` (
+  `DB_ID` bigint,
+  `DB_LOCATION_URI` string,
+  `NAME` string,
+  `OWNER_NAME` string,
+  `OWNER_TYPE` string,
+  CONSTRAINT `SYS_PK_DBS` PRIMARY KEY (`DB_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"DB_ID\",
+  \"DB_LOCATION_URI\",
+  \"NAME\",
+  \"OWNER_NAME\",
+  \"OWNER_TYPE\"
+FROM
+  \"DBS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@DBS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DBS` (
+  `DB_ID` bigint,
+  `DB_LOCATION_URI` string,
+  `NAME` string,
+  `OWNER_NAME` string,
+  `OWNER_TYPE` string,
+  CONSTRAINT `SYS_PK_DBS` PRIMARY KEY (`DB_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"DB_ID\",
+  \"DB_LOCATION_URI\",
+  \"NAME\",
+  \"OWNER_NAME\",
+  \"OWNER_TYPE\"
+FROM
+  \"DBS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@DBS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_PRIVS` (
+  `DB_GRANT_ID` bigint,
+  `CREATE_TIME` int,
+  `DB_ID` bigint,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `DB_PRIV` string,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"DB_GRANT_ID\",
+  \"CREATE_TIME\",
+  \"DB_ID\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"DB_PRIV\",
+  \"AUTHORIZER\"
+FROM
+  \"DB_PRIVS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@DB_PRIVS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_PRIVS` (
+  `DB_GRANT_ID` bigint,
+  `CREATE_TIME` int,
+  `DB_ID` bigint,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `DB_PRIV` string,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"DB_GRANT_ID\",
+  \"CREATE_TIME\",
+  \"DB_ID\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"DB_PRIV\",
+  \"AUTHORIZER\"
+FROM
+  \"DB_PRIVS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@DB_PRIVS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
+  `USER_GRANT_ID` bigint,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` string,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `USER_PRIV` string,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"USER_GRANT_ID\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"USER_PRIV\",
+  \"AUTHORIZER\"
+FROM
+  \"GLOBAL_PRIVS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@GLOBAL_PRIVS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
+  `USER_GRANT_ID` bigint,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` string,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `USER_PRIV` string,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"USER_GRANT_ID\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"USER_PRIV\",
+  \"AUTHORIZER\"
+FROM
+  \"GLOBAL_PRIVS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@GLOBAL_PRIVS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITIONS` (
+  `PART_ID` bigint,
+  `CREATE_TIME` int,
+  `LAST_ACCESS_TIME` int,
+  `PART_NAME` string,
+  `SD_ID` bigint,
+  `TBL_ID` bigint,
+  CONSTRAINT `SYS_PK_PARTITIONS` PRIMARY KEY (`PART_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_ID\",
+  \"CREATE_TIME\",
+  \"LAST_ACCESS_TIME\",
+  \"PART_NAME\",
+  \"SD_ID\",
+  \"TBL_ID\"
+FROM
+  \"PARTITIONS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@PARTITIONS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITIONS` (
+  `PART_ID` bigint,
+  `CREATE_TIME` int,
+  `LAST_ACCESS_TIME` int,
+  `PART_NAME` string,
+  `SD_ID` bigint,
+  `TBL_ID` bigint,
+  CONSTRAINT `SYS_PK_PARTITIONS` PRIMARY KEY (`PART_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_ID\",
+  \"CREATE_TIME\",
+  \"LAST_ACCESS_TIME\",
+  \"PART_NAME\",
+  \"SD_ID\",
+  \"TBL_ID\"
+FROM
+  \"PARTITIONS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@PARTITIONS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEYS` (
+  `TBL_ID` bigint,
+  `PKEY_COMMENT` string,
+  `PKEY_NAME` string,
+  `PKEY_TYPE` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_PARTITION_KEYS` PRIMARY KEY (`TBL_ID`,`PKEY_NAME`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_ID\",
+  \"PKEY_COMMENT\",
+  \"PKEY_NAME\",
+  \"PKEY_TYPE\",
+  \"INTEGER_IDX\"
+FROM
+  \"PARTITION_KEYS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@PARTITION_KEYS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEYS` (
+  `TBL_ID` bigint,
+  `PKEY_COMMENT` string,
+  `PKEY_NAME` string,
+  `PKEY_TYPE` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_PARTITION_KEYS` PRIMARY KEY (`TBL_ID`,`PKEY_NAME`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_ID\",
+  \"PKEY_COMMENT\",
+  \"PKEY_NAME\",
+  \"PKEY_TYPE\",
+  \"INTEGER_IDX\"
+FROM
+  \"PARTITION_KEYS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@PARTITION_KEYS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
+  `PART_ID` bigint,
+  `PART_KEY_VAL` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_PARTITION_KEY_VALS` PRIMARY KEY (`PART_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_ID\",
+  \"PART_KEY_VAL\",
+  \"INTEGER_IDX\"
+FROM
+  \"PARTITION_KEY_VALS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@PARTITION_KEY_VALS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
+  `PART_ID` bigint,
+  `PART_KEY_VAL` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_PARTITION_KEY_VALS` PRIMARY KEY (`PART_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_ID\",
+  \"PART_KEY_VAL\",
+  \"INTEGER_IDX\"
+FROM
+  \"PARTITION_KEY_VALS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@PARTITION_KEY_VALS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_PARAMS` (
+  `PART_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_PARTITION_PARAMS` PRIMARY KEY (`PART_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"PARTITION_PARAMS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@PARTITION_PARAMS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_PARAMS` (
+  `PART_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_PARTITION_PARAMS` PRIMARY KEY (`PART_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"PARTITION_PARAMS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@PARTITION_PARAMS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_PRIVS` (
+  `PART_COLUMN_GRANT_ID` bigint,
+  `COLUMN_NAME` string,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PART_ID` bigint,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `PART_COL_PRIV` string,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_COLUMN_GRANT_ID\",
+  \"COLUMN_NAME\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PART_ID\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"PART_COL_PRIV\",
+  \"AUTHORIZER\"
+FROM
+  \"PART_COL_PRIVS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@PART_COL_PRIVS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_PRIVS` (
+  `PART_COLUMN_GRANT_ID` bigint,
+  `COLUMN_NAME` string,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PART_ID` bigint,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `PART_COL_PRIV` string,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_COLUMN_GRANT_ID\",
+  \"COLUMN_NAME\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PART_ID\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"PART_COL_PRIV\",
+  \"AUTHORIZER\"
+FROM
+  \"PART_COL_PRIVS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@PART_COL_PRIVS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_PRIVS` (
+  `PART_GRANT_ID` bigint,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PART_ID` bigint,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `PART_PRIV` string,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_GRANT_ID\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PART_ID\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"PART_PRIV\",
+  \"AUTHORIZER\"
+FROM
+  \"PART_PRIVS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@PART_PRIVS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_PRIVS` (
+  `PART_GRANT_ID` bigint,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PART_ID` bigint,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `PART_PRIV` string,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"PART_GRANT_ID\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PART_ID\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"PART_PRIV\",
+  \"AUTHORIZER\"
+FROM
+  \"PART_PRIVS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@PART_PRIVS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `ROLES` (
+  `ROLE_ID` bigint,
+  `CREATE_TIME` int,
+  `OWNER_NAME` string,
+  `ROLE_NAME` string,
+  CONSTRAINT `SYS_PK_ROLES` PRIMARY KEY (`ROLE_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"ROLE_ID\",
+  \"CREATE_TIME\",
+  \"OWNER_NAME\",
+  \"ROLE_NAME\"
+FROM
+  \"ROLES\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@ROLES
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `ROLES` (
+  `ROLE_ID` bigint,
+  `CREATE_TIME` int,
+  `OWNER_NAME` string,
+  `ROLE_NAME` string,
+  CONSTRAINT `SYS_PK_ROLES` PRIMARY KEY (`ROLE_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"ROLE_ID\",
+  \"CREATE_TIME\",
+  \"OWNER_NAME\",
+  \"ROLE_NAME\"
+FROM
+  \"ROLES\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@ROLES
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `ROLE_MAP` (
+  `ROLE_GRANT_ID` bigint,
+  `ADD_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `ROLE_ID` bigint,
+  CONSTRAINT `SYS_PK_ROLE_MAP` PRIMARY KEY (`ROLE_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"ROLE_GRANT_ID\",
+  \"ADD_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"ROLE_ID\"
+FROM
+  \"ROLE_MAP\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@ROLE_MAP
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `ROLE_MAP` (
+  `ROLE_GRANT_ID` bigint,
+  `ADD_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `ROLE_ID` bigint,
+  CONSTRAINT `SYS_PK_ROLE_MAP` PRIMARY KEY (`ROLE_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"ROLE_GRANT_ID\",
+  \"ADD_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"ROLE_ID\"
+FROM
+  \"ROLE_MAP\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@ROLE_MAP
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SDS` (
+  `SD_ID` bigint,
+  `CD_ID` bigint,
+  `INPUT_FORMAT` string,
+  `IS_COMPRESSED` boolean,
+  `IS_STOREDASSUBDIRECTORIES` boolean,
+  `LOCATION` string,
+  `NUM_BUCKETS` int,
+  `OUTPUT_FORMAT` string,
+  `SERDE_ID` bigint,
+  CONSTRAINT `SYS_PK_SDS` PRIMARY KEY (`SD_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"CD_ID\",
+  \"INPUT_FORMAT\",
+  \"IS_COMPRESSED\",
+  \"IS_STOREDASSUBDIRECTORIES\",
+  \"LOCATION\",
+  \"NUM_BUCKETS\",
+  \"OUTPUT_FORMAT\",
+  \"SERDE_ID\"
+FROM
+  \"SDS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SDS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SDS` (
+  `SD_ID` bigint,
+  `CD_ID` bigint,
+  `INPUT_FORMAT` string,
+  `IS_COMPRESSED` boolean,
+  `IS_STOREDASSUBDIRECTORIES` boolean,
+  `LOCATION` string,
+  `NUM_BUCKETS` int,
+  `OUTPUT_FORMAT` string,
+  `SERDE_ID` bigint,
+  CONSTRAINT `SYS_PK_SDS` PRIMARY KEY (`SD_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"CD_ID\",
+  \"INPUT_FORMAT\",
+  \"IS_COMPRESSED\",
+  \"IS_STOREDASSUBDIRECTORIES\",
+  \"LOCATION\",
+  \"NUM_BUCKETS\",
+  \"OUTPUT_FORMAT\",
+  \"SERDE_ID\"
+FROM
+  \"SDS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SDS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SD_PARAMS` (
+  `SD_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_SD_PARAMS` PRIMARY KEY (`SD_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"SD_PARAMS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SD_PARAMS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SD_PARAMS` (
+  `SD_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_SD_PARAMS` PRIMARY KEY (`SD_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"SD_PARAMS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SD_PARAMS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
+  `SEQUENCE_NAME` string,
+  `NEXT_VAL` bigint,
+  CONSTRAINT `SYS_PK_SEQUENCE_TABLE` PRIMARY KEY (`SEQUENCE_NAME`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SEQUENCE_NAME\",
+  \"NEXT_VAL\"
+FROM
+  \"SEQUENCE_TABLE\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SEQUENCE_TABLE
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
+  `SEQUENCE_NAME` string,
+  `NEXT_VAL` bigint,
+  CONSTRAINT `SYS_PK_SEQUENCE_TABLE` PRIMARY KEY (`SEQUENCE_NAME`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SEQUENCE_NAME\",
+  \"NEXT_VAL\"
+FROM
+  \"SEQUENCE_TABLE\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SEQUENCE_TABLE
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SERDES` (
+  `SERDE_ID` bigint,
+  `NAME` string,
+  `SLIB` string,
+  CONSTRAINT `SYS_PK_SERDES` PRIMARY KEY (`SERDE_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SERDE_ID\",
+  \"NAME\",
+  \"SLIB\"
+FROM
+  \"SERDES\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SERDES
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SERDES` (
+  `SERDE_ID` bigint,
+  `NAME` string,
+  `SLIB` string,
+  CONSTRAINT `SYS_PK_SERDES` PRIMARY KEY (`SERDE_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SERDE_ID\",
+  \"NAME\",
+  \"SLIB\"
+FROM
+  \"SERDES\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SERDES
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SERDE_PARAMS` (
+  `SERDE_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_SERDE_PARAMS` PRIMARY KEY (`SERDE_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SERDE_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"SERDE_PARAMS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SERDE_PARAMS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SERDE_PARAMS` (
+  `SERDE_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_SERDE_PARAMS` PRIMARY KEY (`SERDE_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SERDE_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"SERDE_PARAMS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SERDE_PARAMS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
+  `SD_ID` bigint,
+  `SKEWED_COL_NAME` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_SKEWED_COL_NAMES` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"SKEWED_COL_NAME\",
+  \"INTEGER_IDX\"
+FROM
+  \"SKEWED_COL_NAMES\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SKEWED_COL_NAMES
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
+  `SD_ID` bigint,
+  `SKEWED_COL_NAME` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_SKEWED_COL_NAMES` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"SKEWED_COL_NAME\",
+  \"INTEGER_IDX\"
+FROM
+  \"SKEWED_COL_NAMES\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SKEWED_COL_NAMES
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
+  `SD_ID` bigint,
+  `STRING_LIST_ID_KID` bigint,
+  `LOCATION` string,
+  CONSTRAINT `SYS_PK_COL_VALUE_LOC_MAP` PRIMARY KEY (`SD_ID`,`STRING_LIST_ID_KID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"STRING_LIST_ID_KID\",
+  \"LOCATION\"
+FROM
+  \"SKEWED_COL_VALUE_LOC_MAP\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SKEWED_COL_VALUE_LOC_MAP
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
+  `SD_ID` bigint,
+  `STRING_LIST_ID_KID` bigint,
+  `LOCATION` string,
+  CONSTRAINT `SYS_PK_COL_VALUE_LOC_MAP` PRIMARY KEY (`SD_ID`,`STRING_LIST_ID_KID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"STRING_LIST_ID_KID\",
+  \"LOCATION\"
+FROM
+  \"SKEWED_COL_VALUE_LOC_MAP\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SKEWED_COL_VALUE_LOC_MAP
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
+  `STRING_LIST_ID` bigint,
+  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST` PRIMARY KEY (`STRING_LIST_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"STRING_LIST_ID\"
+FROM
+  \"SKEWED_STRING_LIST\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SKEWED_STRING_LIST
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
+  `STRING_LIST_ID` bigint,
+  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST` PRIMARY KEY (`STRING_LIST_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"STRING_LIST_ID\"
+FROM
+  \"SKEWED_STRING_LIST\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SKEWED_STRING_LIST
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST_VALUES` (
+  `STRING_LIST_ID` bigint,
+  `STRING_LIST_VALUE` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST_VALUES` PRIMARY KEY (`STRING_LIST_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"STRING_LIST_ID\",
+  \"STRING_LIST_VALUE\",
+  \"INTEGER_IDX\"
+FROM
+  \"SKEWED_STRING_LIST_VALUES\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SKEWED_STRING_LIST_VALUES
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST_VALUES` (
+  `STRING_LIST_ID` bigint,
+  `STRING_LIST_VALUE` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST_VALUES` PRIMARY KEY (`STRING_LIST_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"STRING_LIST_ID\",
+  \"STRING_LIST_VALUE\",
+  \"INTEGER_IDX\"
+FROM
+  \"SKEWED_STRING_LIST_VALUES\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SKEWED_STRING_LIST_VALUES
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_VALUES` (
+  `SD_ID_OID` bigint,
+  `STRING_LIST_ID_EID` bigint,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_SKEWED_VALUES` PRIMARY KEY (`SD_ID_OID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID_OID\",
+  \"STRING_LIST_ID_EID\",
+  \"INTEGER_IDX\"
+FROM
+  \"SKEWED_VALUES\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SKEWED_VALUES
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_VALUES` (
+  `SD_ID_OID` bigint,
+  `STRING_LIST_ID_EID` bigint,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_SKEWED_VALUES` PRIMARY KEY (`SD_ID_OID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID_OID\",
+  \"STRING_LIST_ID_EID\",
+  \"INTEGER_IDX\"
+FROM
+  \"SKEWED_VALUES\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SKEWED_VALUES
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SORT_COLS` (
+  `SD_ID` bigint,
+  `COLUMN_NAME` string,
+  `ORDER` int,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_SORT_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"COLUMN_NAME\",
+  \"ORDER\",
+  \"INTEGER_IDX\"
+FROM
+  \"SORT_COLS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SORT_COLS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SORT_COLS` (
+  `SD_ID` bigint,
+  `COLUMN_NAME` string,
+  `ORDER` int,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_SORT_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SD_ID\",
+  \"COLUMN_NAME\",
+  \"ORDER\",
+  \"INTEGER_IDX\"
+FROM
+  \"SORT_COLS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SORT_COLS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TABLE_PARAMS` (
+  `TBL_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_TABLE_PARAMS` PRIMARY KEY (`TBL_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"TABLE_PARAMS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@TABLE_PARAMS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TABLE_PARAMS` (
+  `TBL_ID` bigint,
+  `PARAM_KEY` string,
+  `PARAM_VALUE` string,
+  CONSTRAINT `SYS_PK_TABLE_PARAMS` PRIMARY KEY (`TBL_ID`,`PARAM_KEY`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_ID\",
+  \"PARAM_KEY\",
+  \"PARAM_VALUE\"
+FROM
+  \"TABLE_PARAMS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@TABLE_PARAMS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBLS` (
+  `TBL_ID` bigint,
+  `CREATE_TIME` int,
+  `DB_ID` bigint,
+  `LAST_ACCESS_TIME` int,
+  `OWNER` string,
+  `RETENTION` int,
+  `SD_ID` bigint,
+  `TBL_NAME` string,
+  `TBL_TYPE` string,
+  `VIEW_EXPANDED_TEXT` string,
+  `VIEW_ORIGINAL_TEXT` string,
+  `IS_REWRITE_ENABLED` boolean,
+  CONSTRAINT `SYS_PK_TBLS` PRIMARY KEY (`TBL_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_ID\",
+  \"CREATE_TIME\",
+  \"DB_ID\",
+  \"LAST_ACCESS_TIME\",
+  \"OWNER\",
+  \"RETENTION\",
+  \"SD_ID\",
+  \"TBL_NAME\",
+  \"TBL_TYPE\",
+  \"VIEW_EXPANDED_TEXT\",
+  \"VIEW_ORIGINAL_TEXT\",
+  \"IS_REWRITE_ENABLED\"
+FROM \"TBLS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@TBLS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBLS` (
+  `TBL_ID` bigint,
+  `CREATE_TIME` int,
+  `DB_ID` bigint,
+  `LAST_ACCESS_TIME` int,
+  `OWNER` string,
+  `RETENTION` int,
+  `SD_ID` bigint,
+  `TBL_NAME` string,
+  `TBL_TYPE` string,
+  `VIEW_EXPANDED_TEXT` string,
+  `VIEW_ORIGINAL_TEXT` string,
+  `IS_REWRITE_ENABLED` boolean,
+  CONSTRAINT `SYS_PK_TBLS` PRIMARY KEY (`TBL_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_ID\",
+  \"CREATE_TIME\",
+  \"DB_ID\",
+  \"LAST_ACCESS_TIME\",
+  \"OWNER\",
+  \"RETENTION\",
+  \"SD_ID\",
+  \"TBL_NAME\",
+  \"TBL_TYPE\",
+  \"VIEW_EXPANDED_TEXT\",
+  \"VIEW_ORIGINAL_TEXT\",
+  \"IS_REWRITE_ENABLED\"
+FROM \"TBLS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@TBLS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `DB_NAME` string,
+  `TBL_NAME` string,
+  `TXN_LIST` string,
+  CONSTRAINT `SYS_PK_MV_CREATION_METADATA` PRIMARY KEY (`MV_CREATION_METADATA_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"DB_NAME\",
+  \"TBL_NAME\",
+  \"TXN_LIST\"
+FROM \"MV_CREATION_METADATA\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@MV_CREATION_METADATA
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `DB_NAME` string,
+  `TBL_NAME` string,
+  `TXN_LIST` string,
+  CONSTRAINT `SYS_PK_MV_CREATION_METADATA` PRIMARY KEY (`MV_CREATION_METADATA_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"DB_NAME\",
+  \"TBL_NAME\",
+  \"TXN_LIST\"
+FROM \"MV_CREATION_METADATA\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@MV_CREATION_METADATA
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `MV_TABLES_USED` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `TBL_ID` bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"TBL_ID\"
+FROM \"MV_TABLES_USED\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@MV_TABLES_USED
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `MV_TABLES_USED` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `TBL_ID` bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"TBL_ID\"
+FROM \"MV_TABLES_USED\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@MV_TABLES_USED
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
+  `TBL_COLUMN_GRANT_ID` bigint,
+  `COLUMN_NAME` string,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `TBL_COL_PRIV` string,
+  `TBL_ID` bigint,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_COLUMN_GRANT_ID\",
+  \"COLUMN_NAME\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"TBL_COL_PRIV\",
+  \"TBL_ID\",
+  \"AUTHORIZER\"
+FROM
+  \"TBL_COL_PRIVS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@TBL_COL_PRIVS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
+  `TBL_COLUMN_GRANT_ID` bigint,
+  `COLUMN_NAME` string,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `TBL_COL_PRIV` string,
+  `TBL_ID` bigint,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_COLUMN_GRANT_ID\",
+  \"COLUMN_NAME\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"TBL_COL_PRIV\",
+  \"TBL_ID\",
+  \"AUTHORIZER\"
+FROM
+  \"TBL_COL_PRIVS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@TBL_COL_PRIVS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_PRIVS` (
+  `TBL_GRANT_ID` bigint,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `TBL_PRIV` string,
+  `TBL_ID` bigint,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_GRANT_ID\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"TBL_PRIV\",
+  \"TBL_ID\",
+  \"AUTHORIZER\"
+FROM
+  \"TBL_PRIVS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@TBL_PRIVS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_PRIVS` (
+  `TBL_GRANT_ID` bigint,
+  `CREATE_TIME` int,
+  `GRANT_OPTION` int,
+  `GRANTOR` string,
+  `GRANTOR_TYPE` string,
+  `PRINCIPAL_NAME` string,
+  `PRINCIPAL_TYPE` string,
+  `TBL_PRIV` string,
+  `TBL_ID` bigint,
+  `AUTHORIZER` string,
+  CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_GRANT_ID\",
+  \"CREATE_TIME\",
+  \"GRANT_OPTION\",
+  \"GRANTOR\",
+  \"GRANTOR_TYPE\",
+  \"PRINCIPAL_NAME\",
+  \"PRINCIPAL_TYPE\",
+  \"TBL_PRIV\",
+  \"TBL_ID\",
+  \"AUTHORIZER\"
+FROM
+  \"TBL_PRIVS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@TBL_PRIVS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
+ `CS_ID` bigint,
+ `DB_NAME` string,
+ `TABLE_NAME` string,
+ `COLUMN_NAME` string,
+ `COLUMN_TYPE` string,
+ `TBL_ID` bigint,
+ `LONG_LOW_VALUE` bigint,
+ `LONG_HIGH_VALUE` bigint,
+ `DOUBLE_HIGH_VALUE` double,
+ `DOUBLE_LOW_VALUE` double,
+ `BIG_DECIMAL_LOW_VALUE` string,
+ `BIG_DECIMAL_HIGH_VALUE` string,
+ `NUM_NULLS` bigint,
+ `NUM_DISTINCTS` bigint,
+ `AVG_COL_LEN` double,
+ `MAX_COL_LEN` bigint,
+ `NUM_TRUES` bigint,
+ `NUM_FALSES` bigint,
+ `LAST_ANALYZED` bigint,
+  CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+ \"CS_ID\",
+ \"DB_NAME\",
+ \"TABLE_NAME\",
+ \"COLUMN_NAME\",
+ \"COLUMN_TYPE\",
+ \"TBL_ID\",
+ \"LONG_LOW_VALUE\",
+ \"LONG_HIGH_VALUE\",
+ \"DOUBLE_HIGH_VALUE\",
+ \"DOUBLE_LOW_VALUE\",
+ \"BIG_DECIMAL_LOW_VALUE\",
+ \"BIG_DECIMAL_HIGH_VALUE\",
+ \"NUM_NULLS\",
+ \"NUM_DISTINCTS\",
+ \"AVG_COL_LEN\",
+ \"MAX_COL_LEN\",
+ \"NUM_TRUES\",
+ \"NUM_FALSES\",
+ \"LAST_ANALYZED\"
+FROM
+  \"TAB_COL_STATS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@TAB_COL_STATS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
+ `CS_ID` bigint,
+ `DB_NAME` string,
+ `TABLE_NAME` string,
+ `COLUMN_NAME` string,
+ `COLUMN_TYPE` string,
+ `TBL_ID` bigint,
+ `LONG_LOW_VALUE` bigint,
+ `LONG_HIGH_VALUE` bigint,
+ `DOUBLE_HIGH_VALUE` double,
+ `DOUBLE_LOW_VALUE` double,
+ `BIG_DECIMAL_LOW_VALUE` string,
+ `BIG_DECIMAL_HIGH_VALUE` string,
+ `NUM_NULLS` bigint,
+ `NUM_DISTINCTS` bigint,
+ `AVG_COL_LEN` double,
+ `MAX_COL_LEN` bigint,
+ `NUM_TRUES` bigint,
+ `NUM_FALSES` bigint,
+ `LAST_ANALYZED` bigint,
+  CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+ \"CS_ID\",
+ \"DB_NAME\",
+ \"TABLE_NAME\",
+ \"COLUMN_NAME\",
+ \"COLUMN_TYPE\",
+ \"TBL_ID\",
+ \"LONG_LOW_VALUE\",
+ \"LONG_HIGH_VALUE\",
+ \"DOUBLE_HIGH_VALUE\",
+ \"DOUBLE_LOW_VALUE\",
+ \"BIG_DECIMAL_LOW_VALUE\",
+ \"BIG_DECIMAL_HIGH_VALUE\",
+ \"NUM_NULLS\",
+ \"NUM_DISTINCTS\",
+ \"AVG_COL_LEN\",
+ \"MAX_COL_LEN\",
+ \"NUM_TRUES\",
+ \"NUM_FALSES\",
+ \"LAST_ANALYZED\"
+FROM
+  \"TAB_COL_STATS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@TAB_COL_STATS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
+ `CS_ID` bigint,
+ `DB_NAME` string,
+ `TABLE_NAME` string,
+ `PARTITION_NAME` string,
+ `COLUMN_NAME` string,
+ `COLUMN_TYPE` string,
+ `PART_ID` bigint,
+ `LONG_LOW_VALUE` bigint,
+ `LONG_HIGH_VALUE` bigint,
+ `DOUBLE_HIGH_VALUE` double,
+ `DOUBLE_LOW_VALUE` double,
+ `BIG_DECIMAL_LOW_VALUE` string,
+ `BIG_DECIMAL_HIGH_VALUE` string,
+ `NUM_NULLS` bigint,
+ `NUM_DISTINCTS` bigint,
+ `AVG_COL_LEN` double,
+ `MAX_COL_LEN` bigint,
+ `NUM_TRUES` bigint,
+ `NUM_FALSES` bigint,
+ `LAST_ANALYZED` bigint,
+  CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+ \"CS_ID\",
+ \"DB_NAME\",
+ \"TABLE_NAME\",
+ \"PARTITION_NAME\",
+ \"COLUMN_NAME\",
+ \"COLUMN_TYPE\",
+ \"PART_ID\",
+ \"LONG_LOW_VALUE\",
+ \"LONG_HIGH_VALUE\",
+ \"DOUBLE_HIGH_VALUE\",
+ \"DOUBLE_LOW_VALUE\",
+ \"BIG_DECIMAL_LOW_VALUE\",
+ \"BIG_DECIMAL_HIGH_VALUE\",
+ \"NUM_NULLS\",
+ \"NUM_DISTINCTS\",
+ \"AVG_COL_LEN\",
+ \"MAX_COL_LEN\",
+ \"NUM_TRUES\",
+ \"NUM_FALSES\",
+ \"LAST_ANALYZED\"
+FROM
+  \"PART_COL_STATS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@PART_COL_STATS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
+ `CS_ID` bigint,
+ `DB_NAME` string,
+ `TABLE_NAME` string,
+ `PARTITION_NAME` string,
+ `COLUMN_NAME` string,
+ `COLUMN_TYPE` string,
+ `PART_ID` bigint,
+ `LONG_LOW_VALUE` bigint,
+ `LONG_HIGH_VALUE` bigint,
+ `DOUBLE_HIGH_VALUE` double,
+ `DOUBLE_LOW_VALUE` double,
+ `BIG_DECIMAL_LOW_VALUE` string,
+ `BIG_DECIMAL_HIGH_VALUE` string,
+ `NUM_NULLS` bigint,
+ `NUM_DISTINCTS` bigint,
+ `AVG_COL_LEN` double,
+ `MAX_COL_LEN` bigint,
+ `NUM_TRUES` bigint,
+ `NUM_FALSES` bigint,
+ `LAST_ANALYZED` bigint,
+  CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+ \"CS_ID\",
+ \"DB_NAME\",
+ \"TABLE_NAME\",
+ \"PARTITION_NAME\",
+ \"COLUMN_NAME\",
+ \"COLUMN_TYPE\",
+ \"PART_ID\",
+ \"LONG_LOW_VALUE\",
+ \"LONG_HIGH_VALUE\",
+ \"DOUBLE_HIGH_VALUE\",
+ \"DOUBLE_LOW_VALUE\",
+ \"BIG_DECIMAL_LOW_VALUE\",
+ \"BIG_DECIMAL_HIGH_VALUE\",
+ \"NUM_NULLS\",
+ \"NUM_DISTINCTS\",
+ \"AVG_COL_LEN\",
+ \"MAX_COL_LEN\",
+ \"NUM_TRUES\",
+ \"NUM_FALSES\",
+ \"LAST_ANALYZED\"
+FROM
+  \"PART_COL_STATS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@PART_COL_STATS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: SYS@VERSION
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: SYS@VERSION
+POSTHOOK: Output: database:sys
+POSTHOOK: Lineage: VERSION.schema_version SIMPLE []
+POSTHOOK: Lineage: VERSION.ver_id SIMPLE []
+POSTHOOK: Lineage: VERSION.version_comment SIMPLE []
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_VERSION` (
+  `VER_ID` BIGINT,
+  `SCHEMA_VERSION` string,
+  `VERSION_COMMENT` string,
+  CONSTRAINT `SYS_PK_DB_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"VER_ID\",
+  \"SCHEMA_VERSION\",
+  \"VERSION_COMMENT\"
+FROM
+  \"VERSION\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@DB_VERSION
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_VERSION` (
+  `VER_ID` BIGINT,
+  `SCHEMA_VERSION` string,
+  `VERSION_COMMENT` string,
+  CONSTRAINT `SYS_PK_DB_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"VER_ID\",
+  \"SCHEMA_VERSION\",
+  \"VERSION_COMMENT\"
+FROM
+  \"VERSION\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@DB_VERSION
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `FUNCS` (
+  `FUNC_ID` bigint,
+  `CLASS_NAME` string,
+  `CREATE_TIME` int,
+  `DB_ID` bigint,
+  `FUNC_NAME` string,
+  `FUNC_TYPE` int,
+  `OWNER_NAME` string,
+  `OWNER_TYPE` string,
+  CONSTRAINT `SYS_PK_FUNCS` PRIMARY KEY (`FUNC_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"FUNC_ID\",
+  \"CLASS_NAME\",
+  \"CREATE_TIME\",
+  \"DB_ID\",
+  \"FUNC_NAME\",
+  \"FUNC_TYPE\",
+  \"OWNER_NAME\",
+  \"OWNER_TYPE\"
+FROM
+  \"FUNCS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@FUNCS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `FUNCS` (
+  `FUNC_ID` bigint,
+  `CLASS_NAME` string,
+  `CREATE_TIME` int,
+  `DB_ID` bigint,
+  `FUNC_NAME` string,
+  `FUNC_TYPE` int,
+  `OWNER_NAME` string,
+  `OWNER_TYPE` string,
+  CONSTRAINT `SYS_PK_FUNCS` PRIMARY KEY (`FUNC_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"FUNC_ID\",
+  \"CLASS_NAME\",
+  \"CREATE_TIME\",
+  \"DB_ID\",
+  \"FUNC_NAME\",
+  \"FUNC_TYPE\",
+  \"OWNER_NAME\",
+  \"OWNER_TYPE\"
+FROM
+  \"FUNCS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@FUNCS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
+(
+  `CHILD_CD_ID` bigint,
+  `CHILD_INTEGER_IDX` int,
+  `CHILD_TBL_ID` bigint,
+  `PARENT_CD_ID` bigint,
+  `PARENT_INTEGER_IDX` int,
+  `PARENT_TBL_ID` bigint,
+  `POSITION` bigint,
+  `CONSTRAINT_NAME` string,
+  `CONSTRAINT_TYPE` string,
+  `UPDATE_RULE` string,
+  `DELETE_RULE` string,
+  `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
+  CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CHILD_CD_ID\",
+  \"CHILD_INTEGER_IDX\",
+  \"CHILD_TBL_ID\",
+  \"PARENT_CD_ID\",
+  \"PARENT_INTEGER_IDX\",
+  \"PARENT_TBL_ID\",
+  \"POSITION\",
+  \"CONSTRAINT_NAME\",
+  \"CONSTRAINT_TYPE\",
+  \"UPDATE_RULE\",
+  \"DELETE_RULE\",
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
+FROM
+  \"KEY_CONSTRAINTS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@KEY_CONSTRAINTS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
+(
+  `CHILD_CD_ID` bigint,
+  `CHILD_INTEGER_IDX` int,
+  `CHILD_TBL_ID` bigint,
+  `PARENT_CD_ID` bigint,
+  `PARENT_INTEGER_IDX` int,
+  `PARENT_TBL_ID` bigint,
+  `POSITION` bigint,
+  `CONSTRAINT_NAME` string,
+  `CONSTRAINT_TYPE` string,
+  `UPDATE_RULE` string,
+  `DELETE_RULE` string,
+  `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
+  CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CHILD_CD_ID\",
+  \"CHILD_INTEGER_IDX\",
+  \"CHILD_TBL_ID\",
+  \"PARENT_CD_ID\",
+  \"PARENT_INTEGER_IDX\",
+  \"PARENT_TBL_ID\",
+  \"POSITION\",
+  \"CONSTRAINT_NAME\",
+  \"CONSTRAINT_TYPE\",
+  \"UPDATE_RULE\",
+  \"DELETE_RULE\",
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
+FROM
+  \"KEY_CONSTRAINTS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@KEY_CONSTRAINTS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
+SELECT
+  `TBL_ID`,
+  max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
+  max(CASE `PARAM_KEY` WHEN 'numFiles' THEN `PARAM_VALUE` END) AS NUM_FILES,
+  max(CASE `PARAM_KEY` WHEN 'numRows' THEN `PARAM_VALUE` END) AS NUM_ROWS,
+  max(CASE `PARAM_KEY` WHEN 'rawDataSize' THEN `PARAM_VALUE` END) AS RAW_DATA_SIZE,
+  max(CASE `PARAM_KEY` WHEN 'totalSize' THEN `PARAM_VALUE` END) AS TOTAL_SIZE,
+#### A masked pattern was here ####
+FROM `TABLE_PARAMS` GROUP BY `TBL_ID`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@table_params
+PREHOOK: Output: SYS@TABLE_STATS_VIEW
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
+SELECT
+  `TBL_ID`,
+  max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
+  max(CASE `PARAM_KEY` WHEN 'numFiles' THEN `PARAM_VALUE` END) AS NUM_FILES,
+  max(CASE `PARAM_KEY` WHEN 'numRows' THEN `PARAM_VALUE` END) AS NUM_ROWS,
+  max(CASE `PARAM_KEY` WHEN 'rawDataSize' THEN `PARAM_VALUE` END) AS RAW_DATA_SIZE,
+  max(CASE `PARAM_KEY` WHEN 'totalSize' THEN `PARAM_VALUE` END) AS TOTAL_SIZE,
+#### A masked pattern was here ####
+FROM `TABLE_PARAMS` GROUP BY `TBL_ID`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@table_params
+POSTHOOK: Output: SYS@TABLE_STATS_VIEW
+POSTHOOK: Output: database:sys
+POSTHOOK: Lineage: TABLE_STATS_VIEW.column_stats_accurate EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.num_files EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.num_rows EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.raw_data_size EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.tbl_id SIMPLE [(table_params)table_params.FieldSchema(name:tbl_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.total_size EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.transient_last_ddl_time EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
+SELECT
+  `PART_ID`,
+  max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
+  max(CASE `PARAM_KEY` WHEN 'numFiles' THEN `PARAM_VALUE` END) AS NUM_FILES,
+  max(CASE `PARAM_KEY` WHEN 'numRows' THEN `PARAM_VALUE` END) AS NUM_ROWS,
+  max(CASE `PARAM_KEY` WHEN 'rawDataSize' THEN `PARAM_VALUE` END) AS RAW_DATA_SIZE,
+  max(CASE `PARAM_KEY` WHEN 'totalSize' THEN `PARAM_VALUE` END) AS TOTAL_SIZE,
+#### A masked pattern was here ####
+FROM `PARTITION_PARAMS` GROUP BY `PART_ID`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@partition_params
+PREHOOK: Output: SYS@PARTITION_STATS_VIEW
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
+SELECT
+  `PART_ID`,
+  max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
+  max(CASE `PARAM_KEY` WHEN 'numFiles' THEN `PARAM_VALUE` END) AS NUM_FILES,
+  max(CASE `PARAM_KEY` WHEN 'numRows' THEN `PARAM_VALUE` END) AS NUM_ROWS,
+  max(CASE `PARAM_KEY` WHEN 'rawDataSize' THEN `PARAM_VALUE` END) AS RAW_DATA_SIZE,
+  max(CASE `PARAM_KEY` WHEN 'totalSize' THEN `PARAM_VALUE` END) AS TOTAL_SIZE,
+#### A masked pattern was here ####
+FROM `PARTITION_PARAMS` GROUP BY `PART_ID`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@partition_params
+POSTHOOK: Output: SYS@PARTITION_STATS_VIEW
+POSTHOOK: Output: database:sys
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.column_stats_accurate EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.num_files EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.num_rows EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.part_id SIMPLE [(partition_params)partition_params.FieldSchema(name:part_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.raw_data_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.total_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.transient_last_ddl_time EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
+  `NAME` string,
+  `STATUS` string,
+  `QUERY_PARALLELISM` int,
+  `DEFAULT_POOL_PATH` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"STATUS\",
+  \"WM_RESOURCEPLAN\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"PATH\"
+FROM
+  \"WM_RESOURCEPLAN\" LEFT OUTER JOIN \"WM_POOL\" ON \"WM_RESOURCEPLAN\".\"DEFAULT_POOL_ID\" = \"WM_POOL\".\"POOL_ID\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_RESOURCEPLANS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
+  `NAME` string,
+  `STATUS` string,
+  `QUERY_PARALLELISM` int,
+  `DEFAULT_POOL_PATH` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"STATUS\",
+  \"WM_RESOURCEPLAN\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"PATH\"
+FROM
+  \"WM_RESOURCEPLAN\" LEFT OUTER JOIN \"WM_POOL\" ON \"WM_RESOURCEPLAN\".\"DEFAULT_POOL_ID\" = \"WM_POOL\".\"POOL_ID\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_RESOURCEPLANS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
+  `RP_NAME` string,
+  `NAME` string,
+  `TRIGGER_EXPRESSION` string,
+  `ACTION_EXPRESSION` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  r.\"NAME\" AS RP_NAME,
+  t.\"NAME\" AS NAME,
+  \"TRIGGER_EXPRESSION\",
+  \"ACTION_EXPRESSION\"
+FROM
+  \"WM_TRIGGER\" t
+JOIN
+  \"WM_RESOURCEPLAN\" r
+ON
+  t.\"RP_ID\" = r.\"RP_ID\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_TRIGGERS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
+  `RP_NAME` string,
+  `NAME` string,
+  `TRIGGER_EXPRESSION` string,
+  `ACTION_EXPRESSION` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  r.\"NAME\" AS RP_NAME,
+  t.\"NAME\" AS NAME,
+  \"TRIGGER_EXPRESSION\",
+  \"ACTION_EXPRESSION\"
+FROM
+  \"WM_TRIGGER\" t
+JOIN
+  \"WM_RESOURCEPLAN\" r
+ON
+  t.\"RP_ID\" = r.\"RP_ID\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_TRIGGERS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
+  `RP_NAME` string,
+  `PATH` string,
+  `ALLOC_FRACTION` double,
+  `QUERY_PARALLELISM` int,
+  `SCHEDULING_POLICY` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"WM_POOL\".\"PATH\",
+  \"WM_POOL\".\"ALLOC_FRACTION\",
+  \"WM_POOL\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"SCHEDULING_POLICY\"
+FROM
+  \"WM_POOL\"
+JOIN
+  \"WM_RESOURCEPLAN\"
+ON
+  \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_POOLS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
+  `RP_NAME` string,
+  `PATH` string,
+  `ALLOC_FRACTION` double,
+  `QUERY_PARALLELISM` int,
+  `SCHEDULING_POLICY` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"WM_POOL\".\"PATH\",
+  \"WM_POOL\".\"ALLOC_FRACTION\",
+  \"WM_POOL\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"SCHEDULING_POLICY\"
+FROM
+  \"WM_POOL\"
+JOIN
+  \"WM_RESOURCEPLAN\"
+ON
+  \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_POOLS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
+  `RP_NAME` string,
+  `POOL_PATH` string,
+  `TRIGGER_NAME` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  \"WM_POOL\".\"PATH\" AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_POOL_TO_TRIGGER\"
+  JOIN \"WM_POOL\" ON \"WM_POOL_TO_TRIGGER\".\"POOL_ID\" = \"WM_POOL\".\"POOL_ID\"
+  JOIN \"WM_TRIGGER\" ON \"WM_POOL_TO_TRIGGER\".\"TRIGGER_ID\" = \"WM_TRIGGER\".\"TRIGGER_ID\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+UNION
+SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  '<unmanaged queries>' AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_TRIGGER\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_TRIGGER\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+WHERE CAST(\"WM_TRIGGER\".\"IS_IN_UNMANAGED\" AS CHAR) IN ('1', 't')
+"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
+  `RP_NAME` string,
+  `POOL_PATH` string,
+  `TRIGGER_NAME` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  \"WM_POOL\".\"PATH\" AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_POOL_TO_TRIGGER\"
+  JOIN \"WM_POOL\" ON \"WM_POOL_TO_TRIGGER\".\"POOL_ID\" = \"WM_POOL\".\"POOL_ID\"
+  JOIN \"WM_TRIGGER\" ON \"WM_POOL_TO_TRIGGER\".\"TRIGGER_ID\" = \"WM_TRIGGER\".\"TRIGGER_ID\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+UNION
+SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  '<unmanaged queries>' AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_TRIGGER\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_TRIGGER\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+WHERE CAST(\"WM_TRIGGER\".\"IS_IN_UNMANAGED\" AS CHAR) IN ('1', 't')
+"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
+  `RP_NAME` string,
+  `ENTITY_TYPE` string,
+  `ENTITY_NAME` string,
+  `POOL_PATH` string,
+  `ORDERING` int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"ENTITY_TYPE\",
+  \"ENTITY_NAME\",
+  case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
+  \"ORDERING\"
+FROM \"WM_MAPPING\"
+JOIN \"WM_RESOURCEPLAN\" ON \"WM_MAPPING\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_ID\"
+"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_MAPPINGS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
+  `RP_NAME` string,
+  `ENTITY_TYPE` string,
+  `ENTITY_NAME` string,
+  `POOL_PATH` string,
+  `ORDERING` int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"ENTITY_TYPE\",
+  \"ENTITY_NAME\",
+  case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
+  \"ORDERING\"
+FROM \"WM_MAPPING\"
+JOIN \"WM_RESOURCEPLAN\" ON \"WM_MAPPING\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_ID\"
+"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_MAPPINGS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:INFORMATION_SCHEMA
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:INFORMATION_SCHEMA
+PREHOOK: query: USE INFORMATION_SCHEMA
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:information_schema
+POSTHOOK: query: USE INFORMATION_SCHEMA
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:information_schema
+PREHOOK: query: CREATE OR REPLACE VIEW `SCHEMATA`
+(
+  `CATALOG_NAME`,
+  `SCHEMA_NAME`,
+  `SCHEMA_OWNER`,
+  `DEFAULT_CHARACTER_SET_CATALOG`,
+  `DEFAULT_CHARACTER_SET_SCHEMA`,
+  `DEFAULT_CHARACTER_SET_NAME`,
+  `SQL_PATH`
+) AS
+SELECT DISTINCT
+  'default',
+  D.`NAME`,
+  D.`OWNER_NAME`,
+  cast(null as string),
+  cast(null as string),
+  cast(null as string),
+  `DB_LOCATION_URI`
+FROM
+  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+WHERE
+  NOT restrict_information_schema() OR
+  D.`DB_ID` = T.`DB_ID`
+  AND T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND current_authorizer() = P.`AUTHORIZER`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: CREATE OR REPLACE VIEW `SCHEMATA`
+(
+  `CATALOG_NAME`,
+  `SCHEMA_NAME`,
+  `SCHEMA_OWNER`,
+  `DEFAULT_CHARACTER_SET_CATALOG`,
+  `DEFAULT_CHARACTER_SET_SCHEMA`,
+  `DEFAULT_CHARACTER_SET_NAME`,
+  `SQL_PATH`
+) AS
+SELECT DISTINCT
+  'default',
+  D.`NAME`,
+  D.`OWNER_NAME`,
+  cast(null as string),
+  cast(null as string),
+  cast(null as string),
+  `DB_LOCATION_URI`
+FROM
+  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+WHERE
+  NOT restrict_information_schema() OR
+  D.`DB_ID` = T.`DB_ID`
+  AND T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND current_authorizer() = P.`AUTHORIZER`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: SCHEMATA.catalog_name SIMPLE []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog EXPRESSION []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_name EXPRESSION []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_schema EXPRESSION []
+POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLES`
+(
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `TABLE_TYPE`,
+  `SELF_REFERENCING_COLUMN_NAME`,
+  `REFERENCE_GENERATION`,
+  `USER_DEFINED_TYPE_CATALOG`,
+  `USER_DEFINED_TYPE_SCHEMA`,
+  `USER_DEFINED_TYPE_NAME`,
+  `IS_INSERTABLE_INTO`,
+  `IS_TYPED`,
+  `COMMIT_ACTION`
+) AS
+SELECT DISTINCT
+  'default',
+  D.NAME,
+  T.TBL_NAME,
+  IF(length(T.VIEW_ORIGINAL_TEXT) > 0, 'VIEW', 'BASE_TABLE'),
+  cast(null as string),
+  cast(null as string),
+  cast(null as string),
+  cast(null as string),
+  cast(null as string),
+  IF(length(T.VIEW_ORIGINAL_TEXT) > 0, 'NO', 'YES'),
+  'NO',
+  cast(null as string)
+FROM
+  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+WHERE
+  D.`DB_ID` = T.`DB_ID`
+  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: INFORMATION_SCHEMA@TABLES
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLES`
+(
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `TABLE_TYPE`,
+  `SELF_REFERENCING_COLUMN_NAME`,
+  `REFERENCE_GENERATION`,
+  `USER_DEFINED_TYPE_CATALOG`,
+  `USER_DEFINED_TYPE_SCHEMA`,
+  `USER_DEFINED_TYPE_NAME`,
+  `IS_INSERTABLE_INTO`,
+  `IS_TYPED`,
+  `COMMIT_ACTION`
+) AS
+SELECT DISTINCT
+  'default',
+  D.NAME,
+  T.TBL_NAME,
+  IF(length(T.VIEW_ORIGINAL_TEXT) > 0, 'VIEW', 'BASE_TABLE'),
+  cast(null as string),
+  cast(null as string),
+  cast(null as string),
+  cast(null as string),
+  cast(null as string),
+  IF(length(T.VIEW_ORIGINAL_TEXT) > 0, 'NO', 'YES'),
+  'NO',
+  cast(null as string)
+FROM
+  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+WHERE
+  D.`DB_ID` = T.`DB_ID`
+  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: INFORMATION_SCHEMA@TABLES
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: TABLES.commit_action EXPRESSION []
+POSTHOOK: Lineage: TABLES.is_insertable_into EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLES.is_typed SIMPLE []
+POSTHOOK: Lineage: TABLES.reference_generation EXPRESSION []
+POSTHOOK: Lineage: TABLES.self_referencing_column_name EXPRESSION []
+POSTHOOK: Lineage: TABLES.table_catalog SIMPLE []
+POSTHOOK: Lineage: TABLES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLES.table_type EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLES.user_defined_type_catalog EXPRESSION []
+POSTHOOK: Lineage: TABLES.user_defined_type_name EXPRESSION []
+POSTHOOK: Lineage: TABLES.user_defined_type_schema EXPRESSION []
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
+(
+  `GRANTOR`,
+  `GRANTEE`,
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `PRIVILEGE_TYPE`,
+  `IS_GRANTABLE`,
+  `WITH_HIERARCHY`
+) AS
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
+  'default',
+  D.`NAME`,
+  T.`TBL_NAME`,
+  P.`TBL_PRIV`,
+  IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
+  'NO'
+FROM
+  `sys`.`TBL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_PRIVS` P2
+WHERE
+  P.`TBL_ID` = T.`TBL_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer()
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: INFORMATION_SCHEMA@TABLE_PRIVILEGES
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
+(
+  `GRANTOR`,
+  `GRANTEE`,
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `PRIVILEGE_TYPE`,
+  `IS_GRANTABLE`,
+  `WITH_HIERARCHY`
+) AS
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
+  'default',
+  D.`NAME`,
+  T.`TBL_NAME`,
+  P.`TBL_PRIV`,
+  IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
+  'NO'
+FROM
+  `sys`.`TBL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_PRIVS` P2
+WHERE
+  P.`TBL_ID` = T.`TBL_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer()
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: INFORMATION_SCHEMA@TABLE_PRIVILEGES
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: TABLE_PRIVILEGES.grantee SIMPLE [(tbl_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.grantor SIMPLE [(tbl_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.is_grantable EXPRESSION [(tbl_privs)p.FieldSchema(name:grant_option, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.privilege_type SIMPLE [(tbl_privs)p.FieldSchema(name:tbl_priv, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.table_catalog SIMPLE []
+POSTHOOK: Lineage: TABLE_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.with_hierarchy SIMPLE []
+PREHOOK: query: CREATE OR REPLACE VIEW `COLUMNS`
+(
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `COLUMN_NAME`,
+  `ORDINAL_POSITION`,
+  `COLUMN_DEFAULT`,
+  `IS_NULLABLE`,
+  `DATA_TYPE`,
+  `CHARACTER_MAXIMUM_LENGTH`,
+  `CHARACTER_OCTET_LENGTH`,
+  `NUMERIC_PRECISION`,
+  `NUMERIC_PRECISION_RADIX`,
+  `NUMERIC_SCALE`,
+  `DATETIME_PRECISION`,
+  `INTERVAL_TYPE`,
+  `INTERVAL_PRECISION`,
+  `CHARACTER_SET_CATALOG`,
+  `CHARACTER_SET_SCHEMA`,
+  `CHARACTER_SET_NAME`,
+  `COLLATION_CATALOG`,
+  `COLLATION_SCHEMA`,
+  `COLLATION_NAME`,
+  `UDT_CATALOG`,
+  `UDT_SCHEMA`,
+  `UDT_NAME`,
+  `SCOPE_CATALOG`,
+  `SCOPE_SCHEMA`,
+  `SCOPE_NAME`,
+  `MAXIMUM_CARDINALITY`,
+  `DTD_IDENTIFIER`,
+  `IS_SELF_REFERENCING`,
+  `IS_IDENTITY`,
+  `IDENTITY_GENERATION`,
+  `IDENTITY_START`,
+  `IDENTITY_INCREMENT`,
+  `IDENTITY_MAXIMUM`,
+  `IDENTITY_MINIMUM`,
+  `IDENTITY_CYCLE`,
+  `IS_GENERATED`,
+  `GENERATION_EXPRESSION`,
+  `IS_SYSTEM_TIME_PERIOD_START`,
+  `IS_SYSTEM_TIME_PERIOD_END`,
+  `SYSTEM_TIME_PERIOD_TIMESTAMP_GENERATION`,
+  `IS_UPDATABLE`,
+  `DECLARED_DATA_TYPE`,
+  `DECLARED_NUMERIC_PRECISION`,
+  `DECLARED_NUMERIC_SCALE`
+) AS
+SELECT DISTINCT
+  'default',
+  D.NAME,
+  T.TBL_NAME,
+  C.COLUMN_NAME,
+  C.INTEGER_IDX,
+  cast (null as string),
+  'YES',
+  C.TYPE_NAME as TYPE_NAME,
+  CASE WHEN lower(C.TYPE_NAME) like 'varchar%' THEN cast(regexp_extract(upper(C.TYPE_NAME), '^VARCHAR\\s*\\((\\d+)\\s*\\)$', 1) as int)
+       WHEN lower(C.TYPE_NAME) like 'char%'    THEN cast(regexp_extract(upper(C.TYPE_NAME),    '^CHAR\\s*\\((\\d+)\\s*\\)$', 1) as int)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) like 'varchar%' THEN cast(regexp_extract(upper(C.TYPE_NAME), '^VARCHAR\\s*\\((\\d+)\\s*\\)$', 1) as int)
+       WHEN lower(C.TYPE_NAME) like 'char%'    THEN cast(regexp_extract(upper(C.TYPE_NAME),    '^CHAR\\s*\\((\\d+)\\s*\\)$', 1) as int)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) = 'bigint' THEN 19
+       WHEN lower(C.TYPE_NAME) = 'int' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'smallint' THEN 5
+       WHEN lower(C.TYPE_NAME) = 'tinyint' THEN 3
+       WHEN lower(C.TYPE_NAME) = 'float' THEN 23
+       WHEN lower(C.TYPE_NAME) = 'double' THEN 53
+       WHEN lower(C.TYPE_NAME) like 'decimal%' THEN regexp_extract(upper(C.TYPE_NAME), '^DECIMAL\\s*\\((\\d+)',1)
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN regexp_extract(upper(C.TYPE_NAME), '^NUMERIC\\s*\\((\\d+)',1)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) = 'bigint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'int' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'smallint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'tinyint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'float' THEN 2
+       WHEN lower(C.TYPE_NAME) = 'double' THEN 2
+       WHEN lower(C.TYPE_NAME) like 'decimal%' THEN 10
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) like 'decimal%' THEN regexp_extract(upper(C.TYPE_NAME), '^DECIMAL\\s*\\((\\d+),(\\d+)',2)
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN regexp_extract(upper(C.TYPE_NAME), '^NUMERIC\\s*\\((\\d+),(\\d+)',2)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) = 'date' THEN 0
+       WHEN lower(C.TYPE_NAME) = 'timestamp' THEN 9
+       ELSE null END,
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  C.CD_ID,
+  'NO',
+  'NO',
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  'NEVER',
+  cast (null as string),
+  'NO',
+  'NO',
+  cast (null as string),
+  'YES',
+  C.TYPE_NAME as DECLARED_DATA_TYPE,
+  CASE WHEN lower(C.TYPE_NAME) = 'bigint' THEN 19
+       WHEN lower(C.TYPE_NAME) = 'int' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'smallint' THEN 5
+       WHEN lower(C.TYPE_NAME) = 'tinyint' THEN 3
+       WHEN lower(C.TYPE_NAME) = 'float' THEN 23
+       WHEN lower(C.TYPE_NAME) = 'double' THEN 53
+       WHEN lower(C.TYPE_NAME) like 'decimal%' THEN regexp_extract(upper(C.TYPE_NAME), '^DECIMAL\\s*\\((\\d+)',1)
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN regexp_extract(upper(C.TYPE_NAME), '^NUMERIC\\s*\\((\\d+)',1)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) = 'bigint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'int' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'smallint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'tinyint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'float' THEN 2
+       WHEN lower(C.TYPE_NAME) = 'double' THEN 2
+       WHEN lower(C.TYPE_NAME) like 'decimal%' THEN 10
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
+       ELSE null END
+FROM
+  `sys`.`COLUMNS_V2` C,
+  `sys`.`SDS` S,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_COL_PRIVS` P
+WHERE
+  S.`SD_ID` = T.`SD_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@columns_v2
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbl_col_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: INFORMATION_SCHEMA@COLUMNS
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: CREATE OR REPLACE VIEW `COLUMNS`
+(
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `COLUMN_NAME`,
+  `ORDINAL_POSITION`,
+  `COLUMN_DEFAULT`,
+  `IS_NULLABLE`,
+  `DATA_TYPE`,
+  `CHARACTER_MAXIMUM_LENGTH`,
+  `CHARACTER_OCTET_LENGTH`,
+  `NUMERIC_PRECISION`,
+  `NUMERIC_PRECISION_RADIX`,
+  `NUMERIC_SCALE`,
+  `DATETIME_PRECISION`,
+  `INTERVAL_TYPE`,
+  `INTERVAL_PRECISION`,
+  `CHARACTER_SET_CATALOG`,
+  `CHARACTER_SET_SCHEMA`,
+  `CHARACTER_SET_NAME`,
+  `COLLATION_CATALOG`,
+  `COLLATION_SCHEMA`,
+  `COLLATION_NAME`,
+  `UDT_CATALOG`,
+  `UDT_SCHEMA`,
+  `UDT_NAME`,
+  `SCOPE_CATALOG`,
+  `SCOPE_SCHEMA`,
+  `SCOPE_NAME`,
+  `MAXIMUM_CARDINALITY`,
+  `DTD_IDENTIFIER`,
+  `IS_SELF_REFERENCING`,
+  `IS_IDENTITY`,
+  `IDENTITY_GENERATION`,
+  `IDENTITY_START`,
+  `IDENTITY_INCREMENT`,
+  `IDENTITY_MAXIMUM`,
+  `IDENTITY_MINIMUM`,
+  `IDENTITY_CYCLE`,
+  `IS_GENERATED`,
+  `GENERATION_EXPRESSION`,
+  `IS_SYSTEM_TIME_PERIOD_START`,
+  `IS_SYSTEM_TIME_PERIOD_END`,
+  `SYSTEM_TIME_PERIOD_TIMESTAMP_GENERATION`,
+  `IS_UPDATABLE`,
+  `DECLARED_DATA_TYPE`,
+  `DECLARED_NUMERIC_PRECISION`,
+  `DECLARED_NUMERIC_SCALE`
+) AS
+SELECT DISTINCT
+  'default',
+  D.NAME,
+  T.TBL_NAME,
+  C.COLUMN_NAME,
+  C.INTEGER_IDX,
+  cast (null as string),
+  'YES',
+  C.TYPE_NAME as TYPE_NAME,
+  CASE WHEN lower(C.TYPE_NAME) like 'varchar%' THEN cast(regexp_extract(upper(C.TYPE_NAME), '^VARCHAR\\s*\\((\\d+)\\s*\\)$', 1) as int)
+       WHEN lower(C.TYPE_NAME) like 'char%'    THEN cast(regexp_extract(upper(C.TYPE_NAME),    '^CHAR\\s*\\((\\d+)\\s*\\)$', 1) as int)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) like 'varchar%' THEN cast(regexp_extract(upper(C.TYPE_NAME), '^VARCHAR\\s*\\((\\d+)\\s*\\)$', 1) as int)
+       WHEN lower(C.TYPE_NAME) like 'char%'    THEN cast(regexp_extract(upper(C.TYPE_NAME),    '^CHAR\\s*\\((\\d+)\\s*\\)$', 1) as int)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) = 'bigint' THEN 19
+       WHEN lower(C.TYPE_NAME) = 'int' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'smallint' THEN 5
+       WHEN lower(C.TYPE_NAME) = 'tinyint' THEN 3
+       WHEN lower(C.TYPE_NAME) = 'float' THEN 23
+       WHEN lower(C.TYPE_NAME) = 'double' THEN 53
+       WHEN lower(C.TYPE_NAME) like 'decimal%' THEN regexp_extract(upper(C.TYPE_NAME), '^DECIMAL\\s*\\((\\d+)',1)
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN regexp_extract(upper(C.TYPE_NAME), '^NUMERIC\\s*\\((\\d+)',1)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) = 'bigint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'int' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'smallint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'tinyint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'float' THEN 2
+       WHEN lower(C.TYPE_NAME) = 'double' THEN 2
+       WHEN lower(C.TYPE_NAME) like 'decimal%' THEN 10
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) like 'decimal%' THEN regexp_extract(upper(C.TYPE_NAME), '^DECIMAL\\s*\\((\\d+),(\\d+)',2)
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN regexp_extract(upper(C.TYPE_NAME), '^NUMERIC\\s*\\((\\d+),(\\d+)',2)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) = 'date' THEN 0
+       WHEN lower(C.TYPE_NAME) = 'timestamp' THEN 9
+       ELSE null END,
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  C.CD_ID,
+  'NO',
+  'NO',
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  cast (null as string),
+  'NEVER',
+  cast (null as string),
+  'NO',
+  'NO',
+  cast (null as string),
+  'YES',
+  C.TYPE_NAME as DECLARED_DATA_TYPE,
+  CASE WHEN lower(C.TYPE_NAME) = 'bigint' THEN 19
+       WHEN lower(C.TYPE_NAME) = 'int' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'smallint' THEN 5
+       WHEN lower(C.TYPE_NAME) = 'tinyint' THEN 3
+       WHEN lower(C.TYPE_NAME) = 'float' THEN 23
+       WHEN lower(C.TYPE_NAME) = 'double' THEN 53
+       WHEN lower(C.TYPE_NAME) like 'decimal%' THEN regexp_extract(upper(C.TYPE_NAME), '^DECIMAL\\s*\\((\\d+)',1)
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN regexp_extract(upper(C.TYPE_NAME), '^NUMERIC\\s*\\((\\d+)',1)
+       ELSE null END,
+  CASE WHEN lower(C.TYPE_NAME) = 'bigint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'int' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'smallint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'tinyint' THEN 10
+       WHEN lower(C.TYPE_NAME) = 'float' THEN 2
+       WHEN lower(C.TYPE_NAME) = 'double' THEN 2
+       WHEN lower(C.TYPE_NAME) like 'decimal%' THEN 10
+       WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
+       ELSE null END
+FROM
+  `sys`.`COLUMNS_V2` C,
+  `sys`.`SDS` S,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_COL_PRIVS` P
+WHERE
+  S.`SD_ID` = T.`SD_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@columns_v2
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbl_col_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: INFORMATION_SCHEMA@COLUMNS
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: COLUMNS.character_maximum_length EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.character_octet_length EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.character_set_catalog EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.character_set_name EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.character_set_schema EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.collation_catalog EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.collation_name EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.collation_schema EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.column_default EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.column_name SIMPLE [(columns_v2)c.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.data_type SIMPLE [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.datetime_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.declared_data_type SIMPLE [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.declared_numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.declared_numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.dtd_identifier SIMPLE [(columns_v2)c.FieldSchema(name:cd_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.generation_expression EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.identity_cycle EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.identity_generation EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.identity_increment EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.identity_maximum EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.identity_minimum EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.identity_start EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.interval_precision EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.interval_type EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.is_generated SIMPLE []
+POSTHOOK: Lineage: COLUMNS.is_identity SIMPLE []
+POSTHOOK: Lineage: COLUMNS.is_nullable SIMPLE []
+POSTHOOK: Lineage: COLUMNS.is_self_referencing SIMPLE []
+POSTHOOK: Lineage: COLUMNS.is_system_time_period_end SIMPLE []
+POSTHOOK: Lineage: COLUMNS.is_system_time_period_start SIMPLE []
+POSTHOOK: Lineage: COLUMNS.is_updatable SIMPLE []
+POSTHOOK: Lineage: COLUMNS.maximum_cardinality EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.numeric_precision_radix EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.ordinal_position SIMPLE [(columns_v2)c.FieldSchema(name:integer_idx, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.scope_catalog EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.scope_name EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.scope_schema EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.system_time_period_timestamp_generation EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.table_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.udt_catalog EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.udt_name EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.udt_schema EXPRESSION []
+PREHOOK: query: CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
+(
+  `GRANTOR`,
+  `GRANTEE`,
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `COLUMN_NAME`,
+  `PRIVILEGE_TYPE`,
+  `IS_GRANTABLE`
+) AS
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
+  'default',
+  D.`NAME`,
+  T.`TBL_NAME`,
+  P.`COLUMN_NAME`,
+  P.`TBL_COL_PRIV`,
+  IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
+FROM
+  `sys`.`TBL_COL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`SDS` S,
+  `sys`.`TBL_PRIVS` P2
+WHERE
+  S.`SD_ID` = T.`SD_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND P.`TBL_ID` = T.`TBL_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer())
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbl_col_privs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
+(
+  `GRANTOR`,
+  `GRANTEE`,
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `COLUMN_NAME`,
+  `PRIVILEGE_TYPE`,
+  `IS_GRANTABLE`
+) AS
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
+  'default',
+  D.`NAME`,
+  T.`TBL_NAME`,
+  P.`COLUMN_NAME`,
+  P.`TBL_COL_PRIV`,
+  IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
+FROM
+  `sys`.`TBL_COL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`SDS` S,
+  `sys`.`TBL_PRIVS` P2
+WHERE
+  S.`SD_ID` = T.`SD_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND P.`TBL_ID` = T.`TBL_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer())
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbl_col_privs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.column_name SIMPLE [(tbl_col_privs)p.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantee SIMPLE [(tbl_col_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantor SIMPLE [(tbl_col_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.is_grantable EXPRESSION [(tbl_col_privs)p.FieldSchema(name:grant_option, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.privilege_type SIMPLE [(tbl_col_privs)p.FieldSchema(name:tbl_col_priv, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE OR REPLACE VIEW `VIEWS`
+(
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `VIEW_DEFINITION`,
+  `CHECK_OPTION`,
+  `IS_UPDATABLE`,
+  `IS_INSERTABLE_INTO`,
+  `IS_TRIGGER_UPDATABLE`,
+  `IS_TRIGGER_DELETABLE`,
+  `IS_TRIGGER_INSERTABLE_INTO`
+) AS
+SELECT DISTINCT
+  'default',
+  D.NAME,
+  T.TBL_NAME,
+  T.VIEW_ORIGINAL_TEXT,
+  CAST(NULL as string),
+  false,
+  false,
+  false,
+  false,
+  false
+FROM
+  `sys`.`DBS` D,
+  `sys`.`TBLS` T,
+  `sys`.`TBL_PRIVS` P
+WHERE
+  D.`DB_ID` = T.`DB_ID`
+  AND length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: INFORMATION_SCHEMA@VIEWS
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: CREATE OR REPLACE VIEW `VIEWS`
+(
+  `TABLE_CATALOG`,
+  `TABLE_SCHEMA`,
+  `TABLE_NAME`,
+  `VIEW_DEFINITION`,
+  `CHECK_OPTION`,
+  `IS_UPDATABLE`,
+  `IS_INSERTABLE_INTO`,
+  `IS_TRIGGER_UPDATABLE`,
+  `IS_TRIGGER_DELETABLE`,
+  `IS_TRIGGER_INSERTABLE_INTO`
+) AS
+SELECT DISTINCT
+  'default',
+  D.NAME,
+  T.TBL_NAME,
+  T.VIEW_ORIGINAL_TEXT,
+  CAST(NULL as string),
+  false,
+  false,
+  false,
+  false,
+  false
+FROM
+  `sys`.`DBS` D,
+  `sys`.`TBLS` T,
+  `sys`.`TBL_PRIVS` P
+WHERE
+  D.`DB_ID` = T.`DB_ID`
+  AND length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: INFORMATION_SCHEMA@VIEWS
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: VIEWS.check_option EXPRESSION []
+POSTHOOK: Lineage: VIEWS.is_insertable_into SIMPLE []
+POSTHOOK: Lineage: VIEWS.is_trigger_deletable SIMPLE []
+POSTHOOK: Lineage: VIEWS.is_trigger_insertable_into SIMPLE []
+POSTHOOK: Lineage: VIEWS.is_trigger_updatable SIMPLE []
+POSTHOOK: Lineage: VIEWS.is_updatable SIMPLE []
+POSTHOOK: Lineage: VIEWS.table_catalog SIMPLE []
+POSTHOOK: Lineage: VIEWS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: VIEWS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: VIEWS.view_definition SIMPLE [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
+PREHOOK: query: use sys
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sys
+POSTHOOK: query: use sys
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sys
+PREHOOK: query: select tbl_name, tbl_type from tbls where tbl_name like 'smt_sysdb%' order by tbl_name
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@tbls
+#### A masked pattern was here ####
+POSTHOOK: query: select tbl_name, tbl_type from tbls where tbl_name like 'smt_sysdb%' order by tbl_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tbls
+#### A masked pattern was here ####
+smt_sysdb_moretypes	EXTERNAL_TABLE
+smt_sysdb_scr_txn	MANAGED_TABLE
+smt_sysdb_src_buck	EXTERNAL_TABLE
+smt_sysdb_src_skew	EXTERNAL_TABLE
+smt_sysdb_view	VIRTUAL_VIEW
+PREHOOK: query: drop table smt_sysdb_src_buck
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_src_buck
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table smt_sysdb_src_skew
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_src_skew
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table smt_sysdb_scr_txn
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_scr_txn
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table smt_sysdb_src_tmp
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_src_tmp
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table smt_sysdb_moretypes
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table smt_sysdb_moretypes
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:sys
+PREHOOK: Output: database:sys
+PREHOOK: Output: sys@bucketing_cols
+PREHOOK: Output: sys@cds
+PREHOOK: Output: sys@columns_v2
+PREHOOK: Output: sys@database_params
+PREHOOK: Output: sys@db_privs
+PREHOOK: Output: sys@db_version
+PREHOOK: Output: sys@dbs
+PREHOOK: Output: sys@funcs
+PREHOOK: Output: sys@global_privs
+PREHOOK: Output: sys@key_constraints
+PREHOOK: Output: sys@mv_creation_metadata
+PREHOOK: Output: sys@mv_tables_used
+PREHOOK: Output: sys@part_col_privs
+PREHOOK: Output: sys@part_col_stats
+PREHOOK: Output: sys@part_privs
+PREHOOK: Output: sys@partition_key_vals
+PREHOOK: Output: sys@partition_keys
+PREHOOK: Output: sys@partition_params
+PREHOOK: Output: sys@partition_stats_view
+PREHOOK: Output: sys@partitions
+PREHOOK: Output: sys@role_map
+PREHOOK: Output: sys@roles
+PREHOOK: Output: sys@sd_params
+PREHOOK: Output: sys@sds
+PREHOOK: Output: sys@sequence_table
+PREHOOK: Output: sys@serde_params
+PREHOOK: Output: sys@serdes
+PREHOOK: Output: sys@skewed_col_names
+PREHOOK: Output: sys@skewed_col_value_loc_map
+PREHOOK: Output: sys@skewed_string_list
+PREHOOK: Output: sys@skewed_string_list_values
+PREHOOK: Output: sys@skewed_values
+PREHOOK: Output: sys@sort_cols
+PREHOOK: Output: sys@tab_col_stats
+PREHOOK: Output: sys@table_params
+PREHOOK: Output: sys@table_stats_view
+PREHOOK: Output: sys@tbl_col_privs
+PREHOOK: Output: sys@tbl_privs
+PREHOOK: Output: sys@tbls
+PREHOOK: Output: sys@version
+PREHOOK: Output: sys@wm_mappings
+PREHOOK: Output: sys@wm_pools
+PREHOOK: Output: sys@wm_pools_to_triggers
+PREHOOK: Output: sys@wm_resourceplans
+PREHOOK: Output: sys@wm_triggers
+POSTHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:sys
+POSTHOOK: Output: database:sys
+POSTHOOK: Output: sys@bucketing_cols
+POSTHOOK: Output: sys@cds
+POSTHOOK: Output: sys@columns_v2
+POSTHOOK: Output: sys@database_params
+POSTHOOK: Output: sys@db_privs
+POSTHOOK: Output: sys@db_version
+POSTHOOK: Output: sys@dbs
+POSTHOOK: Output: sys@funcs
+POSTHOOK: Output: sys@global_privs
+POSTHOOK: Output: sys@key_constraints
+POSTHOOK: Output: sys@mv_creation_metadata
+POSTHOOK: Output: sys@mv_tables_used
+POSTHOOK: Output: sys@part_col_privs
+POSTHOOK: Output: sys@part_col_stats
+POSTHOOK: Output: sys@part_privs
+POSTHOOK: Output: sys@partition_key_vals
+POSTHOOK: Output: sys@partition_keys
+POSTHOOK: Output: sys@partition_params
+POSTHOOK: Output: sys@partition_stats_view
+POSTHOOK: Output: sys@partitions
+POSTHOOK: Output: sys@role_map
+POSTHOOK: Output: sys@roles
+POSTHOOK: Output: sys@sd_params
+POSTHOOK: Output: sys@sds
+POSTHOOK: Output: sys@sequence_table
+POSTHOOK: Output: sys@serde_params
+POSTHOOK: Output: sys@serdes
+POSTHOOK: Output: sys@skewed_col_names
+POSTHOOK: Output: sys@skewed_col_value_loc_map
+POSTHOOK: Output: sys@skewed_string_list
+POSTHOOK: Output: sys@skewed_string_list_values
+POSTHOOK: Output: sys@skewed_values
+POSTHOOK: Output: sys@sort_cols
+POSTHOOK: Output: sys@tab_col_stats
+POSTHOOK: Output: sys@table_params
+POSTHOOK: Output: sys@table_stats_view
+POSTHOOK: Output: sys@tbl_col_privs
+POSTHOOK: Output: sys@tbl_privs
+POSTHOOK: Output: sys@tbls
+POSTHOOK: Output: sys@version
+POSTHOOK: Output: sys@wm_mappings
+POSTHOOK: Output: sys@wm_pools
+POSTHOOK: Output: sys@wm_pools_to_triggers
+POSTHOOK: Output: sys@wm_resourceplans
+POSTHOOK: Output: sys@wm_triggers
+PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:information_schema
+PREHOOK: Output: database:information_schema
+PREHOOK: Output: information_schema@column_privileges
+PREHOOK: Output: information_schema@columns
+PREHOOK: Output: information_schema@schemata
+PREHOOK: Output: information_schema@table_privileges
+PREHOOK: Output: information_schema@tables
+PREHOOK: Output: information_schema@views
+POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:information_schema
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Output: information_schema@column_privileges
+POSTHOOK: Output: information_schema@columns
+POSTHOOK: Output: information_schema@schemata
+POSTHOOK: Output: information_schema@table_privileges
+POSTHOOK: Output: information_schema@tables
+POSTHOOK: Output: information_schema@views

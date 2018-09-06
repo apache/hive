@@ -53,6 +53,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (UDFToDouble(key) = 97.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)
@@ -71,6 +72,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dim_pho_n0
+                  filterExpr: (UDFToDouble(key) = 97.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)
@@ -90,6 +92,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: jackson_sev_add_n0
+                  filterExpr: (UDFToDouble(key) = 97.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)

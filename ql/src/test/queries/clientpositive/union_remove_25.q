@@ -16,7 +16,6 @@ set mapred.input.dir.recursive=true;
 -- again to process the union. The union can be removed completely.
 -- It does not matter, whether the output is merged or not. In this case, merging is turned
 -- off
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n19, it might be easier
 -- to run the test only on hadoop 23
 

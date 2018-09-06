@@ -75,6 +75,13 @@ PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) from src a jo
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) from src a join src b on a.key = b.key where a.key > 0
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` > 0) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`src`
+WHERE `key` > 0) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -91,6 +98,7 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: (UDFToDouble(key) > 0.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -112,6 +120,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: (UDFToDouble(key) > 0.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

@@ -691,6 +691,11 @@ public interface HadoopShims {
      * @param ecPolicyName the name of the erasure coding policy
      */
     void disableErasureCodingPolicy(String ecPolicyName) throws IOException;
+
+    /**
+     * @return true if if the runtime MR stat for Erasure Coding is available.
+     */
+    boolean isMapReduceStatAvailable();
   }
 
   /**
@@ -726,6 +731,11 @@ public interface HadoopShims {
 
     @Override
     public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
+    }
+
+    @Override
+    public boolean isMapReduceStatAvailable() {
+      return false;
     }
 
   }

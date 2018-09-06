@@ -68,6 +68,22 @@ select s.key, s.count from (
   select key, count(1) as count from src5_n3 where key < 10 group by key
 )s
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `count`
+FROM `default`.`src2_n6`
+WHERE `key` < 10
+UNION ALL
+SELECT `key`, `count`
+FROM `default`.`src3_n2`
+WHERE `key` < 10
+UNION ALL
+SELECT `key`, `count`
+FROM `default`.`src4_n0`
+WHERE `key` < 10
+UNION ALL
+SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`src5_n3`
+WHERE `key` < 10
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -79,6 +95,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src5_n3
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -186,6 +203,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2_n6
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -222,6 +240,7 @@ STAGE PLANS:
                     MultiFileSpray: false
           TableScan
             alias: src3_n2
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -258,6 +277,7 @@ STAGE PLANS:
                     MultiFileSpray: false
           TableScan
             alias: src4_n0
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -571,6 +591,21 @@ select s.key, s.count from (
   select a.key as key, b.count as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10
 )s
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `count`
+FROM `default`.`src2_n6`
+WHERE `key` < 10
+UNION ALL
+SELECT `key`, `count`
+FROM `default`.`src3_n2`
+WHERE `key` < 10
+UNION ALL
+SELECT `t4`.`key`, `t6`.`count`
+FROM (SELECT `key`
+FROM `default`.`src4_n0`
+WHERE `key` < 10) AS `t4`
+INNER JOIN (SELECT `key`, `count`
+FROM `default`.`src5_n3`
+WHERE `key` < 10) AS `t6` ON `t4`.`key` = `t6`.`key`
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-2 depends on stages: Stage-4
@@ -582,6 +617,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -602,6 +638,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: b
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -761,6 +798,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2_n6
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -797,6 +835,7 @@ STAGE PLANS:
                     MultiFileSpray: false
           TableScan
             alias: src3_n2
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1051,6 +1090,22 @@ select s.key, s.count from (
   select a.key as key, count(1) as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10 group by a.key
 )s
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `count`
+FROM `default`.`src2_n6`
+WHERE `key` < 10
+UNION ALL
+SELECT `key`, `count`
+FROM `default`.`src3_n2`
+WHERE `key` < 10
+UNION ALL
+SELECT `t4`.`key`, COUNT(*) AS `$f1`
+FROM (SELECT `key`
+FROM `default`.`src4_n0`
+WHERE `key` < 10) AS `t4`
+INNER JOIN (SELECT `key`
+FROM `default`.`src5_n3`
+WHERE `key` < 10) AS `t6` ON `t4`.`key` = `t6`.`key`
+GROUP BY `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-5 depends on stages: Stage-4
@@ -1063,6 +1118,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1083,6 +1139,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: b
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1312,6 +1369,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2_n6
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1348,6 +1406,7 @@ STAGE PLANS:
                     MultiFileSpray: false
           TableScan
             alias: src3_n2
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

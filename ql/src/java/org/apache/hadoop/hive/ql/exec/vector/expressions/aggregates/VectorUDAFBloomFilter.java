@@ -107,6 +107,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
     }
     switch (colVectorType) {
     case LONG:
+    case DECIMAL_64:
       valueProcessor = new ValueProcessorLong();
       break;
     case DOUBLE:

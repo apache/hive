@@ -31,12 +31,10 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -76,6 +74,8 @@ import org.apache.hadoop.io.Text;
 
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -110,35 +110,30 @@ public abstract class BaseJdbcWithMiniLlap {
   private static Connection hs2Conn = null;
 
   // This method should be called by sub-classes in a @BeforeClass initializer
-  public static void beforeTest(boolean useArrow) throws Exception {
+  public static MiniHS2 beforeTest(HiveConf inputConf) throws Exception {
+    conf = inputConf;
     Class.forName(MiniHS2.getJdbcDriverName());
-
-    String confDir = "../../data/conf/llap/";
-    if (confDir != null && !confDir.isEmpty()) {
-      HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
-      System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
-    }
-
-    conf = new HiveConf();
-    conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
-    if(useArrow) {
-      conf.setBoolVar(ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
-    } else {
-      conf.setBoolVar(ConfVars.LLAP_OUTPUT_FORMAT_ARROW, false);
-    }
-
-    conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
-        + "/tez-site.xml"));
-
     miniHS2 = new MiniHS2(conf, MiniClusterType.LLAP);
-
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
     dataTypesFilePath = new Path(dataFileDir, "datatypes.txt");
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
     miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
+    return miniHS2;
+  }
+
+  static HiveConf defaultConf() throws Exception {
+    String confDir = "../../data/conf/llap/";
+    if (confDir != null && !confDir.isEmpty()) {
+      HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
+      System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
+    }
+    HiveConf defaultConf = new HiveConf();
+    defaultConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    defaultConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+    defaultConf.addResource(new URL("file://" + new File(confDir).toURI().getPath() + "/tez-site.xml"));
+    return defaultConf;
   }
 
   @Before
@@ -546,6 +541,8 @@ public abstract class BaseJdbcWithMiniLlap {
         rowProcessor.process(row);
         ++rowCount;
       }
+       //In arrow-mode this will throw exception unless all buffers have been released
+       //See org.apache.hadoop.hive.llap.LlapArrowBatchRecordReader
       reader.close();
     }
     LlapBaseInputFormat.close(handleId);

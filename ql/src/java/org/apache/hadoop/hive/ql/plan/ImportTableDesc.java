@@ -359,4 +359,10 @@ public class ImportTableDesc {
         return null;
     }
   }
+
+  public void setReplWriteId(Long replWriteId) {
+    if (this.createTblDesc != null) {
+      this.createTblDesc.setReplWriteId(replWriteId);
+    }
+  }
 }

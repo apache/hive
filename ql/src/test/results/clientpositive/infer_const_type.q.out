@@ -57,6 +57,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
+            filterExpr: ((ti = 127Y) and (si = 32767S) and (i = 12345) and (bi = -12345L) and (fl = 906) and (db = -307.0D) and (UDFToDouble(str) = 1234.0D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(str) = 1234.0D) and (bi = -12345L) and (db = -307.0D) and (fl = 906) and (i = 12345) and (si = 32767S) and (ti = 127Y)) (type: boolean)
@@ -130,6 +131,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
+            filterExpr: ((UDFToDouble(ti) = 128.0D) or (UDFToInteger(si) = 32768) or (UDFToDouble(i) = 2.147483648E9D) or (UDFToDouble(bi) = 9.223372036854776E18D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(bi) = 9.223372036854776E18D) or (UDFToDouble(i) = 2.147483648E9D) or (UDFToDouble(ti) = 128.0D) or (UDFToInteger(si) = 32768)) (type: boolean)
@@ -194,6 +196,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
+            filterExpr: ((UDFToDouble(ti) = 127.0D) or (CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(i) = -100.0D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(i) = -100.0D) or (UDFToDouble(ti) = 127.0D)) (type: boolean)
@@ -252,6 +255,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
+            filterExpr: ((UDFToDouble(ti) < 127.0D) and (UDFToDouble(i) > 100.0D) and (UDFToDouble(str) = 1.57D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(i) > 100.0D) and (UDFToDouble(str) = 1.57D) and (UDFToDouble(ti) < 127.0D)) (type: boolean)

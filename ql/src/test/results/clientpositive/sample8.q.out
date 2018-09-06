@@ -20,6 +20,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -667,6 +668,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Row Limit Per Split: 100
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -680,6 +682,7 @@ STAGE PLANS:
                 value expressions: value (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Row Limit Per Split: 10
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -750,6 +753,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Row Limit Per Split: 100
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -763,6 +767,7 @@ STAGE PLANS:
                 value expressions: value (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Row Limit Per Split: 10
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator

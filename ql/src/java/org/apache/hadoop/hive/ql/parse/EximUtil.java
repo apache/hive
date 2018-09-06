@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -236,8 +236,11 @@ public class EximUtil {
         }
         return uri.toString();
       } else {
-        // no-op for non-test mode for now
-        return location;
+        Path path = new Path(location);
+        if (path.isAbsolute()) {
+          return location;
+        }
+        return path.getFileSystem(conf).makeQualified(path).toString();
       }
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.IO_ERROR.getMsg() + ": " + e.getMessage(), e);

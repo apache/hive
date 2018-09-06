@@ -24,6 +24,8 @@ PREHOOK: query: explain extended select * from src_multi1_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from src_multi1_n1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src_multi1_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -660,6 +662,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alter5_n0
+          filterExpr: (dt = 'a') (type: boolean)
           Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: col1 (type: string), 'a' (type: string)

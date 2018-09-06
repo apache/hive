@@ -134,11 +134,23 @@ POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/sm
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_medium@ds=2008-04-08
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[54][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain extended select count(*) FROM bucket_small_n15 a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big_n15 c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small_n15 a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big_n15 c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_big_n15`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_medium`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_small_n15`
+WHERE `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`,
+(SELECT 0 AS `DUMMY`
+FROM `default`.`bucket_medium`) AS `t5`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -156,16 +168,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 552 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 552 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 552 Basic stats: PARTIAL Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -223,16 +236,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -290,16 +304,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 240 Data size: 39008 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 240 Data size: 39008 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 211 Data size: 34294 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 211 Data size: 34294 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 211 Data size: 34294 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 211 Data size: 34294 Basic stats: PARTIAL Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -309,11 +324,11 @@ STAGE PLANS:
                           1 _col0 (type: string)
                           2 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 464 Data size: 75446 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 464 Data size: 75446 Basic stats: PARTIAL Column stats: NONE
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
-                          Statistics: Num rows: 464 Data size: 75446 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 464 Data size: 75446 Basic stats: PARTIAL Column stats: NONE
                           tag: 0
                           auto parallelism: false
             Execution mode: llap
@@ -425,14 +440,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
-                  Statistics: Num rows: 3 Data size: 1724 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 1724 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 1724 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 1724 Basic stats: PARTIAL Column stats: COMPLETE
                       tag: 1
                       auto parallelism: false
             Execution mode: vectorized, llap
@@ -503,16 +518,16 @@ STAGE PLANS:
                   0 
                   1 
                 Position of Big Table: 0
-                Statistics: Num rows: 1392 Data size: 233298 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1392 Data size: 1027666 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: bigint)
                     auto parallelism: false
@@ -524,13 +539,13 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -554,7 +569,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[54][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) FROM bucket_small_n15 a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big_n15 c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_big_n15

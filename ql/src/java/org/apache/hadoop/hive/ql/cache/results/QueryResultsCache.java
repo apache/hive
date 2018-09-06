@@ -37,14 +37,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -62,13 +60,11 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.EventUtils;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.events.EventConsumer;
@@ -213,9 +209,9 @@ public final class QueryResultsCache {
     }
 
     public String toString() {
-      return "CacheEntry query: [" + getQueryInfo().getLookupInfo().getQueryText()
-          + "], status: " + status + ", location: " + cachedResultsPath
-          + ", size: " + size;
+      return String.format("CacheEntry#%s query: [ %s ], status: %s, location: %s, size: %d",
+          System.identityHashCode(this), getQueryInfo().getLookupInfo().getQueryText(), status,
+          cachedResultsPath, size);
     }
 
     public boolean addReader() {
@@ -297,7 +293,7 @@ public final class QueryResultsCache {
      *         false if the status changes from PENDING to INVALID
      */
     public boolean waitForValidStatus() {
-      LOG.info("Waiting on pending cacheEntry");
+      LOG.info("Waiting on pending cacheEntry: {}", this);
       long timeout = 1000;
 
       long startTime = System.nanoTime();
@@ -540,6 +536,12 @@ public final class QueryResultsCache {
       } else {
         // No actual result directory, no need to move anything.
         cachedResultsPath = zeroRowsPath;
+        // Even if there are no results to move, at least check that we have permission
+        // to check the existence of zeroRowsPath, or the read using the cache will fail.
+        // A failure here will cause this query to not be added to the cache.
+        FileSystem cacheFs = cachedResultsPath.getFileSystem(conf);
+        boolean fakePathExists = cacheFs.exists(zeroRowsPath);
+
         resultSize = 0;
         requiresMove = false;
       }

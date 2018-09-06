@@ -18,45 +18,38 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport.Support;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hive.common.util.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -84,13 +77,6 @@ public class VectorizedRowBatchCtx {
   private int partitionColumnCount;
   private int virtualColumnCount;
   private VirtualColumn[] neededVirtualColumns;
-  /**
-   * A record ID column is a virtual column, so it should be separated from normal data column
-   * processes. A recordIdColumnVector contains RecordIdentifier information in a
-   * StructColumnVector. It has three LongColumnVectors as its fields; original write IDs,
-   * bucket IDs, and row IDs.
-   */
-  private StructColumnVector recordIdColumnVector;
 
   private String[] scratchColumnTypeNames;
   private DataTypePhysicalVariation[] scratchDataTypePhysicalVariations;
@@ -163,6 +149,11 @@ public class VectorizedRowBatchCtx {
     return rowDataTypePhysicalVariations;
   }
 
+  public void setRowDataTypePhysicalVariations(
+    final DataTypePhysicalVariation[] rowDataTypePhysicalVariations) {
+    this.rowDataTypePhysicalVariations = rowDataTypePhysicalVariations;
+  }
+
   public int[] getDataColumnNums() {
     return dataColumnNums;
   }
@@ -210,14 +201,6 @@ public class VectorizedRowBatchCtx {
 
   public DataTypePhysicalVariation[] getScratchDataTypePhysicalVariations() {
     return scratchDataTypePhysicalVariations;
-  }
-
-  public StructColumnVector getRecordIdColumnVector() {
-    return this.recordIdColumnVector;
-  }
-
-  public void setRecordIdColumnVector(StructColumnVector recordIdColumnVector) {
-    this.recordIdColumnVector = recordIdColumnVector;
   }
 
   /**
@@ -482,7 +465,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else {
-            lcv.fill(DateWritable.dateToDays((Date) value));
+            lcv.fill(DateWritableV2.dateToDays((Date) value));
           }
         }
         break;
@@ -494,7 +477,7 @@ public class VectorizedRowBatchCtx {
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
           } else {
-            lcv.fill((Timestamp) value);
+            lcv.fill(((Timestamp) value).toSqlTimestamp());
           }
         }
         break;

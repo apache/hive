@@ -118,6 +118,13 @@ PREHOOK: query: explain extended select count(*) FROM bucket_small_n5 a JOIN buc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small_n5 a JOIN bucket_big_n5 b ON a.key = b.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_small_n5`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_big_n5`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -133,16 +140,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -150,17 +158,17 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 1
-                        Statistics: Num rows: 264 Data size: 127864 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 264 Data size: 127864 Basic stats: PARTIAL Column stats: NONE
                         BucketMapJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             null sort order: 
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             tag: -1
                             value expressions: _col0 (type: bigint)
                             auto parallelism: false
@@ -278,13 +286,13 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -331,6 +339,13 @@ PREHOOK: query: explain extended select count(*) FROM bucket_big_n5 a JOIN bucke
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n5 a JOIN bucket_small_n5 b ON a.key = b.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_big_n5`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_small_n5`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -346,16 +361,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -363,17 +379,17 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 264 Data size: 127864 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 264 Data size: 127864 Basic stats: PARTIAL Column stats: NONE
                         BucketMapJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             null sort order: 
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             tag: -1
                             value expressions: _col0 (type: bigint)
                             auto parallelism: false
@@ -491,13 +507,13 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -544,6 +560,13 @@ PREHOOK: query: explain extended select count(*) FROM bucket_big_n5 a JOIN bucke
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n5 a JOIN bucket_small_n5 b ON a.key = b.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_big_n5`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_small_n5`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -559,16 +582,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -576,17 +600,17 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 264 Data size: 127864 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 264 Data size: 127864 Basic stats: PARTIAL Column stats: NONE
                         BucketMapJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             null sort order: 
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             tag: -1
                             value expressions: _col0 (type: bigint)
                             auto parallelism: false
@@ -704,13 +728,13 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

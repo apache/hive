@@ -19,11 +19,11 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.*;
 
-import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.junit.Test;
 
 public class TestSemanticAnalyzer {
@@ -61,7 +61,7 @@ public class TestSemanticAnalyzer {
     BaseSemanticAnalyzer.normalizeColSpec(partSpec, colName, colType, originalColSpec, colValue);
     assertEquals(result, partSpec.get(colName));
     if (colValue instanceof Date) {
-      DateWritable dw = new DateWritable((Date)colValue);
+      DateWritableV2 dw = new DateWritableV2((Date)colValue);
       BaseSemanticAnalyzer.normalizeColSpec(partSpec, colName, colType, originalColSpec, dw);
       assertEquals(result, partSpec.get(colName));
     }

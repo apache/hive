@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -45,9 +46,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 
 public final class BuddyAllocator
-  implements EvictionAwareAllocator, BuddyAllocatorMXBean, LlapIoDebugDump {
+  implements EvictionAwareAllocator, StoppableAllocator, BuddyAllocatorMXBean, LlapIoDebugDump {
   private final Arena[] arenas;
   private final AtomicInteger allocatedArenas = new AtomicInteger(0);
 
@@ -224,15 +226,22 @@ public final class BuddyAllocator
     return (int)arenaSizeVal;
   }
 
+
+  @VisibleForTesting
   @Override
   public void allocateMultiple(MemoryBuffer[] dest, int size)
       throws AllocatorOutOfMemoryException {
-    allocateMultiple(dest, size, null);
+    allocateMultiple(dest, size, null, null);
   }
 
-  // TODO: would it make sense to return buffers asynchronously?
   @Override
   public void allocateMultiple(MemoryBuffer[] dest, int size, BufferObjectFactory factory)
+      throws AllocatorOutOfMemoryException {
+    allocateMultiple(dest, size, factory, null);
+  }
+
+  @Override
+  public void allocateMultiple(MemoryBuffer[] dest, int size, BufferObjectFactory factory, AtomicBoolean isStopped)
       throws AllocatorOutOfMemoryException {
     assert size > 0 : "size is " + size;
     if (size > maxAllocation) {
@@ -243,7 +252,7 @@ public final class BuddyAllocator
     int allocationSize = 1 << allocLog2;
 
     // If using async, we could also reserve one by one.
-    memoryManager.reserveMemory(dest.length << allocLog2);
+    memoryManager.reserveMemory(dest.length << allocLog2, isStopped);
     for (int i = 0; i < dest.length; ++i) {
       if (dest[i] != null) continue;
       // Note: this is backward compat only. Should be removed with createUnallocated.
@@ -320,17 +329,24 @@ public final class BuddyAllocator
           hasDiscardedAny = hasDiscardedAny || (ctx.resultCount > 0);
           destAllocIx = allocateFromDiscardResult(
               dest, destAllocIx, freeListIx, allocationSize, ctx);
-
           if (destAllocIx == dest.length) return;
         }
 
         if (hasDiscardedAny) {
           discardFailed = 0;
         } else if (++discardFailed > MAX_DISCARD_ATTEMPTS) {
+          isFailed = true;
+          // Ensure all-or-nothing allocation.
+          for (int i = 0; i < destAllocIx; ++i) {
+            try {
+              deallocate(dest[i]);
+            } catch (Throwable t) {
+              LlapIoImpl.LOG.info("Failed to deallocate after a partially successful allocate: " + dest[i]);
+            }
+          }
           String msg = "Failed to allocate " + size + "; at " + destAllocIx + " out of "
               + dest.length + " (entire cache is fragmented and locked, or an internal issue)";
           logOomErrorMessage(msg);
-          isFailed = true;
           throw new AllocatorOutOfMemoryException(msg);
         }
         ++attempt;
@@ -1352,21 +1368,23 @@ public final class BuddyAllocator
 
     public void deallocate(LlapAllocatorBuffer buffer, boolean isAfterMove) {
       assert data != null;
-      int pos = buffer.byteBuffer.position();
-      // Note: this is called by someone who has ensured the buffer is not going to be moved.
-      int headerIx = pos >>> minAllocLog2;
-      int freeListIx = freeListFromAllocSize(buffer.allocSize);
-      if (assertsEnabled && !isAfterMove) {
-        LlapAllocatorBuffer buf = buffers[headerIx];
-        if (buf != buffer) {
-          failWithLog(arenaIx + ":" + headerIx + " => "
+      if (buffer != null && buffer.byteBuffer != null) {
+        int pos = buffer.byteBuffer.position();
+        // Note: this is called by someone who has ensured the buffer is not going to be moved.
+        int headerIx = pos >>> minAllocLog2;
+        int freeListIx = freeListFromAllocSize(buffer.allocSize);
+        if (assertsEnabled && !isAfterMove) {
+          LlapAllocatorBuffer buf = buffers[headerIx];
+          if (buf != buffer) {
+            failWithLog(arenaIx + ":" + headerIx + " => "
               + toDebugString(buffer) + ", " + toDebugString(buf));
+          }
+          assertBufferLooksValid(freeListFromHeader(headers[headerIx]), buf, arenaIx, headerIx);
+          checkHeader(headerIx, freeListIx, true);
         }
-        assertBufferLooksValid(freeListFromHeader(headers[headerIx]), buf, arenaIx, headerIx);
-        checkHeader(headerIx, freeListIx, true);
+        buffers[headerIx] = null;
+        addToFreeListWithMerge(headerIx, freeListIx, buffer, CasLog.Src.DEALLOC);
       }
-      buffers[headerIx] = null;
-      addToFreeListWithMerge(headerIx, freeListIx, buffer, CasLog.Src.DEALLOC);
     }
 
     private void addToFreeListWithMerge(int headerIx, int freeListIx,

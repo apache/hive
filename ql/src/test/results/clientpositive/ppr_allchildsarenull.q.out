@@ -16,6 +16,9 @@ SELECT
    THEN 1
    ELSE 0  end ) > 0
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST(`key` AS INTEGER) AS `user_id`, `value`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%')
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -26,6 +29,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ((ds = '2008-04-08') and ((value like 'aaa%') or (value like 'vvv%'))) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -212,6 +216,9 @@ SELECT
    THEN 1
    ELSE 0  end ) > 0
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST(`key` AS INTEGER) AS `user_id`, `value`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%')
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

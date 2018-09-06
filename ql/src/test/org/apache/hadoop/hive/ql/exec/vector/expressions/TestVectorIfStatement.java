@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomBatchSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -49,6 +51,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
 
 import junit.framework.Assert;
@@ -155,6 +158,24 @@ public class TestVectorIfStatement {
     doIfTests(random, "decimal(10,4)");
   }
 
+  @Test
+  public void testDecimal64() throws Exception {
+    Random random = new Random(238);
+
+    doIfTestsWithDiffColumnScalar(
+        random, "decimal(10,4)", ColumnScalarMode.COLUMN_COLUMN, IfVariation.PROJECTION_IF,
+        DataTypePhysicalVariation.DECIMAL_64, false, false);
+    doIfTestsWithDiffColumnScalar(
+        random, "decimal(10,4)", ColumnScalarMode.COLUMN_SCALAR, IfVariation.PROJECTION_IF,
+        DataTypePhysicalVariation.DECIMAL_64, false, false);
+    doIfTestsWithDiffColumnScalar(
+        random, "decimal(10,4)", ColumnScalarMode.SCALAR_COLUMN, IfVariation.PROJECTION_IF,
+        DataTypePhysicalVariation.DECIMAL_64, false, false);
+    doIfTestsWithDiffColumnScalar(
+        random, "decimal(10,4)", ColumnScalarMode.SCALAR_SCALAR, IfVariation.PROJECTION_IF,
+        DataTypePhysicalVariation.DECIMAL_64, false, false);
+  }
+
   public enum IfStmtTestMode {
     ROW_MODE,
     ADAPTOR_WHEN,
@@ -172,37 +193,63 @@ public class TestVectorIfStatement {
     static final int count = values().length;
   }
 
-  private void doIfTests(Random random, String typeName)
-      throws Exception {
-    doIfTests(random, typeName, DataTypePhysicalVariation.NONE);
+  public enum IfVariation {
+    FILTER_IF,
+    PROJECTION_IF;
+
+    static final int count = values().length;
+
+    final boolean isFilter;
+    IfVariation() {
+      isFilter = name().startsWith("FILTER");
+    }
   }
 
-  private void doIfTests(Random random, String typeName,
+  private void doIfTests(Random random, String typeName)
+      throws Exception {
+
+    if (typeName.equals("boolean")) {
+      doIfTests(random, typeName, IfVariation.FILTER_IF, DataTypePhysicalVariation.NONE);
+    }
+    doIfTests(random, typeName, IfVariation.PROJECTION_IF, DataTypePhysicalVariation.NONE);
+
+  }
+
+  private void doIfTests(Random random, String typeName, IfVariation ifVariation,
       DataTypePhysicalVariation dataTypePhysicalVariation)
           throws Exception {
     doIfTestsWithDiffColumnScalar(
-        random, typeName, ColumnScalarMode.COLUMN_COLUMN, dataTypePhysicalVariation, false, false);
+        random, typeName, ColumnScalarMode.COLUMN_COLUMN, ifVariation,
+        dataTypePhysicalVariation, false, false);
     doIfTestsWithDiffColumnScalar(
-        random, typeName, ColumnScalarMode.COLUMN_SCALAR, dataTypePhysicalVariation, false, false);
+        random, typeName, ColumnScalarMode.COLUMN_SCALAR, ifVariation,
+        dataTypePhysicalVariation, false, false);
     doIfTestsWithDiffColumnScalar(
-        random, typeName, ColumnScalarMode.COLUMN_SCALAR, dataTypePhysicalVariation, false, true);
+        random, typeName, ColumnScalarMode.COLUMN_SCALAR, ifVariation,
+        dataTypePhysicalVariation, false, true);
     doIfTestsWithDiffColumnScalar(
-        random, typeName, ColumnScalarMode.SCALAR_COLUMN, dataTypePhysicalVariation, false, false);
+        random, typeName, ColumnScalarMode.SCALAR_COLUMN, ifVariation,
+        dataTypePhysicalVariation, false, false);
     doIfTestsWithDiffColumnScalar(
-        random, typeName, ColumnScalarMode.SCALAR_COLUMN, dataTypePhysicalVariation, true, false);
+        random, typeName, ColumnScalarMode.SCALAR_COLUMN, ifVariation,
+        dataTypePhysicalVariation, true, false);
     doIfTestsWithDiffColumnScalar(
-        random, typeName, ColumnScalarMode.SCALAR_SCALAR, dataTypePhysicalVariation, false, false);
+        random, typeName, ColumnScalarMode.SCALAR_SCALAR, ifVariation,
+        dataTypePhysicalVariation, false, false);
   }
 
   private void doIfTestsWithDiffColumnScalar(Random random, String typeName,
-      ColumnScalarMode columnScalarMode, DataTypePhysicalVariation dataTypePhysicalVariation,
+      ColumnScalarMode columnScalarMode, IfVariation ifVariation,
+      DataTypePhysicalVariation dataTypePhysicalVariation,
       boolean isNullScalar1, boolean isNullScalar2)
           throws Exception {
 
+    /*
     System.out.println("*DEBUG* typeName " + typeName +
         " columnScalarMode " + columnScalarMode +
         " isNullScalar1 " + isNullScalar1 +
         " isNullScalar2 " + isNullScalar2);
+    */
 
     TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
 
@@ -226,14 +273,15 @@ public class TestVectorIfStatement {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initExplicitSchema(
-        random, explicitTypeNameList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, explicitTypeNameList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
 
     List<String> columns = new ArrayList<String>();
-    columns.add("col0");    // The boolean predicate.
+    columns.add("col1");    // The boolean predicate.
 
-    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Boolean.class, "col0", "table", false);
-    int columnNum = 1;
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Boolean.class, "col1", "table", false);
+    int columnNum = 2;
     ExprNodeDesc col2Expr;
     if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
         columnScalarMode == ColumnScalarMode.COLUMN_SCALAR) {
@@ -278,22 +326,6 @@ public class TestVectorIfStatement {
 
     String[] columnNames = columns.toArray(new String[0]);
 
-    String[] outputScratchTypeNames = new String[] { typeName };
-    DataTypePhysicalVariation[] outputDataTypePhysicalVariations =
-        new DataTypePhysicalVariation[] { dataTypePhysicalVariation };
-
-    VectorizedRowBatchCtx batchContext =
-        new VectorizedRowBatchCtx(
-            columnNames,
-            rowSource.typeInfos(),
-            rowSource.dataTypePhysicalVariations(),
-            /* dataColumnNums */ null,
-            /* partitionColumnCount */ 0,
-            /* virtualColumnCount */ 0,
-            /* neededVirtualColumns */ null,
-            outputScratchTypeNames,
-            outputDataTypePhysicalVariations);
-
     Object[][] randomRows = rowSource.randomRows(100000);
 
     VectorRandomBatchSource batchSource =
@@ -321,14 +353,15 @@ public class TestVectorIfStatement {
       case VECTOR_EXPRESSION:
         doVectorIfTest(
             typeInfo,
+            ifVariation,
             columns,
+            columnNames,
             rowSource.typeInfos(),
             rowSource.dataTypePhysicalVariations(),
             children,
             ifStmtTestMode,
             columnScalarMode,
             batchSource,
-            batchContext,
             resultObjects);
         break;
       default:
@@ -342,7 +375,21 @@ public class TestVectorIfStatement {
 
       for (int v = 1; v < IfStmtTestMode.count; v++) {
         Object vectorResult = resultObjectsArray[v][i];
-        if (expectedResult == null || vectorResult == null) {
+        if (ifVariation.isFilter &&
+            expectedResult == null &&
+            vectorResult != null) {
+          // This is OK.
+          boolean vectorBoolean = ((BooleanWritable) vectorResult).get();
+          if (vectorBoolean) {
+            Assert.fail(
+                "Row " + i +
+                " typeName " + typeInfo.getTypeName() +
+                " " + ifVariation +
+                " result is NOT NULL and true" +
+                " does not match row-mode expected result is NULL which means false here" +
+                " row values " + Arrays.toString(randomRows[i]));
+          }
+        } else if (expectedResult == null || vectorResult == null) {
           if (expectedResult != null || vectorResult != null) {
             Assert.fail(
                 "Row " + i + " " + IfStmtTestMode.values()[v] +
@@ -351,14 +398,6 @@ public class TestVectorIfStatement {
                 " does not match row-mode expected result is NULL " + (expectedResult == null));
           }
         } else {
-
-          if (isDecimal64 && expectedResult instanceof LongWritable) {
-
-            HiveDecimalWritable expectedHiveDecimalWritable = new HiveDecimalWritable(0);
-            expectedHiveDecimalWritable.deserialize64(
-                ((LongWritable) expectedResult).get(), decimal64Scale);
-            expectedResult = expectedHiveDecimalWritable;
-          }
 
           if (!expectedResult.equals(vectorResult)) {
             Assert.fail(
@@ -396,10 +435,7 @@ public class TestVectorIfStatement {
 
   private void extractResultObjects(VectorizedRowBatch batch, int rowIndex,
       VectorExtractRow resultVectorExtractRow, Object[] scrqtchRow,
-      TypeInfo targetTypeInfo, Object[] resultObjects) {
-
-    ObjectInspector objectInspector = TypeInfoUtils
-        .getStandardWritableObjectInspectorFromTypeInfo(targetTypeInfo);
+      ObjectInspector objectInspector, Object[] resultObjects) {
 
     boolean selectedInUse = batch.selectedInUse;
     int[] selected = batch.selected;
@@ -415,13 +451,17 @@ public class TestVectorIfStatement {
   }
 
   private void doVectorIfTest(TypeInfo typeInfo,
+      IfVariation ifVariation,
       List<String> columns,
+      String[] columnNames,
       TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
       List<ExprNodeDesc> children,
       IfStmtTestMode ifStmtTestMode, ColumnScalarMode columnScalarMode,
-      VectorRandomBatchSource batchSource, VectorizedRowBatchCtx batchContext,
+      VectorRandomBatchSource batchSource,
       Object[] resultObjects)
           throws Exception {
+
+    final boolean isFilter = ifVariation.isFilter;
 
     GenericUDF udf;
     switch (ifStmtTestMode) {
@@ -449,19 +489,76 @@ public class TestVectorIfStatement {
             Arrays.asList(typeInfos),
             Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
-    VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
+    VectorExpression vectorExpression =
+        vectorizationContext.getVectorExpression(
+            exprDesc,
+            (isFilter ?
+                VectorExpressionDescriptor.Mode.FILTER :
+                VectorExpressionDescriptor.Mode.PROJECTION));
+
+    final TypeInfo outputTypeInfo;
+    final ObjectInspector objectInspector;
+    if (!isFilter) {
+      outputTypeInfo = vectorExpression.getOutputTypeInfo();
+      objectInspector =
+          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+              outputTypeInfo);
+    } else {
+      outputTypeInfo = null;
+      objectInspector = null;
+    }
+
+    if (ifStmtTestMode == IfStmtTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
+          " ifStmtTestMode " + ifStmtTestMode +
+          " ifVariation " + ifVariation +
+          " columnScalarMode " + columnScalarMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
+
+    String[] outputScratchTypeNames= vectorizationContext.getScratchColumnTypeNames();
+    DataTypePhysicalVariation[] outputDataTypePhysicalVariations =
+        vectorizationContext.getScratchDataTypePhysicalVariations();
+
+    VectorizedRowBatchCtx batchContext =
+        new VectorizedRowBatchCtx(
+            columnNames,
+            typeInfos,
+            dataTypePhysicalVariations,
+            /* dataColumnNums */ null,
+            /* partitionColumnCount */ 0,
+            /* virtualColumnCount */ 0,
+            /* neededVirtualColumns */ null,
+            outputScratchTypeNames,
+            outputDataTypePhysicalVariations);
 
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
-    VectorExtractRow resultVectorExtractRow = new VectorExtractRow();
-    resultVectorExtractRow.init(new TypeInfo[] { typeInfo }, new int[] { columns.size() });
-    Object[] scrqtchRow = new Object[1];
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
 
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " ifStmtTestMode " + ifStmtTestMode +
+        " ifVariation " + ifVariation +
         " columnScalarMode " + columnScalarMode +
-        " vectorExpression " + vectorExpression.getClass().getSimpleName());
+        " vectorExpression " + vectorExpression.toString());
+    */
+
+    VectorExtractRow resultVectorExtractRow = null;
+    Object[] scrqtchRow = null;
+    if (!isFilter) {
+      resultVectorExtractRow = new VectorExtractRow();
+      final int outputColumnNum = vectorExpression.getOutputColumnNum();
+      resultVectorExtractRow.init(
+          new TypeInfo[] { outputTypeInfo }, new int[] { outputColumnNum });
+      scrqtchRow = new Object[1];
+    }
+
+    boolean copySelectedInUse = false;
+    int[] copySelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;
@@ -469,10 +566,61 @@ public class TestVectorIfStatement {
       if (!batchSource.fillNextBatch(batch)) {
         break;
       }
+      final int originalBatchSize = batch.size;
+      if (isFilter) {
+        copySelectedInUse = batch.selectedInUse;
+        if (batch.selectedInUse) {
+          System.arraycopy(batch.selected, 0, copySelected, 0, originalBatchSize);
+        }
+      }
+
+      // In filter mode, the batch size can be made smaller.
       vectorExpression.evaluate(batch);
-      extractResultObjects(batch, rowIndex, resultVectorExtractRow, scrqtchRow,
-          typeInfo, resultObjects);
-      rowIndex += batch.size;
+
+      if (!isFilter) {
+        extractResultObjects(batch, rowIndex, resultVectorExtractRow, scrqtchRow,
+            objectInspector, resultObjects);
+      } else {
+        final int currentBatchSize = batch.size;
+        if (copySelectedInUse && batch.selectedInUse) {
+          int selectIndex = 0;
+          for (int i = 0; i < originalBatchSize; i++) {
+            final int originalBatchIndex = copySelected[i];
+            final boolean booleanResult;
+            if (selectIndex < currentBatchSize && batch.selected[selectIndex] == originalBatchIndex) {
+              booleanResult = true;
+              selectIndex++;
+            } else {
+              booleanResult = false;
+            }
+            resultObjects[rowIndex + i] = new BooleanWritable(booleanResult);
+          }
+        } else if (batch.selectedInUse) {
+          int selectIndex = 0;
+          for (int i = 0; i < originalBatchSize; i++) {
+            final boolean booleanResult;
+            if (selectIndex < currentBatchSize && batch.selected[selectIndex] == i) {
+              booleanResult = true;
+              selectIndex++;
+            } else {
+              booleanResult = false;
+            }
+            resultObjects[rowIndex + i] = new BooleanWritable(booleanResult);
+          }
+        } else if (currentBatchSize == 0) {
+          // Whole batch got zapped.
+          for (int i = 0; i < originalBatchSize; i++) {
+            resultObjects[rowIndex + i] = new BooleanWritable(false);
+          }
+        } else {
+          // Every row kept.
+          for (int i = 0; i < originalBatchSize; i++) {
+            resultObjects[rowIndex + i] = new BooleanWritable(true);
+          }
+        }
+      }
+
+      rowIndex += originalBatchSize;
     }
   }
 }

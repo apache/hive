@@ -60,6 +60,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: (bigint_col_7 is not null and decimal2016_col_26 is not null and tinyint_col_3 is not null and timestamp_col_9 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (bigint_col_7 is not null and decimal2016_col_26 is not null and timestamp_col_9 is not null and tinyint_col_3 is not null) (type: boolean)
@@ -76,6 +77,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: timestamp), _col3 (type: double), _col5 (type: smallint)
           TableScan
             alias: t2
+            filterExpr: (tinyint_col_15 is not null and decimal2709_col_9 is not null and tinyint_col_20 is not null and smallint_col_19 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (decimal2709_col_9 is not null and smallint_col_19 is not null and tinyint_col_15 is not null and tinyint_col_20 is not null) (type: boolean)
@@ -238,6 +240,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tt1
+            filterExpr: decimal2612_col_77 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: decimal2612_col_77 is not null (type: boolean)
@@ -253,6 +256,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: tt2
+            filterExpr: (timestamp_col_18 is not null and decimal1911_col_16 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (decimal1911_col_16 is not null and timestamp_col_18 is not null) (type: boolean)

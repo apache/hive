@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.Multimap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -57,6 +59,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -128,7 +131,7 @@ public class ParseContext {
   private Set<FileSinkDesc> acidFileSinks = Collections.emptySet();
 
   private Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo =
-          new HashMap<ReduceSinkOperator, RuntimeValuesInfo>();
+          new LinkedHashMap<ReduceSinkOperator, RuntimeValuesInfo>();
   private Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo =
           new HashMap<>();
   private Map<ExprNodeDesc, GroupByOperator> colExprToGBMap =
@@ -136,6 +139,7 @@ public class ParseContext {
 
   private Map<String, List<SemiJoinHint>> semiJoinHints;
   private boolean disableMapJoin;
+  private Multimap<TerminalOperator<?>, ReduceSinkOperator> terminalOpToRSMap;
 
   public ParseContext() {
   }
@@ -712,5 +716,13 @@ public class ParseContext {
 
   public boolean getDisableMapJoin() {
     return disableMapJoin;
+  }
+
+  public void setTerminalOpToRSMap(Multimap<TerminalOperator<?>, ReduceSinkOperator> terminalOpToRSMap) {
+    this.terminalOpToRSMap = terminalOpToRSMap;
+  }
+
+  public Multimap<TerminalOperator<?>, ReduceSinkOperator> getTerminalOpToRSMap() {
+    return terminalOpToRSMap;
   }
 }

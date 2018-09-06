@@ -72,6 +72,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: ((val = 't1val01') and dimid is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((val = 't1val01') and dimid is not null) (type: boolean)
@@ -91,6 +92,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -171,6 +173,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: ((val = 't1val01') and id is not null and dimid is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
@@ -190,6 +193,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table2_n6
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -209,6 +213,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -307,6 +312,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
@@ -326,6 +332,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -349,6 +356,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table2_n6
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -460,24 +468,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
-                  Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (id = 100) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: 100 (type: int), true (type: boolean)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int), _col1 (type: boolean)
-                        mode: hash
+                  Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                    Filter Operator
+                      predicate: false (type: boolean)
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: 100 (type: int), true (type: boolean)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int), _col1 (type: boolean)
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: int), _col1 (type: boolean)
-                          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: int), _col1 (type: boolean)
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: int), _col1 (type: boolean)
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: int), _col1 (type: boolean)
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
@@ -488,10 +498,10 @@ STAGE PLANS:
                   0 100 (type: int), true (type: boolean)
                   1 _col0 (type: int), _col1 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 22 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 22 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -532,6 +542,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: (dimid = 100) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (dimid = 100) (type: boolean)
@@ -551,6 +562,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -644,24 +656,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
-                  Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (id = 100) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: 100 (type: int), true (type: boolean)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int), _col1 (type: boolean)
-                        mode: hash
+                  Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                    Filter Operator
+                      predicate: false (type: boolean)
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: 100 (type: int), true (type: boolean)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int), _col1 (type: boolean)
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: int), _col1 (type: boolean)
-                          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: int), _col1 (type: boolean)
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: int), _col1 (type: boolean)
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: int), _col1 (type: boolean)
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
@@ -672,10 +686,10 @@ STAGE PLANS:
                   0 100 (type: int), true (type: boolean)
                   1 _col0 (type: int), _col1 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 22 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 22 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -716,6 +730,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: (dimid = 100) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (dimid = 100) (type: boolean)
@@ -735,6 +750,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -809,6 +825,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: (dimid = 100) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (dimid = 100) (type: boolean)
@@ -828,6 +845,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)

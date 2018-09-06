@@ -149,6 +149,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: calendarp_n0
+          filterExpr: (p = 1) (type: boolean)
           Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: year (type: int), 1 (type: int)
@@ -179,6 +180,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: calendarp_n0
+          filterExpr: (p = 1) (type: boolean)
           Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: year (type: int), 1 (type: int)
@@ -244,6 +246,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
+          filterExpr: ((px = 1) and (py = 'a')) (type: boolean)
           Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
@@ -265,6 +268,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
+          filterExpr: (px = 1) (type: boolean)
           Statistics: Num rows: 11 Data size: 115 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
@@ -295,6 +299,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
+          filterExpr: ((px = 1) and (py = 'a')) (type: boolean)
           Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
@@ -316,6 +321,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
+          filterExpr: (px = 1) (type: boolean)
           Statistics: Num rows: 1000020010 Data size: 300040104 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
@@ -349,6 +355,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
+          filterExpr: ((px = 1) and (py = 'a')) (type: boolean)
           Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
@@ -370,6 +377,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
+          filterExpr: (px = 1) (type: boolean)
           Statistics: Num rows: 2000040000 Data size: 600080000 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)

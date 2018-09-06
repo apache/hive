@@ -237,12 +237,13 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) - 1.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) - 1.0D) = 1.0D) (type: boolean)

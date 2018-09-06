@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
@@ -59,7 +60,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -312,6 +315,8 @@ public class SessionState {
   private String atsDomainId;
 
   private List<Closeable> cleanupItems = new LinkedList<Closeable>();
+
+  private final AtomicLong sparkSessionId = new AtomicLong();
 
   public HiveConf getConf() {
     return sessionConf;
@@ -605,10 +610,8 @@ public class SessionState {
   private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
     setCurrentSessionState(startSs);
 
-    synchronized(SessionState.class) {
-      if (!startSs.isStarted.compareAndSet(false, true)) {
-        return;
-      }
+    if (!startSs.isStarted.compareAndSet(false, true)) {
+      return;
     }
 
     if (startSs.hiveHist == null){
@@ -844,6 +847,12 @@ public class SessionState {
     return this.hdfsTmpTableSpace;
   }
 
+  public static String generateTempTableLocation(Configuration conf) throws MetaException {
+    Path path = new Path(SessionState.getTempTableSpace(conf), UUID.randomUUID().toString());
+    path = Warehouse.getDnsPath(path, conf);
+    return path.toString();
+  }
+
   @VisibleForTesting
   void releaseSessionLockFile() throws IOException {
     if (hdfsSessionPath != null && hdfsSessionPathLockFile != null) {
@@ -889,7 +898,7 @@ public class SessionState {
   /**
    * Setup authentication and authorization plugins for this session.
    */
-  private void setupAuth() {
+  private synchronized void setupAuth() {
 
     if (authenticator != null) {
       // auth has been initialized
@@ -941,10 +950,10 @@ public class SessionState {
     if (sessionConf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
       return;
     }
-    String metastoreHook = sessionConf.get(ConfVars.METASTORE_FILTER_HOOK.name());
+    String metastoreHook = sessionConf.getVar(ConfVars.METASTORE_FILTER_HOOK);
     if (!ConfVars.METASTORE_FILTER_HOOK.getDefaultValue().equals(metastoreHook) &&
         !AuthorizationMetaStoreFilterHook.class.getName().equals(metastoreHook)) {
-      LOG.warn(ConfVars.METASTORE_FILTER_HOOK.name() +
+      LOG.warn(ConfVars.METASTORE_FILTER_HOOK.varname +
           " will be ignored, since hive.security.authorization.manager" +
           " is set to instance of HiveAuthorizerFactory.");
     }
@@ -2053,6 +2062,9 @@ public class SessionState {
     return currentFunctionsInUse;
   }
 
+  public String getNewSparkSessionId() {
+    return Long.toString(this.sparkSessionId.getAndIncrement());
+  }
 }
 
 class ResourceMaps {

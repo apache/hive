@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.apache.hadoop.util.StringUtils.stringifyException;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
@@ -93,6 +93,13 @@ public class FunctionTask extends Task<FunctionWork> {
           }
           return createPermanentFunction(Hive.get(conf), createFunctionDesc);
         } catch (Exception e) {
+          // For repl load flow, function may exist for first incremental phase. So, just return success.
+          if (createFunctionDesc.getReplicationSpec().isInReplicationScope()
+                  && (e.getCause() instanceof AlreadyExistsException)) {
+            LOG.info("Create function is idempotent as function: "
+                    + createFunctionDesc.getFunctionName() + " already exists.");
+            return 0;
+          }
           setException(e);
           LOG.error("Failed to create function", e);
           return 1;
@@ -262,6 +269,13 @@ public class FunctionTask extends Task<FunctionWork> {
 
       return 0;
     } catch (Exception e) {
+      // For repl load flow, function may not exist for first incremental phase. So, just return success.
+      if (dropFunctionDesc.getReplicationSpec().isInReplicationScope()
+              && (e.getCause() instanceof NoSuchObjectException)) {
+        LOG.info("Drop function is idempotent as function: "
+                + dropFunctionDesc.getFunctionName() + " doesn't exist.");
+        return 0;
+      }
       LOG.info("drop function: ", e);
       console.printError("FAILED: error during drop function: " + StringUtils.stringifyException(e));
       return 1;

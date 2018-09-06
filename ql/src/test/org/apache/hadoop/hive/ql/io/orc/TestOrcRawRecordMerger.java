@@ -168,7 +168,7 @@ public class TestOrcRawRecordMerger {
     setRow(row4, OrcRecordUpdater.INSERT_OPERATION, 40, 50, 60, 130, "fourth");
     OrcStruct row5 = new OrcStruct(OrcRecordUpdater.FIELDS);
     setRow(row5, OrcRecordUpdater.INSERT_OPERATION, 40, 50, 61, 140, "fifth");
-    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class)))
+    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class), Mockito.any(HiveConf.class)))
         .thenReturn(recordReader);
 
     Mockito.when(recordReader.hasNext()).
@@ -192,7 +192,7 @@ public class TestOrcRawRecordMerger {
     RecordIdentifier minKey = new RecordIdentifier(10, 20, 30);
     RecordIdentifier maxKey = new RecordIdentifier(40, 50, 60);
     ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, minKey, maxKey,
-        new Reader.Options());
+        new Reader.Options(), new HiveConf());
     RecordReader recordReader = pair.getRecordReader();
     assertEquals(10, key.getWriteId());
     assertEquals(20, key.getBucketProperty());
@@ -218,7 +218,7 @@ public class TestOrcRawRecordMerger {
     Reader reader = createMockReader();
 
     ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, null, null,
-        new Reader.Options());
+        new Reader.Options(), new HiveConf());
     RecordReader recordReader = pair.getRecordReader();
     assertEquals(10, key.getWriteId());
     assertEquals(20, key.getBucketProperty());
@@ -274,7 +274,7 @@ public class TestOrcRawRecordMerger {
     OrcStruct row4 = createOriginalRow("fourth");
     OrcStruct row5 = createOriginalRow("fifth");
 
-    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class)))
+    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class), Mockito.any(HiveConf.class)))
         .thenReturn(recordReader);
     Mockito.when(recordReader.hasNext()).
         thenReturn(true, true, true, true, true, false);
@@ -410,7 +410,7 @@ public class TestOrcRawRecordMerger {
     types.add(typeBuilder.build());
 
     Mockito.when(reader.getTypes()).thenReturn(types);
-    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class)))
+    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class), Mockito.any(HiveConf.class)))
         .thenReturn(recordReader);
 
     OrcStruct row1 = new OrcStruct(OrcRecordUpdater.FIELDS);

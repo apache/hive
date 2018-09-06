@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.SparkMetricsUtils;
 
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStage;
+import org.apache.hive.spark.counter.SparkCounter;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,6 +165,17 @@ public class SparkTask extends Task<SparkWork> {
 
       if (rc == 0) {
         sparkStatistics = sparkJobStatus.getSparkStatistics();
+        if (SessionState.get() != null) {
+          //Set the number of rows written in case of insert queries, to print in the client(beeline).
+          SparkCounters counters = sparkJobStatus.getCounter();
+          if (counters != null) {
+            SparkCounter counter = counters.getCounter(HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP),
+                FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
+            if (counter != null) {
+              queryState.setNumModifiedRows(counter.getValue());
+            }
+          }
+        }
         printConsoleMetrics();
         printExcessiveGCWarning();
         if (LOG.isInfoEnabled() && sparkStatistics != null) {
@@ -180,7 +193,7 @@ public class SparkTask extends Task<SparkWork> {
         killJob();
       } else if (rc == 4) {
         LOG.info("The Spark job or one stage of it has too many tasks" +
-            ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID );
+            ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID);
         killJob();
       }
 
@@ -189,12 +202,7 @@ public class SparkTask extends Task<SparkWork> {
       }
       sparkJobStatus.cleanup();
     } catch (Exception e) {
-      String msg = "Failed to execute Spark task " + getId() + ", with exception '" + Utilities.getNameMessage(e) + "'";
-
-      // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
-      console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      LOG.error(msg, e);
+      LOG.error("Failed to execute Spark task \"" + getId() + "\"", e);
       setException(e);
       if (e instanceof HiveException) {
         HiveException he = (HiveException) e;
@@ -505,6 +513,7 @@ public class SparkTask extends Task<SparkWork> {
     List<String> hiveCounters = new LinkedList<String>();
     counters.put(groupName, hiveCounters);
     hiveCounters.add(Operator.HIVE_COUNTER_CREATED_FILES);
+    hiveCounters.add(FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
     // MapOperator is out of SparkWork, SparkMapRecordHandler use it to bridge
     // Spark transformation and Hive operators in SparkWork.
     for (MapOperator.Counter counter : MapOperator.Counter.values()) {
@@ -609,7 +618,7 @@ public class SparkTask extends Task<SparkWork> {
   private boolean isTaskFailure(Throwable error) {
     Pattern taskFailedPattern = Pattern.compile("Task.*in stage.*failed.*times");
     while (error != null) {
-      if (taskFailedPattern.matcher(error.getMessage()).find()) {
+      if (error.getMessage() != null && taskFailedPattern.matcher(error.getMessage()).find()) {
         return true;
       }
       error = error.getCause();
@@ -621,8 +630,8 @@ public class SparkTask extends Task<SparkWork> {
     while (error != null) {
       if (error instanceof OutOfMemoryError) {
         return true;
-      } else if (error.getMessage().contains("Container killed by YARN for exceeding memory " +
-              "limits")) {
+      } else if (error.getMessage() != null && error.getMessage().contains("Container killed by " +
+              "YARN for exceeding memory limits")) {
         return true;
       }
       error = error.getCause();

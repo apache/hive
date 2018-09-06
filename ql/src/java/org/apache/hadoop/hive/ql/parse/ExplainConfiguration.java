@@ -47,6 +47,8 @@ public class ExplainConfiguration {
   private boolean vectorization = false;
   private boolean vectorizationOnly = false;
   private VectorizationDetailLevel vectorizationDetailLevel = VectorizationDetailLevel.SUMMARY;
+  private boolean locks = false;
+  private boolean ast = false;
 
   private Path explainRootPath;
   private Map<String, Long> opIdToRuntimeNumRows;
@@ -153,4 +155,19 @@ public class ExplainConfiguration {
     this.opIdToRuntimeNumRows = opIdToRuntimeNumRows;
   }
 
+  public boolean isLocks() {
+    return locks;
+  }
+
+  public void setLocks(boolean locks) {
+    this.locks = locks;
+  }
+
+  public boolean isAst() {
+    return ast;
+  }
+
+  public void setAst(boolean ast) {
+    this.ast = ast;
+  }
 }

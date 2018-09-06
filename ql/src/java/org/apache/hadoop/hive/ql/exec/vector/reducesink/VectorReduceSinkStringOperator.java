@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.reducesink;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
@@ -28,7 +26,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /*
  * Specialized class for native vectorized reduce sink that is reducing on a Uniform Hash
@@ -37,8 +34,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 public class VectorReduceSinkStringOperator extends VectorReduceSinkUniformHashOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorReduceSinkStringOperator.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   // The column number and type information for this one column string reduce key.
   private transient int singleKeyColumn;

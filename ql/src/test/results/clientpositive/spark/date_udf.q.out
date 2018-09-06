@@ -74,19 +74,19 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OV
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@date_udf_flight
-PREHOOK: query: select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
+PREHOOK: query: select unix_timestamp(cast(d as timestamp with local time zone)), unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
     weekofyear(d), to_date(d)
   from date_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_udf
 #### A masked pattern was here ####
-POSTHOOK: query: select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
+POSTHOOK: query: select unix_timestamp(cast(d as timestamp with local time zone)), unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
     weekofyear(d), to_date(d)
   from date_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf
 #### A masked pattern was here ####
-1304665200	2011	5	6	6	18	2011-05-06
+1304665200	1304640000	2011	5	6	6	18	2011-05-06
 PREHOOK: query: select date_add(d, 5), date_sub(d, 10)
   from date_udf
 PREHOOK: type: QUERY

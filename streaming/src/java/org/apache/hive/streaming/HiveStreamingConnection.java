@@ -552,7 +552,9 @@ public class HiveStreamingConnection implements StreamingConnection {
       getMSC().close();
       getHeatbeatMSC().close();
     }
-    LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
+    }
   }
 
   @Override
@@ -1017,8 +1019,6 @@ public class HiveStreamingConnection implements StreamingConnection {
     setHiveConf(conf, HiveConf.ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
     setHiveConf(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     setHiveConf(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI.getHiveName());
-    // Avoids creating Tez Client sessions internally as it takes much longer currently
-    setHiveConf(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     setHiveConf(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     if (streamingOptimizations) {
       setHiveConf(conf, HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED, true);
@@ -1039,7 +1039,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Overriding HiveConf setting : " + var + " = " + value);
     }
-    conf.setBoolVar(var, true);
+    conf.setBoolVar(var, value);
   }
 
   private static void setHiveConf(HiveConf conf, String var) {

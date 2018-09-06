@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
@@ -68,4 +69,6 @@ public interface EncodedReader {
   void readIndexStreams(OrcIndex index, StripeInformation stripe,
       List<OrcProto.Stream> streams, boolean[] included, boolean[] sargColumns)
           throws IOException;
+
+  void setStopped(AtomicBoolean isStopped);
 }

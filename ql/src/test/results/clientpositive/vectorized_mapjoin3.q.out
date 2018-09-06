@@ -151,8 +151,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -193,6 +193,7 @@ STAGE PLANS:
         $hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
             Statistics: Num rows: 5 Data size: 576 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
@@ -325,8 +326,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -367,6 +368,7 @@ STAGE PLANS:
         $hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: (int_col_1 is not null and decimal0801_col is not null) (type: boolean)
             Statistics: Num rows: 5 Data size: 576 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
@@ -499,8 +501,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -541,6 +543,7 @@ STAGE PLANS:
         $hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
             Statistics: Num rows: 5 Data size: 576 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)

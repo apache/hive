@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io.arrow;
 
+import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.arrow.vector.complex.NullableMapVector;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,16 +29,17 @@ import java.io.IOException;
 
 public class ArrowWrapperWritable implements WritableComparable {
   private VectorSchemaRoot vectorSchemaRoot;
-  private DictionaryProvider dictionaryProvider;
+  private BufferAllocator allocator;
+  private NullableMapVector rootVector;
 
   public ArrowWrapperWritable(VectorSchemaRoot vectorSchemaRoot) {
-    this(vectorSchemaRoot, null);
+    this.vectorSchemaRoot = vectorSchemaRoot;
   }
 
-  public ArrowWrapperWritable(VectorSchemaRoot vectorSchemaRoot,
-      DictionaryProvider dictionaryProvider) {
+  public ArrowWrapperWritable(VectorSchemaRoot vectorSchemaRoot, BufferAllocator allocator, NullableMapVector rootVector) {
     this.vectorSchemaRoot = vectorSchemaRoot;
-    this.dictionaryProvider = dictionaryProvider;
+    this.allocator = allocator;
+    this.rootVector = rootVector;
   }
 
   public ArrowWrapperWritable() {}
@@ -50,12 +52,12 @@ public class ArrowWrapperWritable implements WritableComparable {
     this.vectorSchemaRoot = vectorSchemaRoot;
   }
 
-  public DictionaryProvider getDictionaryProvider() {
-    return dictionaryProvider;
+  public BufferAllocator getAllocator() {
+    return allocator;
   }
 
-  public void setDictionaryProvider(DictionaryProvider dictionaryProvider) {
-    this.dictionaryProvider = dictionaryProvider;
+  public NullableMapVector getRootVector() {
+    return rootVector;
   }
 
   @Override

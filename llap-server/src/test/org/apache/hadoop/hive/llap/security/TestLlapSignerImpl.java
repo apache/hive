@@ -28,6 +28,7 @@ import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager;
 import org.apache.hadoop.security.token.delegation.DelegationKey;
+import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,7 +183,25 @@ public class TestLlapSignerImpl {
 
     @Override
     public DelegationKey getCurrentKey() {
-      return getDelegationKey(getCurrentKeyId());
+      // We cannot synchronize properly with the internal thread (or something is weird about
+      // the parent class internal state) and occasionally get null keys; loop until we can get
+      // the key.
+      long endTimeMs = System.nanoTime() + 3 * 1000000000L; // Wait for at most 3 sec.
+      int keyId = -1;
+      do {
+        keyId = getCurrentKeyId();
+        DelegationKey key = getDelegationKey(keyId);
+        if (key != null) return key;
+        if (keyId > 0 && keyId == getCurrentKeyId()) {
+          throw new AssertionError("The ID didn't change but we couldn't get the key " + keyId);
+        }
+        try {
+          Thread.sleep(1);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      } while ((endTimeMs - System.nanoTime()) > 0);
+      throw new AssertionError("Cannot get a key from the base class; the last ID was " + keyId);
     }
 
     @Override

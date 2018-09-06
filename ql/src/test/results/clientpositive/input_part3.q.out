@@ -14,6 +14,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: x
+          filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)

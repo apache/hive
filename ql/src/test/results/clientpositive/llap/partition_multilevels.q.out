@@ -982,6 +982,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partition_test_multilevel
+                  filterExpr: ((level1 = '2222') and level2 BETWEEN '222' AND '333' and level3 BETWEEN '11' AND '33') (type: boolean)
                   Statistics: Num rows: 108 Data size: 40890 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: level2 (type: string), level3 (type: string)
@@ -1572,6 +1573,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partition_test_multilevel
+                  filterExpr: ((level1 = '2222') and level2 BETWEEN '222' AND '333' and level3 BETWEEN '11' AND '33') (type: boolean)
                   Statistics: Num rows: 108 Data size: 40890 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: level2 (type: string), level3 (type: string)

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import org.apache.calcite.adapter.druid.DirectOperatorConversion;
 import org.apache.calcite.adapter.druid.DruidExpressions;
@@ -37,6 +38,7 @@ import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateAddSqlOperator;
@@ -51,6 +53,7 @@ import org.joda.time.Period;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -87,9 +90,9 @@ public class DruidSqlOperatorConverter {
       druidOperatorMap
           .put(SqlStdOperatorTable.SUBSTRING, new DruidSqlOperatorConverter.DruidSubstringOperatorConversion());
       druidOperatorMap
-          .put(SqlStdOperatorTable.IS_NULL, new UnarySuffixOperatorConversion(SqlStdOperatorTable.IS_NULL, "isnull"));
+          .put(SqlStdOperatorTable.IS_NULL, new UnaryFunctionOperatorConversion(SqlStdOperatorTable.IS_NULL, "isnull"));
       druidOperatorMap.put(SqlStdOperatorTable.IS_NOT_NULL,
-          new UnarySuffixOperatorConversion(SqlStdOperatorTable.IS_NOT_NULL, "notnull")
+          new UnaryFunctionOperatorConversion(SqlStdOperatorTable.IS_NOT_NULL, "notnull")
       );
       druidOperatorMap.put(HiveTruncSqlOperator.INSTANCE, new DruidDateTruncOperatorConversion());
       druidOperatorMap.put(HiveToDateSqlOperator.INSTANCE, new DruidToDateOperatorConversion());
@@ -176,10 +179,11 @@ public class DruidSqlOperatorConverter {
           return null;
         }
         if (SqlTypeUtil.isDatetime(call.getOperands().get(0).getType())) {
+          final TimeZone tz = timezoneId(query, call.getOperands().get(0));
           return applyTimestampFormat(
-              DruidExpressions.applyTimestampFloor(arg, Period.days(1).toString(), "", timezoneId(query)), YYYY_MM_DD,
-              timezoneId(query)
-          );
+              DruidExpressions.applyTimestampFloor(arg, Period.days(1).toString(), "", tz),
+              YYYY_MM_DD,
+              tz);
         }
         return null;
       } else if (call.getOperands().size() == 2) {
@@ -205,9 +209,11 @@ public class DruidSqlOperatorConverter {
           //bail out can not infer unit
           return null;
         }
-        return applyTimestampFormat(DruidExpressions.applyTimestampFloor(arg, unit, "", timezoneId(query)), YYYY_MM_DD,
-            timezoneId(query)
-        );
+        final TimeZone tz = timezoneId(query, call.getOperands().get(0));
+        return applyTimestampFormat(
+            DruidExpressions.applyTimestampFloor(arg, unit, "", tz),
+            YYYY_MM_DD,
+            tz);
       }
       return null;
     }
@@ -233,7 +239,11 @@ public class DruidSqlOperatorConverter {
       if (arg == null) {
         return null;
       }
-      return DruidExpressions.applyTimestampFloor(arg, Period.days(1).toString(), "", timezoneId(query));
+      return DruidExpressions.applyTimestampFloor(
+          arg,
+          Period.days(1).toString(),
+          "",
+          timezoneId(query, call.getOperands().get(0)));
     }
   }
 
@@ -286,7 +296,7 @@ public class DruidSqlOperatorConverter {
           call.getOperands().size() == 1 ? DruidExpressions.stringLiteral(DEFAULT_TS_FORMAT) : DruidExpressions
               .toDruidExpression(call.getOperands().get(1), rowType, query);
       return DruidExpressions.functionCall("timestamp_format",
-          ImmutableList.of(numMillis, format, DruidExpressions.stringLiteral(timezoneId(query).getID()))
+          ImmutableList.of(numMillis, format, DruidExpressions.stringLiteral(TimeZone.getTimeZone("UTC").getID()))
       );
     }
   }
@@ -323,10 +333,13 @@ public class DruidSqlOperatorConverter {
       }
 
       final String steps = direction == -1 ? DruidQuery.format("-( %s )", arg1) : arg1;
-      return DruidExpressions.functionCall("timestamp_shift", ImmutableList
-          .of(arg0, DruidExpressions.stringLiteral("P1D"), steps,
-              DruidExpressions.stringLiteral(timezoneId(query).getID())
-          ));
+      return DruidExpressions.functionCall(
+          "timestamp_shift",
+          ImmutableList.of(
+              arg0,
+              DruidExpressions.stringLiteral("P1D"),
+              steps,
+              DruidExpressions.stringLiteral(timezoneId(query, call.getOperands().get(0)).getID())));
     }
   }
 
@@ -335,9 +348,11 @@ public class DruidSqlOperatorConverter {
    * @param query Druid Rel
    * @return time zone
    */
-  private static TimeZone timezoneId(final DruidQuery query) {
-    return TimeZone.getTimeZone(
-        query.getTopNode().getCluster().getPlanner().getContext().unwrap(CalciteConnectionConfig.class).timeZone());
+  private static TimeZone timezoneId(final DruidQuery query, final RexNode arg) {
+    return arg.getType().getSqlTypeName() == SqlTypeName.TIMESTAMP_WITH_LOCAL_TIME_ZONE
+        ? TimeZone.getTimeZone(
+        query.getTopNode().getCluster().getPlanner().getContext().unwrap(CalciteConnectionConfig.class).timeZone()) :
+        TimeZone.getTimeZone("UTC");
   }
 
   private static String applyTimestampFormat(String arg, String format, TimeZone timeZone) {
@@ -346,4 +361,33 @@ public class DruidSqlOperatorConverter {
     );
   }
 
+  public static class UnaryFunctionOperatorConversion implements org.apache.calcite.adapter.druid.DruidSqlOperatorConverter {
+
+    private final SqlOperator operator;
+    private final String druidOperator;
+
+    public UnaryFunctionOperatorConversion(SqlOperator operator, String druidOperator) {
+      this.operator = operator;
+      this.druidOperator = druidOperator;
+    }
+
+    @Override public SqlOperator calciteOperator() {
+      return operator;
+    }
+
+    @Override public String toDruidExpression(RexNode rexNode, RelDataType rowType,
+        DruidQuery druidQuery) {
+      final RexCall call = (RexCall) rexNode;
+
+      final List<String> druidExpressions = DruidExpressions.toDruidExpressions(
+          druidQuery, rowType,
+          call.getOperands());
+
+      if (druidExpressions == null) {
+        return null;
+      }
+
+      return DruidQuery.format("%s(%s)", druidOperator, Iterables.getOnlyElement(druidExpressions));
+    }
+  }
 }

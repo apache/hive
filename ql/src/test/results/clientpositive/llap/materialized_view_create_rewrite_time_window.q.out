@@ -73,14 +73,14 @@ POSTHOOK: Input: default@cmv_basetable_2_n1
 POSTHOOK: Output: default@cmv_basetable_2_n1
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
-CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
+CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='5min') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
   GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: query: EXPLAIN
-CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
+CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='5min') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
@@ -107,6 +107,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n3
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -120,12 +121,13 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n1
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
@@ -140,7 +142,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -164,7 +166,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
@@ -188,7 +190,7 @@ STAGE PLANS:
         Create View
           columns: a int, c decimal(10,2)
           table properties:
-            rewriting.time.window 300s
+            rewriting.time.window 5min
           expanded text: SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
   FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
   WHERE `cmv_basetable_2_n1`.`c` > 10.0
@@ -212,7 +214,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
+PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='5min') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
@@ -222,7 +224,7 @@ PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_n3
-POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='5min') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
@@ -254,7 +256,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
-	rewriting.time.window	300s                
+	rewriting.time.window	5min                
 	totalSize           	608                 
 #### A masked pattern was here ####
 	 	 
@@ -267,16 +269,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	No                  	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
@@ -306,6 +309,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n3
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -319,12 +323,13 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n1
+                  filterExpr: ((c > 10.1) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10.1) and a is not null) (type: boolean)
@@ -339,7 +344,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -363,7 +368,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
@@ -476,7 +481,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
-	rewriting.time.window	300s                
+	rewriting.time.window	5min                
 	totalSize           	608                 
 #### A masked pattern was here ####
 	 	 
@@ -489,16 +494,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
@@ -521,6 +527,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n3
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator
@@ -577,6 +584,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n3
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -590,15 +598,16 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 7 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n1
+                  filterExpr: ((c > 10) and (ROW__ID.writeid > 2) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 2) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2))
@@ -610,7 +619,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 8 
             Map Operator Tree:
@@ -631,7 +640,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -655,7 +664,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
@@ -779,7 +788,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	3                   
 	rawDataSize         	348                 
-	rewriting.time.window	300s                
+	rewriting.time.window	5min                
 	totalSize           	628                 
 #### A masked pattern was here ####
 	 	 
@@ -792,16 +801,17 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
@@ -824,6 +834,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n3
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator

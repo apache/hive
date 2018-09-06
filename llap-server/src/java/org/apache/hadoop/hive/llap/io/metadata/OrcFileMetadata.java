@@ -50,9 +50,10 @@ public final class OrcFileMetadata implements FileMetadata, ConsumerFileMetadata
   private final long contentLength;
   private final long numberOfRows;
   private final boolean isOriginalFormat;
+  private final OrcFile.Version fileVersion;
 
   public OrcFileMetadata(Object fileKey, OrcProto.Footer footer, OrcProto.PostScript ps,
-      List<StripeStatistics> stats, List<StripeInformation> stripes) {
+    List<StripeStatistics> stats, List<StripeInformation> stripes, final OrcFile.Version fileVersion) {
     this.stripeStats = stats;
     this.compressionKind = CompressionKind.valueOf(ps.getCompression().name());
     this.compressionBufferSize = (int)ps.getCompressionBlockSize();
@@ -67,6 +68,7 @@ public final class OrcFileMetadata implements FileMetadata, ConsumerFileMetadata
     this.numberOfRows = footer.getNumberOfRows();
     this.fileStats = footer.getStatisticsList();
     this.fileKey = fileKey;
+    this.fileVersion = fileVersion;
   }
 
   // FileMetadata
@@ -162,5 +164,10 @@ public final class OrcFileMetadata implements FileMetadata, ConsumerFileMetadata
 
   public TypeDescription getSchema() throws FileFormatException {
     return OrcUtils.convertTypeFromProtobuf(this.types, 0);
+  }
+
+  @Override
+  public OrcFile.Version getFileVersion() {
+    return fileVersion;
   }
 }

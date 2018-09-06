@@ -3,7 +3,6 @@ SET mapreduce.job.ubertask.maxreduces=1;
 SET mapred.reduce.tasks=1;
 
 -- Uberized mode is a YARN option, ignore this test for non-YARN Hadoop versions
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 
 CREATE TABLE T1_n136(key STRING, val STRING);
 LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n136;

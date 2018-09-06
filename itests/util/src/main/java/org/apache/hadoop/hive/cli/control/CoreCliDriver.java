@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -63,8 +64,18 @@ public class CoreCliDriver extends CliAdapter {
       qt = new ElapsedTimeLoggingWrapper<QTestUtil>() {
         @Override
         public QTestUtil invokeInternal() throws Exception {
-          return new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-              hiveConfDir, hadoopVer, initScript, cleanupScript, true, cliConfig.getFsType());
+          return new QTestUtil(
+              QTestArguments.QTestArgumentsBuilder.instance()
+                .withOutDir(cliConfig.getResultsDir())
+                .withLogDir(cliConfig.getLogDir())
+                .withClusterType(miniMR)
+                .withConfDir(hiveConfDir)
+                .withHadoopVer(hadoopVer)
+                .withInitScript(initScript)
+                .withCleanupScript(cleanupScript)
+                .withLlapIo(true)
+                .withFsType(cliConfig.getFsType())
+                .build());
         }
       }.invoke("QtestUtil instance created", LOG, true);
 
@@ -72,7 +83,8 @@ public class CoreCliDriver extends CliAdapter {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
         public Void invokeInternal() throws Exception {
-          qt.cleanUp();
+          qt.newSession();
+          qt.cleanUp(); // I don't think this is neccessary...
           return null;
         }
       }.invoke("Initialization cleanup done.", LOG, true);
@@ -100,7 +112,7 @@ public class CoreCliDriver extends CliAdapter {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
         public Void invokeInternal() throws Exception {
-          qt.clearTestSideEffects();
+          qt.newSession();
           return null;
         }
       }.invoke("PerTestSetup done.", LOG, false);
@@ -120,6 +132,7 @@ public class CoreCliDriver extends CliAdapter {
         @Override
         public Void invokeInternal() throws Exception {
           qt.clearPostTestEffects();
+          qt.clearTestSideEffects();
           return null;
         }
       }.invoke("PerTestTearDown done.", LOG, false);
@@ -165,15 +178,7 @@ public class CoreCliDriver extends CliAdapter {
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-
-      if (qt.shouldBeSkipped(fname)) {
-        LOG.info("Test " + fname + " skipped");
-        System.err.println("Test " + fname + " skipped");
-        skipped = true;
-        return;
-      }
-
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         failed = true;

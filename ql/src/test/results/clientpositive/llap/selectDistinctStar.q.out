@@ -711,6 +711,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (key < '3') (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key < '3') (type: boolean)
@@ -1405,9 +1406,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select distinct * from src order by key limit 2	 
-View Expanded Text: 	select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select distinct * from src order by key limit 2	 
+Expanded Query:     	select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2	 
 PREHOOK: query: select * from sdi
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sdi
@@ -3169,6 +3169,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (key < '3') (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key < '3') (type: boolean)
@@ -3867,9 +3868,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select distinct * from src order by key limit 2	 
-View Expanded Text: 	select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select distinct * from src order by key limit 2	 
+Expanded Query:     	select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2	 
 PREHOOK: query: select * from sdi
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sdi

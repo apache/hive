@@ -25,6 +25,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import <ScalarImport>;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+#IF DECIMAL
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+#ENDIF DECIMAL
 
 /**
  * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
@@ -67,6 +70,9 @@ public class <ClassName> extends VectorExpression {
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     <ColumnVectorType> arg2ColVector = (<ColumnVectorType>) batch.cols[arg2Column];
     boolean[] arg2IsNull = arg2ColVector.isNull;
+#IF DECIMAL
+    HiveDecimalWritable[] vector2 = arg2ColVector.vector;
+#ENDIF DECIMAL
     <ColumnVectorType> outputColVector = (<ColumnVectorType>) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -104,7 +110,11 @@ public class <ClassName> extends VectorExpression {
           if (vector1[i] == 1) {
             if (!arg2IsNull[i]) {
               outputIsNull[i] = false;
+#IF DECIMAL
+              outputColVector.set(i, vector2[i]);
+#ELSE
               outputColVector.set(i, arg2ColVector.asScratch<ObjectName>(i));
+#ENDIF DECIMAL
             } else {
               outputIsNull[i] = true;
               outputColVector.noNulls = false;
@@ -119,7 +129,11 @@ public class <ClassName> extends VectorExpression {
           if (vector1[i] == 1) {
             if (!arg2IsNull[i]) {
               outputIsNull[i] = false;
+#IF DECIMAL
+              outputColVector.set(i, vector2[i]);
+#ELSE
               outputColVector.set(i, arg2ColVector.asScratch<ObjectName>(i));
+#ENDIF DECIMAL
             } else {
               outputIsNull[i] = true;
               outputColVector.noNulls = false;
@@ -138,7 +152,11 @@ public class <ClassName> extends VectorExpression {
           if (!arg1ColVector.isNull[i] && vector1[i] == 1) {
             if (!arg2IsNull[i]) {
               outputIsNull[i] = false;
+#IF DECIMAL
+              outputColVector.set(i, vector2[i]);
+#ELSE
               outputColVector.set(i, arg2ColVector.asScratch<ObjectName>(i));
+#ENDIF DECIMAL
             } else {
               outputIsNull[i] = true;
               outputColVector.noNulls = false;
@@ -153,7 +171,11 @@ public class <ClassName> extends VectorExpression {
           if (!arg1ColVector.isNull[i] && vector1[i] == 1) {
             if (!arg2IsNull[i]) {
               outputIsNull[i] = false;
+#IF DECIMAL
+              outputColVector.set(i, vector2[i]);
+#ELSE
               outputColVector.set(i, arg2ColVector.asScratch<ObjectName>(i));
+#ENDIF DECIMAL
             } else {
               outputIsNull[i] = true;
               outputColVector.noNulls = false;

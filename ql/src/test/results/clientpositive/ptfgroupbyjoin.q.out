@@ -75,6 +75,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tlb1
+            filterExpr: fkey is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: fkey is not null (type: boolean)
@@ -119,6 +120,7 @@ STAGE PLANS:
               value expressions: _col0 (type: int)
           TableScan
             alias: aaa
+            filterExpr: fid is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: fid is not null (type: boolean)
@@ -213,6 +215,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tlb1
+            filterExpr: fkey is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: fkey is not null (type: boolean)
@@ -277,6 +280,7 @@ STAGE PLANS:
               value expressions: _col0 (type: int), _col2 (type: int)
           TableScan
             alias: aaa
+            filterExpr: fid is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: fid is not null (type: boolean)

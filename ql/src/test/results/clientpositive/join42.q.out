@@ -130,6 +130,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acct
+            filterExpr: (aid is not null and brn is not null) (type: boolean)
             Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (aid is not null and brn is not null) (type: boolean)
@@ -144,6 +145,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
           TableScan
             alias: l
+            filterExpr: (id = 4436) (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (id = 4436) (type: boolean)
@@ -155,6 +157,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: fr
+            filterExpr: (loan_id = 4436) (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (loan_id = 4436) (type: boolean)
@@ -224,6 +227,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: la_n11
+            filterExpr: ((loan_id = 4436) and aid is not null and pi_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((loan_id = 4436) and aid is not null and pi_id is not null) (type: boolean)
@@ -240,6 +244,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: int)
           TableScan
             alias: a_n11
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -281,6 +286,7 @@ STAGE PLANS:
               value expressions: _col3 (type: int)
           TableScan
             alias: pi
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)

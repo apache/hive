@@ -20,8 +20,6 @@ package org.apache.hive.hcatalog.data;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,12 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -42,6 +40,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import junit.framework.TestCase;
 
 public class TestJsonSerDe extends TestCase {
 
@@ -98,7 +98,7 @@ public class TestJsonSerDe extends TestCase {
     rlist.add(new HiveChar("hive\nchar", 10));
     rlist.add(new HiveVarchar("hive\nvarchar", 20));
     rlist.add(Date.valueOf("2014-01-07"));
-    rlist.add(new Timestamp(System.currentTimeMillis()));
+    rlist.add(Timestamp.ofEpochMilli(System.currentTimeMillis()));
     rlist.add("hive\nbinary".getBytes("UTF-8"));
 
     List<Object> nlist = new ArrayList<Object>(13);
@@ -158,17 +158,17 @@ public class TestJsonSerDe extends TestCase {
       Writable s = hrsd.serialize(r, hrsd.getObjectInspector());
       LOG.info("ONE:{}", s);
 
-      Object o1 = hrsd.deserialize(s);
+      HCatRecord o1 = (HCatRecord) hrsd.deserialize(s);
       StringBuilder msg = new StringBuilder();
-      boolean isEqual = HCatDataCheckUtil.recordsEqual(r, (HCatRecord) o1); 
+      boolean isEqual = HCatDataCheckUtil.recordsEqual(r, o1);
       assertTrue(msg.toString(), isEqual);
 
       Writable s2 = jsde.serialize(o1, hrsd.getObjectInspector());
       LOG.info("TWO:{}", s2);
-      Object o2 = jsde.deserialize(s2);
+      HCatRecord o2 = (HCatRecord) jsde.deserialize(s2);
       LOG.info("deserialized TWO : {} ", o2);
       msg.setLength(0);
-      isEqual = HCatDataCheckUtil.recordsEqual(r, (HCatRecord) o2, msg);
+      isEqual = HCatDataCheckUtil.recordsEqual(r, o2, msg);
       assertTrue(msg.toString(), isEqual);
     }
 

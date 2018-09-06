@@ -232,6 +232,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n1
+                  filterExpr: (deptno >= 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno >= 20) (type: boolean)
@@ -250,10 +251,10 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: varchar(256))
                           Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: varchar(256))
@@ -341,6 +342,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n1
+                  filterExpr: (deptno > 15) (type: boolean)
                   Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 15) (type: boolean)
@@ -361,10 +363,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: varchar(256))
                           Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -481,6 +483,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n1
+                  filterExpr: ((deptno > 11) and (deptno < 19)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno < 19) and (deptno > 11)) (type: boolean)
@@ -499,10 +502,10 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -624,10 +627,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -814,7 +817,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
             Map Operator Tree:
@@ -831,7 +834,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: int)
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col2 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -857,7 +860,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -981,7 +984,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: varchar(256))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
             Map Operator Tree:
@@ -998,7 +1001,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -1024,7 +1027,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1076,7 +1079,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select a.empid deptno from
 (select * from emps_n2 where empid = 1) a
@@ -1158,7 +1161,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select a.empid, a.deptno from
 (select * from emps_n2 where empid = 1) a
@@ -1307,7 +1310,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 on (emps_n2.deptno = depts_n1.deptno)
@@ -1389,7 +1392,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_2, $hdt$_3, $hdt$_1, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[48][tables = [$hdt$_2, $hdt$_3, $hdt$_1, $hdt$_0]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 a on (emps_n2.deptno=a.deptno)

@@ -6,7 +6,6 @@ set hive.merge.mapredfiles=false;
 
 -- Ensure it works if skewed column is not the first column in the table columns
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
 
 -- test where the skewed values are more than 1 say columns no. 2 and 4 in a table with 5 columns

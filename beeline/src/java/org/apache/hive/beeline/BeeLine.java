@@ -51,8 +51,8 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -75,11 +75,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
-import jline.console.completer.FileNameCompleter;
-import jline.console.ConsoleReader;
-import jline.console.history.FileHistory;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -91,21 +86,26 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
-import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.beeline.hs2connection.BeelineConfFileParseException;
 import org.apache.hive.beeline.hs2connection.BeelineSiteParseException;
 import org.apache.hive.beeline.hs2connection.BeelineSiteParser;
-import org.apache.hive.beeline.hs2connection.HS2ConnectionFileUtils;
-import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
 import org.apache.hive.beeline.hs2connection.HS2ConnectionFileParser;
+import org.apache.hive.beeline.hs2connection.HS2ConnectionFileUtils;
 import org.apache.hive.beeline.hs2connection.HiveSiteHS2ConnectionFileParser;
+import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
+import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.jdbc.JdbcUriParseException;
+import org.apache.hive.jdbc.Utils;
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.thrift.transport.TTransportException;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.apache.hive.jdbc.JdbcUriParseException;
-import org.apache.hive.jdbc.Utils;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.completer.FileNameCompleter;
+import jline.console.completer.StringsCompleter;
+import jline.console.history.FileHistory;
 
 /**
  * A console SQL shell with command completion.
@@ -172,7 +172,7 @@ public class BeeLine implements Closeable {
   private static final String HIVE_VAR_PREFIX = "--hivevar";
   private static final String HIVE_CONF_PREFIX = "--hiveconf";
   private static final String PROP_FILE_PREFIX = "--property-file";
-  static final String PASSWD_MASK = "[passwd stripped]";
+  public static final String PASSWD_MASK = "[passwd stripped]";
 
   private final Map<Object, Object> formats = map(new Object[] {
       "vertical", new VerticalOutputFormat(this),
@@ -900,7 +900,11 @@ public class BeeLine implements Closeable {
         comForDebug = constructCmdUrl(url, user, driver, true);
       }
       debug(comForDebug);
-      return dispatch(com);
+      if (!dispatch(com)) {
+        exit = true;
+        return false;
+      }
+      return true;
     }
     // load property file
     String propertyFile = cl.getOptionValue("property-file");
@@ -1104,6 +1108,11 @@ public class BeeLine implements Closeable {
     }
 
     if (beelineSiteParser.configExists()) {
+      String urlFromCommandLineOption = cl.getOptionValue("u");
+      if (urlFromCommandLineOption != null) {
+        throw new BeelineSiteParseException(
+            "Not using beeline-site.xml since the user provided the url: " + urlFromCommandLineOption);
+      }
       // Get the named url from user specific config file if present
       Properties userNamedConnectionURLs = beelineSiteParser.getConnectionProperties();
       if (!userNamedConnectionURLs.isEmpty()) {
@@ -1126,6 +1135,14 @@ public class BeeLine implements Closeable {
     }
 
     if (jdbcConnectionParams != null) {
+      String userName = cl.getOptionValue("n");
+      if (userName != null) {
+        jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_USER, userName);
+      }
+      String password = cl.getOptionValue("p");
+      if (password != null) {
+        jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD, password);
+      }
       mergedConnectionProperties =
           HS2ConnectionFileUtils.mergeUserConnectionPropertiesAndBeelineSite(
               userConnectionProperties, jdbcConnectionParams);
@@ -1273,7 +1290,9 @@ public class BeeLine implements Closeable {
 
         if (!dispatch(line)) {
           lastExecutionResult = ERRNO_OTHER;
-          if (exitOnError) break;
+          if (exitOnError) {
+            break;
+          }
         } else if (line != null) {
           lastExecutionResult = ERRNO_OK;
         }
@@ -2209,7 +2228,7 @@ public class BeeLine implements Closeable {
     }
     info("scan complete in "
         + (System.currentTimeMillis() - start) + "ms");
-    return (Driver[]) driverClasses.toArray(new Driver[0]);
+    return driverClasses.toArray(new Driver[0]);
   }
 
   // /////////////////////////////////////

@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
-import com.google.common.primitives.Ints;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -33,13 +31,13 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.messaging.EventUtils;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -47,8 +45,10 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.events.EventUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.log.IncrementalDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,10 +121,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         lastReplId = incrementalDump(dumpRoot, dmd, cmRoot);
       }
       prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(lastReplId)), dumpSchema);
+    } catch (RuntimeException e) {
+      LOG.error("failed", e);
+      setException(e);
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
-      return 1;
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     return 0;
   }
@@ -154,7 +159,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat()));
 
     EventUtils.MSClientNotificationFetcher evFetcher
-        = new EventUtils.MSClientNotificationFetcher(getHive().getMSC());
+        = new EventUtils.MSClientNotificationFetcher(getHive());
 
     EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
         evFetcher, work.eventFrom, work.maxEventLimit(), evFilter);
@@ -194,7 +199,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         cmRoot,
         getHive(),
         conf,
-        getNewEventOnlyReplicationSpec(ev.getEventId())
+        getNewEventOnlyReplicationSpec(ev.getEventId()),
+        work.dbNameOrPattern,
+        work.tableNameOrPattern
     );
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);
@@ -209,10 +216,15 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return rspec;
   }
 
-  private Long bootStrapDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot) throws Exception {
+  Long bootStrapDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot) throws Exception {
     // bootstrap case
+    // Last repl id would've been captured during compile phase in queryState configs before opening txn.
+    // This is needed as we dump data on ACID/MM tables based on read snapshot or else we may lose data from
+    // concurrent txns when bootstrap dump in progress. If it is not available, then get it from metastore.
     Hive hiveDb = getHive();
-    Long bootDumpBeginReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
+    Long bootDumpBeginReplId = queryState.getConf().getLong(ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY, -1L);
+    assert (bootDumpBeginReplId >= 0L);
+
     String validTxnList = getValidTxnListForReplDump(hiveDb);
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
@@ -224,40 +236,36 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dumpFunctionMetadata(dbName, dumpRoot);
 
       String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
-      for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
-        LOG.debug(
-            "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
-        dumpTable(dbName, tblName, validTxnList, dbRoot);
-        dumpConstraintMetadata(dbName, tblName, dbRoot);
+      Exception caught = null;
+      try {
+        for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
+          LOG.debug(
+              "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
+          dumpTable(dbName, tblName, validTxnList, dbRoot, bootDumpBeginReplId);
+          dumpConstraintMetadata(dbName, tblName, dbRoot);
+        }
+      } catch (Exception e) {
+        caught = e;
+      } finally {
+        try {
+          Utils.resetDbBootstrapDumpState(hiveDb, dbName, uniqueKey);
+        } catch (Exception e) {
+          if (caught == null) {
+            throw e;
+          } else {
+            LOG.error("failed to reset the db state for " + uniqueKey
+                + " on failure of repl dump", e);
+            throw caught;
+          }
+        }
+        if(caught != null) {
+          throw caught;
+        }
       }
-      Utils.resetDbBootstrapDumpState(hiveDb, dbName, uniqueKey);
       replLogger.endLog(bootDumpBeginReplId.toString());
     }
-    Long bootDumpEndReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
-    LOG.info("Bootstrap object dump phase took from {} to {}", bootDumpBeginReplId,
-        bootDumpEndReplId);
-
-    // Now that bootstrap has dumped all objects related, we have to account for the changes
-    // that occurred while bootstrap was happening - i.e. we have to look through all events
-    // during the bootstrap period and consolidate them with our dump.
-
-    IMetaStoreClient.NotificationFilter evFilter =
-        new DatabaseAndTableFilter(work.dbNameOrPattern, work.tableNameOrPattern);
-    EventUtils.MSClientNotificationFetcher evFetcher =
-        new EventUtils.MSClientNotificationFetcher(hiveDb.getMSC());
-    EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
-        evFetcher, bootDumpBeginReplId,
-        Ints.checkedCast(bootDumpEndReplId - bootDumpBeginReplId) + 1,
-        evFilter);
-
-    // Now we consolidate all the events that happenned during the objdump into the objdump
-    while (evIter.hasNext()) {
-      NotificationEvent ev = evIter.next();
-      Path eventRoot = new Path(dumpRoot, String.valueOf(ev.getEventId()));
-      // FIXME : implement consolidateEvent(..) similar to dumpEvent(ev,evRoot)
-    }
-    LOG.info(
-        "Consolidation done, preparing to return {},{}->{}",
+    Long bootDumpEndReplId = currentNotificationId(hiveDb);
+    LOG.info("Preparing to return {},{}->{}",
         dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
     dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot);
     dmd.write();
@@ -267,7 +275,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return bootDumpBeginReplId;
   }
 
-  private Path dumpDbMetadata(String dbName, Path dumpRoot, long lastReplId) throws Exception {
+  long currentNotificationId(Hive hiveDb) throws TException {
+    return hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
+  }
+
+  Path dumpDbMetadata(String dbName, Path dumpRoot, long lastReplId) throws Exception {
     Path dbRoot = new Path(dumpRoot, dbName);
     // TODO : instantiating FS objects are generally costly. Refactor
     FileSystem fs = dbRoot.getFileSystem(conf);
@@ -277,7 +289,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return dbRoot;
   }
 
-  private void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot) throws Exception {
+  void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId) throws Exception {
     try {
       Hive db = getHive();
       HiveWrapper.Tuple<Table> tuple = new HiveWrapper(db, dbName).table(tblName);
@@ -288,6 +300,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       tuple.replicationSpec.setIsReplace(true);  // by default for all other objects this is false
       if (AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
         tuple.replicationSpec.setValidWriteIdList(getValidWriteIdList(dbName, tblName, validTxnList));
+
+        // For transactional table, data would be valid snapshot for current txn and doesn't include data
+        // added/modified by concurrent txns which are later than current txn. So, need to set last repl Id of this table
+        // as bootstrap dump's last repl Id.
+        tuple.replicationSpec.setCurrentReplicationState(String.valueOf(lastReplId));
       }
       MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
       new TableExport(
@@ -324,7 +341,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return openTxns;
   }
 
-  private String getValidTxnListForReplDump(Hive hiveDb) throws HiveException {
+  String getValidTxnListForReplDump(Hive hiveDb) throws HiveException {
     // Key design point for REPL DUMP is to not have any txns older than current txn in which dump runs.
     // This is needed to ensure that Repl dump doesn't copy any data files written by any open txns
     // mainly for streaming ingest case where one delta file shall have data from committed/aborted/open txns.
@@ -389,7 +406,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void dumpFunctionMetadata(String dbName, Path dumpRoot) throws Exception {
+  void dumpFunctionMetadata(String dbName, Path dumpRoot) throws Exception {
     Path functionsRoot = new Path(new Path(dumpRoot, dbName), FUNCTIONS_ROOT_DIR_NAME);
     List<String> functionNames = getHive().getFunctions(dbName, "*");
     for (String functionName : functionNames) {
@@ -408,7 +425,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot) throws Exception {
+  void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot) throws Exception {
     try {
       Path constraintsRoot = new Path(dbRoot, CONSTRAINTS_ROOT_DIR_NAME);
       Path commonConstraintsFile = new Path(constraintsRoot, ConstraintFileType.COMMON.getPrefix() + tblName);

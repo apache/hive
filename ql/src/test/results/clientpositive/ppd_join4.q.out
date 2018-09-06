@@ -54,6 +54,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_tbl
+            filterExpr: ((name = 'c') and (id = 'a')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((id = 'a') and (name = 'c')) (type: boolean)
@@ -67,6 +68,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: t3
+            filterExpr: (id = 'a') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 'a') (type: boolean)

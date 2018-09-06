@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.conf;
 
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ import java.util.StringTokenizer;
 @Private
 public class HiveConfUtil {
   private static final String CLASS_NAME = HiveConfUtil.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   /**
    * Check if metastore is being used in embedded mode.
    * This utility function exists so that the logic for determining the mode is same

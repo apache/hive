@@ -25,10 +25,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -42,6 +45,8 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
+import org.junit.Assert;
 
 import java.io.IOException;
 import java.net.URI;
@@ -53,14 +58,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.junit.Assert;
 
 public class TestReplicationScenariosAcrossInstances {
   @Rule
@@ -72,10 +82,11 @@ public class TestReplicationScenariosAcrossInstances {
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private static WarehouseInstance primary, replica;
   private String primaryDbName, replicatedDbName;
+  private static HiveConf conf;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    Configuration conf = new Configuration();
+    conf = new HiveConf(TestReplicationScenarios.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
@@ -310,8 +321,7 @@ public class TestReplicationScenariosAcrossInstances {
             "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
         .run("create table table1 (i int, j int)")
         .run("insert into table1 values (1,2)")
-        .dump(primaryDbName, null, Arrays.asList("'hive.repl.dump.metadata.only'='true'",
-            "'hive.repl.dump.include.acid.tables'='true'"));
+        .dump(primaryDbName, null, Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
 
     replica.load(replicatedDbName, tuple.dumpLocation)
         .run("use " + replicatedDbName)
@@ -330,8 +340,7 @@ public class TestReplicationScenariosAcrossInstances {
         .run("create table table2 (a int, city string) partitioned by (country string)")
         .run("create table table3 (i int, j int)")
         .run("insert into table1 values (1,2)")
-        .dump(primaryDbName, null, Arrays.asList("'hive.repl.dump.metadata.only'='true'",
-            "'hive.repl.dump.include.acid.tables'='true'"));
+        .dump(primaryDbName, null, Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
 
     replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
         .run("use " + replicatedDbName)
@@ -399,6 +408,42 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
+  public void testNonReplDBMetadataReplication() throws Throwable {
+    String dbName = primaryDbName + "_metadata";
+    WarehouseInstance.Tuple tuple = primary
+            .run("create database " + dbName)
+            .run("use " + dbName)
+            .run("create table table1 (i int, j int)")
+            .run("create table table2 (a int, city string) partitioned by (country string)")
+            .run("create table table3 (i int, j int)")
+            .run("insert into table1 values (1,2)")
+            .dump(dbName, null, Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"table1", "table2", "table3"})
+            .run("select * from table1")
+            .verifyResults(Collections.emptyList());
+
+    tuple = primary
+            .run("use " + dbName)
+            .run("alter table table1 rename to renamed_table1")
+            .run("insert into table2 partition(country='india') values (1,'mumbai') ")
+            .run("create table table4 (i int, j int)")
+            .dump(dbName, tuple.lastReplicationId, Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] { "renamed_table1", "table2", "table3", "table4" })
+            .run("select * from renamed_table1")
+            .verifyResults(Collections.emptyList())
+            .run("select * from table2")
+            .verifyResults(Collections.emptyList());
+  }
+
+    @Test
   public void testBootStrapDumpOfWarehouse() throws Throwable {
     String randomOne = RandomStringUtils.random(10, true, false);
     String randomTwo = RandomStringUtils.random(10, true, false);
@@ -420,8 +465,7 @@ public class TestReplicationScenariosAcrossInstances {
                 SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("use " + dbTwo)
         .run("create table t1 (i int, j int)")
-        .dump("`*`", null, Arrays.asList("'hive.repl.dump.metadata.only'='true'",
-            "'hive.repl.dump.include.acid.tables'='true'"));
+        .dump("`*`", null, Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
 
     /*
       Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
@@ -436,8 +480,10 @@ public class TestReplicationScenariosAcrossInstances {
        End of additional steps
     */
 
+    // Reset ckpt and last repl ID keys to empty set for allowing bootstrap load
     replica.run("show databases")
         .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
+        .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')")
         .load("", tuple.dumpLocation)
         .run("show databases")
         .verifyResults(new String[] { "default", primaryDbName, dbOne, dbTwo })
@@ -450,8 +496,9 @@ public class TestReplicationScenariosAcrossInstances {
         .run("use " + dbTwo)
         .run("show tables")
         .verifyResults(new String[] { "t1" });
+
     /*
-      Start of cleanup
+       Start of cleanup
     */
 
     replica.run("drop database " + primaryDbName + " cascade");
@@ -477,8 +524,7 @@ public class TestReplicationScenariosAcrossInstances {
         .run("use " + dbOne)
         .run("create table t1 (i int, j int) partitioned by (load_date date) "
             + "clustered by(i) into 2 buckets stored as orc tblproperties ('transactional'='true') ")
-        .dump("`*`", null, Arrays.asList("'hive.repl.dump.metadata.only'='true'",
-            "'hive.repl.dump.include.acid.tables'='true'"));
+        .dump("`*`", null, Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
 
     String dbTwo = primaryDbName + randomTwo;
     WarehouseInstance.Tuple incrementalTuple = primary
@@ -489,8 +535,7 @@ public class TestReplicationScenariosAcrossInstances {
         .run("use " + dbOne)
         .run("create table t2 (a int, b int)")
         .dump("`*`", bootstrapTuple.lastReplicationId,
-            Arrays.asList("'hive.repl.dump.metadata.only'='true'",
-                "'hive.repl.dump.include.acid.tables'='true'"));
+            Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
 
     /*
       Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
@@ -505,8 +550,10 @@ public class TestReplicationScenariosAcrossInstances {
       End of additional steps
     */
 
+    // Reset ckpt and last repl ID keys to empty set for allowing bootstrap load
     replica.run("show databases")
         .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
+        .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')")
         .load("", bootstrapTuple.dumpLocation)
         .run("show databases")
         .verifyResults(new String[] { "default", primaryDbName, dbOne })
@@ -751,7 +798,7 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
-  public void shouldNotCreateDirectoryForNonNativeTableInDumpDirectory() throws Throwable {
+  public void testShouldNotCreateDirectoryForNonNativeTableInDumpDirectory() throws Throwable {
     String createTableQuery =
         "CREATE TABLE custom_serdes( serde_id bigint COMMENT 'from deserializer', name string "
             + "COMMENT 'from deserializer', slib string COMMENT 'from deserializer') "
@@ -772,6 +819,50 @@ public class TestReplicationScenariosAcrossInstances {
     assertFalse(fs.exists(cSerdesTableDumpLocation));
   }
 
+  private void verifyIfCkptSet(WarehouseInstance wh, String dbName, String dumpDir) throws Exception {
+    Database db = wh.getDatabase(replicatedDbName);
+    verifyIfCkptSet(db.getParameters(), dumpDir);
+
+    List<String> tblNames = wh.getAllTables(dbName);
+    for (String tblName : tblNames) {
+      Table tbl = wh.getTable(dbName, tblName);
+      verifyIfCkptSet(tbl.getParameters(), dumpDir);
+      if (tbl.getPartitionKeysSize() != 0) {
+        List<Partition> partitions = wh.getAllPartitions(dbName, tblName);
+        for (Partition ptn : partitions) {
+          verifyIfCkptSet(ptn.getParameters(), dumpDir);
+        }
+      }
+    }
+  }
+
+  @Test
+  public void testShouldDumpMetaDataForNonNativeTableIfSetMeataDataOnly() throws Throwable {
+    String tableName = testName.getMethodName() + "_table";
+    String createTableQuery =
+            "CREATE TABLE " + tableName + " ( serde_id bigint COMMENT 'from deserializer', name string "
+                    + "COMMENT 'from deserializer', slib string COMMENT 'from deserializer') "
+                    + "ROW FORMAT SERDE 'org.apache.hive.storage.jdbc.JdbcSerDe' "
+                    + "STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler' "
+                    + "WITH SERDEPROPERTIES ('serialization.format'='1') "
+                    + "TBLPROPERTIES ( "
+                    + "'hive.sql.database.type'='METASTORE', "
+                    + "'hive.sql.query'='SELECT \"SERDE_ID\", \"NAME\", \"SLIB\" FROM \"SERDES\"')";
+
+    WarehouseInstance.Tuple bootstrapTuple = primary
+            .run("use " + primaryDbName)
+            .run(createTableQuery)
+            .dump(primaryDbName, null, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
+
+    // Bootstrap load in replica
+    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(bootstrapTuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResult(tableName);
+  }
+
   private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
     assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
     assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(dumpDir));
@@ -786,38 +877,53 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
-  public void testIfCkptSetForObjectsByBootstrapReplLoad() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary
-            .run("use " + primaryDbName)
-            .run("create table t1 (id int)")
-            .run("insert into table t1 values (10)")
-            .run("create table t2 (place string) partitioned by (country string)")
-            .run("insert into table t2 partition(country='india') values ('bangalore')")
-            .run("insert into table t2 partition(country='uk') values ('london')")
-            .run("insert into table t2 partition(country='us') values ('sfo')")
-            .dump(primaryDbName, null);
+  public void testIncrementalDumpMultiIteration() throws Throwable {
+    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
 
-    replica.load(replicatedDbName, tuple.dumpLocation)
+    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(bootstrapTuple.lastReplicationId);
+
+    WarehouseInstance.Tuple incremental = primary.run("use " + primaryDbName)
+            .run("create table table1 (id int) partitioned by (country string)")
+            .run("create table table2 (id int)")
+            .run("create table table3 (id int) partitioned by (country string)")
+            .run("insert into table1 partition(country='india') values(1)")
+            .run("insert into table2 values(2)")
+            .run("insert into table3 partition(country='india') values(3)")
+            .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+
+    replica.load(replicatedDbName, incremental.dumpLocation, Arrays.asList("'hive.repl.approx.max.load.tasks'='10'"))
+            .status(replicatedDbName)
+            .verifyResult(incremental.lastReplicationId)
             .run("use " + replicatedDbName)
-            .run("repl status " + replicatedDbName)
-            .verifyResult(tuple.lastReplicationId)
-            .run("show tables")
-            .verifyResults(new String[] { "t1", "t2" })
-            .run("select country from t2")
-            .verifyResults(Arrays.asList("india", "uk", "us"));
+            .run("select id from table1")
+            .verifyResults(new String[] {"1" })
+            .run("select * from table2")
+            .verifyResults(new String[] {"2" })
+            .run("select id from table3")
+            .verifyResults(new String[] {"3" });
+    assert(IncrementalLoadTasksBuilder.getNumIteration() > 1);
 
-    Database db = replica.getDatabase(replicatedDbName);
-    verifyIfCkptSet(db.getParameters(), tuple.dumpLocation);
-    Table t1 = replica.getTable(replicatedDbName, "t1");
-    verifyIfCkptSet(t1.getParameters(), tuple.dumpLocation);
-    Table t2 = replica.getTable(replicatedDbName, "t2");
-    verifyIfCkptSet(t2.getParameters(), tuple.dumpLocation);
-    Partition india = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("india"));
-    verifyIfCkptSet(india.getParameters(), tuple.dumpLocation);
-    Partition us = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("us"));
-    verifyIfCkptSet(us.getParameters(), tuple.dumpLocation);
-    Partition uk = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("uk"));
-    verifyIfCkptSet(uk.getParameters(), tuple.dumpLocation);
+    incremental = primary.run("use " + primaryDbName)
+            .run("create table  table5 (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc")
+            .run("create table table4 (i int, j int)")
+            .run("insert into table4 values (1,2)")
+            .dump(primaryDbName, incremental.lastReplicationId);
+
+    Path path = new Path(incremental.dumpLocation);
+    FileSystem fs = path.getFileSystem(conf);
+    FileStatus[] fileStatus = fs.listStatus(path);
+    int numEvents = fileStatus.length - 1; //one is metadata file
+
+    replica.load(replicatedDbName, incremental.dumpLocation, Arrays.asList("'hive.repl.approx.max.load.tasks'='1'"))
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"table1", "table2", "table3", "table4", "table5" })
+            .run("select i from table4")
+            .verifyResult("1");
+    Assert.assertEquals(IncrementalLoadTasksBuilder.getNumIteration(), numEvents);
   }
 
   @Test
@@ -943,5 +1049,355 @@ public class TestReplicationScenariosAcrossInstances {
     verifyIfCkptPropMissing(india.getParameters());
 
     replica.run("drop database if exists " + importDbFromReplica + " cascade");
+  }
+
+  @Test
+  public void testIfBootstrapReplLoadFailWhenRetryAfterBootstrapComplete() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (id int)")
+            .run("insert into table t1 values (10)")
+            .run("create table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='uk') values ('london')")
+            .run("insert into table t2 partition(country='us') values ('sfo')")
+            .dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2 order by country")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+    verifyIfCkptSet(replica, replicatedDbName, tuple.dumpLocation);
+
+    WarehouseInstance.Tuple tuple_2 = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, null);
+
+    // Retry with different dump should fail.
+    replica.loadFailure(replicatedDbName, tuple_2.dumpLocation);
+
+    // Retry with same dump with which it was already loaded also fails.
+    replica.loadFailure(replicatedDbName, tuple.dumpLocation);
+
+    // Retry from same dump when the database is empty is also not allowed.
+    replica.run("drop table t1")
+            .run("drop table t2")
+            .loadFailure(replicatedDbName, tuple.dumpLocation);
+  }
+
+  @Test
+  public void testBootstrapReplLoadRetryAfterFailureForTablesAndConstraints() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t1(a string, b string, primary key (a, b) disable novalidate rely)")
+            .run("create table t2(a string, b string, foreign key (a, b) references t1(a, b) disable novalidate)")
+            .run("create table t3(a string, b string not null disable, unique (a) disable)")
+            .dump(primaryDbName, null);
+
+    WarehouseInstance.Tuple tuple2 = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, null);
+
+    // Need to drop the primary DB as metastore is shared by both primary/replica. So, constraints
+    // conflict when loaded. Some issue with framework which needs to be relook into later.
+    primary.run("drop database if exists " + primaryDbName + " cascade");
+
+    // Allow create table only on t1. Create should fail for rest of the tables and hence constraints
+    // also not loaded.
+    BehaviourInjection<CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        injectionPathCalled = true;
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.constraintTblName != null)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
+                  + " Constraint Table: " + String.valueOf(args.constraintTblName));
+          return false;
+        }
+        if (args.tblName != null) {
+          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
+          return args.tblName.equals("t1");
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    // Trigger bootstrap dump which just creates table t1 and other tables (t2, t3) and constraints not loaded.
+    List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'");
+    try {
+      replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+      callerVerifier.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    }
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult("null");
+    assertEquals(0, replica.getPrimaryKeyList(replicatedDbName, "t1").size());
+    assertEquals(0, replica.getUniqueConstraintList(replicatedDbName, "t3").size());
+    assertEquals(0, replica.getNotNullConstraintList(replicatedDbName, "t3").size());
+    assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
+
+    // Retry with different dump should fail.
+    CommandProcessorResponse ret = replica.runCommand("REPL LOAD " + replicatedDbName +
+            " FROM '" + tuple2.dumpLocation + "'");
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
+
+    // Verify if create table is not called on table t1 but called for t2 and t3.
+    // Also, allow constraint creation only on t1 and t3. Foreign key creation on t2 fails.
+    callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        injectionPathCalled = true;
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.funcName != null)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName) + " Func: " + String.valueOf(args.funcName));
+          return false;
+        }
+        if (args.constraintTblName != null) {
+          LOG.warn("Verifier - Constraint Table: " + String.valueOf(args.constraintTblName));
+          return (args.constraintTblName.equals("t1") || args.constraintTblName.equals("t3"));
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    try {
+      // Retry with same dump with which it was already loaded should resume the bootstrap load.
+      // This time, it fails when try to load the foreign key constraints. All other constraints are loaded.
+      replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+      callerVerifier.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    }
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult("null")
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2", "t3" });
+    assertEquals(2, replica.getPrimaryKeyList(replicatedDbName, "t1").size());
+    assertEquals(1, replica.getUniqueConstraintList(replicatedDbName, "t3").size());
+    assertEquals(1, replica.getNotNullConstraintList(replicatedDbName, "t3").size());
+    assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
+
+    // Verify if no create table/function calls. Only add foreign key constraints on table t2.
+    callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        injectionPathCalled = true;
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.tblName != null)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
+                  + " Table: " + String.valueOf(args.tblName));
+          return false;
+        }
+        if (args.constraintTblName != null) {
+          LOG.warn("Verifier - Constraint Table: " + String.valueOf(args.constraintTblName));
+          return args.constraintTblName.equals("t2");
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    try {
+      // Retry with same dump with which it was already loaded should resume the bootstrap load.
+      // This time, it completes by adding just foreign key constraints for table t2.
+      replica.load(replicatedDbName, tuple.dumpLocation);
+      callerVerifier.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    }
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2", "t3" });
+    assertEquals(2, replica.getPrimaryKeyList(replicatedDbName, "t1").size());
+    assertEquals(1, replica.getUniqueConstraintList(replicatedDbName, "t3").size());
+    assertEquals(1, replica.getNotNullConstraintList(replicatedDbName, "t3").size());
+    assertEquals(2, replica.getForeignKeyList(replicatedDbName, "t2").size());
+  }
+
+  @Test
+  public void testBootstrapReplLoadRetryAfterFailureForPartitions() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='uk') values ('london')")
+            .run("insert into table t2 partition(country='us') values ('sfo')")
+            .run("CREATE FUNCTION " + primaryDbName
+                    + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
+                    + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
+            .dump(primaryDbName, null);
+
+    WarehouseInstance.Tuple tuple2 = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, null);
+
+    // Inject a behavior where REPL LOAD failed when try to load table "t2" and partition "uk".
+    // So, table "t2" will exist and partition "india" will exist, rest failed as operation failed.
+    BehaviourInjection<Partition, Partition> getPartitionStub
+            = new BehaviourInjection<Partition, Partition>() {
+      @Nullable
+      @Override
+      public Partition apply(@Nullable Partition ptn) {
+        if (ptn.getValues().get(0).equals("india")) {
+          injectionPathCalled = true;
+          LOG.warn("####getPartition Stub called");
+          return null;
+        }
+        return ptn;
+      }
+    };
+    InjectableBehaviourObjectStore.setGetPartitionBehaviour(getPartitionStub);
+
+    List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'");
+    replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+    InjectableBehaviourObjectStore.resetGetPartitionBehaviour(); // reset the behaviour
+    getPartitionStub.assertInjectionsPerformed(true, false);
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult("null")
+            .run("show tables")
+            .verifyResults(new String[] {"t2" })
+            .run("select country from t2 order by country")
+            .verifyResults(Arrays.asList("india"))
+            .run("show functions like '" + replicatedDbName + "*'")
+            .verifyResult(replicatedDbName + ".testFunctionOne");
+
+    // Retry with different dump should fail.
+    replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
+
+    // Verify if no create table/function calls. Only add partitions.
+    BehaviourInjection<CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.tblName != null) || (args.funcName != null)) {
+          injectionPathCalled = true;
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
+                  + " Table: " + String.valueOf(args.tblName)
+                  + " Func: " + String.valueOf(args.funcName));
+          return false;
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    try {
+      // Retry with same dump with which it was already loaded should resume the bootstrap load.
+      // This time, it completes by adding remaining partitions.
+      replica.load(replicatedDbName, tuple.dumpLocation);
+      callerVerifier.assertInjectionsPerformed(false, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    }
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t2" })
+            .run("select country from t2 order by country")
+            .verifyResults(Arrays.asList("india", "uk", "us"))
+            .run("show functions like '" + replicatedDbName + "*'")
+            .verifyResult(replicatedDbName + ".testFunctionOne");
+  }
+
+  @Test
+  public void testDumpExternalTableSetFalse() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("insert into table t1 values (2)")
+            .run("create external table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='us') values ('austin')")
+            .run("insert into table t2 partition(country='france') values ('paris')")
+            .dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyFailure(new String[] {"t1"})
+            .run("show tables like 't2'")
+            .verifyFailure(new String[] {"t2"});
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table t3 (id int)")
+            .run("insert into table t3 values (10)")
+            .run("insert into table t3 values (20)")
+            .dump("repl dump " + primaryDbName + " from " + tuple.lastReplicationId
+                    + " with ('hive.repl.dump.metadata.only'='true')");
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't3'")
+            .verifyResult("t3")
+            .run("select id from t3 where id = 10")
+            .verifyFailure(new String[] {"10"});
+  }
+
+  @Test
+  public void testDumpExternalTableSetTrue() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("insert into table t1 values (2)")
+            .run("create external table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='us') values ('austin')")
+            .run("insert into table t2 partition(country='france') values ('paris')")
+            .dump("repl dump " + primaryDbName + " with ('hive.repl.include.external.tables'='true')");
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("select country from t2 where country = 'us'")
+            .verifyResult("us")
+            .run("select country from t2 where country = 'france'")
+            .verifyResult("france");
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table t3 (id int)")
+            .run("insert into table t3 values (10)")
+            .run("create external table t4 as select id from t3")
+            .dump("repl dump " + primaryDbName + " from " + tuple.lastReplicationId
+                    + " with ('hive.repl.include.external.tables'='true')");
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't3'")
+            .verifyResult("t3")
+            .run("select id from t3")
+            .verifyResult("10")
+            .run("select id from t4")
+            .verifyResult(null); // Returns null as create table event doesn't list files
   }
 }

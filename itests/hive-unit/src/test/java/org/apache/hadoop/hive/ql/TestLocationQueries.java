@@ -90,7 +90,18 @@ public class TestLocationQueries extends BaseTestQueries {
         String hadoopVer, String locationSubdir)
       throws Exception
     {
-      super(outDir, logDir, miniMr, null, hadoopVer, "", "", false);
+      super(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(outDir)
+            .withLogDir(logDir)
+            .withClusterType(miniMr)
+            .withConfDir(null)
+            .withHadoopVer(hadoopVer)
+            .withInitScript("")
+            .withCleanupScript("")
+            .withLlapIo(false)
+            .build());
+
       this.locationSubdir = locationSubdir;
     }
   }
@@ -109,7 +120,8 @@ public class TestLocationQueries extends BaseTestQueries {
 
     for (int i = 0; i < qfiles.length; i++) {
       qt[i] = new CheckResults(resDir, logDir, MiniClusterType.none, "0.20", "parta");
-      qt[i].addFile(qfiles[i]);
+      qt[i].newSession();
+      qt[i].addFile(qfiles[i], false);
       qt[i].clearTestSideEffects();
     }
 

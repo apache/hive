@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -26,7 +28,7 @@ import java.util.Map;
 /**
  * Contains the information needed to rename a partition.
  */
-public class RenamePartitionDesc extends DDLDesc implements Serializable {
+public class RenamePartitionDesc extends DDLDesc implements Serializable, DDLDescWithWriteId {
 
   private static final long serialVersionUID = 1L;
 
@@ -35,6 +37,8 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
   private LinkedHashMap<String, String> oldPartSpec;
   private LinkedHashMap<String, String> newPartSpec;
   private ReplicationSpec replicationSpec;
+  private String fqTableName;
+  private long writeId;
 
   /**
    * For serialization only.
@@ -49,13 +53,15 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
    *          old partition specification.
    * @param newPartSpec
    *          new partition specification.
+   * @param table
    */
-  public RenamePartitionDesc(String tableName,
-      Map<String, String> oldPartSpec, Map<String, String> newPartSpec, ReplicationSpec replicationSpec) {
+  public RenamePartitionDesc(String tableName, Map<String, String> oldPartSpec,
+      Map<String, String> newPartSpec, ReplicationSpec replicationSpec, Table table) {
     this.tableName = tableName;
     this.oldPartSpec = new LinkedHashMap<String,String>(oldPartSpec);
     this.newPartSpec = new LinkedHashMap<String,String>(newPartSpec);
     this.replicationSpec = replicationSpec;
+    this.fqTableName = table != null ? (table.getDbName() + "." + table.getTableName()) : tableName;
   }
 
   /**
@@ -63,14 +69,6 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
    */
   public String getTableName() {
     return tableName;
-  }
-
-  /**
-   * @param tableName
-   *          the table we're going to add the partitions to.
-   */
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
   }
 
   /**
@@ -123,4 +121,19 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
    * This can result in a "RENAME IF NEWER THAN" kind of semantic
    */
   public ReplicationSpec getReplicationSpec() { return this.replicationSpec; }
+
+  @Override
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  @Override
+  public String getFullTableName() {
+    return fqTableName;
+  }
+
+  @Override
+  public boolean mayNeedWriteId() {
+    return true; // The check is done when setting this as the ACID DDLDesc.
+  }
 }

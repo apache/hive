@@ -416,44 +416,55 @@ public class CliDriver {
     }
   }
 
+  /**
+   * Split the line by semicolon by ignoring the ones in the single/double quotes.
+   *
+   */
   public static List<String> splitSemiColon(String line) {
-    boolean insideSingleQuote = false;
-    boolean insideDoubleQuote = false;
+    boolean inQuotes = false;
     boolean escape = false;
-    int beginIndex = 0;
+
     List<String> ret = new ArrayList<>();
+
+    char quoteChar = '"';
+    int beginIndex = 0;
     for (int index = 0; index < line.length(); index++) {
-      if (line.charAt(index) == '\'') {
-        // take a look to see if it is escaped
-        if (!escape) {
-          // flip the boolean variable
-          insideSingleQuote = !insideSingleQuote;
-        }
-      } else if (line.charAt(index) == '\"') {
-        // take a look to see if it is escaped
-        if (!escape) {
-          // flip the boolean variable
-          insideDoubleQuote = !insideDoubleQuote;
-        }
-      } else if (line.charAt(index) == ';') {
-        if (insideSingleQuote || insideDoubleQuote) {
-          // do not split
-        } else {
-          // split, do not include ; itself
+      char c = line.charAt(index);
+      switch (c) {
+      case ';':
+        if (!inQuotes) {
           ret.add(line.substring(beginIndex, index));
           beginIndex = index + 1;
         }
-      } else {
-        // nothing to do
+        break;
+      case '"':
+      case '\'':
+        if (!escape) {
+          if (!inQuotes) {
+            quoteChar = c;
+            inQuotes = !inQuotes;
+          } else {
+            if (c == quoteChar) {
+              inQuotes = !inQuotes;
+            }
+          }
+        }
+        break;
+      default:
+        break;
       }
-      // set the escape
+
       if (escape) {
         escape = false;
-      } else if (line.charAt(index) == '\\') {
+      } else if (c == '\\') {
         escape = true;
       }
     }
-    ret.add(line.substring(beginIndex));
+
+    if (beginIndex < line.length()) {
+      ret.add(line.substring(beginIndex));
+    }
+
     return ret;
   }
 

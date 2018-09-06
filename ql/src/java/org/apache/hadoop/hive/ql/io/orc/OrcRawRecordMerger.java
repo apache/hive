@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.SchemaEvolution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -231,16 +233,17 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
      * @param maxKey only return keys less than or equal to maxKey if it is
      *               non-null
      * @param options options to provide to read the rows.
+     * @param conf
      * @throws IOException
      */
     @VisibleForTesting
     ReaderPairAcid(ReaderKey key, Reader reader,
-                   RecordIdentifier minKey, RecordIdentifier maxKey,
-                   ReaderImpl.Options options) throws IOException {
+      RecordIdentifier minKey, RecordIdentifier maxKey,
+      ReaderImpl.Options options, final Configuration conf) throws IOException {
       this.reader = reader;
       this.key = key;
       // TODO use stripe statistics to jump over stripes
-      recordReader = reader.rowsOptions(options);
+      recordReader = reader.rowsOptions(options, conf);
       this.minKey = minKey;
       this.maxKey = maxKey;
       // advance the reader until we reach the minimum key
@@ -440,7 +443,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
       RecordIdentifier newMinKey = minKey;
       RecordIdentifier newMaxKey = maxKey;
-      recordReader = reader.rowsOptions(options);
+      recordReader = reader.rowsOptions(options, conf);
       /**
        * Logically each bucket consists of 0000_0, 0000_0_copy_1... 0000_0_copy_N. etc  We don't
        * know N a priori so if this is true, then the current split is from 0000_0_copy_N file.
@@ -589,7 +592,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         throw new IllegalStateException("No 'original' files found for bucketId=" + this.bucketId +
           " in " + mergerOptions.getRootPath());
       }
-      recordReader = getReader().rowsOptions(options);
+      recordReader = getReader().rowsOptions(options, conf);
       next(nextRecord());//load 1st row
     }
     @Override public RecordReader getRecordReader() {
@@ -623,7 +626,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
               nextRecord = null;
               return;
             }
-            recordReader = reader.rowsOptions(options);
+            recordReader = reader.rowsOptions(options, conf);
           }
         }
       }
@@ -771,9 +774,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * Convert from the row include/sarg/columnNames to the event equivalent
    * for the underlying file.
    * @param options options for the row reader
+   * @param rowSchema schema of the row, excluding ACID columns
    * @return a cloned options object that is modified for the event reader
    */
-  static Reader.Options createEventOptions(Reader.Options options) {
+  static Reader.Options createEventOptions(Reader.Options options, TypeDescription rowSchema) {
     Reader.Options result = options.clone();
     result.include(options.getInclude());
 
@@ -786,6 +790,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
       result.searchArgument(options.getSearchArgument(), cols);
     }
+
+    // schema evolution will insert the acid columns to row schema for ACID read
+    result.schema(rowSchema);
+
     return result;
   }
 
@@ -968,12 +976,12 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     TypeDescription typeDescr =
         OrcInputFormat.getDesiredRowTypeDescr(conf, true, Integer.MAX_VALUE);
 
-    objectInspector = OrcRecordUpdater.createEventSchema
+    objectInspector = OrcRecordUpdater.createEventObjectInspector
         (OrcStruct.createObjectInspector(0, OrcUtils.getOrcTypes(typeDescr)));
     assert !(mergerOptions.isCompacting() && reader != null) : "don't need a reader for compaction";
 
     // modify the options to reflect the event instead of the base row
-    Reader.Options eventOptions = createEventOptions(options);
+    Reader.Options eventOptions = createEventOptions(options, typeDescr);
     //suppose it's the first Major compaction so we only have deltas
     boolean isMajorNoBase = mergerOptions.isCompacting() && mergerOptions.isMajorCompaction()
       && mergerOptions.getBaseDir() == null;
@@ -1043,7 +1051,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             //required (on Tez) that base_x/ doesn't have a file for 'bucket'
             reader = OrcFile.createReader(bucketPath, OrcFile.readerOptions(conf));
             pair = new ReaderPairAcid(baseKey, reader, keyInterval.getMinKey(), keyInterval.getMaxKey(),
-              eventOptions);
+              eventOptions, conf);
           }
           else {
             pair = new EmptyReaderPair();
@@ -1053,7 +1061,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         else {
           assert reader != null : "no reader? " + mergerOptions.getRootPath();
           pair = new ReaderPairAcid(baseKey, reader, keyInterval.getMinKey(), keyInterval.getMaxKey(),
-            eventOptions);
+            eventOptions, conf);
         }
       }
       minKey = pair.getMinKey();
@@ -1113,7 +1121,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             //HIVE-17320: we should compute a SARG to push down min/max key to delete_delta
             Reader deltaReader = OrcFile.createReader(deltaFile, OrcFile.readerOptions(conf));
             ReaderPair deltaPair = new ReaderPairAcid(key, deltaReader, minKey, maxKey,
-                deltaEventOptions);
+                deltaEventOptions, conf);
             if (deltaPair.nextRecord() != null) {
               ensurePutReader(key, deltaPair);
               key = new ReaderKey();
@@ -1128,7 +1136,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           assert length >= 0;
           Reader deltaReader = OrcFile.createReader(deltaFile, OrcFile.readerOptions(conf).maxLength(length));
           //must get statementId from file name since Acid 1.0 doesn't write it into bucketProperty
-          ReaderPairAcid deltaPair = new ReaderPairAcid(key, deltaReader, minKey, maxKey, deltaEventOptions);
+          ReaderPairAcid deltaPair = new ReaderPairAcid(key, deltaReader, minKey, maxKey, deltaEventOptions, conf);
           if (deltaPair.nextRecord() != null) {
             ensurePutReader(key, deltaPair);
             key = new ReaderKey();

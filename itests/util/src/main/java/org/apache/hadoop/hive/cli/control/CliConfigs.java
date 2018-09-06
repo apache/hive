@@ -84,7 +84,7 @@ public class CliConfigs {
         setResultsDir("ql/src/test/results/compiler/errors");
         setLogDir("itests/qtest/target/qfile-results/negative");
 
-        setInitScript("q_test_init.sql");
+        setInitScript("q_test_init_parse.sql");
         setCleanupScript("q_test_cleanup.sql");
 
         setHiveConfDir("data/conf/perf-reg/");
@@ -175,6 +175,10 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "druid.query.files");
+        excludeQuery("druid_timestamptz.q"); // Disabled in HIVE-20322
+        excludeQuery("druidmini_joins.q"); // Disabled in HIVE-20322
+        excludeQuery("druidmini_masking.q"); // Disabled in HIVE-20322
+        //excludeQuery("druidmini_test1.q"); // Disabled in HIVE-20322
 
         setResultsDir("ql/src/test/results/clientpositive/druid");
         setLogDir("itests/qtest/target/tmp/log");
@@ -198,8 +202,7 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "druid.kafka.query.files");
-
-        excludeQuery("druidkafkamini_basic.q"); // Disabled in HIVE-19509
+        excludeQuery("druidkafkamini_basic.q"); // HIVE-19509
 
         setResultsDir("ql/src/test/results/clientpositive/druid");
         setLogDir("itests/qtest/target/tmp/log");
@@ -517,6 +520,7 @@ public class CliConfigs {
       super(CoreAccumuloCliDriver.class);
       try {
         setQueryDir("accumulo-handler/src/test/queries/positive");
+        excludeQuery("accumulo_joins.q");
 
         setResultsDir("accumulo-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/accumulo-handler/positive");
@@ -706,6 +710,29 @@ public class CliConfigs {
       default:
         setHiveConfDir("data/conf");
         break;
+      }
+    }
+  }
+
+  public static class MiniDruidLlapLocalCliConfig extends AbstractCliConfig {
+    public MiniDruidLlapLocalCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "druid.llap.local.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/druid");
+        setLogDir("itests/qtest/target/tmp/log");
+
+        setInitScript("q_test_druid_init.sql");
+        setCleanupScript("q_test_cleanup_druid.sql");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.druidLocal);
+        setMetastoreType(MetastoreType.sql);
+        setFsType(QTestUtil.FsType.local);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
       }
     }
   }

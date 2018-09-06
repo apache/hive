@@ -86,7 +86,8 @@ import com.google.common.math.DoubleMath;
 public class ConvertJoinMapJoin implements NodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
-  private float hashTableLoadFactor;
+  public float hashTableLoadFactor;
+  private long maxJoinMemory;
 
   @Override
   /*
@@ -103,23 +104,17 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     hashTableLoadFactor = context.conf.getFloatVar(ConfVars.HIVEHASHTABLELOADFACTOR);
 
     JoinOperator joinOp = (JoinOperator) nd;
-    long maxSize = context.conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
     // adjust noconditional task size threshold for LLAP
     LlapClusterStateForCompile llapInfo = null;
     if ("llap".equalsIgnoreCase(context.conf.getVar(ConfVars.HIVE_EXECUTION_MODE))) {
       llapInfo = LlapClusterStateForCompile.getClusterInfo(context.conf);
       llapInfo.initClusterInfo();
     }
-    MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(maxSize, context.conf, llapInfo);
+    MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(context.conf, llapInfo);
     joinOp.getConf().setMemoryMonitorInfo(memoryMonitorInfo);
+    maxJoinMemory = memoryMonitorInfo.getAdjustedNoConditionalTaskSize();
 
-    // not use map join in case of cross product
-    boolean cartesianProductEdgeEnabled =
-      HiveConf.getBoolVar(context.conf, HiveConf.ConfVars.TEZ_CARTESIAN_PRODUCT_EDGE_ENABLED);
-    if (cartesianProductEdgeEnabled && !hasOuterJoin(joinOp) && isCrossProduct(joinOp)) {
-      fallbackToMergeJoin(joinOp, context);
-      return null;
-    }
+    LOG.info("maxJoinMemory: {}", maxJoinMemory);
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
     boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
@@ -127,11 +122,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (!hiveConvertJoin) {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx, maxSize);
+      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
       if (retval == null) {
         return retval;
       } else {
-        fallbackToReduceSideJoin(joinOp, context, maxSize);
+        fallbackToReduceSideJoin(joinOp, context);
         return null;
       }
     }
@@ -146,15 +141,15 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       numBuckets = 1;
     }
     LOG.info("Estimated number of buckets " + numBuckets);
-    int mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets, false, maxSize, true);
+    int mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets, false, maxJoinMemory, true);
     if (mapJoinConversionPos < 0) {
-      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx, maxSize);
+      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
       if (retval == null) {
         return retval;
       } else {
         // only case is full outer join with SMB enabled which is not possible. Convert to regular
         // join.
-        fallbackToReduceSideJoin(joinOp, context, maxSize);
+        fallbackToReduceSideJoin(joinOp, context);
         return null;
       }
     }
@@ -175,12 +170,12 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // check if we can convert to map join no bucket scaling.
     LOG.info("Convert to non-bucketed map join");
     if (numBuckets != 1) {
-      mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1, false, maxSize, true);
+      mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1, false, maxJoinMemory, true);
     }
     if (mapJoinConversionPos < 0) {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context, maxSize);
+      fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
 
@@ -246,8 +241,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     if (networkCostDPHJ < networkCostMJ) {
       LOG.info("Dynamically partitioned Hash Join chosen");
-      long maxSize = context.conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
-      return convertJoinDynamicPartitionedHashJoin(joinOp, context, maxSize);
+      return convertJoinDynamicPartitionedHashJoin(joinOp, context);
     } else if (numBuckets > 1) {
       LOG.info("Bucket Map Join chosen");
       return convertJoinBucketMapJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx);
@@ -257,31 +251,54 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return false;
   }
 
-  private long computeOnlineDataSize(Statistics statistics) {
-    // The datastructure doing the actual storage during mapjoins has some per row overhead
-    long onlineDataSize = 0;
-    long memoryOverHeadPerRow = 0;
-    long vLongEstimatedLength = 6; // LazyBinaryUtils.writeVLongToByteArray
-    memoryOverHeadPerRow += vLongEstimatedLength; // offset
-    memoryOverHeadPerRow += vLongEstimatedLength; // length
+  public long computeOnlineDataSize(Statistics statistics) {
+    return computeOnlineDataSizeFast3(statistics);
+  }
 
+  public long computeOnlineDataSizeFast2(Statistics statistics) {
+    return computeOnlineDataSizeGeneric(statistics,
+        -8, // the long key is stored in a slot
+        2 * 8 // maintenance structure consists of 2 longs
+    );
+  }
+
+  public long computeOnlineDataSizeFast3(Statistics statistics) {
+    // The datastructure doing the actual storage during mapjoins has no per row orhead;
+    // but uses a 192 bit wide table
+    return computeOnlineDataSizeGeneric(statistics,
+        0, // key is stored in a bytearray
+        3 * 8 // maintenance structure consists of 3 longs
+    );
+  }
+
+  public long computeOnlineDataSizeOptimized(Statistics statistics) {
+    // BytesBytesMultiHashMap
+    return computeOnlineDataSizeGeneric(statistics,
+        2 * 6, // 2 offsets are stored using:  LazyBinaryUtils.writeVLongToByteArray
+        8 // maintenance structure consists of 1 long
+    );
+  }
+
+
+  public long computeOnlineDataSizeGeneric(Statistics statistics, long overHeadPerRow, long overHeadPerSlot) {
+
+    long onlineDataSize = 0;
     long numRows = statistics.getNumRows();
     if (numRows <= 0) {
-      numRows=1;
+      numRows = 1;
     }
     long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
-
     onlineDataSize += statistics.getDataSize();
-    onlineDataSize += memoryOverHeadPerRow * statistics.getNumRows();
-    onlineDataSize += 8 * worstCaseNeededSlots; // every slot is a long
-
+    onlineDataSize += overHeadPerRow * statistics.getNumRows();
+    onlineDataSize += overHeadPerSlot * worstCaseNeededSlots;
     return onlineDataSize;
   }
 
   @VisibleForTesting
-  public MemoryMonitorInfo getMemoryMonitorInfo(final long maxSize,
+  public MemoryMonitorInfo getMemoryMonitorInfo(
                                                 final HiveConf conf,
                                                 LlapClusterStateForCompile llapInfo) {
+    long maxSize = conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
     final double overSubscriptionFactor = conf.getFloatVar(ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
     final int maxSlotsPerQuery = conf.getIntVar(ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY);
     final long memoryCheckInterval = conf.getLongVar(ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
@@ -323,13 +340,13 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
   @SuppressWarnings("unchecked")
   private Object checkAndConvertSMBJoin(OptimizeTezProcContext context, JoinOperator joinOp,
-    TezBucketJoinProcCtx tezBucketJoinProcCtx, final long maxSize) throws SemanticException {
+    TezBucketJoinProcCtx tezBucketJoinProcCtx) throws SemanticException {
     // we cannot convert to bucket map join, we cannot convert to
     // map join either based on the size. Check if we can convert to SMB join.
     if (!(HiveConf.getBoolVar(context.conf, ConfVars.HIVE_AUTO_SORTMERGE_JOIN))
       || ((!HiveConf.getBoolVar(context.conf, ConfVars.HIVE_AUTO_SORTMERGE_JOIN_REDUCE))
           && joinOp.getOpTraits().getNumReduceSinks() >= 2)) {
-      fallbackToReduceSideJoin(joinOp, context, maxSize);
+      fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
     Class<? extends BigTableSelectorForAutoSMJ> bigTableMatcherClass = null;
@@ -358,7 +375,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // contains aliases from sub-query
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context, maxSize);
+      fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
 
@@ -368,7 +385,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     } else {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context, maxSize);
+      fallbackToReduceSideJoin(joinOp, context);
     }
     return null;
   }
@@ -901,6 +918,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
 
       long inputSize = computeOnlineDataSize(currInputStat);
+      LOG.info("Join input#{}; onlineDataSize: {}; Statistics: {}", pos, inputSize, currInputStat);
 
       boolean currentInputNotFittingInMemory = false;
       if ((bigInputStat == null)
@@ -986,6 +1004,23 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             && checkShuffleSizeForLargeTable(joinOp, bigTablePosition, context)) {
       LOG.debug("Conditions to convert to MapJoin are not met");
       return -1;
+    }
+
+    // only allow cross product in map joins if build side is 'small'
+    boolean cartesianProductEdgeEnabled =
+      HiveConf.getBoolVar(context.conf, HiveConf.ConfVars.TEZ_CARTESIAN_PRODUCT_EDGE_ENABLED);
+    if (cartesianProductEdgeEnabled && !hasOuterJoin(joinOp) && isCrossProduct(joinOp)) {
+      for (int i = 0 ; i < joinOp.getParentOperators().size(); i ++) {
+        if (i != bigTablePosition) {
+          Statistics parentStats = joinOp.getParentOperators().get(i).getStatistics();
+          if (parentStats.getNumRows() >
+            HiveConf.getIntVar(context.conf, HiveConf.ConfVars.XPRODSMALLTABLEROWSTHRESHOLD)) {
+            // if any of smaller side is estimated to generate more than
+            // threshold rows we would disable mapjoin
+            return -1;
+          }
+        }
+      }
     }
 
     // We store the total memory that this MapJoin is going to use,
@@ -1262,14 +1297,13 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return numBuckets;
   }
 
-  private boolean convertJoinDynamicPartitionedHashJoin(JoinOperator joinOp, OptimizeTezProcContext context,
-    final long maxSize)
+  private boolean convertJoinDynamicPartitionedHashJoin(JoinOperator joinOp, OptimizeTezProcContext context)
     throws SemanticException {
     // Attempt dynamic partitioned hash join
     // Since we don't have big table index yet, must start with estimate of numReducers
     int numReducers = estimateNumBuckets(joinOp, false);
     LOG.info("Try dynamic partitioned hash join with estimated " + numReducers + " reducers");
-    int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false, maxSize,false);
+    int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false, maxJoinMemory, false);
     if (bigTablePos >= 0) {
       // Now that we have the big table index, get real numReducers value based on big table RS
       ReduceSinkOperator bigTableParentRS =
@@ -1305,11 +1339,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return false;
   }
 
-  private void fallbackToReduceSideJoin(JoinOperator joinOp, OptimizeTezProcContext context, final long maxSize)
+  private void fallbackToReduceSideJoin(JoinOperator joinOp, OptimizeTezProcContext context)
       throws SemanticException {
     if (context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &&
         context.conf.getBoolVar(HiveConf.ConfVars.HIVEDYNAMICPARTITIONHASHJOIN)) {
-      if (convertJoinDynamicPartitionedHashJoin(joinOp, context, maxSize)) {
+      if (convertJoinDynamicPartitionedHashJoin(joinOp, context)) {
         return;
       }
     }

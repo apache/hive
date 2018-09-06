@@ -8,7 +8,6 @@ set mapred.input.dir.recursive=true;
 set hive.merge.mapfiles=false;	
 set hive.merge.mapredfiles=false;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
 
 -- list bucketing DML: static partition. multiple skewed columns. merge.

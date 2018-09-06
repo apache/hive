@@ -25,13 +25,15 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 
-import com.google.common.base.Strings;
+import org.apache.hadoop.hive.ql.MetaStoreDumpUtility;
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.MetaStoreDumpUtility;
 import org.junit.After;
 import org.junit.AfterClass;
+
+import com.google.common.base.Strings;
 /**
  This is the TestPerformance Cli Driver for integrating performance regression tests
  as part of the Hive Unit tests.
@@ -62,11 +64,21 @@ public class CorePerfCliDriver extends CliAdapter{
     String cleanupScript = cliConfig.getCleanupScript();
     try {
       String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, hiveConfDir,
-          hadoopVer, initScript,
-          cleanupScript, false, null);
+
+      qt = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(hiveConfDir)
+            .withHadoopVer(hadoopVer)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(false)
+            .build());
 
       // do a one time initialization
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
       // Manually modify the underlying metastore db to reflect statistics corresponding to
@@ -91,7 +103,7 @@ public class CorePerfCliDriver extends CliAdapter{
   @Override
   public void setUp() {
     try {
-      qt.clearPostTestEffects();
+      qt.newSession();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -125,12 +137,7 @@ public class CorePerfCliDriver extends CliAdapter{
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-
-      if (qt.shouldBeSkipped(fname)) {
-        return;
-      }
-
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
 
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
