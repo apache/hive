@@ -2793,6 +2793,8 @@ public class HiveConf extends Configuration {
         "hive.test.authz.sstd.hs2.mode", false, "test hs2 mode from .q tests", true),
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false,
         "enable or disable the Hive client authorization"),
+    HIVE_AUTHORIZATION_KERBEROS_USE_SHORTNAME("hive.security.authorization.kerberos.use.shortname", true,
+        "use short name in Kerberos cluster"),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory",
         "The Hive client authorization manager class name. The user defined authorization class should implement \n" +
