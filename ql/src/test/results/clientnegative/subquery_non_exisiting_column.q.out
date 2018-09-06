@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10002]: org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException: Line 4:104 Invalid column reference 'non_exisiting_column'
