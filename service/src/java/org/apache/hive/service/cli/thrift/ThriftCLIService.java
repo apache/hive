@@ -428,7 +428,11 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       userName = req.getUsername();
     }
 
-    userName = getShortName(userName);
+    if (cliService.getHiveConf().getBoolVar(ConfVars.HIVE_AUTHORIZATION_KERBEROS_USE_SHORTNAME))
+    {
+      userName = getShortName(userName);
+    }
+
     String effectiveClientUser = getProxyUser(userName, req.getConfiguration(), getIpAddress());
     LOG.debug("Client's username: " + effectiveClientUser);
     return effectiveClientUser;
