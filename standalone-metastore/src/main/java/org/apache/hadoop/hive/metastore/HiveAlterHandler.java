@@ -358,7 +358,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
         txnAlterTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.ALTER_TABLE,
-                  new AlterTableEvent(oldt, newt, false, true, handler),
+                  new AlterTableEvent(oldt, newt, false, true, newt.getWriteId(), handler),
                   environmentContext);
       }
       // commit the changes
@@ -404,7 +404,7 @@ public class HiveAlterHandler implements AlterHandler {
       // make this call whether the event failed or succeeded. To make this behavior consistent,
       // this call is made for failed events also.
       MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_TABLE,
-          new AlterTableEvent(oldt, newt, false, success, handler),
+          new AlterTableEvent(oldt, newt, false, success, newt.getWriteId(), handler),
           environmentContext, txnAlterTableEventResponses, msdb);
     }
   }
@@ -486,7 +486,8 @@ public class HiveAlterHandler implements AlterHandler {
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                                                 EventMessage.EventType.ALTER_PARTITION,
-                                                new AlterPartitionEvent(oldPart, new_part, tbl, false, true, handler),
+                                                new AlterPartitionEvent(oldPart, new_part, tbl, false,
+                                                        true, new_part.getWriteId(), handler),
                                                 environmentContext);
 
 
@@ -634,7 +635,8 @@ public class HiveAlterHandler implements AlterHandler {
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                                               EventMessage.EventType.ALTER_PARTITION,
-                                              new AlterPartitionEvent(oldPart, new_part, tbl, false, true, handler),
+                                              new AlterPartitionEvent(oldPart, new_part, tbl, false,
+                                                      true, new_part.getWriteId(), handler),
                                               environmentContext);
       }
 
@@ -741,7 +743,8 @@ public class HiveAlterHandler implements AlterHandler {
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                                                 EventMessage.EventType.ALTER_PARTITION,
-                                                new AlterPartitionEvent(oldPart, newPart, tbl, false, true, handler));
+                                                new AlterPartitionEvent(oldPart, newPart, tbl, false,
+                                                        true, newPart.getWriteId(), handler));
         }
       }
 

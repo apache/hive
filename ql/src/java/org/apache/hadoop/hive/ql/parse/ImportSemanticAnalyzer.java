@@ -155,7 +155,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
           parsedLocation, parsedTableName, parsedDbName, parsedPartSpec, fromTree.getText(),
           new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx),
-          null, getTxnMgr());
+          null, getTxnMgr(), 0);
 
     } catch (SemanticException e) {
       throw e;
@@ -201,7 +201,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       String parsedLocation, String parsedTableName, String overrideDBName,
       LinkedHashMap<String, String> parsedPartSpec,
       String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x,
-      UpdatedMetaDataTracker updatedMetadata, HiveTxnManager txnMgr
+      UpdatedMetaDataTracker updatedMetadata, HiveTxnManager txnMgr,
+                                      long writeId // Initialize with 0 for non-ACID and non-MM tables.
   ) throws IOException, MetaException, HiveException, URISyntaxException {
 
     // initialize load path
@@ -255,6 +256,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       tblDesc.setReplicationSpec(replicationSpec);
       StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
       inReplicationScope = true;
+      tblDesc.setReplWriteId(writeId);
     }
 
     if (isExternalSet) {
@@ -330,7 +332,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       AcidUtils.setNonTransactional(tblDesc.getTblProps());
     }
 
-    Long writeId = 0L; // Initialize with 0 for non-ACID and non-MM tables.
     int stmtId = 0;
     if (!replicationSpec.isInReplicationScope()
             && ((tableExists && AcidUtils.isTransactionalTable(table))
