@@ -47282,7 +47282,7 @@ class create_ischema_result(object):
                     self.o1.read(iprot)
                 else:
                     iprot.skip(ftype)
-            elif fid == -1:
+            elif fid == 2:
                 if ftype == TType.STRUCT:
                     self.o2 = NoSuchObjectException()
                     self.o2.read(iprot)
@@ -47304,13 +47304,13 @@ class create_ischema_result(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('create_ischema_result')
-        if self.o2 is not None:
-            oprot.writeFieldBegin('o2', TType.STRUCT, -1)
-            self.o2.write(oprot)
-            oprot.writeFieldEnd()
         if self.o1 is not None:
             oprot.writeFieldBegin('o1', TType.STRUCT, 1)
             self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
             oprot.writeFieldEnd()
         if self.o3 is not None:
             oprot.writeFieldBegin('o3', TType.STRUCT, 3)
@@ -47333,7 +47333,12 @@ class create_ischema_result(object):
     def __ne__(self, other):
         return not (self == other)
 all_structs.append(create_ischema_result)
-create_ischema_result.thrift_spec = ()
+create_ischema_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [AlreadyExistsException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [NoSuchObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
+)
 
 
 class alter_ischema_args(object):

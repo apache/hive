@@ -13573,7 +13573,7 @@ module ThriftHiveMetastore
   class Create_ischema_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
-    O2 = -1
+    O2 = 2
     O3 = 3
 
     FIELDS = {

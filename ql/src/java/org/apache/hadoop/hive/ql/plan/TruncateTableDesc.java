@@ -137,7 +137,9 @@ public class TruncateTableDesc extends DDLDesc implements DDLDesc.DDLDescWithWri
   public boolean mayNeedWriteId() {
     return isTransactional;
   }
-
+  public long getWriteId() {
+    return writeId;
+  }
   @Override
   public String toString() {
     return this.getClass().getSimpleName() + " for " + getFullTableName();

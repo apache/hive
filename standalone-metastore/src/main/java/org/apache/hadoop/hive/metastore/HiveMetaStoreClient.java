@@ -2720,7 +2720,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public ValidWriteIdList getValidWriteIds(String fullTableName) throws TException {
-    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
+    GetValidWriteIdsResponse validWriteIds = client.get_valid_write_ids(rqst);
+    return TxnUtils.createValidReaderWriteIdList(validWriteIds.getTblValidWriteIds().get(0));
+  }
+
+  @Override
+  public ValidWriteIdList getValidWriteIds(String fullTableName, Long writeId) throws TException {
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
+    rqst.setWriteId(writeId);
     GetValidWriteIdsResponse validWriteIds = client.get_valid_write_ids(rqst);
     return TxnUtils.createValidReaderWriteIdList(validWriteIds.getTblValidWriteIds().get(0));
   }
@@ -2728,7 +2736,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<TableValidWriteIds> getValidWriteIds(
       List<String> tablesList, String validTxnList) throws TException {
-    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tablesList, validTxnList);
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tablesList);
+    rqst.setValidTxnList(validTxnList);
     return client.get_valid_write_ids(rqst).getTblValidWriteIds();
   }
 

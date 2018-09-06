@@ -27,7 +27,7 @@ class ThriftHiveMetastore_create_ischema_result
             'type' => TType::STRUCT,
             'class' => '\metastore\AlreadyExistsException',
         ),
-        -1 => array(
+        2 => array(
             'var' => 'o2',
             'isRequired' => false,
             'type' => TType::STRUCT,
@@ -96,7 +96,7 @@ class ThriftHiveMetastore_create_ischema_result
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case -1:
+                case 2:
                     if ($ftype == TType::STRUCT) {
                         $this->o2 = new \metastore\NoSuchObjectException();
                         $xfer += $this->o2->read($input);
@@ -126,14 +126,14 @@ class ThriftHiveMetastore_create_ischema_result
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_ischema_result');
-        if ($this->o2 !== null) {
-            $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -1);
-            $xfer += $this->o2->write($output);
-            $xfer += $output->writeFieldEnd();
-        }
         if ($this->o1 !== null) {
             $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
             $xfer += $this->o1->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->o2 !== null) {
+            $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+            $xfer += $this->o2->write($output);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->o3 !== null) {

@@ -7287,28 +7287,44 @@ void swap(ReplTblWriteIdStateRequest &a, ReplTblWriteIdStateRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const ReplTblWriteIdStateRequest& obj);
 
+typedef struct _GetValidWriteIdsRequest__isset {
+  _GetValidWriteIdsRequest__isset() : validTxnList(false), writeId(false) {}
+  bool validTxnList :1;
+  bool writeId :1;
+} _GetValidWriteIdsRequest__isset;
 
 class GetValidWriteIdsRequest : public virtual ::apache::thrift::TBase {
  public:
 
   GetValidWriteIdsRequest(const GetValidWriteIdsRequest&);
   GetValidWriteIdsRequest& operator=(const GetValidWriteIdsRequest&);
-  GetValidWriteIdsRequest() : validTxnList() {
+  GetValidWriteIdsRequest() : validTxnList(), writeId(0) {
   }
 
   virtual ~GetValidWriteIdsRequest() noexcept;
   std::vector<std::string>  fullTableNames;
   std::string validTxnList;
+  int64_t writeId;
+
+  _GetValidWriteIdsRequest__isset __isset;
 
   void __set_fullTableNames(const std::vector<std::string> & val);
 
   void __set_validTxnList(const std::string& val);
 
+  void __set_writeId(const int64_t val);
+
   bool operator == (const GetValidWriteIdsRequest & rhs) const
   {
     if (!(fullTableNames == rhs.fullTableNames))
       return false;
-    if (!(validTxnList == rhs.validTxnList))
+    if (__isset.validTxnList != rhs.__isset.validTxnList)
+      return false;
+    else if (__isset.validTxnList && !(validTxnList == rhs.validTxnList))
+      return false;
+    if (__isset.writeId != rhs.__isset.writeId)
+      return false;
+    else if (__isset.writeId && !(writeId == rhs.writeId))
       return false;
     return true;
   }

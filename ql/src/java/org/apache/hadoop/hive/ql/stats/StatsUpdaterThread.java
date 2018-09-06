@@ -499,7 +499,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       TableName fullTableName) throws NoSuchTxnException, MetaException {
     // TODO: acid utils don't support catalogs
     GetValidWriteIdsRequest req = new GetValidWriteIdsRequest(
-        Lists.newArrayList(fullTableName.getDbTable()), null);
+        Lists.newArrayList(fullTableName.getDbTable()));
     return TxnUtils.createValidReaderWriteIdList(
         txnHandler.getValidWriteIds(req).getTblValidWriteIds().get(0));
   }

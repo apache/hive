@@ -11092,13 +11092,15 @@ class GetValidWriteIdsRequest(object):
     Attributes:
      - fullTableNames
      - validTxnList
+     - writeId
 
     """
 
 
-    def __init__(self, fullTableNames=None, validTxnList=None,):
+    def __init__(self, fullTableNames=None, validTxnList=None, writeId=None,):
         self.fullTableNames = fullTableNames
         self.validTxnList = validTxnList
+        self.writeId = writeId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -11124,6 +11126,11 @@ class GetValidWriteIdsRequest(object):
                     self.validTxnList = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.writeId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -11145,14 +11152,16 @@ class GetValidWriteIdsRequest(object):
             oprot.writeFieldBegin('validTxnList', TType.STRING, 2)
             oprot.writeString(self.validTxnList.encode('utf-8') if sys.version_info[0] == 2 else self.validTxnList)
             oprot.writeFieldEnd()
+        if self.writeId is not None:
+            oprot.writeFieldBegin('writeId', TType.I64, 3)
+            oprot.writeI64(self.writeId)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
         if self.fullTableNames is None:
             raise TProtocolException(message='Required field fullTableNames is unset!')
-        if self.validTxnList is None:
-            raise TProtocolException(message='Required field validTxnList is unset!')
         return
 
     def __repr__(self):
@@ -22145,6 +22154,7 @@ GetValidWriteIdsRequest.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'fullTableNames', (TType.STRING, 'UTF8', False), None, ),  # 1
     (2, TType.STRING, 'validTxnList', 'UTF8', None, ),  # 2
+    (3, TType.I64, 'writeId', None, None, ),  # 3
 )
 all_structs.append(TableValidWriteIds)
 TableValidWriteIds.thrift_spec = (
