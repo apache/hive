@@ -43,9 +43,11 @@ select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-4
+  Stage-2 depends on stages: Stage-3, Stage-4
+  Stage-5 depends on stages: Stage-2
+  Stage-6 depends on stages: Stage-5
+  Stage-1 depends on stages: Stage-6
+  Stage-4 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
@@ -53,27 +55,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 10 
-            Map Operator Tree:
-                TableScan
-                  alias: time_dim
-                  filterExpr: (t_hour BETWEEN 14 AND 15 and t_time_sk is not null) (type: boolean)
-                  Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (t_hour BETWEEN 14 AND 15 and t_time_sk is not null) (type: boolean)
-                    Statistics: Num rows: 9600 Data size: 4521600 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: t_time_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 9600 Data size: 4521600 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Map 11 
+        Map 13 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -93,34 +75,34 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: web_page
-                  filterExpr: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
-                  Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
-                    Statistics: Num rows: 511 Data size: 299380 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: wp_web_page_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 511 Data size: 299380 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
 
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 8 <- Map 7 (GROUP, 1)
+        Reducer 10 <- Reducer 9 (GROUP, 1)
+        Reducer 9 <- Map 12 (PARTITION-LEVEL SORT, 169), Map 8 (PARTITION-LEVEL SORT, 169)
 #### A masked pattern was here ####
       Vertices:
-        Map 7 
+        Map 12 
+            Map Operator Tree:
+                TableScan
+                  alias: time_dim
+                  filterExpr: (t_hour BETWEEN 14 AND 15 and t_time_sk is not null) (type: boolean)
+                  Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (t_hour BETWEEN 14 AND 15 and t_time_sk is not null) (type: boolean)
+                    Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: t_time_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: web_sales
@@ -141,40 +123,18 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1
                         input vertices:
-                          1 Map 9
+                          1 Map 11
                         Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col0 (type: int)
-                            1 _col0 (type: int)
-                          outputColumnNames: _col1
-                          input vertices:
-                            1 Map 10
-                          Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col1 (type: int)
-                              1 _col0 (type: int)
-                            input vertices:
-                              1 Map 11
-                            Statistics: Num rows: 191667562 Data size: 26061245514 Basic stats: COMPLETE Column stats: NONE
-                            Group By Operator
-                              aggregations: count()
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                              Reduce Output Operator
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                                value expressions: _col0 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Reducer 8 
+        Reducer 10 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -188,52 +148,42 @@ STAGE PLANS:
                   keys:
                     0 
                     1 
+        Reducer 9 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1
+                Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
+                  input vertices:
+                    1 Map 13
+                  Statistics: Num rows: 191667562 Data size: 26061245514 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
 
-  Stage: Stage-4
+  Stage: Stage-5
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: web_page
-                  filterExpr: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
-                  Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
-                    Statistics: Num rows: 511 Data size: 299380 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: wp_web_page_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 511 Data size: 299380 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col2 (type: int)
-                          1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: time_dim
-                  filterExpr: (t_hour BETWEEN 6 AND 7 and t_time_sk is not null) (type: boolean)
-                  Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (t_hour BETWEEN 6 AND 7 and t_time_sk is not null) (type: boolean)
-                    Statistics: Num rows: 9600 Data size: 4521600 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: t_time_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 9600 Data size: 4521600 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Map 6 
+        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -254,11 +204,37 @@ STAGE PLANS:
             Local Work:
               Map Reduce Local Work
 
+  Stage: Stage-6
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: web_page
+                  filterExpr: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
+                  Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
+                    Statistics: Num rows: 511 Data size: 299380 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: wp_web_page_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 511 Data size: 299380 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col2 (type: int)
+                          1 _col0 (type: int)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 3 <- Reducer 2 (SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 169), Map 6 (PARTITION-LEVEL SORT, 169)
+        Reducer 3 <- Reducer 2 (GROUP, 1)
+        Reducer 4 <- Reducer 3 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -282,40 +258,67 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1
                         input vertices:
-                          1 Map 4
+                          1 Map 5
                         Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col0 (type: int)
-                            1 _col0 (type: int)
-                          outputColumnNames: _col1
-                          input vertices:
-                            1 Map 5
-                          Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col1 (type: int)
-                              1 _col0 (type: int)
-                            input vertices:
-                              1 Map 6
-                            Statistics: Num rows: 191667562 Data size: 26061245514 Basic stats: COMPLETE Column stats: NONE
-                            Group By Operator
-                              aggregations: count()
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                              Reduce Output Operator
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                                value expressions: _col0 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: time_dim
+                  filterExpr: (t_hour BETWEEN 6 AND 7 and t_time_sk is not null) (type: boolean)
+                  Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (t_hour BETWEEN 6 AND 7 and t_time_sk is not null) (type: boolean)
+                    Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: t_time_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1
+                Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
+                  input vertices:
+                    1 Map 7
+                  Statistics: Num rows: 191667562 Data size: 26061245514 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+        Reducer 3 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -333,7 +336,7 @@ STAGE PLANS:
                     1 
                   outputColumnNames: _col0, _col1
                   input vertices:
-                    1 Reducer 8
+                    1 Reducer 10
                   Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (CAST( _col0 AS decimal(15,4)) / CAST( _col1 AS decimal(15,4))) (type: decimal(35,20))
@@ -344,7 +347,7 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
-        Reducer 3 
+        Reducer 4 
             Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
@@ -361,6 +364,31 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-4
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 11 
+            Map Operator Tree:
+                TableScan
+                  alias: web_page
+                  filterExpr: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
+                  Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
+                    Statistics: Num rows: 511 Data size: 299380 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: wp_web_page_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 511 Data size: 299380 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col2 (type: int)
+                          1 _col0 (type: int)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-0
     Fetch Operator
