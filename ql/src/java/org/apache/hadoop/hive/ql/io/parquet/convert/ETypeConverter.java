@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -56,6 +55,89 @@ public enum ETypeConverter {
   EDOUBLE_CONVERTER(Double.TYPE) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
+      if (hiveTypeInfo != null) {
+        String typeName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
+        final double minValue = getMinValue(typeName, Double.MIN_VALUE);
+        final double maxValue = getMaxValue(typeName, Double.MAX_VALUE);
+
+        switch (typeName) {
+        case serdeConstants.FLOAT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addDouble(final double value) {
+              double absValue = (value < 0) ? (value * -1) : value;
+              int exponent = Math.getExponent(value);
+              if ((absValue >= minValue) && (absValue <= maxValue) &&
+                  (exponent <= Float.MAX_EXPONENT) && (exponent >= Float.MIN_EXPONENT)) {
+                parent.set(index, new FloatWritable((float) value));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.DECIMAL_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addDouble(final double value) {
+              HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
+              decimalWritable.setFromDouble(value);
+              parent.set(index, HiveDecimalUtils
+                  .enforcePrecisionScale(decimalWritable, (DecimalTypeInfo) hiveTypeInfo));
+            }
+          };
+        case serdeConstants.BIGINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addDouble(final double value) {
+              if ((value >= minValue) && (value <= maxValue) && (value % 1 == 0)) {
+                parent.set(index, new LongWritable((long) value));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.INT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addDouble(final double value) {
+              if ((value >= minValue) && (value <= maxValue) && (value % 1 == 0)) {
+                parent.set(index, new IntWritable((int) value));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.SMALLINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addDouble(final double value) {
+              if ((value >= minValue) && (value <= maxValue) && (value % 1 == 0)) {
+                parent.set(index, new IntWritable((int) value));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.TINYINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addDouble(final double value) {
+              if ((value >= minValue) && (value <= maxValue) && (value % 1 == 0)) {
+                parent.set(index, new IntWritable((int) value));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        default:
+          return new PrimitiveConverter() {
+            @Override
+            public void addDouble(final double value) {
+              parent.set(index, new DoubleWritable(value));
+            }
+          };
+        }
+      }
       return new PrimitiveConverter() {
         @Override
         public void addDouble(final double value) {
@@ -78,21 +160,88 @@ public enum ETypeConverter {
   EFLOAT_CONVERTER(Float.TYPE) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
-      if (hiveTypeInfo != null && hiveTypeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
-        return new PrimitiveConverter() {
-          @Override
-          public void addFloat(final float value) {
-            parent.set(index, new DoubleWritable((double) value));
-          }
-        };
-      } else {
-        return new PrimitiveConverter() {
-          @Override
-          public void addFloat(final float value) {
-            parent.set(index, new FloatWritable(value));
-          }
-        };
+      if (hiveTypeInfo != null) {
+        String typeName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
+        final double minValue = getMinValue(typeName, Double.MIN_VALUE);
+        final double maxValue = getMaxValue(typeName, Double.MAX_VALUE);
+
+        switch (typeName) {
+        case serdeConstants.DOUBLE_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addFloat(final float value) {
+              parent.set(index, new DoubleWritable(value));
+            }
+          };
+        case serdeConstants.DECIMAL_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addFloat(final float value) {
+              HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
+              decimalWritable.setFromDouble(value);
+              parent.set(index, HiveDecimalUtils
+                  .enforcePrecisionScale(decimalWritable, (DecimalTypeInfo) hiveTypeInfo));
+            }
+          };
+        case serdeConstants.BIGINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addFloat(final float value) {
+              if ((value >= minValue) && (value <= maxValue) && (value % 1 == 0)) {
+                parent.set(index, new LongWritable((long) value));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.INT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addFloat(final float value) {
+              if ((value >= minValue) && (value <= maxValue) && (value % 1 == 0)) {
+                parent.set(index, new IntWritable((int) value));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.SMALLINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addFloat(final float value) {
+              if ((value >= minValue) && (value <= maxValue) && (value % 1 == 0)) {
+                parent.set(index, new IntWritable((int) value));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.TINYINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addFloat(final float value) {
+              if ((value >= minValue) && (value <= maxValue) && (value % 1 == 0)) {
+                parent.set(index, new IntWritable((int) value));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        default:
+          return new PrimitiveConverter() {
+            @Override
+            public void addFloat(final float value) {
+              parent.set(index, new FloatWritable(value));
+            }
+          };
+        }
       }
+
+      return new PrimitiveConverter() {
+        @Override public void addFloat(final float value) {
+          parent.set(index, new FloatWritable(value));
+        }
+      };
     }
   },
   EINT32_CONVERTER(Integer.TYPE) {
@@ -333,6 +482,108 @@ public enum ETypeConverter {
   EDECIMAL_CONVERTER(BigDecimal.class) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
+      if (hiveTypeInfo != null) {
+        String typeName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
+        final double minValue = getMinValue(typeName, Double.MIN_VALUE);
+        final double maxValue = getMaxValue(typeName, Double.MAX_VALUE);
+
+        switch (typeName) {
+        case serdeConstants.FLOAT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addBinary(Binary value) {
+              HiveDecimalWritable decimalWritable =
+                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+              double doubleValue = decimalWritable.doubleValue();
+              double absDoubleValue = (doubleValue < 0) ? (doubleValue * -1) : doubleValue;
+
+              if ((absDoubleValue >= minValue) && (absDoubleValue <= maxValue)) {
+                parent.set(index, new FloatWritable(decimalWritable.floatValue()));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.DOUBLE_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addBinary(Binary value) {
+              HiveDecimalWritable decimalWritable =
+                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+              parent.set(index, new DoubleWritable(decimalWritable.doubleValue()));
+            }
+          };
+        case serdeConstants.BIGINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addBinary(Binary value) {
+              HiveDecimalWritable decimalWritable =
+                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+              double doubleValue = decimalWritable.doubleValue();
+              if ((doubleValue >= minValue) && (doubleValue <= maxValue) &&
+                  (doubleValue % 1 == 0)) {
+                parent.set(index, new LongWritable(decimalWritable.longValue()));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.INT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addBinary(Binary value) {
+              HiveDecimalWritable decimalWritable =
+                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+              double doubleValue = decimalWritable.doubleValue();
+              if ((doubleValue >= minValue) && (doubleValue <= maxValue) &&
+                  (doubleValue % 1 == 0)) {
+                parent.set(index, new IntWritable(decimalWritable.intValue()));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.SMALLINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addBinary(Binary value) {
+              HiveDecimalWritable decimalWritable =
+                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+              double doubleValue = decimalWritable.doubleValue();
+              if ((doubleValue >= minValue) && (doubleValue <= maxValue) &&
+                  (doubleValue % 1 == 0)) {
+                parent.set(index, new IntWritable(decimalWritable.intValue()));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        case serdeConstants.TINYINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addBinary(Binary value) {
+              HiveDecimalWritable decimalWritable =
+                  new HiveDecimalWritable(value.getBytes(), type.getDecimalMetadata().getScale());
+              double doubleValue = decimalWritable.doubleValue();
+              if ((doubleValue >= minValue) && (doubleValue <= maxValue) &&
+                  (doubleValue % 1 == 0)) {
+                parent.set(index, new IntWritable(decimalWritable.intValue()));
+              } else {
+                parent.set(index, null);
+              }
+            }
+          };
+        default:
+          return new BinaryConverter<HiveDecimalWritable>(type, parent, index, hiveTypeInfo) {
+            @Override
+            protected HiveDecimalWritable convert(Binary binary) {
+              return HiveDecimalUtils.enforcePrecisionScale(
+                  new HiveDecimalWritable(binary.getBytes(), type.getDecimalMetadata().getScale()),
+                  (DecimalTypeInfo) hiveTypeInfo);
+            }
+          };
+        }
+      }
       return new BinaryConverter<HiveDecimalWritable>(type, parent, index) {
         @Override
         protected HiveDecimalWritable convert(Binary binary) {
@@ -446,16 +697,57 @@ public enum ETypeConverter {
     }
   }
 
+  private static double getMinValue(String typeName, double defaultValue) {
+    switch (typeName) {
+    case serdeConstants.BIGINT_TYPE_NAME:
+      return (double) Long.MIN_VALUE;
+    case serdeConstants.INT_TYPE_NAME:
+      return (double) Integer.MIN_VALUE;
+    case serdeConstants.SMALLINT_TYPE_NAME:
+      return (double) Short.MIN_VALUE;
+    case serdeConstants.TINYINT_TYPE_NAME:
+      return (double) Byte.MIN_VALUE;
+    case serdeConstants.FLOAT_TYPE_NAME:
+      return (double) Float.MIN_VALUE;
+    default:
+      return defaultValue;
+    }
+  }
+
+  private static double getMaxValue(String typeName, double defaultValue) {
+    switch (typeName) {
+    case serdeConstants.BIGINT_TYPE_NAME:
+      return (double) Long.MAX_VALUE;
+    case serdeConstants.INT_TYPE_NAME:
+      return (double) Integer.MAX_VALUE;
+    case serdeConstants.SMALLINT_TYPE_NAME:
+      return (double) Short.MAX_VALUE;
+    case serdeConstants.TINYINT_TYPE_NAME:
+      return (double) Byte.MAX_VALUE;
+    case serdeConstants.FLOAT_TYPE_NAME:
+      return (double) Float.MAX_VALUE;
+    default:
+      return defaultValue;
+    }
+  }
+
   public abstract static class BinaryConverter<T extends Writable> extends PrimitiveConverter {
     protected final PrimitiveType type;
     private final ConverterParent parent;
     private final int index;
+    private final TypeInfo hiveTypeInfo;
     private ArrayList<T> lookupTable;
 
-    public BinaryConverter(PrimitiveType type, ConverterParent parent, int index) {
+    public BinaryConverter(PrimitiveType type, ConverterParent parent, int index,
+        TypeInfo hiveTypeInfo) {
       this.type = type;
       this.parent = parent;
       this.index = index;
+      this.hiveTypeInfo = hiveTypeInfo;
+    }
+
+    public BinaryConverter(PrimitiveType type, ConverterParent parent, int index) {
+      this(type, parent, index, null);
     }
 
     protected abstract T convert(Binary binary);
