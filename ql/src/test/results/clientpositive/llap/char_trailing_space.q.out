@@ -1,0 +1,53 @@
+PREHOOK: query: create table char_trailing_space(a char(2), b varchar(2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@char_trailing_space
+POSTHOOK: query: create table char_trailing_space(a char(2), b varchar(2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@char_trailing_space
+PREHOOK: query: insert into char_trailing_space values('L ', 'L ')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@char_trailing_space
+POSTHOOK: query: insert into char_trailing_space values('L ', 'L ')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@char_trailing_space
+POSTHOOK: Lineage: char_trailing_space.a SCRIPT []
+POSTHOOK: Lineage: char_trailing_space.b SCRIPT []
+PREHOOK: query: select length(a),length(b) from char_trailing_space
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_trailing_space
+#### A masked pattern was here ####
+POSTHOOK: query: select length(a),length(b) from char_trailing_space
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_trailing_space
+#### A masked pattern was here ####
+2	2
+PREHOOK: query: select character_length(a),character_length(b) from char_trailing_space
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_trailing_space
+#### A masked pattern was here ####
+POSTHOOK: query: select character_length(a),character_length(b) from char_trailing_space
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_trailing_space
+#### A masked pattern was here ####
+2	2
+PREHOOK: query: select octet_length(a),octet_length(b) from char_trailing_space
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_trailing_space
+#### A masked pattern was here ####
+POSTHOOK: query: select octet_length(a),octet_length(b) from char_trailing_space
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_trailing_space
+#### A masked pattern was here ####
+2	2
+PREHOOK: query: drop table char_trailing_space
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_trailing_space
+PREHOOK: Output: default@char_trailing_space
+POSTHOOK: query: drop table char_trailing_space
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_trailing_space
+POSTHOOK: Output: default@char_trailing_space

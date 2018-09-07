@@ -279,10 +279,10 @@ POSTHOOK: query: SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecim
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types_n2
 #### A masked pattern was here ####
-a    	1	a  	3	48.88	1
-ab   	2	ab 	3	8.72	1
-abc  	3	abc	3	90.21	1
-abcd 	4	abcd	4	3.89	1
+a    	5	a  	3	48.88	1
+ab   	5	ab 	3	8.72	1
+abc  	5	abc	3	90.21	1
+abcd 	5	abcd	4	3.89	1
 abcde	5	abcde	5	56.23	1
 abcde	5	abcdef	6	90.21	1
 abcde	5	abcdefg	7	6.09	1
@@ -678,10 +678,10 @@ POSTHOOK: query: SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecim
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_type_nodict
 #### A masked pattern was here ####
-a    	1	a  	3	48.88	1
-ab   	2	ab 	3	8.72	1
-abc  	3	abc	3	90.21	1
-abcd 	4	abcd	4	3.89	1
+a    	5	a  	3	48.88	1
+ab   	5	ab 	3	8.72	1
+abc  	5	abc	3	90.21	1
+abcd 	5	abcd	4	3.89	1
 abcde	5	abcde	5	56.23	1
 abcde	5	abcdef	6	90.21	1
 abcde	5	abcdefg	7	6.09	1

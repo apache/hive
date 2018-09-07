@@ -159,7 +159,7 @@ from char_udf_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
-7	7	true
+7	20	false
 PREHOOK: query: select
   locate('a', 'abcdabcd', 3),
   locate(cast('a' as char(1)), cast('abcdabcd' as char(10)), 3),
