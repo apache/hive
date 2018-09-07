@@ -596,40 +596,42 @@ public class TreeReaderFactory {
       final boolean hasNulls = !result.noNulls;
       boolean allNulls = hasNulls;
 
-      if (hasNulls) {
-        // conditions to ensure bounds checks skips
-        for (int i = 0; batchSize <= result.isNull.length && i < batchSize; i++) {
-          allNulls = allNulls & result.isNull[i];
-        }
-        if (allNulls) {
-          result.vector[0] = Double.NaN;
-          result.isRepeating = true;
-        } else {
-          // some nulls
-          result.isRepeating = false;
+      if (batchSize > 0) {
+        if (hasNulls) {
           // conditions to ensure bounds checks skips
-          for (int i = 0; batchSize <= result.isNull.length
-              && batchSize <= result.vector.length && i < batchSize; i++) {
-            if (!result.isNull[i]) {
-              result.vector[i] = utils.readFloat(stream);
-            } else {
-              // If the value is not present then set NaN
-              result.vector[i] = Double.NaN;
+          for (int i = 0; batchSize <= result.isNull.length && i < batchSize; i++) {
+            allNulls = allNulls & result.isNull[i];
+          }
+          if (allNulls) {
+            result.vector[0] = Double.NaN;
+            result.isRepeating = true;
+          } else {
+            // some nulls
+            result.isRepeating = false;
+            // conditions to ensure bounds checks skips
+            for (int i = 0; batchSize <= result.isNull.length
+                && batchSize <= result.vector.length && i < batchSize; i++) {
+              if (!result.isNull[i]) {
+                result.vector[i] = utils.readFloat(stream);
+              } else {
+                // If the value is not present then set NaN
+                result.vector[i] = Double.NaN;
+              }
             }
           }
+        } else {
+          // no nulls & > 1 row (check repeating)
+          boolean repeating = (batchSize > 1);
+          final float f1 = utils.readFloat(stream);
+          result.vector[0] = f1;
+          // conditions to ensure bounds checks skips
+          for (int i = 1; i < batchSize && batchSize <= result.vector.length; i++) {
+            final float f2 = utils.readFloat(stream);
+            repeating = repeating && (f1 == f2);
+            result.vector[i] = f2;
+          }
+          result.isRepeating = repeating;
         }
-      } else {
-        // no nulls & > 1 row (check repeating)
-        boolean repeating = (batchSize > 1);
-        final float f1 = utils.readFloat(stream);
-        result.vector[0] = f1;
-        // conditions to ensure bounds checks skips
-        for (int i = 1; i < batchSize && batchSize <= result.vector.length; i++) {
-          final float f2 = utils.readFloat(stream);
-          repeating = repeating && (f1 == f2);
-          result.vector[i] = f2;
-        }
-        result.isRepeating = repeating;
       }
     }
 
@@ -689,41 +691,42 @@ public class TreeReaderFactory {
 
       final boolean hasNulls = !result.noNulls;
       boolean allNulls = hasNulls;
-
-      if (hasNulls) {
-        // conditions to ensure bounds checks skips
-        for (int i = 0; i < batchSize && batchSize <= result.isNull.length; i++) {
-          allNulls = allNulls & result.isNull[i];
-        }
-        if (allNulls) {
-          result.vector[0] = Double.NaN;
-          result.isRepeating = true;
-        } else {
-          // some nulls
-          result.isRepeating = false;
+      if (batchSize != 0) {
+        if (hasNulls) {
           // conditions to ensure bounds checks skips
-          for (int i = 0; batchSize <= result.isNull.length
-              && batchSize <= result.vector.length && i < batchSize; i++) {
-            if (!result.isNull[i]) {
-              result.vector[i] = utils.readDouble(stream);
-            } else {
-              // If the value is not present then set NaN
-              result.vector[i] = Double.NaN;
+          for (int i = 0; i < batchSize && batchSize <= result.isNull.length; i++) {
+            allNulls = allNulls & result.isNull[i];
+          }
+          if (allNulls) {
+            result.vector[0] = Double.NaN;
+            result.isRepeating = true;
+          } else {
+            // some nulls
+            result.isRepeating = false;
+            // conditions to ensure bounds checks skips
+            for (int i = 0; batchSize <= result.isNull.length
+                && batchSize <= result.vector.length && i < batchSize; i++) {
+              if (!result.isNull[i]) {
+                result.vector[i] = utils.readDouble(stream);
+              } else {
+                // If the value is not present then set NaN
+                result.vector[i] = Double.NaN;
+              }
             }
           }
+        } else {
+          // no nulls
+          boolean repeating = (batchSize > 1);
+          final double d1 = utils.readDouble(stream);
+          result.vector[0] = d1;
+          // conditions to ensure bounds checks skips
+          for (int i = 1; i < batchSize && batchSize <= result.vector.length; i++) {
+            final double d2 = utils.readDouble(stream);
+            repeating = repeating && (d1 == d2);
+            result.vector[i] = d2;
+          }
+          result.isRepeating = repeating;
         }
-      } else {
-        // no nulls
-        boolean repeating = (batchSize > 1);
-        final double d1 = utils.readDouble(stream);
-        result.vector[0] = d1;
-        // conditions to ensure bounds checks skips
-        for (int i = 1; i < batchSize && batchSize <= result.vector.length; i++) {
-          final double d2 = utils.readDouble(stream);
-          repeating = repeating && (d1 == d2);
-          result.vector[i] = d2;
-        }
-        result.isRepeating = repeating;
       }
     }
 
