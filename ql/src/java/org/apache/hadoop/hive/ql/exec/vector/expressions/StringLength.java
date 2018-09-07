@@ -25,6 +25,11 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * Calculate the length of the strings in the input column vector, and store
@@ -71,6 +76,10 @@ public class StringLength extends VectorExpression {
       return;
     }
 
+    boolean isFixedLength = inputTypeInfos[0].getCategory() == Category.PRIMITIVE &&
+        ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory() == PrimitiveCategory.CHAR;
+    int fixedLength = isFixedLength ? ((CharTypeInfo) inputTypeInfos[0]).getLength() : -1;
+
     // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
 
@@ -78,7 +87,7 @@ public class StringLength extends VectorExpression {
       if (inputColVector.noNulls || !inputIsNull[0]) {
         // Set isNull before call in case it changes it mind.
         outputIsNull[0] = false;
-        resultLen[0] = utf8StringLength(vector[0], start[0], length[0]);
+        resultLen[0] = isFixedLength ? fixedLength : utf8StringLength(vector[0], start[0], length[0]);
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
@@ -97,12 +106,12 @@ public class StringLength extends VectorExpression {
            final int i = sel[j];
            // Set isNull before call in case it changes it mind.
            outputIsNull[i] = false;
-           resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+           resultLen[i] = isFixedLength ? fixedLength : utf8StringLength(vector[i], start[i], length[i]);
          }
         } else {
           for(int j = 0; j != n; j++) {
             final int i = sel[j];
-            resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+            resultLen[i] = isFixedLength ? fixedLength : utf8StringLength(vector[i], start[i], length[i]);
           }
         }
       } else {
@@ -114,7 +123,7 @@ public class StringLength extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+          resultLen[i] = isFixedLength ? fixedLength : utf8StringLength(vector[i], start[i], length[i]);
         }
       }
     } else /* there are nulls in the inputColVector */ {
@@ -127,7 +136,7 @@ public class StringLength extends VectorExpression {
           int i = sel[j];
           outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+            resultLen[i] = isFixedLength ? fixedLength : utf8StringLength(vector[i], start[i], length[i]);
           }
         }
         outputColVector.isRepeating = false;
@@ -135,7 +144,7 @@ public class StringLength extends VectorExpression {
         for(int i = 0; i != n; i++) {
           outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+            resultLen[i] = isFixedLength ? fixedLength : utf8StringLength(vector[i], start[i], length[i]);
           }
         }
       }
