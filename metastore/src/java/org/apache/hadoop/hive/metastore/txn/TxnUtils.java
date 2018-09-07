@@ -142,8 +142,8 @@ public class TxnUtils {
    *                  e.g. ( id in (1,2,3) OR id in (4,5,6) )
    * @param notIn clause to be broken up is NOT IN
    */
-  public static void buildQueryWithINClause(HiveConf conf, List<String> queries, StringBuilder prefix,
-                                            StringBuilder suffix, List<Long> inList,
+  public static <T> void buildQueryWithINClause(HiveConf conf, List<String> queries, StringBuilder prefix,
+                                            StringBuilder suffix, List<T> inList,
                                             String inColumn, boolean addParens, boolean notIn) {
     if (inList == null || inList.size() == 0) {
       throw new IllegalArgumentException("The IN list is empty!");
