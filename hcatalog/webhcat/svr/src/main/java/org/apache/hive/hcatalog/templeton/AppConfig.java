@@ -249,8 +249,7 @@ public class AppConfig extends Configuration {
         HiveConf.ConfVars.METASTOREURIS.varname,
         HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
         HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI.varname,
-        HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname,
-        HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
+        HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname);
 
     //each items is a "key=value" format
     List<String> webhcatHiveProps = new ArrayList<String>(hiveProps());
@@ -275,12 +274,6 @@ public class AppConfig extends Configuration {
       hiveProps.append(hiveProps.length() > 0 ? "," : "").append(StringUtils.escapeString(whProp));
     }
     set(HIVE_PROPS_NAME, hiveProps.toString());
-    // Setting the hidden list
-    String hiddenProperties = hiveConf.get(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
-    if (this.get(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname) == null
-        && hiddenProperties!=null) {
-      set(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname, hiddenProperties);
-    }
   }
 
   private static void logConfigLoadAttempt(String path) {
