@@ -75,7 +75,11 @@ STAGE PLANS:
                     Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int), s_city (type: string)
+<<<<<<< HEAD
                       outputColumnNames: _col0, _col1
+=======
+                      outputColumnNames: _col0, _col2
+>>>>>>> e74eb354f5... HIVE-20432: Rewrite BETWEEN to IN for integer types for stats estimation(Vineet Garg, reviewed by Ashutosh Chauhan)
                       Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:

@@ -1048,7 +1048,11 @@ STAGE PLANS:
                   filterExpr: (col2 BETWEEN 1 AND 3 and col1 is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
+<<<<<<< HEAD
                     predicate: (col2 BETWEEN 1 AND 3 and col1 is not null) (type: boolean)
+=======
+                    predicate: (col1 is not null and col2 BETWEEN 1 AND 3) (type: boolean)
+>>>>>>> e74eb354f5... HIVE-20432: Rewrite BETWEEN to IN for integer types for stats estimation(Vineet Garg, reviewed by Ashutosh Chauhan)
                     Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col1 (type: int)

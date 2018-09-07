@@ -133,8 +133,15 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
+<<<<<<< HEAD
         Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 398), Map 6 (PARTITION-LEVEL SORT, 398)
         Reducer 5 <- Reducer 4 (GROUP, 529)
+=======
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 551), Reducer 6 (PARTITION-LEVEL SORT, 551)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+        Reducer 5 <- Map 4 (PARTITION-LEVEL SORT, 398), Map 7 (PARTITION-LEVEL SORT, 398)
+        Reducer 6 <- Reducer 5 (GROUP, 529)
+>>>>>>> e74eb354f5... HIVE-20432: Rewrite BETWEEN to IN for integer types for stats estimation(Vineet Garg, reviewed by Ashutosh Chauhan)
 #### A masked pattern was here ####
       Vertices:
 <<<<<<< HEAD
@@ -192,6 +199,7 @@ STAGE PLANS:
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and (d_year) IN (2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
+<<<<<<< HEAD
 =======
                   filterExpr: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_date_sk is not null and ((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28))) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
@@ -204,6 +212,8 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28)) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and (d_year) IN (2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
 >>>>>>> c8eb03affa... HIVE-21143: Add rewrite rules to open/close Between operators (Zoltan Haindrich reviewed by Jesus Camacho Rodriguez)
+=======
+>>>>>>> e74eb354f5... HIVE-20432: Rewrite BETWEEN to IN for integer types for stats estimation(Vineet Garg, reviewed by Ashutosh Chauhan)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -279,6 +289,7 @@ STAGE PLANS:
                   Statistics: Num rows: 383325119 Data size: 33817053293 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: _col2 BETWEEN 15 AND 20 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
@@ -340,6 +351,15 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+                    Statistics: Num rows: 19166256 Data size: 1690852669 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 19166256 Data size: 1690852669 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: bigint)
+>>>>>>> e74eb354f5... HIVE-20432: Rewrite BETWEEN to IN for integer types for stats estimation(Vineet Garg, reviewed by Ashutosh Chauhan)
 
   Stage: Stage-0
     Fetch Operator

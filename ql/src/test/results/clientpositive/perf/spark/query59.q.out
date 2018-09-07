@@ -236,13 +236,21 @@ STAGE PLANS:
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_week_seq (type: int)
+<<<<<<< HEAD
                       outputColumnNames: _col0
+=======
+                      outputColumnNames: _col1
+>>>>>>> e74eb354f5... HIVE-20432: Rewrite BETWEEN to IN for integer types for stats estimation(Vineet Garg, reviewed by Ashutosh Chauhan)
                       Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
+<<<<<<< HEAD
                         Map-reduce partition columns: _col0 (type: int)
+=======
+                        Map-reduce partition columns: _col1 (type: int)
+>>>>>>> e74eb354f5... HIVE-20432: Rewrite BETWEEN to IN for integer types for stats estimation(Vineet Garg, reviewed by Ashutosh Chauhan)
                         Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 7 
@@ -277,13 +285,21 @@ STAGE PLANS:
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_week_seq (type: int)
+<<<<<<< HEAD
                       outputColumnNames: _col0
+=======
+                      outputColumnNames: _col1
+>>>>>>> e74eb354f5... HIVE-20432: Rewrite BETWEEN to IN for integer types for stats estimation(Vineet Garg, reviewed by Ashutosh Chauhan)
                       Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
+<<<<<<< HEAD
                         Map-reduce partition columns: _col0 (type: int)
+=======
+                        Map-reduce partition columns: _col1 (type: int)
+>>>>>>> e74eb354f5... HIVE-20432: Rewrite BETWEEN to IN for integer types for stats estimation(Vineet Garg, reviewed by Ashutosh Chauhan)
                         Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Reducer 11 
