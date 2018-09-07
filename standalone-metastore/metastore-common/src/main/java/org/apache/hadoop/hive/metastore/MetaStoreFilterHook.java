@@ -93,7 +93,7 @@ public interface MetaStoreFilterHook {
    * @return filtered table metas
    * @throws MetaException something went wrong
    */
-  List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException;
+  List<TableMeta> filterTableMetas(String catName,String dbName,List<TableMeta> tableMetas) throws MetaException;
 
   /**
    * filter to given table object if applicable
