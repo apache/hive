@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
+
 public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -136,6 +138,13 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       }
 
       LOG.debug("ReplCopyTask numFiles: {}", srcFiles.size());
+
+      // in case of move optimization, file is directly copied to destination. So we need to clear the old content, if
+      // its a replace (insert overwrite ) operation.
+      if (work.getDeleteDestIfExist() && FileUtils.getFileStatusOrNull(dstFs, toPath) != null) {
+        dstFs.delete(toPath, true);
+      }
+
       if (!FileUtils.mkdir(dstFs, toPath, conf)) {
         console.printError("Cannot make target directory: " + toPath.toString());
         return 2;
@@ -228,6 +237,9 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
+      if (replicationSpec.isReplace() &&  conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
+        rcwork.setDeleteDestIfExist(true);
+      }
       LOG.debug("ReplCopyTask:\trcwork");
       if (replicationSpec.isLazy()) {
         LOG.debug("ReplCopyTask:\tlazy");

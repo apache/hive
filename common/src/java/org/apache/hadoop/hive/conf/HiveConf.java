@@ -489,6 +489,11 @@ public class HiveConf extends Configuration {
           + "used in conjunction with 'hive.repl.dump.metadata.only' set to false. if 'hive.repl.dump.metadata.only' \n"
           + " is set to true then this config parameter has no effect as external table meta data is flushed \n"
           + " always by default."),
+    REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", false,
+            "If its set to true, replcopy task copy the source files directly to the destination path. \n"
+            + "So no move happens from staging directory to final destination directory. Creation of \n"
+            + " staging directory is also skipped if its set to true. This is to avoid the overhead of creating \n" +
+            " the staging directory and move in file system like s3 and wasb."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),

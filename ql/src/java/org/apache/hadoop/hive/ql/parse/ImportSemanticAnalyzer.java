@@ -78,6 +78,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
+
 /**
  * ImportSemanticAnalyzer.
  *
@@ -395,24 +397,31 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
     Path destPath = null, loadPath = null;
     LoadFileType lft;
-    if (AcidUtils.isTransactionalTable(table) && !replicationSpec.isInReplicationScope()) {
-      String mmSubdir = replace ? AcidUtils.baseDir(writeId)
-          : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
-      destPath = new Path(tgtPath, mmSubdir);
-      /**
-       * CopyTask below will copy files from the 'archive' to a delta_x_x in the table/partition
-       * directory, i.e. the final destination for these files.  This has to be a copy to preserve
-       * the archive.  MoveTask is optimized to do a 'rename' if files are on the same FileSystem.
-       * So setting 'loadPath' this way will make
-       * {@link Hive#loadTable(Path, String, LoadFileType, boolean, boolean, boolean,
-       * boolean, Long, int)}
-       * skip the unnecessary file (rename) operation but it will perform other things.
-       */
-      loadPath = tgtPath;
-      lft = LoadFileType.KEEP_EXISTING;
+
+    if (replicationSpec.isInReplicationScope() &&
+            x.getCtx().getConf().getBoolean(REPL_ENABLE_MOVE_OPTIMIZATION.varname, false)) {
+      lft = LoadFileType.IGNORE;
+      destPath = loadPath = tgtPath;
     } else {
-      destPath = loadPath = x.getCtx().getExternalTmpPath(tgtPath);
-      lft = replace ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+      if (AcidUtils.isTransactionalTable(table) && !replicationSpec.isInReplicationScope()) {
+        String mmSubdir = replace ? AcidUtils.baseDir(writeId)
+                : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
+        destPath = new Path(tgtPath, mmSubdir);
+        /**
+         * CopyTask below will copy files from the 'archive' to a delta_x_x in the table/partition
+         * directory, i.e. the final destination for these files.  This has to be a copy to preserve
+         * the archive.  MoveTask is optimized to do a 'rename' if files are on the same FileSystem.
+         * So setting 'loadPath' this way will make
+         * {@link Hive#loadTable(Path, String, LoadFileType, boolean, boolean, boolean,
+         * boolean, Long, int)}
+         * skip the unnecessary file (rename) operation but it will perform other things.
+         */
+        loadPath = tgtPath;
+        lft = LoadFileType.KEEP_EXISTING;
+      } else {
+        destPath = loadPath = x.getCtx().getExternalTmpPath(tgtPath);
+        lft = replace ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+      }
     }
 
 
@@ -442,7 +451,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
               Collections.singletonList(tgtPath),
               true, null, null);
       moveWork.setMultiFilesDesc(loadFilesWork);
-      moveWork.setNeedCleanTarget(false);
+      moveWork.setNeedCleanTarget(replace);
     } else {
       LoadTableDesc loadTableWork = new LoadTableDesc(
               loadPath, Utilities.getTableDesc(table), new TreeMap<>(), lft, writeId);
@@ -496,7 +505,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return TaskFactory.get(new DDLWork(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
   }
 
- private static Task<?> addSinglePartition(URI fromURI, FileSystem fs, ImportTableDesc tblDesc,
+  private static Task<?> addSinglePartition(URI fromURI, FileSystem fs, ImportTableDesc tblDesc,
       Table table, Warehouse wh, AddPartitionDesc addPartitionDesc, ReplicationSpec replicationSpec,
       EximUtil.SemanticAnalyzerWrapperContext x, Long writeId, int stmtId)
       throws MetaException, IOException, HiveException {
@@ -516,11 +525,21 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           + partSpecToString(partSpec.getPartSpec())
           + " with source location: " + srcLocation);
       Path tgtLocation = new Path(partSpec.getLocation());
-      //Replication scope the write id will be invalid
-      Boolean useStagingDirectory = !AcidUtils.isTransactionalTable(table.getParameters()) ||
-              replicationSpec.isInReplicationScope();
-      Path destPath =  useStagingDirectory ? x.getCtx().getExternalTmpPath(tgtLocation)
-          : new Path(tgtLocation, AcidUtils.deltaSubdir(writeId, writeId, stmtId));
+
+      LoadFileType loadFileType = replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+      Path destPath;
+      if (replicationSpec.isInReplicationScope() &&
+              x.getCtx().getConf().getBoolean(REPL_ENABLE_MOVE_OPTIMIZATION.varname, false)) {
+        loadFileType = LoadFileType.IGNORE;
+        destPath =  tgtLocation;
+      } else {
+        //Replication scope the write id will be invalid
+        Boolean useStagingDirectory = !AcidUtils.isTransactionalTable(table.getParameters()) ||
+                replicationSpec.isInReplicationScope();
+        destPath =  useStagingDirectory ? x.getCtx().getExternalTmpPath(tgtLocation)
+                : new Path(tgtLocation, AcidUtils.deltaSubdir(writeId, writeId, stmtId));
+      }
+
       Path moveTaskSrc =  !AcidUtils.isTransactionalTable(table.getParameters()) ? destPath : tgtLocation;
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("adding import work for partition with source location: "
@@ -554,11 +573,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                 Collections.singletonList(tgtLocation),
                 true, null, null);
         moveWork.setMultiFilesDesc(loadFilesWork);
-        moveWork.setNeedCleanTarget(false);
+        moveWork.setNeedCleanTarget(replicationSpec.isReplace());
       } else {
         LoadTableDesc loadTableWork = new LoadTableDesc(moveTaskSrc, Utilities.getTableDesc(table),
                 partSpec.getPartSpec(),
-                replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING,
+                loadFileType,
                 writeId);
         loadTableWork.setStmtId(stmtId);
         loadTableWork.setInheritTableSpecs(false);
