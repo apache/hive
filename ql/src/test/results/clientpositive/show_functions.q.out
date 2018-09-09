@@ -39,6 +39,7 @@ between
 bin
 bloom_filter
 bround
+bucket_number
 cardinality_violation
 case
 cbrt
