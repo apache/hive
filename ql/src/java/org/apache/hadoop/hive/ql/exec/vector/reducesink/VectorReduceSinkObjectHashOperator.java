@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.reducesink;
 
+import java.lang.reflect.Method;
 import java.util.Random;
+import java.util.function.BiFunction;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -26,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BucketNumExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -73,17 +76,20 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
   protected transient Output keyOutput;
   protected transient VectorSerializeRow<BinarySortableSerializeWrite> keyVectorSerializeRow;
 
-  private transient boolean hasBuckets;
   private transient int numBuckets;
   private transient ObjectInspector[] bucketObjectInspectors;
   private transient VectorExtractRow bucketVectorExtractRow;
   private transient Object[] bucketFieldValues;
 
-  private transient boolean isPartitioned;
   private transient ObjectInspector[] partitionObjectInspectors;
   private transient VectorExtractRow partitionVectorExtractRow;
   private transient Object[] partitionFieldValues;
   private transient Random nonPartitionRandom;
+
+  private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
+  private transient BucketNumExpression bucketExpr = null;
+  private transient Method buckectEvaluatorMethod;
+
 
   /** Kryo ctor. */
   protected VectorReduceSinkObjectHashOperator() {
@@ -130,6 +136,15 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     return objectInspectors;
   }
 
+  private void evaluateBucketExpr(VectorizedRowBatch batch, int rowNum, int bucketNum) throws HiveException{
+    bucketExpr.setRowNum(rowNum);
+    bucketExpr.setBucketNum(bucketNum);
+    bucketExpr.evaluate(batch);
+  }
+
+  private void evaluateBucketDummy(VectorizedRowBatch batch, int rowNum, int bucketNum) {
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
@@ -169,6 +184,29 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
       partitionVectorExtractRow.init(reduceSinkPartitionTypeInfos, reduceSinkPartitionColumnMap);
       partitionFieldValues = new Object[reduceSinkPartitionTypeInfos.length];
     }
+
+    // Set hashFunc
+    hashFunc = bucketingVersion == 2 && !vectorDesc.getIsAcidChange() ?
+      ObjectInspectorUtils::getBucketHashCode :
+      ObjectInspectorUtils::getBucketHashCodeOld;
+
+    // Set function to evaluate _bucket_number if needed.
+    try {
+      buckectEvaluatorMethod = this.getClass().getDeclaredMethod("evaluateBucketDummy",
+        VectorizedRowBatch.class, int.class, int.class);
+      if (reduceSinkKeyExpressions != null) {
+        for (VectorExpression ve : reduceSinkKeyExpressions) {
+          if (ve instanceof BucketNumExpression) {
+            bucketExpr = (BucketNumExpression) ve;
+            buckectEvaluatorMethod = this.getClass().getDeclaredMethod("evaluateBucketExpr",
+              VectorizedRowBatch.class, int.class, int.class);
+            break;
+          }
+        }
+      }
+    } catch (NoSuchMethodException e) {
+      throw new HiveException("Failed to find method to evaluate _bucket_number");
+    }
   }
 
   @Override
@@ -197,6 +235,10 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
       // Perform any key expressions.  Results will go into scratch columns.
       if (reduceSinkKeyExpressions != null) {
         for (VectorExpression ve : reduceSinkKeyExpressions) {
+          // Handle _bucket_number
+          if (ve instanceof BucketNumExpression) {
+            continue; // Evaluate per row
+          }
           ve.evaluate(batch);
         }
       }
@@ -227,9 +269,8 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
 
       final int size = batch.size;
 
-      // EmptyBuckets = true
-      if (isEmptyBuckets) {
-        if (isEmptyPartitions) {
+      if (isEmptyBuckets) { // EmptyBuckets = true
+        if (isEmptyPartitions) { // isEmptyPartition = true
           for (int logical = 0; logical< size; logical++) {
             final int batchIndex = (selectedInUse ? selected[logical] : logical);
             final int hashCode = nonPartitionRandom.nextInt();
@@ -239,25 +280,19 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
           for (int logical = 0; logical< size; logical++) {
             final int batchIndex = (selectedInUse ? selected[logical] : logical);
             partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
-            final int hashCode = bucketingVersion == 2 && !vectorDesc.getIsAcidChange() ?
-                ObjectInspectorUtils.getBucketHashCode(
-                    partitionFieldValues, partitionObjectInspectors) :
-                ObjectInspectorUtils.getBucketHashCodeOld(
-                    partitionFieldValues, partitionObjectInspectors);
+            final int hashCode = hashFunc.apply(partitionFieldValues, partitionObjectInspectors);
             postProcess(batch, batchIndex, tag, hashCode);
           }
         }
       } else { // EmptyBuckets = false
-        if (isEmptyPartitions) {
+        if (isEmptyPartitions) { // isEmptyPartition = true
           for (int logical = 0; logical< size; logical++) {
             final int batchIndex = (selectedInUse ? selected[logical] : logical);
             bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
-            final int bucketNum = bucketingVersion == 2 ?
-                ObjectInspectorUtils.getBucketNumber(bucketFieldValues,
-                  bucketObjectInspectors, numBuckets) :
-                ObjectInspectorUtils.getBucketNumberOld(
-                  bucketFieldValues, bucketObjectInspectors, numBuckets);
+            final int bucketNum = ObjectInspectorUtils.getBucketNumber(
+              hashFunc.apply(bucketFieldValues, bucketObjectInspectors), numBuckets);
             final int hashCode = nonPartitionRandom.nextInt() * 31 + bucketNum;
+            buckectEvaluatorMethod.invoke(this, batch, batchIndex, bucketNum);
             postProcess(batch, batchIndex, tag, hashCode);
           }
         } else { // isEmptyPartition = false
@@ -265,20 +300,10 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
             final int batchIndex = (selectedInUse ? selected[logical] : logical);
             partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
             bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
-            final int hashCode, bucketNum;
-            if (bucketingVersion == 2 && !vectorDesc.getIsAcidChange()) {
-              bucketNum =
-                  ObjectInspectorUtils.getBucketNumber(
-                      bucketFieldValues, bucketObjectInspectors, numBuckets);
-              hashCode = ObjectInspectorUtils.getBucketHashCode(
-                  partitionFieldValues, partitionObjectInspectors) * 31 + bucketNum;
-            } else { // old bucketing logic
-              bucketNum =
-                  ObjectInspectorUtils.getBucketNumberOld(
-                      bucketFieldValues, bucketObjectInspectors, numBuckets);
-              hashCode = ObjectInspectorUtils.getBucketHashCodeOld(
-                  partitionFieldValues, partitionObjectInspectors) * 31 + bucketNum;
-            }
+            final int bucketNum = ObjectInspectorUtils.getBucketNumber(
+              hashFunc.apply(bucketFieldValues, bucketObjectInspectors), numBuckets);
+            final int hashCode = hashFunc.apply(partitionFieldValues, partitionObjectInspectors) * 31 + bucketNum;
+            buckectEvaluatorMethod.invoke(this, batch, batchIndex, bucketNum);
             postProcess(batch, batchIndex, tag, hashCode);
           }
         }
