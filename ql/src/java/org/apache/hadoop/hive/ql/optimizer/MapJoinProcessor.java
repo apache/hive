@@ -1158,15 +1158,18 @@ public class MapJoinProcessor extends Transform {
     }
 
     Map<Byte, List<ExprNodeDesc>> filters = desc.getFilters();
-    Map<Byte, List<ExprNodeDesc>> newFilters = new HashMap<Byte, List<ExprNodeDesc>>();
-    for (Map.Entry<Byte, List<ExprNodeDesc>> entry : filters.entrySet()) {
-      byte srcTag = entry.getKey();
-      List<ExprNodeDesc> filter = entry.getValue();
+    if(adjustParentsChildren) {
+      // backtrack and update filter expressions only if RS is to be removed
+      Map<Byte, List<ExprNodeDesc>> newFilters = new HashMap<Byte, List<ExprNodeDesc>>();
+      for (Map.Entry<Byte, List<ExprNodeDesc>> entry : filters.entrySet()) {
+        byte srcTag = entry.getKey();
+        List<ExprNodeDesc> filter = entry.getValue();
 
-      Operator<?> terminal = oldReduceSinkParentOps.get(srcTag);
-      newFilters.put(srcTag, ExprNodeDescUtils.backtrack(filter, op, terminal));
+        Operator<?> terminal = oldReduceSinkParentOps.get(srcTag);
+        newFilters.put(srcTag, ExprNodeDescUtils.backtrack(filter, op, terminal));
+      }
+      desc.setFilters(filters = newFilters);
     }
-    desc.setFilters(filters = newFilters);
 
     // create dumpfile prefix needed to create descriptor
     String dumpFilePrefix = "";

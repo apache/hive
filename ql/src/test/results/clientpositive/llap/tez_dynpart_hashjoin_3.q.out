@@ -194,13 +194,13 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 310 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Map Join Operator
                 condition map:
                      Left Outer Join 0 to 1
                 filter predicates:
-                  0 {(_col2 < 100)}
+                  0 {(KEY.reducesinkkey0 < 100)}
                   1 
                 keys:
                   0 KEY.reducesinkkey0 (type: int)
