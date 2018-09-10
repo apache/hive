@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.kafka;
 
 import com.google.common.base.Preconditions;
-import com.google.common.io.Closer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -31,7 +30,6 @@ import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -43,7 +41,6 @@ import java.util.Properties;
 
   private static final Logger LOG = LoggerFactory.getLogger(KafkaPullerRecordReader.class);
 
-  private final Closer closer = Closer.create();
   private KafkaConsumer<byte[], byte[]> consumer = null;
   private Configuration config = null;
   private KafkaRecordWritable currentWritableValue;
@@ -67,7 +64,6 @@ import java.util.Properties;
       Preconditions.checkNotNull(brokerString, "broker end point can not be null");
       LOG.info("Starting Consumer with Kafka broker string [{}]", brokerString);
       consumer = new KafkaConsumer<>(properties);
-      closer.register(consumer);
     }
   }
 
@@ -154,11 +150,11 @@ import java.util.Properties;
     return consumedRecords * 1.0f / totalNumberRecords;
   }
 
-  @Override public void close() throws IOException {
+  @Override public void close() {
     LOG.trace("total read bytes [{}]", readBytes);
     if (consumer != null) {
       consumer.wakeup();
+      consumer.close();
     }
-    closer.close();
   }
 }

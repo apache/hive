@@ -37,7 +37,39 @@ public class KafkaRecordWritableTest {
 
   @Test public void testWriteReadFields() throws IOException {
     ConsumerRecord<byte[], byte[]> record = new ConsumerRecord("topic", 0, 3L, "key".getBytes(), "value".getBytes());
-    KafkaRecordWritable kafkaRecordWritable = new KafkaRecordWritable(record.partition(), record.offset(), record.timestamp(), record.value(), 0L, 100L);
+    KafkaRecordWritable
+        kafkaRecordWritable =
+        new KafkaRecordWritable(record.partition(),
+            record.offset(),
+            record.timestamp(),
+            record.value(),
+            0L,
+            100L,
+            null);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream w = new DataOutputStream(baos);
+    kafkaRecordWritable.write(w);
+    w.flush();
+
+    ByteArrayInputStream input = new ByteArrayInputStream(baos.toByteArray());
+    DataInputStream inputStream = new DataInputStream(input);
+    KafkaRecordWritable actualKafkaRecordWritable = new KafkaRecordWritable();
+    actualKafkaRecordWritable.readFields(inputStream);
+    Assert.assertEquals(kafkaRecordWritable, actualKafkaRecordWritable);
+  }
+
+
+  @Test public void testWriteReadFields2() throws IOException {
+    ConsumerRecord<byte[], byte[]> record = new ConsumerRecord("topic", 0, 3L, "key".getBytes(), "value".getBytes());
+    KafkaRecordWritable
+        kafkaRecordWritable =
+        new KafkaRecordWritable(record.partition(),
+            record.offset(),
+            record.timestamp(),
+            record.value(),
+            0L,
+            100L,
+            "thiskey".getBytes());
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream w = new DataOutputStream(baos);
     kafkaRecordWritable.write(w);

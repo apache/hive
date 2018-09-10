@@ -19,11 +19,21 @@
 package org.apache.hadoop.hive.kafka;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -33,10 +43,12 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +57,7 @@ import java.util.stream.Collectors;
 final class KafkaStreamingUtils {
 
   /**
-   * MANDATORY Table property indicating kafka topic backing the table
+   * MANDATORY Table property indicating kafka topic backing the table.
    */
   static final String HIVE_KAFKA_TOPIC = "kafka.topic";
   /**
@@ -58,47 +70,26 @@ final class KafkaStreamingUtils {
   static final String SERDE_CLASS_NAME = "kafka.serde.class";
   /**
    * Table property indicating poll/fetch timeout period in millis.
-   * FYI this is independent from internal Kafka consumer timeouts, defaults to {@DEFAULT_CONSUMER_POLL_TIMEOUT_MS}
+   * FYI this is independent from internal Kafka consumer timeouts, defaults to {@DEFAULT_CONSUMER_POLL_TIMEOUT_MS}.
    */
   static final String HIVE_KAFKA_POLL_TIMEOUT = "hive.kafka.poll.timeout.ms";
   /**
-   * default poll timeout for fetching metadata and record batch
+   * Default poll timeout for fetching metadata and record batch.
    */
   static final long DEFAULT_CONSUMER_POLL_TIMEOUT_MS = 5000L; // 5 seconds
-  /**
-   * Record Timestamp column name, added as extra meta column of type long
-   */
-  static final String TIMESTAMP_COLUMN = "__timestamp";
-  /**
-   * Record Kafka Partition column name added as extra meta column of type int
-   */
-  static final String PARTITION_COLUMN = "__partition";
-  /**
-   * Record offset column name added as extra metadata column to row as long
-   */
-  static final String OFFSET_COLUMN = "__offset";
-
-  /**
-   * Start offset given by the input split, this will reflect the actual start of TP or start given by split pruner
-   */
-  static final String START_OFFSET_COLUMN = "__start_offset";
-
-  /**
-   * End offset given by input split at run time
-   */
-  static final String END_OFFSET_COLUMN = "__end_offset";
   /**
    * Table property prefix used to inject kafka consumer properties, e.g "kafka.consumer.max.poll.records" = "5000"
    * this will lead to inject max.poll.records=5000 to the Kafka Consumer. NOT MANDATORY defaults to nothing
    */
   static final String CONSUMER_CONFIGURATION_PREFIX = "kafka.consumer";
-
   /**
-   * Set of Kafka properties that the user can not set via DDLs
+   * Set of Kafka properties that the user can not set via DDLs.
    */
   static final HashSet<String> FORBIDDEN_PROPERTIES =
       new HashSet<>(ImmutableList.of(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
-          ConsumerConfig.AUTO_OFFSET_RESET_CONFIG));
+          ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
+          ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+          ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG));
 
   private KafkaStreamingUtils() {
   }
@@ -172,4 +163,93 @@ final class KafkaStreamingUtils {
     // we are not setting conf thus null is okay
     return ReflectionUtil.newInstance(clazz, null);
   }
+
+  /**
+   * Basic Enum class for all the metadata columns appended to the Kafka row by the deserializer.
+   */
+  enum MetadataColumn {
+    /**
+     * Record offset column name added as extra metadata column to row as long.
+     */
+    OFFSET("__offset", TypeInfoFactory.longTypeInfo),
+    /**
+     * Record Kafka Partition column name added as extra meta column of type int.
+     */
+    PARTITION("__partition", TypeInfoFactory.intTypeInfo),
+    /**
+     * Record Kafka key column name added as extra meta column of type binary blob.
+     */
+    KEY("__key", TypeInfoFactory.binaryTypeInfo),
+    /**
+     * Record Timestamp column name, added as extra meta column of type long.
+     */
+    TIMESTAMP("__timestamp", TypeInfoFactory.longTypeInfo),
+    /**
+     * Start offset given by the input split, this will reflect the actual start of TP or start given by split pruner.
+     */
+    START_OFFSET("__start_offset", TypeInfoFactory.longTypeInfo),
+    /**
+     * End offset given by input split at run time.
+     */
+    END_OFFSET("__end_offset", TypeInfoFactory.longTypeInfo);
+
+    private final String name;
+    private final TypeInfo typeInfo;
+
+    MetadataColumn(String name, TypeInfo typeInfo) {
+      this.name = name;
+      this.typeInfo = typeInfo;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public AbstractPrimitiveWritableObjectInspector getObjectInspector() {
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory.getPrimitiveTypeInfo(
+          typeInfo.getTypeName()));
+    }
+  }
+
+  //Order at which column and types will be appended to the original row.
+  /**
+   * Kafka metadata columns order list.
+   */
+  private static final List<MetadataColumn> KAFKA_METADATA_COLUMNS =
+      Arrays.asList(MetadataColumn.KEY,
+          MetadataColumn.PARTITION,
+          MetadataColumn.OFFSET,
+          MetadataColumn.TIMESTAMP,
+          MetadataColumn.START_OFFSET,
+          MetadataColumn.END_OFFSET);
+
+  /**
+   * Kafka metadata column names.
+   */
+  static final List<String> KAFKA_METADATA_COLUMN_NAMES = KAFKA_METADATA_COLUMNS
+      .stream()
+      .map(MetadataColumn::getName)
+      .collect(Collectors.toList());
+
+  /**
+   * Kafka metadata column inspectors.
+   */
+  static final List<ObjectInspector> KAFKA_METADATA_INSPECTORS = KAFKA_METADATA_COLUMNS
+      .stream()
+      .map(MetadataColumn::getObjectInspector)
+      .collect(Collectors.toList());
+
+  /**
+   * Reverse lookup map used to convert records from kafka Writable to hive Writable based on Kafka semantic.
+   */
+  static final Map<String, Function<KafkaRecordWritable, Writable>>
+      recordWritableFnMap = ImmutableMap.<String, Function<KafkaRecordWritable, Writable>>builder()
+      .put(MetadataColumn.END_OFFSET.getName(), (record) -> new LongWritable(record.getEndOffset()))
+      .put(MetadataColumn.KEY.getName(),
+          record -> record.getRecordKey() == null ? null : new BytesWritable(record.getRecordKey()))
+      .put(MetadataColumn.OFFSET.getName(), record -> new LongWritable(record.getOffset()))
+      .put(MetadataColumn.PARTITION.getName(), record -> new IntWritable(record.getPartition()))
+      .put(MetadataColumn.START_OFFSET.getName(), record -> new LongWritable(record.getStartOffset()))
+      .put(MetadataColumn.TIMESTAMP.getName(), record -> new LongWritable(record.getTimestamp()))
+      .build();
 }
