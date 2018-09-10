@@ -78,7 +78,7 @@ set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
 
-set hive.auto.convert.join.noconditionaltask.size=2800;
+set hive.auto.convert.join.noconditionaltask.size=2000;
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key;
 set hive.convert.join.bucket.mapjoin.tez = true;
