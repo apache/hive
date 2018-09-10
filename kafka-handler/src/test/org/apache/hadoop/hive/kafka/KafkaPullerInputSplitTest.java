@@ -33,11 +33,11 @@ import java.util.List;
  * Kafka Hadoop InputSplit Test.
  */
 public class KafkaPullerInputSplitTest {
-  private String topic = "my_topic";
   private KafkaPullerInputSplit expectedInputSplit;
 
   public KafkaPullerInputSplitTest() {
-    this.expectedInputSplit = new KafkaPullerInputSplit(this.topic, 1, 50L, 56L, new Path("/tmp"));
+    String topic = "my_topic";
+    this.expectedInputSplit = new KafkaPullerInputSplit(topic, 1, 50L, 56L, new Path("/tmp"));
   }
 
   @Test public void testWriteRead() throws IOException {

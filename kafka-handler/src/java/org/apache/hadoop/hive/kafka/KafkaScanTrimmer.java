@@ -89,7 +89,7 @@ class KafkaScanTrimmer {
     if (LOG.isDebugEnabled()) {
       if (optimizedScan != null) {
         LOG.debug("Optimized scan:");
-        optimizedScan.forEach((tp, input) -> LOG.info(
+        optimizedScan.forEach((tp, input) -> LOG.debug(
             "Topic-[{}] Partition-[{}] - Split startOffset [{}] :-> endOffset [{}]",
             tp.topic(),
             tp.partition(),
@@ -97,7 +97,7 @@ class KafkaScanTrimmer {
             input.getEndOffset()));
       } else {
         LOG.debug("No optimization thus using full scan ");
-        fullHouse.forEach((tp, input) -> LOG.info(
+        fullHouse.forEach((tp, input) -> LOG.debug(
             "Topic-[{}] Partition-[{}] - Split startOffset [{}] :-> endOffset [{}]",
             tp.topic(),
             tp.partition(),
@@ -193,7 +193,7 @@ class KafkaScanTrimmer {
     }
 
 
-    if (columnDesc.getColumn().equals(KafkaStreamingUtils.PARTITION_COLUMN)) {
+    if (columnDesc.getColumn().equals(KafkaStreamingUtils.MetadataColumn.PARTITION.getName())) {
       return buildScanFromPartitionPredicate(fullHouse,
           operator,
           ((Number) constantDesc.getValue()).intValue(),
@@ -201,7 +201,7 @@ class KafkaScanTrimmer {
           negation);
 
     }
-    if (columnDesc.getColumn().equals(KafkaStreamingUtils.OFFSET_COLUMN)) {
+    if (columnDesc.getColumn().equals(KafkaStreamingUtils.MetadataColumn.OFFSET.getName())) {
       return buildScanFromOffsetPredicate(fullHouse,
           operator,
           ((Number) constantDesc.getValue()).longValue(),
@@ -209,7 +209,7 @@ class KafkaScanTrimmer {
           negation);
     }
 
-    if (columnDesc.getColumn().equals(KafkaStreamingUtils.TIMESTAMP_COLUMN)) {
+    if (columnDesc.getColumn().equals(KafkaStreamingUtils.MetadataColumn.TIMESTAMP.getName())) {
       long timestamp = ((Number) constantDesc.getValue()).longValue();
       //noinspection unchecked
       return buildScanForTimesPredicate(fullHouse, operator, timestamp, flip, negation, kafkaConsumer);
@@ -280,7 +280,8 @@ class KafkaScanTrimmer {
    *
    * @return optimized kafka scan
    */
-  @VisibleForTesting static Map<TopicPartition, KafkaPullerInputSplit> buildScanFromOffsetPredicate(Map<TopicPartition, KafkaPullerInputSplit> fullScan,
+  @VisibleForTesting static Map<TopicPartition, KafkaPullerInputSplit> buildScanFromOffsetPredicate(Map<TopicPartition,
+      KafkaPullerInputSplit> fullScan,
       PredicateLeaf.Operator operator,
       long offsetConst,
       boolean flip,

@@ -80,11 +80,13 @@ import java.util.stream.Collectors;
  */
 public class KafkaJsonSerDe extends AbstractSerDe {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaJsonSerDe.class);
-  private static final DateTimeFormatter TS_PARSER = createAutoParser();
-  static Function<TypeInfo, ObjectInspector>
-      typeInfoToObjectInspector = typeInfo ->
-      PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-          TypeInfoFactory.getPrimitiveTypeInfo(typeInfo.getTypeName()));
+  private static final ThreadLocal<DateTimeFormatter>
+      TS_PARSER =
+      ThreadLocal.withInitial(KafkaJsonSerDe::createAutoParser);
+  private static final Function<TypeInfo, ObjectInspector>
+      typeInfoToObjectInspector =
+      typeInfo -> PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory.getPrimitiveTypeInfo(
+          typeInfo.getTypeName()));
   private List<String> columnNames;
   private List<TypeInfo> columnTypes;
   private ObjectInspector inspector;
@@ -176,11 +178,11 @@ public class KafkaJsonSerDe extends AbstractSerDe {
     switch (TypeInfoFactory.getPrimitiveTypeInfo(typeInfo.getTypeName()).getPrimitiveCategory()) {
     case TIMESTAMP:
       TimestampWritable timestampWritable = new TimestampWritable();
-      timestampWritable.setTime(TS_PARSER.parseMillis(value.textValue()));
+      timestampWritable.setTime(TS_PARSER.get().parseMillis(value.textValue()));
       return timestampWritable;
 
     case TIMESTAMPLOCALTZ:
-      final long numberOfMillis = TS_PARSER.parseMillis(value.textValue());
+      final long numberOfMillis = TS_PARSER.get().parseMillis(value.textValue());
       return new TimestampLocalTZWritable(new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(numberOfMillis),
           ((TimestampLocalTZTypeInfo) typeInfo).timeZone())));
 
@@ -234,8 +236,7 @@ public class KafkaJsonSerDe extends AbstractSerDe {
     DateTimeParser
         timeOrOffset =
         new DateTimeFormatterBuilder().append(null,
-            new DateTimeParser[] {
-                new DateTimeFormatterBuilder().appendLiteral('T').toParser(),
+            new DateTimeParser[] { new DateTimeFormatterBuilder().appendLiteral('T').toParser(),
                 new DateTimeFormatterBuilder().appendLiteral(' ').toParser() })
             .appendOptional(ISODateTimeFormat.timeElementParser().getParser())
             .appendOptional(offsetElement.getParser())

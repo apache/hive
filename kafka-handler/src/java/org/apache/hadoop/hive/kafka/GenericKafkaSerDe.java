@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.kafka;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -40,11 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
@@ -56,6 +51,7 @@ import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -64,21 +60,6 @@ import java.util.stream.Collectors;
  */
 public class GenericKafkaSerDe extends AbstractSerDe {
   private static final Logger LOG = LoggerFactory.getLogger(GenericKafkaSerDe.class);
-  // ORDER of fields and types matters here
-  private static final ImmutableList<String>
-      METADATA_COLUMN_NAMES =
-      ImmutableList.of(KafkaStreamingUtils.PARTITION_COLUMN,
-          KafkaStreamingUtils.OFFSET_COLUMN,
-          KafkaStreamingUtils.TIMESTAMP_COLUMN,
-          KafkaStreamingUtils.START_OFFSET_COLUMN,
-          KafkaStreamingUtils.END_OFFSET_COLUMN);
-  private static final ImmutableList<PrimitiveTypeInfo>
-      METADATA_PRIMITIVE_TYPE_INFO =
-      ImmutableList.of(TypeInfoFactory.intTypeInfo,
-          TypeInfoFactory.longTypeInfo,
-          TypeInfoFactory.longTypeInfo,
-          TypeInfoFactory.longTypeInfo,
-          TypeInfoFactory.longTypeInfo);
 
   private AbstractSerDe delegateSerDe;
   private ObjectInspector objectInspector;
@@ -106,16 +87,14 @@ public class GenericKafkaSerDe extends AbstractSerDe {
         .stream()
         .map(StructField::getFieldName)
         .collect(Collectors.toList()));
-    columnNames.addAll(METADATA_COLUMN_NAMES);
+    columnNames.addAll(KafkaStreamingUtils.KAFKA_METADATA_COLUMN_NAMES);
 
     final List<ObjectInspector> inspectors = new ArrayList<>(columnNames.size());
     inspectors.addAll(delegateObjectInspector.getAllStructFieldRefs()
         .stream()
         .map(StructField::getFieldObjectInspector)
         .collect(Collectors.toList()));
-    inspectors.addAll(METADATA_PRIMITIVE_TYPE_INFO.stream()
-        .map(KafkaJsonSerDe.typeInfoToObjectInspector)
-        .collect(Collectors.toList()));
+    inspectors.addAll(KafkaStreamingUtils.KAFKA_METADATA_INSPECTORS);
     objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
 
     // lazy supplier to read Avro Records if needed
@@ -159,20 +138,11 @@ public class GenericKafkaSerDe extends AbstractSerDe {
     }
 
     return columnNames.stream().map(name -> {
-      switch (name) {
-      case KafkaStreamingUtils.PARTITION_COLUMN:
-        return new IntWritable(record.getPartition());
-      case KafkaStreamingUtils.OFFSET_COLUMN:
-        return new LongWritable(record.getOffset());
-      case KafkaStreamingUtils.TIMESTAMP_COLUMN:
-        return new LongWritable(record.getTimestamp());
-      case KafkaStreamingUtils.START_OFFSET_COLUMN:
-        return new LongWritable(record.getStartOffset());
-      case KafkaStreamingUtils.END_OFFSET_COLUMN:
-        return new LongWritable(record.getEndOffset());
-      default:
-        return delegateObjectInspector.getStructFieldData(row, delegateObjectInspector.getStructFieldRef(name));
+      Function<KafkaRecordWritable, Writable> metaColumnMapper = KafkaStreamingUtils.recordWritableFnMap.get(name);
+      if (metaColumnMapper != null) {
+        return metaColumnMapper.apply(record);
       }
+      return delegateObjectInspector.getStructFieldData(row, delegateObjectInspector.getStructFieldRef(name));
     }).collect(Collectors.toList());
   }
 
