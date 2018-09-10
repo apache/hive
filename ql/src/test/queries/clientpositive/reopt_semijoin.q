@@ -38,7 +38,7 @@ alter table x1_store_sales update statistics set(
 'rawDataSize'='1234567');
 
 alter table x1_date_dim update statistics set(
-'numRows'='56',
+'numRows'='28',
 'rawDataSize'='81449');
 
 
@@ -51,6 +51,7 @@ set hive.tez.min.bloom.filter.entries=1;
 set hive.tez.bloom.filter.factor=1.0f;
 set hive.explain.user=false;
 
+-- note: this plan should involve a semijoin reduction
 explain 
 select   sum(s.ss_item_sk)
  from

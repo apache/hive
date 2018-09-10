@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -101,7 +102,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -141,7 +141,7 @@ public class StatsRulesProcFactory {
         // gather statistics for the first time and the attach it to table scan operator
         Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
 
-        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, (Operator<?>) tsop);
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop);
         tsop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -149,7 +149,7 @@ public class StatsRulesProcFactory {
               stats.extendedToString());
         }
       } catch (HiveException e) {
-        LOG.debug("Failed to retrieve stats ",e);
+        LOG.debug("Failed to retrieve stats ", e);
         throw new SemanticException(e);
       }
       return null;
@@ -200,7 +200,7 @@ public class StatsRulesProcFactory {
           long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
           stats.setDataSize(dataSize);
         }
-        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, (Operator<?>) sop);
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, sop);
         sop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -208,7 +208,7 @@ public class StatsRulesProcFactory {
         }
       } else {
         if (parentStats != null) {
-          stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, (Operator<?>) sop);
+          stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, sop);
           sop.setStatistics(stats);
 
           if (LOG.isDebugEnabled()) {
@@ -279,11 +279,11 @@ public class StatsRulesProcFactory {
         neededCols = tsop.getNeededColumns();
       }
 
-
       if (parentStats != null) {
         ExprNodeDesc pred = fop.getConf().getPredicate();
 
         // evaluate filter expression and update statistics
+        aspCtx.clearAffectedColumns();
         long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
             neededCols, fop, parentStats.getNumRows());
         Statistics st = parentStats.clone();
@@ -295,7 +295,7 @@ public class StatsRulesProcFactory {
           // result in number of rows getting more than the input rows in
           // which case stats need not be updated
           if (newNumRows <= parentStats.getNumRows()) {
-            updateStats(st, newNumRows, true, fop);
+            updateStats(st, newNumRows, true, fop, aspCtx.getAffectedColumns());
           }
 
           if (LOG.isDebugEnabled()) {
@@ -313,7 +313,7 @@ public class StatsRulesProcFactory {
           }
         }
 
-        st = applyRuntimeStats(aspCtx.getParseContext().getContext(), st, (Operator<?>) fop);
+        st = applyRuntimeStats(aspCtx.getParseContext().getContext(), st, fop);
         fop.setStatistics(st);
 
         aspCtx.setAndExprStats(null);
@@ -347,11 +347,16 @@ public class StatsRulesProcFactory {
           // evaluate children
           long evaluatedRowCount = currNumRows;
           for (ExprNodeDesc child : genFunc.getChildren()) {
+            aspCtx.clearAffectedColumns();
             evaluatedRowCount = evaluateChildExpr(aspCtx.getAndExprStats(), child,
                 aspCtx, neededCols, op, evaluatedRowCount);
             newNumRows = evaluatedRowCount;
             if (satisfyPrecondition(aspCtx.getAndExprStats())) {
-              updateStats(aspCtx.getAndExprStats(), newNumRows, true, op);
+              // Assumption is that columns are uncorrelated.
+              // Ndv is reduced in a conservative manner - only taking affected columns
+              // (which might be a subset of the actual *real* affected columns due to current limitation)
+              // Goal is to not let a situation in which ndv-s asre underestimated happen.
+              updateStats(aspCtx.getAndExprStats(), newNumRows, true, op, aspCtx.getAffectedColumns());
             } else {
               updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
             }
@@ -359,11 +364,14 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats.
           for (ExprNodeDesc child : genFunc.getChildren()) {
-              newNumRows = StatsUtils.safeAdd(
-                  evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows),
-                  newNumRows);
+            newNumRows = StatsUtils.safeAdd(
+                evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows),
+                newNumRows);
           }
-          if(newNumRows > currNumRows) {
+          // We have to clear the affected columns
+          // since currently it is not possible to get a real estimate of an or expression.
+          aspCtx.clearAffectedColumns();
+          if (newNumRows > currNumRows) {
             newNumRows = currNumRows;
           }
         } else if (udf instanceof GenericUDFIn) {
@@ -375,15 +383,16 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPNot) {
           newNumRows = evaluateNotExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
         } else if (udf instanceof GenericUDFOPNotNull) {
-          return evaluateNotNullExpr(stats, genFunc, currNumRows);
+          return evaluateNotNullExpr(stats, aspCtx, genFunc, currNumRows);
         } else {
           // single predicate condition
-          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, op,currNumRows);
+          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, op, currNumRows);
         }
       } else if (pred instanceof ExprNodeColumnDesc) {
 
         // can be boolean column in which case return true count
         ExprNodeColumnDesc encd = (ExprNodeColumnDesc) pred;
+        aspCtx.addAffectedColumn(encd);
         String colName = encd.getColumn();
         String colType = encd.getTypeString();
         if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
@@ -418,7 +427,7 @@ public class StatsRulesProcFactory {
     }
 
     private long evaluateInExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
-            List<String> neededCols, Operator<?> op) throws SemanticException {
+        List<String> neededCols, Operator<?> op) throws SemanticException {
 
       long numRows = currNumRows;
 
@@ -432,7 +441,7 @@ public class StatsRulesProcFactory {
       ExprNodeDesc columnsChild = children.get(0);
       boolean multiColumn;
       if (columnsChild instanceof ExprNodeGenericFuncDesc &&
-              ((ExprNodeGenericFuncDesc) columnsChild).getGenericUDF() instanceof GenericUDFStruct) {
+          ((ExprNodeGenericFuncDesc) columnsChild).getGenericUDF() instanceof GenericUDFStruct) {
         for (int j = 0; j < columnsChild.getChildren().size(); j++) {
           ExprNodeDesc columnChild = columnsChild.getChildren().get(j);
           // If column is not column reference , we bail out
@@ -441,7 +450,8 @@ public class StatsRulesProcFactory {
             return numRows / 2;
           }
           columns.add(columnChild);
-          final String columnName = ((ExprNodeColumnDesc)columnChild).getColumn();
+          aspCtx.addAffectedColumn((ExprNodeColumnDesc) columnChild);
+          final String columnName = ((ExprNodeColumnDesc) columnChild).getColumn();
           // if column name is not contained in needed column list then it
           // is a partition column. We do not need to evaluate partition columns
           // in filter expression since it will be taken care by partition pruner
@@ -450,7 +460,7 @@ public class StatsRulesProcFactory {
             return numRows / 2;
           }
           columnStats.add(stats.getColumnStatisticsFromColName(columnName));
-          values.add(Sets.<ExprNodeDescEqualityWrapper>newHashSet());
+          values.add(Sets.<ExprNodeDescEqualityWrapper> newHashSet());
         }
         multiColumn = true;
       } else {
@@ -460,7 +470,8 @@ public class StatsRulesProcFactory {
           return numRows / 2;
         }
         columns.add(columnsChild);
-        final String columnName = ((ExprNodeColumnDesc)columnsChild).getColumn();
+        aspCtx.addAffectedColumn((ExprNodeColumnDesc) columnsChild);
+        final String columnName = ((ExprNodeColumnDesc) columnsChild).getColumn();
         // if column name is not contained in needed column list then it
         // is a partition column. We do not need to evaluate partition columns
         // in filter expression since it will be taken care by partition pruner
@@ -469,7 +480,7 @@ public class StatsRulesProcFactory {
           return numRows / 2;
         }
         columnStats.add(stats.getColumnStatisticsFromColName(columnName));
-        values.add(Sets.<ExprNodeDescEqualityWrapper>newHashSet());
+        values.add(Sets.<ExprNodeDescEqualityWrapper> newHashSet());
         multiColumn = false;
       }
 
@@ -520,7 +531,7 @@ public class StatsRulesProcFactory {
         factor = Double.max(factor, HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_MIN_RATIO));
       }
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
-      return Math.round( numRows * factor * inFactor);
+      return Math.round(numRows * factor * inFactor);
     }
 
     static class RangeOps {
@@ -662,7 +673,7 @@ public class StatsRulesProcFactory {
     }
 
     private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
-            List<String> neededCols, Operator<?> op) throws SemanticException {
+        List<String> neededCols, Operator<?> op) throws SemanticException {
       final ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) pred;
       final boolean invert = Boolean.TRUE.equals(
           ((ExprNodeConstantDesc) fd.getChildren().get(0)).getValue()); // boolean invert (not)
@@ -687,7 +698,7 @@ public class StatsRulesProcFactory {
           new GenericUDFOPAnd(), Lists.newArrayList(leftComparator, rightComparator));
       if (invert) {
         newExpression = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-          new GenericUDFOPNot(), Lists.newArrayList(newExpression));
+            new GenericUDFOPNot(), Lists.newArrayList(newExpression));
       }
 
       return evaluateExpression(stats, newExpression, aspCtx, neededCols, op, currNumRows);
@@ -723,6 +734,7 @@ public class StatsRulesProcFactory {
 
             // NOT on boolean columns is possible. in which case return false count.
             ExprNodeColumnDesc encd = (ExprNodeColumnDesc) leaf;
+            aspCtx.addAffectedColumn(encd);
             String colName = encd.getColumn();
             String colType = encd.getTypeString();
             if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
@@ -741,7 +753,8 @@ public class StatsRulesProcFactory {
       return numRows / 2;
     }
 
-    private long evaluateColEqualsNullExpr(Statistics stats, ExprNodeDesc pred, long currNumRows) {
+    private long evaluateColEqualsNullExpr(Statistics stats, AnnotateStatsProcCtx aspCtx, ExprNodeDesc pred,
+        long currNumRows) {
 
       long numRows = currNumRows;
 
@@ -752,6 +765,7 @@ public class StatsRulesProcFactory {
 
           if (leaf instanceof ExprNodeColumnDesc) {
             ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
+            aspCtx.addAffectedColumn(colDesc);
             String colName = colDesc.getColumn();
             ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
             if (cs != null) {
@@ -765,8 +779,9 @@ public class StatsRulesProcFactory {
       return numRows / 2;
     }
 
-    private long evaluateNotNullExpr(Statistics parentStats, ExprNodeGenericFuncDesc pred, long currNumRows) {
-      long noOfNulls = getMaxNulls(parentStats, pred);
+    private long evaluateNotNullExpr(Statistics parentStats, AnnotateStatsProcCtx aspCtx, ExprNodeGenericFuncDesc pred,
+        long currNumRows) {
+      long noOfNulls = getMaxNulls(parentStats, aspCtx, pred);
       long parentCardinality = currNumRows;
       long newPredCardinality = parentCardinality;
 
@@ -779,20 +794,21 @@ public class StatsRulesProcFactory {
       return newPredCardinality;
     }
 
-    private long getMaxNulls(Statistics stats, ExprNodeDesc pred) {
+    private long getMaxNulls(Statistics stats, AnnotateStatsProcCtx aspCtx, ExprNodeDesc pred) {
       long tmpNoNulls = 0;
       long maxNoNulls = 0;
 
       if (pred instanceof ExprNodeColumnDesc) {
-        ColStatistics cs = stats.getColumnStatisticsFromColName(((ExprNodeColumnDesc) pred)
-            .getColumn());
+        ExprNodeColumnDesc encd = (ExprNodeColumnDesc) pred;
+        aspCtx.addAffectedColumn(encd);
+        ColStatistics cs = stats.getColumnStatisticsFromColName(encd.getColumn());
         if (cs != null) {
           tmpNoNulls = cs.getNumNulls();
         }
       } else if (pred instanceof ExprNodeGenericFuncDesc || pred instanceof ExprNodeColumnListDesc) {
         long noNullsOfChild = 0;
         for (ExprNodeDesc childExpr : pred.getChildren()) {
-          noNullsOfChild = getMaxNulls(stats, childExpr);
+          noNullsOfChild = getMaxNulls(stats, aspCtx, childExpr);
           if (noNullsOfChild > tmpNoNulls) {
             tmpNoNulls = noNullsOfChild;
           }
@@ -807,7 +823,7 @@ public class StatsRulesProcFactory {
         tmpNoNulls = 0;
       } else if (pred instanceof ExprNodeFieldDesc) {
         // TODO Confirm this is safe
-        tmpNoNulls = getMaxNulls(stats, ((ExprNodeFieldDesc) pred).getDesc());
+        tmpNoNulls = getMaxNulls(stats, aspCtx, ((ExprNodeFieldDesc) pred).getDesc());
       }
 
       if (tmpNoNulls > maxNoNulls) {
@@ -817,7 +833,8 @@ public class StatsRulesProcFactory {
       return maxNoNulls;
     }
 
-    private long evaluateComparator(Statistics stats, ExprNodeGenericFuncDesc genFunc, long currNumRows) {
+    private long evaluateComparator(Statistics stats, AnnotateStatsProcCtx aspCtx, ExprNodeGenericFuncDesc genFunc,
+        long currNumRows) {
       long numRows = currNumRows;
       GenericUDF udf = genFunc.getGenericUDF();
 
@@ -826,15 +843,16 @@ public class StatsRulesProcFactory {
       boolean upperBound;
       String boundValue = null;
       if (genFunc.getChildren().get(0) instanceof ExprNodeColumnDesc &&
-              genFunc.getChildren().get(1) instanceof ExprNodeConstantDesc) {
+          genFunc.getChildren().get(1) instanceof ExprNodeConstantDesc) {
         columnDesc = (ExprNodeColumnDesc) genFunc.getChildren().get(0);
         constantDesc = (ExprNodeConstantDesc) genFunc.getChildren().get(1);
+        aspCtx.addAffectedColumn(columnDesc);
         // Comparison to null will always return false
         if (constantDesc.getValue() == null) {
           return 0;
         }
         if (udf instanceof GenericUDFOPEqualOrGreaterThan ||
-                udf instanceof GenericUDFOPGreaterThan) {
+            udf instanceof GenericUDFOPGreaterThan) {
           boundValue = constantDesc.getValue().toString();
           upperBound = false;
         } else {
@@ -842,15 +860,16 @@ public class StatsRulesProcFactory {
           upperBound = true;
         }
       } else if (genFunc.getChildren().get(1) instanceof ExprNodeColumnDesc &&
-              genFunc.getChildren().get(0) instanceof ExprNodeConstantDesc) {
+          genFunc.getChildren().get(0) instanceof ExprNodeConstantDesc) {
         columnDesc = (ExprNodeColumnDesc) genFunc.getChildren().get(1);
         constantDesc = (ExprNodeConstantDesc) genFunc.getChildren().get(0);
+        aspCtx.addAffectedColumn(columnDesc);
         // Comparison to null will always return false
         if (constantDesc.getValue() == null) {
           return 0;
         }
         if (udf instanceof GenericUDFOPEqualOrGreaterThan ||
-                udf instanceof GenericUDFOPGreaterThan) {
+            udf instanceof GenericUDFOPGreaterThan) {
           boundValue = constantDesc.getValue().toString();
           upperBound = true;
         } else {
@@ -864,7 +883,7 @@ public class StatsRulesProcFactory {
 
       ColStatistics cs = stats.getColumnStatisticsFromColName(columnDesc.getColumn());
       if (cs != null && cs.getRange() != null &&
-              cs.getRange().maxValue != null && cs.getRange().minValue != null) {
+          cs.getRange().maxValue != null && cs.getRange().minValue != null) {
         String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
         try {
           if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)) {
@@ -906,7 +925,7 @@ public class StatsRulesProcFactory {
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME) ||
-                  colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
+              colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
             int value;
             if (colTypeLowerCase == serdeConstants.DATE_TYPE_NAME) {
               DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(boundValue));
@@ -1024,7 +1043,7 @@ public class StatsRulesProcFactory {
 
                 // special case: if both constants are not equal then return 0
                 if (prevConst != null &&
-                    !prevConst.equals(((ExprNodeConstantDesc)leaf).getValue())) {
+                    !prevConst.equals(((ExprNodeConstantDesc) leaf).getValue())) {
                   return 0;
                 }
                 return numRows;
@@ -1047,11 +1066,12 @@ public class StatsRulesProcFactory {
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
                 long dvs = cs.getCountDistint();
-                numRows = dvs == 0 ? numRows / 2 : Math.round( (double)numRows / dvs);
+                numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
                 return numRows;
               }
             } else if (leaf instanceof ExprNodeColumnDesc) {
               ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
+              aspCtx.addAffectedColumn(colDesc);
               colName = colDesc.getColumn();
 
               // if const is first argument then evaluate the result
@@ -1067,7 +1087,7 @@ public class StatsRulesProcFactory {
                 ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
                 if (cs != null) {
                   long dvs = cs.getCountDistint();
-                  numRows = dvs == 0 ? numRows / 2 : Math.round( (double)numRows / dvs);
+                  numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
                   return numRows;
                 }
               }
@@ -1076,17 +1096,17 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPNotEqual) {
           return numRows;
         } else if (udf instanceof GenericUDFOPEqualOrGreaterThan
-                || udf instanceof GenericUDFOPEqualOrLessThan
-                || udf instanceof GenericUDFOPGreaterThan
-                || udf instanceof GenericUDFOPLessThan) {
-          return evaluateComparator(stats, genFunc, numRows);
+            || udf instanceof GenericUDFOPEqualOrLessThan
+            || udf instanceof GenericUDFOPGreaterThan
+            || udf instanceof GenericUDFOPLessThan) {
+          return evaluateComparator(stats, aspCtx, genFunc, numRows);
         } else if (udf instanceof GenericUDFOPNotNull) {
-          return evaluateNotNullExpr(stats, genFunc, numRows);
+          return evaluateNotNullExpr(stats, aspCtx, genFunc, numRows);
         } else if (udf instanceof GenericUDFOPNull) {
-          return evaluateColEqualsNullExpr(stats, genFunc, numRows);
+          return evaluateColEqualsNullExpr(stats, aspCtx, genFunc, numRows);
         } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr
-                || udf instanceof GenericUDFIn || udf instanceof GenericUDFBetween
-                || udf instanceof GenericUDFOPNot) {
+            || udf instanceof GenericUDFIn || udf instanceof GenericUDFBetween
+            || udf instanceof GenericUDFOPNot) {
           return evaluateExpression(stats, genFunc, aspCtx, neededCols, op, numRows);
         } else if (udf instanceof GenericUDFInBloomFilter) {
           if (genFunc.getChildren().get(1) instanceof ExprNodeDynamicValueDesc) {
@@ -1345,7 +1365,7 @@ public class StatsRulesProcFactory {
         }
 
         // update stats, but don't update NDV as it will not change
-        updateStats(stats, cardinality, true, gop, false);
+        updateStats(stats, cardinality, true, gop);
       } else {
 
         // NO COLUMN STATS
@@ -1425,7 +1445,7 @@ public class StatsRulesProcFactory {
         }
       }
 
-      stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, (Operator<?>) gop);
+      stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, gop);
       gop.setStatistics(stats);
 
       if (LOG.isDebugEnabled() && stats != null) {
@@ -1576,7 +1596,6 @@ public class StatsRulesProcFactory {
    */
   public static class JoinStatsRule extends FilterStatsRule implements NodeProcessor {
 
-
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -1603,7 +1622,7 @@ public class StatsRulesProcFactory {
       // there could be case where join operators input are not RS e.g.
       // map join with Spark. Since following estimation of statistics relies on join operators having it inputs as
       // reduced sink it will not work for such cases. So we should not try to estimate stats
-      if(allSatisfyPreCondition) {
+      if (allSatisfyPreCondition) {
         for (int pos = 0; pos < parents.size(); pos++) {
           if (!(jop.getParentOperators().get(pos) instanceof ReduceSinkOperator)) {
             allSatisfyPreCondition = false;
@@ -1705,6 +1724,7 @@ public class StatsRulesProcFactory {
           String key = ci.getInternalName();
           ExprNodeDesc end = colExprMap.get(key);
           if (end instanceof ExprNodeColumnDesc) {
+            aspCtx.addAffectedColumn((ExprNodeColumnDesc) end);
             String colName = ((ExprNodeColumnDesc) end).getColumn();
             int pos = jop.getConf().getReversedExprs().get(key);
             ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(colName);
@@ -1721,23 +1741,23 @@ public class StatsRulesProcFactory {
 
         // reason we compute interim row count, where join type isn't considered, is because later
         // it will be used to estimate num nulls
-        long interimRowCount = inferredRowCount !=-1 ? inferredRowCount
-            :computeRowCountAssumingInnerJoin(rowCounts, denom, jop);
+        long interimRowCount = inferredRowCount != -1 ? inferredRowCount
+          : computeRowCountAssumingInnerJoin(rowCounts, denom, jop);
         // final row computation will consider join type
-        long joinRowCount = inferredRowCount !=-1 ? inferredRowCount
-            :computeFinalRowCount(rowCounts, interimRowCount, jop);
+        long joinRowCount = inferredRowCount != -1 ? inferredRowCount
+          : computeFinalRowCount(rowCounts, interimRowCount, jop);
 
         updateColStats(conf, stats, interimRowCount, joinRowCount, jop, rowCountParents);
 
         // evaluate filter expression and update statistics
         if (joinRowCount != -1 && jop.getConf().getNoOuterJoin() &&
-                jop.getConf().getResidualFilterExprs() != null &&
-                !jop.getConf().getResidualFilterExprs().isEmpty()) {
+            jop.getConf().getResidualFilterExprs() != null &&
+            !jop.getConf().getResidualFilterExprs().isEmpty()) {
           ExprNodeDesc pred;
           if (jop.getConf().getResidualFilterExprs().size() > 1) {
             pred = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-                    FunctionRegistry.getGenericUDFForAnd(),
-                    jop.getConf().getResidualFilterExprs());
+                FunctionRegistry.getGenericUDFForAnd(),
+                jop.getConf().getResidualFilterExprs());
           } else {
             pred = jop.getConf().getResidualFilterExprs().get(0);
           }
@@ -1778,8 +1798,8 @@ public class StatsRulesProcFactory {
           // Update cross size
           long newCrossRowCount = StatsUtils.safeMult(crossRowCount, rowCount);
           long newCrossDataSize = StatsUtils.safeAdd(
-                  StatsUtils.safeMult(crossDataSize, rowCount),
-                  StatsUtils.safeMult(dataSize, crossRowCount));
+              StatsUtils.safeMult(crossDataSize, rowCount),
+              StatsUtils.safeMult(dataSize, crossRowCount));
           crossRowCount = newCrossRowCount;
           crossDataSize = newCrossDataSize;
           // Update largest relation
@@ -1799,7 +1819,7 @@ public class StatsRulesProcFactory {
           cartesianProduct = keyExprs.size() == 0;
         } else if (jop instanceof AbstractMapJoinOperator) {
           AbstractMapJoinOperator<? extends MapJoinDesc> mjop =
-                  (AbstractMapJoinOperator<? extends MapJoinDesc>) jop;
+              (AbstractMapJoinOperator<? extends MapJoinDesc>) jop;
           List<ExprNodeDesc> keyExprs = mjop.getConf().getKeys().values().iterator().next();
           cartesianProduct = keyExprs.size() == 0;
         }
@@ -1823,20 +1843,20 @@ public class StatsRulesProcFactory {
 
         // evaluate filter expression and update statistics
         if (jop.getConf().getNoOuterJoin() &&
-                jop.getConf().getResidualFilterExprs() != null &&
-                !jop.getConf().getResidualFilterExprs().isEmpty()) {
+            jop.getConf().getResidualFilterExprs() != null &&
+            !jop.getConf().getResidualFilterExprs().isEmpty()) {
           long joinRowCount = newNumRows;
           ExprNodeDesc pred;
           if (jop.getConf().getResidualFilterExprs().size() > 1) {
             pred = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-                    FunctionRegistry.getGenericUDFForAnd(),
-                    jop.getConf().getResidualFilterExprs());
+                FunctionRegistry.getGenericUDFForAnd(),
+                jop.getConf().getResidualFilterExprs());
           } else {
             pred = jop.getConf().getResidualFilterExprs().get(0);
           }
           // evaluate filter expression and update statistics
-            newNumRows = evaluateExpression(wcStats, pred,
-                aspCtx, jop.getSchema().getColumnNames(), jop, wcStats.getNumRows());
+          newNumRows = evaluateExpression(wcStats, pred,
+              aspCtx, jop.getSchema().getColumnNames(), jop, wcStats.getNumRows());
           // update only the basic statistics in the absence of column statistics
           if (newNumRows <= joinRowCount) {
             updateStats(wcStats, newNumRows, false, jop);
@@ -1997,7 +2017,7 @@ public class StatsRulesProcFactory {
       // For the above complex operator tree,
       // selectivity(JOIN) = selectivity(RS-1) * selectivity(RS-2) and
       // selectivity(RS-3) = numRows(RS-3)/numRows(JOIN) * selectivity(JOIN)
-      while(multiParentOp == null) {
+      while (multiParentOp == null) {
         if (op.getParentOperators().size() > 1) {
           multiParentOp = op;
         } else {
@@ -2012,28 +2032,28 @@ public class StatsRulesProcFactory {
 
       // if it is two way left outer or right outer join take selectivity only for
       // corresponding branch since only that branch will factor is the reduction
-      if(multiParentOp instanceof JoinOperator) {
-        JoinOperator jop = ((JoinOperator)multiParentOp);
+      if (multiParentOp instanceof JoinOperator) {
+        JoinOperator jop = ((JoinOperator) multiParentOp);
         isSelComputed = true;
         // check for two way join
-        if(jop.getConf().getConds().length == 1) {
-          switch(jop.getConf().getCondsList().get(0).getType()) {
-            case JoinDesc.LEFT_OUTER_JOIN:
-              selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
-              break;
-            case JoinDesc.RIGHT_OUTER_JOIN:
-              selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
-              break;
-            default:
-              // for rest of the join type we will take min of the reduction.
-              float selMultiParentLeft = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
-              float selMultiParentRight = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
-              selMultiParent = Math.min(selMultiParentLeft, selMultiParentRight);
+        if (jop.getConf().getConds().length == 1) {
+          switch (jop.getConf().getCondsList().get(0).getType()) {
+          case JoinDesc.LEFT_OUTER_JOIN:
+            selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
+            break;
+          case JoinDesc.RIGHT_OUTER_JOIN:
+            selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
+            break;
+          default:
+            // for rest of the join type we will take min of the reduction.
+            float selMultiParentLeft = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
+            float selMultiParentRight = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
+            selMultiParent = Math.min(selMultiParentLeft, selMultiParentRight);
           }
         }
       }
 
-      if(!isSelComputed) {
+      if (!isSelComputed) {
         for (Operator<? extends OperatorDesc> parent : multiParentOp.getParentOperators()) {
           // In the above example, TS-1 -> RS-1 and TS-2 -> RS-2 are simple trees
           selMultiParent *= getSelectivitySimpleTree(parent);
@@ -2071,7 +2091,7 @@ public class StatsRulesProcFactory {
               ColStatistics cs = rsOp.getStatistics().getColumnStatisticsFromColName(joinCol);
               if (cs != null && !cs.isPrimaryKey()) {
                 if (StatsUtils.inferForeignKey(csPK, cs)) {
-                  result.put(i,cs);
+                  result.put(i, cs);
                 }
               }
             }
@@ -2110,7 +2130,7 @@ public class StatsRulesProcFactory {
     }
 
     private boolean isJoinKey(final String columnName,
-    final ExprNodeDesc[][] joinKeys) {
+        final ExprNodeDesc[][] joinKeys) {
       for (int i = 0; i < joinKeys.length; i++) {
         for (ExprNodeDesc expr : Arrays.asList(joinKeys[i])) {
 
@@ -2132,36 +2152,34 @@ public class StatsRulesProcFactory {
         return;
       }
 
-
       long oldNumNulls = colStats.getNumNulls();
       long newNumNulls = Math.min(newNumRows, oldNumNulls);
 
       JoinCondDesc joinCond = jop.getConf().getConds()[0];
       switch (joinCond.getType()) {
-      case JoinDesc.LEFT_OUTER_JOIN :
+      case JoinDesc.LEFT_OUTER_JOIN:
         //if this column is coming from right input only then we update num nulls
-        if(pos == joinCond.getRight()
+        if (pos == joinCond.getRight()
             && interimNumRows != newNumRows) {
           // interim row count can not be less due to containment
           // assumption in join cardinality computation
-          assert(newNumRows > interimNumRows);
-          if(isJoinKey(colStats.getColumnName(), jop.getConf().getJoinKeys())) {
-            newNumNulls = Math.min(newNumRows,  (newNumRows-interimNumRows));
-          }
-          else {
-            newNumNulls = Math.min(newNumRows, oldNumNulls + (newNumRows-interimNumRows));
+          assert (newNumRows > interimNumRows);
+          if (isJoinKey(colStats.getColumnName(), jop.getConf().getJoinKeys())) {
+            newNumNulls = Math.min(newNumRows, (newNumRows - interimNumRows));
+          } else {
+            newNumNulls = Math.min(newNumRows, oldNumNulls + (newNumRows - interimNumRows));
           }
         }
         break;
       case JoinDesc.RIGHT_OUTER_JOIN:
-        if(pos == joinCond.getLeft()
+        if (pos == joinCond.getLeft()
             && interimNumRows != newNumRows) {
 
           // interim row count can not be less due to containment
           // assumption in join cardinality computation
           // interimNumRows represent number of matches for join keys on two sides.
           // newNumRows-interimNumRows represent number of non-matches.
-          assert(newNumRows > interimNumRows);
+          assert (newNumRows > interimNumRows);
 
           if (isJoinKey(colStats.getColumnName(), jop.getConf().getJoinKeys())) {
             newNumNulls = Math.min(newNumRows, (newNumRows - interimNumRows));
@@ -2193,7 +2211,7 @@ public class StatsRulesProcFactory {
 
       if (newNumRows < 0) {
         LOG.debug("STATS-" + jop.toString() + ": Overflow in number of rows. "
-          + newNumRows + " rows will be set to Long.MAX_VALUE");
+            + newNumRows + " rows will be set to Long.MAX_VALUE");
       }
       if (newNumRows == 0) {
         LOG.debug("STATS-" + jop.toString() + ": Equals 0 in number of rows. "
@@ -2241,7 +2259,8 @@ public class StatsRulesProcFactory {
         }
       }
       if (neededColumns.size() != 0) {
-        int restColumnsDefaultSize = StatsUtils.estimateRowSizeFromSchema(conf, jop.getSchema().getSignature(), neededColumns);
+        int restColumnsDefaultSize =
+            StatsUtils.estimateRowSizeFromSchema(conf, jop.getSchema().getSignature(), neededColumns);
         newDataSize = StatsUtils.safeAdd(newDataSize, StatsUtils.safeMult(restColumnsDefaultSize, newNumRows));
       }
       stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
@@ -2257,20 +2276,20 @@ public class StatsRulesProcFactory {
         case JoinDesc.INNER_JOIN:
           // only dealing with special join types here.
           break;
-        case JoinDesc.LEFT_OUTER_JOIN :
+        case JoinDesc.LEFT_OUTER_JOIN:
           // all rows from left side will be present in resultset
           result = Math.max(rowCountParents.get(joinCond.getLeft()), result);
           break;
-        case JoinDesc.RIGHT_OUTER_JOIN :
+        case JoinDesc.RIGHT_OUTER_JOIN:
           // all rows from right side will be present in resultset
           result = Math.max(rowCountParents.get(joinCond.getRight()), result);
           break;
-        case JoinDesc.FULL_OUTER_JOIN :
+        case JoinDesc.FULL_OUTER_JOIN:
           // all rows from both side will be present in resultset
           result = Math.max(StatsUtils.safeAdd(rowCountParents.get(joinCond.getRight()),
               rowCountParents.get(joinCond.getLeft())), result);
           break;
-        case JoinDesc.LEFT_SEMI_JOIN :
+        case JoinDesc.LEFT_SEMI_JOIN:
           // max # of rows = rows from left side
           result = Math.min(rowCountParents.get(joinCond.getLeft()), result);
           break;
@@ -2281,6 +2300,7 @@ public class StatsRulesProcFactory {
       }
       return result;
     }
+
     private long computeRowCountAssumingInnerJoin(List<Long> rowCountParents, long denom,
         CommonJoinOperator<? extends JoinDesc> join) {
       double factor = 0.0d;
@@ -2404,7 +2424,7 @@ public class StatsRulesProcFactory {
       if (satisfyPrecondition(parentStats)) {
         Statistics stats = parentStats.clone();
         List<ColStatistics> colStats = StatsUtils.getColStatisticsUpdatingTableAlias(
-                parentStats, lop.getSchema());
+            parentStats, lop.getSchema());
         stats.setColumnStats(colStats);
 
         // if limit is greater than available rows then do not update
@@ -2412,7 +2432,7 @@ public class StatsRulesProcFactory {
         if (limit <= parentStats.getNumRows()) {
           updateStats(stats, limit, true, lop);
         }
-        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, (Operator<?>) lop);
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, lop);
         lop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -2425,7 +2445,7 @@ public class StatsRulesProcFactory {
           // based on average row size
           limit = StatsUtils.getMaxIfOverflow(limit);
           Statistics wcStats = parentStats.scaleToRowCount(limit, true);
-          wcStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), wcStats, (Operator<?>) lop);
+          wcStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), wcStats, lop);
           lop.setStatistics(wcStats);
           if (LOG.isDebugEnabled()) {
             LOG.debug("[1] STATS-" + lop.toString() + ": " + wcStats.extendedToString());
@@ -2447,7 +2467,8 @@ public class StatsRulesProcFactory {
   public static class ReduceSinkStatsRule extends DefaultStatsRule implements NodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
       ReduceSinkOperator rop = (ReduceSinkOperator) nd;
       Operator<? extends OperatorDesc> parent = rop.getParentOperators().get(0);
       Statistics parentStats = parent.getStatistics();
@@ -2487,7 +2508,7 @@ public class StatsRulesProcFactory {
           outStats.setColumnStats(colStats);
         }
 
-        outStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), outStats, (Operator<?>) rop);
+        outStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), outStats, rop);
         rop.setStatistics(outStats);
         if (LOG.isDebugEnabled()) {
           LOG.debug("[0] STATS-" + rop.toString() + ": " + outStats.extendedToString());
@@ -2529,7 +2550,8 @@ public class StatsRulesProcFactory {
               }
 
               stats.updateColumnStatsState(parentStats.getColumnStatsState());
-              List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(hconf, parentStats, op.getColumnExprMap(), op.getSchema());
+              List<ColStatistics> colStats =
+                  StatsUtils.getColStatisticsFromExprMap(hconf, parentStats, op.getColumnExprMap(), op.getSchema());
               stats.addToColumnStats(colStats);
 
               if (LOG.isDebugEnabled()) {
@@ -2588,7 +2610,6 @@ public class StatsRulesProcFactory {
     return new DefaultStatsRule();
   }
 
-
   /**
    * Update the basic statistics of the statistics object based on the row number
    * @param stats
@@ -2600,12 +2621,12 @@ public class StatsRulesProcFactory {
    */
   static void updateStats(Statistics stats, long newNumRows,
       boolean useColStats, Operator<? extends OperatorDesc> op) {
-    updateStats(stats, newNumRows, useColStats, op, true);
+    updateStats(stats, newNumRows, useColStats, op, Collections.EMPTY_SET);
   }
 
   static void updateStats(Statistics stats, long newNumRows,
       boolean useColStats, Operator<? extends OperatorDesc> op,
-      boolean updateNDV) {
+      Set<String> affectedColumns) {
 
     if (newNumRows < 0) {
       LOG.debug("STATS-" + op.toString() + ": Overflow in number of rows. "
@@ -2629,7 +2650,7 @@ public class StatsRulesProcFactory {
         long oldDV = cs.getCountDistint();
         long newNumNulls = Math.round(ratio * oldNumNulls);
         cs.setNumNulls(newNumNulls);
-        if (updateNDV) {
+        if (affectedColumns.contains(cs.getColumnName())) {
           long newDV = oldDV;
 
           // if ratio is greater than 1, then number of rows increases. This can happen
@@ -2640,6 +2661,10 @@ public class StatsRulesProcFactory {
             newDV = (long) Math.ceil(ratio * oldDV);
           }
           cs.setCountDistint(newDV);
+          oldDV = newDV;
+        }
+        if (oldDV > newNumRows) {
+          cs.setCountDistint(newNumRows);
         }
       }
       stats.setColumnStats(colStats);
@@ -2655,7 +2680,6 @@ public class StatsRulesProcFactory {
     return stats != null && stats.getBasicStatsState().equals(Statistics.State.COMPLETE)
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
   }
-
 
   private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
     if (!((HiveConf) context.getConf()).getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED)) {
