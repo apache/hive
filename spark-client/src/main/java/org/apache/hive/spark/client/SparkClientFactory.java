@@ -47,12 +47,12 @@ public final class SparkClientFactory {
    *
    * @param conf Map containing configuration parameters for the client library.
    */
-  public static void initialize(Map<String, String> conf) throws IOException {
+  public static void initialize(Map<String, String> conf, HiveConf hiveConf) throws IOException {
     if (server == null) {
       synchronized (serverLock) {
         if (server == null) {
           try {
-            server = new RpcServer(conf);
+            server = new RpcServer(conf, hiveConf);
           } catch (InterruptedException ie) {
             throw Throwables.propagate(ie);
           }
