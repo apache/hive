@@ -96,7 +96,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
           startTimeoutThread();
           Map<String, String> sparkConf = HiveSparkClientFactory.initiateSparkConf(hiveConf, null);
           try {
-            SparkClientFactory.initialize(sparkConf);
+            SparkClientFactory.initialize(sparkConf, hiveConf);
             inited = true;
           } catch (IOException e) {
             throw new HiveException("Error initializing SparkClientFactory", e);
