@@ -52,19 +52,25 @@ import static org.junit.Assert.assertNotNull;
 public class KafkaScanTrimmerTest {
   private static final Path PATH = new Path("/tmp");
 
-  private ExprNodeDesc zeroInt = ConstantExprBuilder.build(0);
-  private ExprNodeDesc threeInt = ConstantExprBuilder.build(3);
-  private ExprNodeDesc thirtyLong = ConstantExprBuilder.build(30L);
-  private ExprNodeDesc thirtyFiveLong = ConstantExprBuilder.build(35L);
-  private ExprNodeDesc seventyFiveLong = ConstantExprBuilder.build(75L);
-  private ExprNodeDesc fortyLong = ConstantExprBuilder.build(40L);
+  private final ExprNodeDesc zeroInt = ConstantExprBuilder.build(0);
+  private final ExprNodeDesc threeInt = ConstantExprBuilder.build(3);
+  private final ExprNodeDesc thirtyLong = ConstantExprBuilder.build(30L);
+  private final ExprNodeDesc thirtyFiveLong = ConstantExprBuilder.build(35L);
+  private final ExprNodeDesc seventyFiveLong = ConstantExprBuilder.build(75L);
+  private final ExprNodeDesc fortyLong = ConstantExprBuilder.build(40L);
 
   private ExprNodeDesc
       partitionColumn =
-      new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, KafkaStreamingUtils.PARTITION_COLUMN, null, false);
+      new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo,
+          KafkaStreamingUtils.MetadataColumn.PARTITION.getName(),
+          null,
+          false);
   private ExprNodeDesc
       offsetColumn =
-      new ExprNodeColumnDesc(TypeInfoFactory.longTypeInfo, KafkaStreamingUtils.OFFSET_COLUMN, null, false);
+      new ExprNodeColumnDesc(TypeInfoFactory.longTypeInfo,
+          KafkaStreamingUtils.MetadataColumn.OFFSET.getName(),
+          null,
+          false);
 
   private String topic = "my_topic";
   private Map<TopicPartition, KafkaPullerInputSplit>

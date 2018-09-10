@@ -10,6 +10,7 @@ import kafka.utils.ZkUtils;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -26,6 +27,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 /**
@@ -100,7 +105,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
     )){
       List<String> events = Files.readLines(datafile, Charset.forName("UTF-8"));
       for(String event : events){
-        producer.send(new ProducerRecord<>(topicName, event));
+        producer.send(new ProducerRecord<>(topicName, "key", event));
       }
     } catch (IOException e) {
       Throwables.propagate(e);

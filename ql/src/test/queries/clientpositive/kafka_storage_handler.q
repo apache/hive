@@ -14,7 +14,7 @@ TBLPROPERTIES
 
 DESCRIBE EXTENDED kafka_table;
 
-Select `__partition` ,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+Select `__partition` ,`__start_offset`,`__end_offset`, `__offset`,`__key`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta FROM kafka_table;
 
 Select count(*) FROM kafka_table;
@@ -31,11 +31,11 @@ Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page
 from kafka_table where (`__offset` > 7 and `__partition` = 0 and `__offset` <9 ) OR
 `__offset` = 4 and `__partition` = 0 OR (`__offset` <= 1 and `__partition` = 0 and `__offset` > 0);
 
-Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5;
+Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5;
 
-Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5;
+Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5;
 
-Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5;
+Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5;
 
 -- Timestamp filter
 
@@ -150,6 +150,15 @@ FROM kafka_table_2;
 
 Select count(*) FROM kafka_table_2;
 
+CREATE EXTERNAL TABLE wiki_kafka_avro_table_1
+STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+TBLPROPERTIES
+("kafka.topic" = "wiki_kafka_avro_table",
+"kafka.bootstrap.servers"="localhost:9092",
+"kafka.serde.class"="org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe");
+
+SELECT * FROM wiki_kafka_avro_table_1;
+SELECT  COUNT (*) from wiki_kafka_avro_table_1;
 
 CREATE EXTERNAL TABLE wiki_kafka_avro_table
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
@@ -222,6 +231,7 @@ TBLPROPERTIES
 
 describe extended wiki_kafka_avro_table;
 
+
 select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table;
 
 select count(*) from wiki_kafka_avro_table;
@@ -231,6 +241,6 @@ select count(distinct `user`) from  wiki_kafka_avro_table;
 select sum(deltabucket), min(commentlength) from wiki_kafka_avro_table;
 
 select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
-`__partition`, `__start_offset`,`__end_offset`,`__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
+`__partition`, `__start_offset`,`__end_offset`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
 `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090;
 

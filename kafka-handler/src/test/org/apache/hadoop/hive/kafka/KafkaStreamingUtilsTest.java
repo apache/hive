@@ -19,11 +19,21 @@
 package org.apache.hadoop.hive.kafka;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.apache.hadoop.hive.kafka.KafkaStreamingUtils.*;
 
 /**
  * Test for Utility class.
@@ -37,7 +47,7 @@ public class KafkaStreamingUtilsTest {
     configuration.set("kafka.bootstrap.servers", "localhost:9090");
     configuration.set("kafka.consumer.fetch.max.wait.ms", "40");
     configuration.set("kafka.consumer.my.new.wait.ms", "400");
-    Properties properties = KafkaStreamingUtils.consumerProperties(configuration);
+    Properties properties = consumerProperties(configuration);
     Assert.assertEquals("localhost:9090", properties.getProperty("bootstrap.servers"));
     Assert.assertEquals("40", properties.getProperty("fetch.max.wait.ms"));
     Assert.assertEquals("400", properties.getProperty("my.new.wait.ms"));
@@ -47,13 +57,52 @@ public class KafkaStreamingUtilsTest {
     Configuration configuration = new Configuration();
     configuration.set("kafka.bootstrap.servers", "localhost:9090");
     configuration.set("kafka.consumer." + ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
-    KafkaStreamingUtils.consumerProperties(configuration);
+    consumerProperties(configuration);
   }
 
   @Test(expected = IllegalArgumentException.class) public void canNotSetForbiddenProp2() {
     Configuration configuration = new Configuration();
     configuration.set("kafka.bootstrap.servers", "localhost:9090");
     configuration.set("kafka.consumer." + ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "value");
-    KafkaStreamingUtils.consumerProperties(configuration);
+    consumerProperties(configuration);
+  }
+
+  @Test public void testMetadataEnumLookupMapper() {
+    int partition = 1;
+    long offset = 5L;
+    long ts = System.currentTimeMillis();
+    long startOffset = 0L;
+    long endOffset = 200L;
+    byte[] value = "value".getBytes();
+    byte[] key = "key".getBytes();
+    // ORDER MATTERS here.
+    List<Writable>
+        expectedWritables =
+        Arrays.asList(new BytesWritable(key),
+            new IntWritable(partition),
+            new LongWritable(offset),
+            new LongWritable(ts),
+            new LongWritable(startOffset),
+            new LongWritable(endOffset));
+    KafkaRecordWritable KRWritable = new KafkaRecordWritable(partition, offset, ts, value, startOffset, endOffset, key);
+
+    List<Writable>
+        actual =
+        KAFKA_METADATA_COLUMN_NAMES.stream()
+            .map(recordWritableFnMap::get)
+            .map(fn -> fn.apply(KRWritable))
+            .collect(Collectors.toList());
+
+    Assert.assertEquals(expectedWritables, actual);
+  }
+
+  @Test
+  public void testEnsureThatAllTheColumnAreListed() {
+    Assert.assertEquals(MetadataColumn.values().length, KafkaStreamingUtils.KAFKA_METADATA_COLUMN_NAMES.size());
+    Assert.assertEquals(MetadataColumn.values().length, KafkaStreamingUtils.KAFKA_METADATA_INSPECTORS.size());
+    Assert.assertFalse(Arrays.stream(MetadataColumn.values())
+        .map(MetadataColumn::getName)
+        .anyMatch(name -> !KAFKA_METADATA_COLUMN_NAMES.contains(name)));
+    Arrays.stream(MetadataColumn.values()).forEach(element -> Assert.assertNotNull(KafkaStreamingUtils.recordWritableFnMap.get(element.getName())));
   }
 }
