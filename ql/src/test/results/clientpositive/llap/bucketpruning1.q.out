@@ -1542,9 +1542,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One" or key = 2
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT `key`, `value`, `ds`
-FROM `default`.`srcbucket_pruned`
-WHERE `key` = 1 OR `value` = 'One' OR `key` = 2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1558,12 +1555,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: ((key = 1) or (value = 'One') or (key = 2)) (type: boolean)
+                  filterExpr: ((key) IN (1, 2) or (value = 'One')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((key = 1) or (key = 2) or (value = 'One')) (type: boolean)
+                    predicate: ((key) IN (1, 2) or (value = 'One')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key (type: int), value (type: string), ds (type: string)
