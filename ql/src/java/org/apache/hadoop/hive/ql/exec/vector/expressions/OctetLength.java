@@ -25,10 +25,6 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class OctetLength extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -69,10 +65,6 @@ public class OctetLength extends VectorExpression {
       return;
     }
 
-    boolean isFixedLength = inputTypeInfos[0].getCategory() == Category.PRIMITIVE &&
-        ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory() == PrimitiveCategory.CHAR;
-    int fixedLength = isFixedLength ? ((CharTypeInfo) inputTypeInfos[0]).getLength() : -1;
-
     // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
 
@@ -80,7 +72,7 @@ public class OctetLength extends VectorExpression {
       if (inputColVector.noNulls || !inputIsNull[0]) {
         // Set isNull before call in case it changes it mind.
         outputIsNull[0] = false;
-        resultLen[0] = isFixedLength ? fixedLength : length[0];
+        resultLen[0] = length[0];
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
@@ -103,12 +95,12 @@ public class OctetLength extends VectorExpression {
            final int i = sel[j];
            // Set isNull before call in case it changes it mind.
            outputIsNull[i] = false;
-           resultLen[i] = isFixedLength ? fixedLength : length[i];
+           resultLen[i] = length[i];
          }
         } else {
           for(int j = 0; j != n; j++) {
             final int i = sel[j];
-            resultLen[i] = isFixedLength ? fixedLength : length[i];
+            resultLen[i] = length[i];
           }
         }
       } else {
@@ -120,7 +112,7 @@ public class OctetLength extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          resultLen[i] = isFixedLength ? fixedLength : length[i];
+          resultLen[i] = length[i];
         }
       }
     } else {
@@ -136,14 +128,14 @@ public class OctetLength extends VectorExpression {
           int i = sel[j];
           outputIsNull[i] = inputIsNull[i];
           if (!inputIsNull[i]) {
-            resultLen[i] = isFixedLength ? fixedLength : length[i];
+            resultLen[i] = length[i];
           }
         }
       } else {
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
           if (!inputIsNull[i]) {
-            resultLen[i] = isFixedLength ? fixedLength : length[i];
+            resultLen[i] = length[i];
           }
         }
       }

@@ -63,9 +63,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.VarCharScalarEqualS
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
@@ -4141,12 +4138,9 @@ public class TestVectorStringExpressions {
   @Test
   public void testStringLength() throws HiveException {
 
-    StringLength expr = new StringLength(0, 1);
-    expr.inputTypeInfos = new TypeInfo[1];
-    expr.inputTypeInfos[0] = TypeInfoFactory.stringTypeInfo;
-
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatchMixedCharSize();
+    StringLength expr = new StringLength(0, 1);
     expr.evaluate(batch);
     LongColumnVector outCol = (LongColumnVector) batch.cols[1];
     Assert.assertEquals(5, outCol.vector[1]); // length of green is 5

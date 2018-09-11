@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 
@@ -41,7 +40,6 @@ public class GenericUDFOctetLength extends GenericUDF {
   private transient PrimitiveObjectInspector argumentOI;
   private transient PrimitiveObjectInspectorConverter.StringConverter stringConverter;
   private transient boolean isInputString;
-  private transient boolean isInputFixedLength;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -61,8 +59,6 @@ public class GenericUDFOctetLength extends GenericUDF {
     ObjectInspector outputOI = null;
     switch (inputType) {
       case CHAR:
-        isInputFixedLength = true;
-        result.set(((CharTypeInfo) argumentOI.getTypeInfo()).getLength());
       case VARCHAR:
       case STRING:
         isInputString = true;
@@ -92,11 +88,6 @@ public class GenericUDFOctetLength extends GenericUDF {
       }
       if (val == null) {
         return null;
-      }
-
-      // For char, we do not need to explore the data
-      if (isInputFixedLength) {
-        return result;
       }
 
       data = val.getBytes();
