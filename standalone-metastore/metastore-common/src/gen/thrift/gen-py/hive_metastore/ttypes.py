@@ -12413,17 +12413,20 @@ class GetValidWriteIdsRequest:
   Attributes:
    - fullTableNames
    - validTxnList
+   - writeId
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'fullTableNames', (TType.STRING,None), None, ), # 1
     (2, TType.STRING, 'validTxnList', None, None, ), # 2
+    (3, TType.I64, 'writeId', None, None, ), # 3
   )
 
-  def __init__(self, fullTableNames=None, validTxnList=None,):
+  def __init__(self, fullTableNames=None, validTxnList=None, writeId=None,):
     self.fullTableNames = fullTableNames
     self.validTxnList = validTxnList
+    self.writeId = writeId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -12449,6 +12452,11 @@ class GetValidWriteIdsRequest:
           self.validTxnList = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.writeId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -12470,14 +12478,16 @@ class GetValidWriteIdsRequest:
       oprot.writeFieldBegin('validTxnList', TType.STRING, 2)
       oprot.writeString(self.validTxnList)
       oprot.writeFieldEnd()
+    if self.writeId is not None:
+      oprot.writeFieldBegin('writeId', TType.I64, 3)
+      oprot.writeI64(self.writeId)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
     if self.fullTableNames is None:
       raise TProtocol.TProtocolException(message='Required field fullTableNames is unset!')
-    if self.validTxnList is None:
-      raise TProtocol.TProtocolException(message='Required field validTxnList is unset!')
     return
 
 
@@ -12485,6 +12495,7 @@ class GetValidWriteIdsRequest:
     value = 17
     value = (value * 31) ^ hash(self.fullTableNames)
     value = (value * 31) ^ hash(self.validTxnList)
+    value = (value * 31) ^ hash(self.writeId)
     return value
 
   def __repr__(self):

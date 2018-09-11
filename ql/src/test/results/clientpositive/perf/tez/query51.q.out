@@ -145,9 +145,9 @@ Stage-0
                                       <-Map 7 [SIMPLE_EDGE] vectorized
                                         SHUFFLE [RS_92]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_89] (rows=8116 width=1119)
+                                          Select Operator [SEL_89] (rows=73049 width=1119)
                                             Output:["_col0","_col1"]
-                                            Filter Operator [FIL_88] (rows=8116 width=1119)
+                                            Filter Operator [FIL_88] (rows=73049 width=1119)
                                               predicate:(d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223)
                                               TableScan [TS_3] (rows=73049 width=1119)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date","d_month_seq"]
@@ -168,7 +168,7 @@ Stage-0
                                                     SHUFFLE [RS_97]
                                                       Group By Operator [GBY_95] (rows=1 width=12)
                                                         Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                        Select Operator [SEL_93] (rows=8116 width=1119)
+                                                        Select Operator [SEL_93] (rows=73049 width=1119)
                                                           Output:["_col0"]
                                                            Please refer to the previous Select Operator [SEL_89]
                         <-Reducer 3 [SIMPLE_EDGE]
@@ -208,7 +208,7 @@ Stage-0
                                                     SHUFFLE [RS_96]
                                                       Group By Operator [GBY_94] (rows=1 width=12)
                                                         Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                        Select Operator [SEL_91] (rows=8116 width=1119)
+                                                        Select Operator [SEL_91] (rows=73049 width=1119)
                                                           Output:["_col0"]
                                                            Please refer to the previous Select Operator [SEL_89]
 

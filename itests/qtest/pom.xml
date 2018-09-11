@@ -138,7 +138,12 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>kafka-handler</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- test inter-project -->
     <dependency>

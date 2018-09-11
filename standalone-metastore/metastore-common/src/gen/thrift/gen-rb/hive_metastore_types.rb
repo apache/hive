@@ -2756,17 +2756,18 @@ class GetValidWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FULLTABLENAMES = 1
   VALIDTXNLIST = 2
+  WRITEID = 3
 
   FIELDS = {
     FULLTABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'fullTableNames', :element => {:type => ::Thrift::Types::STRING}},
-    VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList'}
+    VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList', :optional => true},
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fullTableNames is unset!') unless @fullTableNames
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field validTxnList is unset!') unless @validTxnList
   end
 
   ::Thrift::Struct.generate_accessors self

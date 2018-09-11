@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinByte
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hive.common.util.HashCodeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -40,7 +39,9 @@ public abstract class VectorMapJoinFastBytesHashTable
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastBytesHashTable.class);
 
-  protected VectorMapJoinFastKeyStore keyStore;
+  protected WriteBuffers writeBuffers;
+
+  protected WriteBuffers.Position unsafeReadPos; // Thread-unsafe position used at write time.
 
   protected BytesWritable testKeyBytesWritable;
 
@@ -52,87 +53,36 @@ public abstract class VectorMapJoinFastBytesHashTable
     add(keyBytes, 0, keyLength, currentValue);
   }
 
-  protected abstract void assignSlot(int slot, byte[] keyBytes, int keyStart, int keyLength,
-          long hashCode, boolean isNewKey, BytesWritable currentValue);
+  public abstract void add(byte[] keyBytes, int keyStart, int keyLength,
+      BytesWritable currentValue);
 
-  public void add(byte[] keyBytes, int keyStart, int keyLength, BytesWritable currentValue) {
+  protected void expandAndRehash() {
 
-    if (resizeThreshold <= keysAssigned) {
-      expandAndRehash();
-    }
-
-    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
-    int intHashCode = (int) hashCode;
-    int slot = (intHashCode & logicalHashBucketMask);
-    long probeSlot = slot;
-    int i = 0;
-    boolean isNewKey;
-    while (true) {
-      int tripleIndex = 3 * slot;
-      if (slotTriples[tripleIndex] == 0) {
-        // LOG.debug("VectorMapJoinFastBytesHashMap findWriteSlot slot " + slot + " tripleIndex " + tripleIndex + " empty");
-        isNewKey = true;;
-        break;
-      }
-      if (hashCode == slotTriples[tripleIndex + 1] &&
-          keyStore.unsafeEqualKey(slotTriples[tripleIndex], keyBytes, keyStart, keyLength)) {
-        // LOG.debug("VectorMapJoinFastBytesHashMap findWriteSlot slot " + slot + " tripleIndex " + tripleIndex + " existing");
-        isNewKey = false;
-        break;
-      }
-      // TODO
-      ++metricPutConflict;
-      // Some other key (collision) - keep probing.
-      probeSlot += (++i);
-      slot = (int) (probeSlot & logicalHashBucketMask);
-    }
-
-    if (largestNumberOfSteps < i) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Probed " + i + " slots (the longest so far) to find space");
-      }
-      largestNumberOfSteps = i;
-      // debugDumpKeyProbe(keyOffset, keyLength, hashCode, slot);
-    }
-
-    assignSlot(slot, keyBytes, keyStart, keyLength, hashCode, isNewKey, currentValue);
-
-    if (isNewKey) {
-      keysAssigned++;
-    }
-  }
-
-  private void expandAndRehash() {
-
-    // We allocate triples, so we cannot go above highest Integer power of 2 / 6.
-    if (logicalHashBucketCount > ONE_SIXTH_LIMIT) {
-      throwExpandError(ONE_SIXTH_LIMIT, "Bytes");
+    // We cannot go above highest Integer power of 2.
+    if (logicalHashBucketCount > HIGHEST_INT_POWER_OF_2) {
+      throwExpandError(HIGHEST_INT_POWER_OF_2, "Bytes");
     }
     int newLogicalHashBucketCount = logicalHashBucketCount * 2;
     int newLogicalHashBucketMask = newLogicalHashBucketCount - 1;
     int newMetricPutConflict = 0;
     int newLargestNumberOfSteps = 0;
 
-    int newSlotTripleArraySize = newLogicalHashBucketCount * 3;
-    long[] newSlotTriples = new long[newSlotTripleArraySize];
+    long[] newSlots = new long[newLogicalHashBucketCount];
 
     for (int slot = 0; slot < logicalHashBucketCount; slot++) {
-      int tripleIndex = slot * 3;
-      long keyRef = slotTriples[tripleIndex];
-      if (keyRef != 0) {
-        long hashCode = slotTriples[tripleIndex + 1];
-        long valueRef = slotTriples[tripleIndex + 2];
+      final long refWord = slots[slot];
+      if (refWord != 0) {
+        final long hashCode =
+            VectorMapJoinFastBytesHashKeyRef.calculateHashCode(
+                refWord, writeBuffers, unsafeReadPos);
 
         // Copy to new slot table.
         int intHashCode = (int) hashCode;
         int newSlot = intHashCode & newLogicalHashBucketMask;
         long newProbeSlot = newSlot;
-        int newTripleIndex;
         int i = 0;
         while (true) {
-          newTripleIndex = newSlot * 3;
-          long newKeyRef = newSlotTriples[newTripleIndex];
-          if (newKeyRef == 0) {
+          if (newSlots[newSlot] == 0) {
             break;
           }
           ++newMetricPutConflict;
@@ -149,81 +99,47 @@ public abstract class VectorMapJoinFastBytesHashTable
           // debugDumpKeyProbe(keyOffset, keyLength, hashCode, slot);
         }
 
-        // Use old value reference word.
-        // LOG.debug("VectorMapJoinFastLongHashTable expandAndRehash key " + tableKey + " slot " + newSlot + " newPairIndex " + newPairIndex + " empty slot (i = " + i + ")");
-
-        newSlotTriples[newTripleIndex] = keyRef;
-        newSlotTriples[newTripleIndex + 1] = hashCode;
-        newSlotTriples[newTripleIndex + 2] = valueRef;
+        // Use old reference word.
+        newSlots[newSlot] = refWord;
       }
     }
 
-    slotTriples = newSlotTriples;
+    slots = newSlots;
     logicalHashBucketCount = newLogicalHashBucketCount;
     logicalHashBucketMask = newLogicalHashBucketMask;
     metricPutConflict = newMetricPutConflict;
     largestNumberOfSteps = newLargestNumberOfSteps;
     resizeThreshold = (int)(logicalHashBucketCount * loadFactor);
     metricExpands++;
-    // LOG.debug("VectorMapJoinFastLongHashTable expandAndRehash new logicalHashBucketCount " + logicalHashBucketCount + " resizeThreshold " + resizeThreshold + " metricExpands " + metricExpands);
-  }
-
-  protected final long findReadSlot(
-      byte[] keyBytes, int keyStart, int keyLength, long hashCode, WriteBuffers.Position readPos) {
-
-    int intHashCode = (int) hashCode;
-    int slot = (intHashCode & logicalHashBucketMask);
-    long probeSlot = slot;
-    int i = 0;
-    while (true) {
-      int tripleIndex = slot * 3;
-      // LOG.debug("VectorMapJoinFastBytesHashMap findReadSlot slot keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(hashCode) + " entry hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
-      if (slotTriples[tripleIndex] == 0) {
-        // Given that we do not delete, an empty slot means no match.
-        return -1;
-      } else if (hashCode == slotTriples[tripleIndex + 1]) {
-        // Finally, verify the key bytes match.
-
-        if (keyStore.equalKey(slotTriples[tripleIndex], keyBytes, keyStart, keyLength, readPos)) {
-          return slotTriples[tripleIndex + 2];
-        }
-      }
-      // Some other key (collision) - keep probing.
-      probeSlot += (++i);
-      if (i > largestNumberOfSteps) {
-        // We know we never went that far when we were inserting.
-        return -1;
-      }
-      slot = (int)(probeSlot & logicalHashBucketMask);
-    }
   }
 
   /*
-   * The hash table slots.  For a bytes key hash table, each slot is 3 longs and the array is
-   * 3X sized.
-   *
-   * The slot triple is 1) a non-zero reference word to the key bytes, 2) the key hash code, and
-   * 3) a non-zero reference word to the first value bytes.
+   * The hash table slots for fast HashMap.
    */
-  protected long[] slotTriples;
+  protected long[] slots;
 
   private void allocateBucketArray() {
-    // We allocate triples, so we cannot go above highest Integer power of 2 / 6.
-    if (logicalHashBucketCount > ONE_SIXTH_LIMIT) {
-      throwExpandError(ONE_SIXTH_LIMIT, "Bytes");
+
+    // We cannot go above highest Integer power of 2.
+    if (logicalHashBucketCount > HIGHEST_INT_POWER_OF_2) {
+      throwExpandError(HIGHEST_INT_POWER_OF_2, "Bytes");
     }
-    int slotTripleArraySize = 3 * logicalHashBucketCount;
-    slotTriples = new long[slotTripleArraySize];
+    slots = new long[logicalHashBucketCount];
   }
 
   public VectorMapJoinFastBytesHashTable(
         int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
     super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    unsafeReadPos = new WriteBuffers.Position();
     allocateBucketArray();
   }
 
   @Override
   public long getEstimatedMemorySize() {
-    return super.getEstimatedMemorySize() + JavaDataModel.get().lengthForLongArrayOfSize(slotTriples.length);
+    long size = 0;
+    size += super.getEstimatedMemorySize();
+    size += unsafeReadPos == null ? 0 : unsafeReadPos.getEstimatedMemorySize();
+    size += JavaDataModel.get().lengthForLongArrayOfSize(slots.length);
+    return size;
   }
 }

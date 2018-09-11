@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1236,30 +1237,57 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return abortedWriteIds;
   }
 
+  private ValidTxnList getValidTxnList(Connection dbConn, String fullTableName, Long writeId) throws MetaException,
+          SQLException {
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+    try {
+      String[] names = TxnUtils.getDbTableName(fullTableName);
+      assert names.length == 2;
+      String s = "select t2w_txnid from TXN_TO_WRITE_ID where  t2w_database = ? and t2w_table = ? and t2w_writeid = ?";
+      pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(s));
+      pst.setString(1, names[0]);
+      pst.setString(2, names[1]);
+      pst.setLong(3, writeId);
+      LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">", quoteString(names[0]),
+              quoteString(names[1]), writeId);
+      rs = pst.executeQuery();
+      if (rs.next()) {
+        return TxnCommonUtils.createValidReadTxnList(getOpenTxns(), rs.getLong(1));
+      }
+      throw new MetaException("invalid write id " + writeId + " for table " + fullTableName);
+    } finally {
+      close(rs, pst, null);
+    }
+  }
+
   @Override
   @RetrySemantics.ReadOnly
-  public GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst)
-          throws NoSuchTxnException, MetaException {
+  public GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst) throws MetaException {
     try {
       Connection dbConn = null;
       Statement stmt = null;
       ValidTxnList validTxnList;
 
-      // We should prepare the valid write ids list based on validTxnList of current txn.
-      // If no txn exists in the caller, then they would pass null for validTxnList and so it is
-      // required to get the current state of txns to make validTxnList
-      if (rqst.isSetValidTxnList()) {
-        validTxnList = new ValidReadTxnList(rqst.getValidTxnList());
-      } else {
-        // Passing 0 for currentTxn means, this validTxnList is not wrt to any txn
-        validTxnList = TxnCommonUtils.createValidReadTxnList(getOpenTxns(), 0);
-      }
       try {
         /**
          * This runs at READ_COMMITTED for exactly the same reason as {@link #getOpenTxnsInfo()}
          */
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+
+        // We should prepare the valid write ids list based on validTxnList of current txn.
+        // If no txn exists in the caller, then they would pass null for validTxnList and so it is
+        // required to get the current state of txns to make validTxnList
+        if (rqst.isSetValidTxnList()) {
+          assert rqst.isSetWriteId() == false;
+          validTxnList = new ValidReadTxnList(rqst.getValidTxnList());
+        } else if (rqst.isSetWriteId()) {
+          validTxnList = getValidTxnList(dbConn, rqst.getFullTableNames().get(0), rqst.getWriteId());
+        } else {
+          // Passing 0 for currentTxn means, this validTxnList is not wrt to any txn
+          validTxnList = TxnCommonUtils.createValidReadTxnList(getOpenTxns(), 0);
+        }
 
         // Get the valid write id list for all the tables read by the current txn
         List<TableValidWriteIds> tblValidWriteIdsList = new ArrayList<>();
@@ -1673,7 +1701,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         commitHighWaterMark = lowestOpenTxnId;
       }
       int delCnt = stmt.executeUpdate("delete from WRITE_SET where ws_commit_id < " + commitHighWaterMark);
-      LOG.info("Deleted " + delCnt + " obsolete rows from WRTIE_SET");
+      LOG.info("Deleted {} obsolete rows from WRITE_SET", delCnt);
       dbConn.commit();
     } catch (SQLException ex) {
       LOG.warn("WriteSet GC failed due to " + getMessage(ex), ex);

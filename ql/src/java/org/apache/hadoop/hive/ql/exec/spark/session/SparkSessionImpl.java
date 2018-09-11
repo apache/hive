@@ -19,8 +19,10 @@ package org.apache.hadoop.hive.ql.exec.spark.session;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,13 +30,17 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -43,12 +49,31 @@ import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.util.Utils;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Implementation of {@link SparkSession} that treats each Spark session as a separate Spark
+ * application.
+ *
+ * <p>
+ *   It uses a {@link HiveSparkClient} to submit a Spark application and to submit Spark jobs to
+ *   the Spark app.
+ * </p>
+ *
+ * <p>
+ *   This class contains logic to trigger a timeout of this {@link SparkSession} if certain
+ *   conditions are met (e.g. a job hasn't been submitted in the past "x" seconds). Since we use
+ *   a threadpool to schedule a task that regularly checks if a session has timed out, we need to
+ *   properly synchronize the {@link #open(HiveConf)} and {@link #close()} methods. We use a
+ *   series of volatile variables and read-write locks to ensure this.
+ * </p>
+ */
 public class SparkSessionImpl implements SparkSession {
+
   private static final Logger LOG = LoggerFactory.getLogger(SparkSession.class);
   private static final String SPARK_DIR = "_spark_session_dir";
 
@@ -65,12 +90,32 @@ public class SparkSessionImpl implements SparkSession {
   /** Pre-compiled error patterns. Shared between all Spark sessions */
   private static Map<String, Pattern> errorPatterns;
 
-  private HiveConf conf;
-  private boolean isOpen;
+  // Several of the following variables need to be volatile so they can be accessed by the timeout
+  // thread
+
+  private volatile HiveConf conf;
+  private volatile boolean isOpen;
   private final String sessionId;
-  private HiveSparkClient hiveSparkClient;
-  private Path scratchDir;
+  private volatile HiveSparkClient hiveSparkClient;
+  private volatile Path scratchDir;
   private final Object dirLock = new Object();
+
+  /**
+   * The timestamp of the last completed Spark job.
+   */
+  private volatile long lastSparkJobCompletionTime;
+
+  /**
+   * A {@link Set} of currently running queries. Each job is identified by its query id.
+   */
+  private final Set<String> activeJobs = Sets.newConcurrentHashSet();
+
+  /**
+   * True if at least a single query has been run by this session, false otherwise.
+   */
+  private volatile boolean queryCompleted;
+
+  private ReadWriteLock closeLock = new ReentrantReadWriteLock();
 
   SparkSessionImpl(String sessionId) {
     this.sessionId = sessionId;
@@ -79,67 +124,87 @@ public class SparkSessionImpl implements SparkSession {
 
   @Override
   public void open(HiveConf conf) throws HiveException {
-    LOG.info("Trying to open Hive on Spark session {}", sessionId);
-    this.conf = conf;
-    isOpen = true;
+    closeLock.readLock().lock();
     try {
-      hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(conf, sessionId,
+      LOG.info("Trying to open Hive on Spark session {}", sessionId);
+      this.conf = conf;
+      isOpen = true;
+      try {
+        hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(conf, sessionId,
               SessionState.get().getSessionId());
-    } catch (Throwable e) {
-      // It's possible that user session is closed while creating Spark client.
-      HiveException he;
-      if (isOpen) {
-        he = getHiveException(e);
-      } else {
-        he = new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_CLOSED_SESSION, sessionId);
+      } catch (Throwable e) {
+        // It's possible that user session is closed while creating Spark client.
+        HiveException he;
+        if (isOpen) {
+          he = getHiveException(e);
+        } else {
+          he = new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_CLOSED_SESSION, sessionId);
+        }
+        throw he;
       }
-      throw he;
+      LOG.info("Hive on Spark session {} successfully opened", sessionId);
+    } finally {
+      closeLock.readLock().unlock();
     }
-    LOG.info("Hive on Spark session {} successfully opened", sessionId);
   }
 
   @Override
   public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception {
-    Preconditions.checkState(isOpen, "Hive on Spark session is not open. Can't submit jobs.");
-    return hiveSparkClient.execute(driverContext, sparkWork);
+    closeLock.readLock().lock();
+    try {
+      Preconditions.checkState(isOpen, "Hive on Spark session is not open. Can't submit jobs.");
+      return hiveSparkClient.execute(driverContext, sparkWork);
+    } finally {
+      closeLock.readLock().unlock();
+    }
   }
 
   @Override
   public ObjectPair<Long, Integer> getMemoryAndCores() throws Exception {
-    SparkConf sparkConf = hiveSparkClient.getSparkConf();
-    int numExecutors = hiveSparkClient.getExecutorCount();
-    // at start-up, we may be unable to get number of executors
-    if (numExecutors <= 0) {
-      return new ObjectPair<Long, Integer>(-1L, -1);
-    }
-    int executorMemoryInMB = Utils.memoryStringToMb(
-        sparkConf.get("spark.executor.memory", "512m"));
-    double memoryFraction = 1.0 - sparkConf.getDouble("spark.storage.memoryFraction", 0.6);
-    long totalMemory = (long) (numExecutors * executorMemoryInMB * memoryFraction * 1024 * 1024);
-    int totalCores;
-    String masterURL = sparkConf.get("spark.master");
-    if (masterURL.startsWith("spark") || masterURL.startsWith("local")) {
-      totalCores = sparkConf.contains("spark.default.parallelism") ?
-          sparkConf.getInt("spark.default.parallelism", 1) :
-          hiveSparkClient.getDefaultParallelism();
-      totalCores = Math.max(totalCores, numExecutors);
-    } else {
-      int coresPerExecutor = sparkConf.getInt("spark.executor.cores", 1);
-      totalCores = numExecutors * coresPerExecutor;
-    }
-    totalCores = totalCores / sparkConf.getInt("spark.task.cpus", 1);
+    closeLock.readLock().lock();
+    try {
+      SparkConf sparkConf = hiveSparkClient.getSparkConf();
+      int numExecutors = hiveSparkClient.getExecutorCount();
+      // at start-up, we may be unable to get number of executors
+      if (numExecutors <= 0) {
+        return new ObjectPair<Long, Integer>(-1L, -1);
+      }
+      int executorMemoryInMB = Utils.memoryStringToMb(
+              sparkConf.get("spark.executor.memory", "512m"));
+      double memoryFraction = 1.0 - sparkConf.getDouble("spark.storage.memoryFraction", 0.6);
+      long totalMemory = (long) (numExecutors * executorMemoryInMB * memoryFraction * 1024 * 1024);
+      int totalCores;
+      String masterURL = sparkConf.get("spark.master");
+      if (masterURL.startsWith("spark") || masterURL.startsWith("local")) {
+        totalCores = sparkConf.contains("spark.default.parallelism") ?
+                sparkConf.getInt("spark.default.parallelism", 1) :
+                hiveSparkClient.getDefaultParallelism();
+        totalCores = Math.max(totalCores, numExecutors);
+      } else {
+        int coresPerExecutor = sparkConf.getInt("spark.executor.cores", 1);
+        totalCores = numExecutors * coresPerExecutor;
+      }
+      totalCores = totalCores / sparkConf.getInt("spark.task.cpus", 1);
 
-    long memoryPerTaskInBytes = totalMemory / totalCores;
-    LOG.info("Hive on Spark application currently has number of executors: " + numExecutors
-        + ", total cores: " + totalCores + ", memory per executor: "
-        + executorMemoryInMB + " mb, memoryFraction: " + memoryFraction);
-    return new ObjectPair<Long, Integer>(Long.valueOf(memoryPerTaskInBytes),
-        Integer.valueOf(totalCores));
+      long memoryPerTaskInBytes = totalMemory / totalCores;
+      LOG.info("Hive on Spark application currently has number of executors: " + numExecutors
+              + ", total cores: " + totalCores + ", memory per executor: "
+              + executorMemoryInMB + " mb, memoryFraction: " + memoryFraction);
+      return new ObjectPair<Long, Integer>(Long.valueOf(memoryPerTaskInBytes),
+              Integer.valueOf(totalCores));
+    } finally {
+      closeLock.readLock().unlock();
+    }
   }
 
   @Override
   public boolean isOpen() {
-    return isOpen;
+    closeLock.readLock().lock();
+    try {
+      return isOpen;
+    } finally {
+      closeLock.readLock().unlock();
+    }
   }
 
   @Override
@@ -154,18 +219,29 @@ public class SparkSessionImpl implements SparkSession {
 
   @Override
   public void close() {
-    LOG.info("Trying to close Hive on Spark session {}", sessionId);
-    isOpen = false;
-    if (hiveSparkClient != null) {
+    if (isOpen) {
+      closeLock.writeLock().lock();
       try {
-        hiveSparkClient.close();
-        LOG.info("Hive on Spark session {} successfully closed", sessionId);
-        cleanScratchDir();
-      } catch (IOException e) {
-        LOG.error("Failed to close Hive on Spark session (" + sessionId + ")", e);
+        if (isOpen) {
+          LOG.info("Trying to close Hive on Spark session {}", sessionId);
+          isOpen = false;
+          if (hiveSparkClient != null) {
+            try {
+              hiveSparkClient.close();
+              LOG.info("Hive on Spark session {} successfully closed", sessionId);
+              cleanScratchDir();
+            } catch (IOException e) {
+              LOG.error("Failed to close Hive on Spark session (" + sessionId + ")", e);
+            }
+          }
+          hiveSparkClient = null;
+          queryCompleted = false;
+          lastSparkJobCompletionTime = 0;
+        }
+      } finally {
+        closeLock.writeLock().unlock();
       }
     }
-    hiveSparkClient = null;
   }
 
   private Path createScratchDir() throws IOException {
@@ -259,6 +335,60 @@ public class SparkSessionImpl implements SparkSession {
       }
     }
     return scratchDir;
+  }
+
+  @Override
+  public void onQuerySubmission(String queryId) {
+    activeJobs.add(queryId);
+  }
+
+  /**
+   * Check if a session has timed out, and if it has close the session.
+   */
+  @Override
+  public boolean triggerTimeout(long sessionTimeout) {
+    if (hasTimedOut(queryCompleted, activeJobs, lastSparkJobCompletionTime, sessionTimeout)) {
+      closeLock.writeLock().lock();
+      try {
+        if (hasTimedOut(queryCompleted, activeJobs, lastSparkJobCompletionTime, sessionTimeout)) {
+          LOG.warn("Closing Spark session " + getSessionId() + " because a Spark job has not " +
+                  "been run in the past " + sessionTimeout / 1000 + " seconds");
+          close();
+          return true;
+        }
+      } finally {
+        closeLock.writeLock().unlock();
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if a session has timed out, false otherwise. The following conditions must be met
+   * in order to consider a session as timed out: (1) the session must have run at least one
+   * query, (2) there can be no actively running Spark jobs, and (3) the last completed Spark job
+   * must have been more than sessionTimeout seconds ago.
+   */
+  private static boolean hasTimedOut(boolean queryCompleted, Set<String> activeJobs,
+                                     long lastSparkJobCompletionTime, long sessionTimeout) {
+    return queryCompleted &&
+            activeJobs.isEmpty() &&
+            lastSparkJobCompletionTime > 0 &&
+            (System.currentTimeMillis() - lastSparkJobCompletionTime) > sessionTimeout;
+  }
+
+  /**
+   * When this session completes the execution of a query, set the {@link #queryCompleted} flag
+   * to true if it hasn't already been set, remove the query from the list of actively running jobs,
+   * and set the {@link #lastSparkJobCompletionTime} to the current timestamp.
+   */
+  @Override
+  public void onQueryCompletion(String queryId) {
+    if (!queryCompleted) {
+      queryCompleted = true;
+    }
+    activeJobs.remove(queryId);
+    lastSparkJobCompletionTime = System.currentTimeMillis();
   }
 
   @VisibleForTesting

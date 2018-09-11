@@ -718,7 +718,6 @@ POSTHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed group by ROW
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
 #### A masked pattern was here ####
-NULL	6
 PREHOOK: query: select ROW__ID, * from over10k_orc_bucketed where ROW__ID is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed

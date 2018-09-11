@@ -339,7 +339,7 @@ public class TestSparkClient {
 
   private void runTest(TestFunction test) throws Exception {
     Map<String, String> conf = createConf();
-    SparkClientFactory.initialize(conf);
+    SparkClientFactory.initialize(conf, HIVECONF);
     SparkClient client = null;
     try {
       test.config(conf);

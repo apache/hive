@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -839,11 +840,22 @@ public class VectorizationContext {
             }
             break;
           case ALL:
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("We will try to use the VectorUDFAdaptor for " + exprDesc.toString()
+            // Check if this is UDF for _bucket_number
+            if (expr.getGenericUDF() instanceof GenericUDFBucketNumber) {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("UDF to handle _bucket_number : Create BucketNumExpression");
+              }
+              int outCol = ocm.allocateOutputColumn(exprDesc.getTypeInfo());
+              ve = new BucketNumExpression(outCol);
+              ve.setInputTypeInfos(exprDesc.getTypeInfo());
+              ve.setOutputTypeInfo(exprDesc.getTypeInfo());
+            } else {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("We will try to use the VectorUDFAdaptor for " + exprDesc.toString()
                   + " because hive.vectorized.adaptor.usage.mode=all");
+              }
+              ve = getCustomUDFExpression(expr, mode);
             }
-            ve = getCustomUDFExpression(expr, mode);
             break;
           default:
             throw new RuntimeException("Unknown hive vector adaptor usage mode " +
@@ -858,7 +870,7 @@ public class VectorizationContext {
       }
     } else if (exprDesc instanceof ExprNodeConstantDesc) {
       ve = getConstantVectorExpression(((ExprNodeConstantDesc) exprDesc).getValue(), exprDesc.getTypeInfo(),
-          mode);
+        mode);
     } else if (exprDesc instanceof ExprNodeDynamicValueDesc) {
       ve = getDynamicValueVectorExpression((ExprNodeDynamicValueDesc) exprDesc, mode);
     } else if (exprDesc instanceof ExprNodeFieldDesc) {

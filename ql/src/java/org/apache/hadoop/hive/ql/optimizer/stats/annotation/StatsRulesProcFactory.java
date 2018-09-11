@@ -113,6 +113,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import scala.math.Numeric;
 
 public class StatsRulesProcFactory {
 
@@ -687,6 +688,69 @@ public class StatsRulesProcFactory {
       }
     }
 
+    private ExprNodeDesc rewriteBetweenToIn(final ExprNodeDesc comparisonExpression, final ExprNodeDesc leftExpression,
+                                            final ExprNodeDesc rightExpression, boolean invert) {
+      // difference in BETWEEN values could be millions, since for each value a new ExprNodeConstantDesc is created
+      // we should limit the rewrite to avoid taking too much memory
+      final int REWRITE_THRESHOLD = 100;
+
+      boolean shouldRewrite = false;
+      long startVal = 0, endVal = 0;
+
+      if (ExprNodeDescUtils.isIntegerType(comparisonExpression)
+          && leftExpression instanceof ExprNodeConstantDesc
+          && rightExpression instanceof ExprNodeConstantDesc) {
+        Object leftValue = ((ExprNodeConstantDesc) leftExpression).getValue();
+        Object rightValue = ((ExprNodeConstantDesc) rightExpression).getValue();
+
+        startVal = ((Number)leftValue).longValue();
+        endVal = ((Number)rightValue).longValue();
+
+        // BETWEEN could be (10,0)
+        if(startVal > endVal) {
+          Long tmpVal = startVal;
+          startVal = endVal;
+          endVal = tmpVal;
+        }
+
+        if ((endVal - startVal) <= REWRITE_THRESHOLD) {
+          shouldRewrite = true;
+        }
+      }
+
+      if (shouldRewrite) {
+
+        List<ExprNodeDesc> constantExprs = new ArrayList<>();
+        constantExprs.add(comparisonExpression);
+        //generate list of contiguous integers
+        for (long i = startVal; i <= endVal; i++) {
+          ExprNodeConstantDesc constExpr = new ExprNodeConstantDesc(comparisonExpression.getTypeInfo(), i);
+          constantExprs.add(constExpr);
+        }
+        ExprNodeDesc newExpression = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+                                                                 new GenericUDFIn(), constantExprs);
+        return newExpression;
+      } else {
+        // We transform the BETWEEN clause to AND clause (with NOT on top in invert is true).
+        // This is more straightforward, as the evaluateExpression method will deal with
+        // generating the final row count relying on the basic comparator evaluation methods
+        final ExprNodeDesc leftComparator = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+                                                        new GenericUDFOPEqualOrGreaterThan(),
+                                                        Lists.newArrayList(comparisonExpression, leftExpression));
+        final ExprNodeDesc rightComparator = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+                                                        new GenericUDFOPEqualOrLessThan(),
+                                                        Lists.newArrayList(comparisonExpression, rightExpression));
+        ExprNodeDesc newExpression = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+                                                                 new GenericUDFOPAnd(),
+                                                                 Lists.newArrayList(leftComparator, rightComparator));
+        if (invert) {
+          newExpression = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+                                                      new GenericUDFOPNot(), Lists.newArrayList(newExpression));
+        }
+        return newExpression;
+      }
+    }
+
     private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
         List<String> neededCols, Operator<?> op) throws SemanticException {
       final ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) pred;
@@ -702,19 +766,7 @@ public class StatsRulesProcFactory {
         return currNumRows;
       }
 
-      // We transform the BETWEEN clause to AND clause (with NOT on top in invert is true).
-      // This is more straightforward, as the evaluateExpression method will deal with
-      // generating the final row count relying on the basic comparator evaluation methods
-      final ExprNodeDesc leftComparator = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-          new GenericUDFOPEqualOrGreaterThan(), Lists.newArrayList(comparisonExpression, leftExpression));
-      final ExprNodeDesc rightComparator = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-          new GenericUDFOPEqualOrLessThan(), Lists.newArrayList(comparisonExpression, rightExpression));
-      ExprNodeDesc newExpression = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-          new GenericUDFOPAnd(), Lists.newArrayList(leftComparator, rightComparator));
-      if (invert) {
-        newExpression = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-            new GenericUDFOPNot(), Lists.newArrayList(newExpression));
-      }
+      ExprNodeDesc newExpression = rewriteBetweenToIn(comparisonExpression, leftExpression, rightExpression, invert);
 
       return evaluateExpression(stats, newExpression, aspCtx, neededCols, op, currNumRows);
     }
