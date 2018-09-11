@@ -2654,6 +2654,16 @@ public class StatsRulesProcFactory {
         st.setNumRows(numRows);
         st.setDataSize(dataSize);
 
+        List<ColStatistics> colStatsList = st.getColumnStats();
+        if(colStatsList != null) {
+          for (ColStatistics colStats : colStatsList) {
+            colStats.setNumFalses((long) (colStats.getNumFalses() * udtfFactor));
+            colStats.setNumTrues((long) (colStats.getNumTrues() * udtfFactor));
+            colStats.setNumNulls((long) (colStats.getNumNulls() * udtfFactor));
+          }
+          st.setColumnStats(colStatsList);
+        }
+
         if (LOG.isDebugEnabled()) {
           LOG.debug("[0] STATS-" + uop.toString() + ": " + st.extendedToString());
         }
