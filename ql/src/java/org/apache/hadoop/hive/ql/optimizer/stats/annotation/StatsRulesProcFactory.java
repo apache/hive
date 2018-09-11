@@ -1787,20 +1787,11 @@ public class StatsRulesProcFactory {
           if (numAttr > 1 && conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS)) {
             denom = Collections.max(distinctVals);
             distinctUnmatched = denom - ndvsUnmatched.get(distinctVals.indexOf(denom));
-          } else if (numAttr > numParent) {
+          } else {
             // To avoid denominator getting larger and aggressively reducing
             // number of rows, we will ease out denominator.
             denom = StatsUtils.addWithExpDecay(distinctVals);
             distinctUnmatched = denom - StatsUtils.addWithExpDecay(ndvsUnmatched);
-          } else {
-            for (Long l : distinctVals) {
-              denom = StatsUtils.safeMult(denom, l);
-            }
-            long tempDenom = 1;
-            for (Long l : ndvsUnmatched) {
-              tempDenom = StatsUtils.safeMult(tempDenom, l);
-            }
-            distinctUnmatched = denom - tempDenom;
           }
         }
 

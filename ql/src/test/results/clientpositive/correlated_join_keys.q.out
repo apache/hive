@@ -122,7 +122,7 @@ STAGE PLANS:
           keys:
             0 _col0 (type: string), _col1 (type: string)
             1 _col0 (type: string), _col1 (type: string)
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
             mode: hash
