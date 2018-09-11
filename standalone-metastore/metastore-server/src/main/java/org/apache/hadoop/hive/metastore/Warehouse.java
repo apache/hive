@@ -140,8 +140,11 @@ public class Warehouse {
    */
   public static Path getDnsPath(Path path, Configuration conf) throws MetaException {
     FileSystem fs = getFs(path, conf);
-    return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), path
-        .toUri().getPath()));
+    String uriPath = path.toUri().getPath();
+    if (StringUtils.isEmpty(uriPath)) {
+      uriPath = "/";
+    }
+    return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), uriPath));
   }
 
   public Path getDnsPath(Path path) throws MetaException {
