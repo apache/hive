@@ -74,6 +74,7 @@ public class MaterializedViewTask extends Task<MaterializedViewDesc> implements 
       }
     } catch (HiveException e) {
       LOG.debug("Exception during materialized view cache update", e);
+      setException(e);
     }
     return 0;
   }

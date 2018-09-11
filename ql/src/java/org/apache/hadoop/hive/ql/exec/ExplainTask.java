@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -456,8 +455,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       return (0);
     }
     catch (Exception e) {
-      console.printError("Failed with exception " + e.getMessage(),
-          "\n" + StringUtils.stringifyException(e));
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      setException(e);
       return (1);
     }
     finally {
