@@ -192,10 +192,10 @@ POSTHOOK: query: SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar) FROM pa
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types
 #### A masked pattern was here ####
-a    	5	a  	3
-ab   	5	ab 	3
-abc  	5	abc	3
-abcd 	5	abcd	4
+a    	1	a  	3
+ab   	2	ab 	3
+abc  	3	abc	3
+abcd 	4	abcd	4
 abcde	5	abcde	5
 abcde	5	abcdef	6
 abcde	5	abcdefg	7
