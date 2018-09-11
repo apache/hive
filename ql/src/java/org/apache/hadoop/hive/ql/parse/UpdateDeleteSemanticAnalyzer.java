@@ -544,6 +544,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     Context rewrittenCtx;
     try {
       rewrittenCtx = new Context(conf);
+      rewrittenCtx.setHDFSCleanup(true);
       // We keep track of all the contexts that are created by this query
       // so we can clear them when we finish execution
       ctx.addRewrittenStatementContext(rewrittenCtx);
