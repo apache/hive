@@ -702,7 +702,12 @@ public class Driver implements IDriver {
 
         try {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
-          doAuthorization(queryState.getHiveOperation(), sem, command);
+          // Authorization check for kill query will be in KillQueryImpl
+          // As both admin or operation owner can perform the operation.
+          // Which is not directly supported in authorizer
+          if (queryState.getHiveOperation()==HiveOperation.KILL_QUERY) {
+            doAuthorization(queryState.getHiveOperation(), sem, command);
+          }
         } catch (AuthorizationException authExp) {
           console.printError("Authorization failed:" + authExp.getMessage()
               + ". Use SHOW GRANT to get more details.");
