@@ -61,8 +61,6 @@ public class QueryState {
    * Holds the number of rows affected for insert queries.
    */
   private long numModifiedRows = 0;
-
-  static public final String USERID_TAG = "userid";
   /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
