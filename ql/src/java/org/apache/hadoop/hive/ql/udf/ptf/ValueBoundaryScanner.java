@@ -75,27 +75,31 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
 | Case |                |                |          |       |                                   |
 |------+----------------+----------------+----------+-------+-----------------------------------|
 |   1. | PRECEDING      | UNB            | ANY      | ANY   | start = 0                         |
-|   2. | PRECEDING      | unsigned int   | NULL     | ANY   | scan backwards to row R2          |
+|   2. | PRECEDING      | unsigned int   | NULL     | ASC   | start = 0                         |
+|   3. |                |                |          | DESC  | scan backwards to row R2          |
 |      |                |                |          |       | such that R2.sk is not null       |
 |      |                |                |          |       | start = R2.idx + 1                |
-|   3. | PRECEDING      | unsigned int   | not NULL | DESC  | scan backwards until row R2       |
+|   4. | PRECEDING      | unsigned int   | not NULL | DESC  | scan backwards until row R2       |
 |      |                |                |          |       | such that R2.sk - R.sk > amt      |
 |      |                |                |          |       | start = R2.idx + 1                |
-|   4. | PRECEDING      | unsigned int   | not NULL | ASC   | scan backward until row R2        |
+|   5. | PRECEDING      | unsigned int   | not NULL | ASC   | scan backward until row R2        |
 |      |                |                |          |       | such that R.sk - R2.sk > bnd1.amt |
 |      |                |                |          |       | start = R2.idx + 1                |
-|   5. | CURRENT ROW    |                | NULL     | ANY   | scan backwards until row R2       |
+|   6. | CURRENT ROW    |                | NULL     | ANY   | scan backwards until row R2       |
 |      |                |                |          |       | such that R2.sk is not null       |
 |      |                |                |          |       | start = R2.idx + 1                |
-|   6. | CURRENT ROW    |                | not NULL | ANY   | scan backwards until row R2       |
+|   7. | CURRENT ROW    |                | not NULL | ANY   | scan backwards until row R2       |
 |      |                |                |          |       | such R2.sk != R.sk                |
 |      |                |                |          |       | start = R2.idx + 1                |
-|   7. | FOLLOWING      | UNB            | ANY      | ANY   | Error                             |
-|   8. | FOLLOWING      | unsigned int   | NULL     | ANY   | start = partition.size            |
-|   9. | FOLLOWING      | unsigned int   | not NULL | DESC  | scan forward until row R2         |
+|   8. | FOLLOWING      | UNB            | ANY      | ANY   | Error                             |
+|   9. | FOLLOWING      | unsigned int   | NULL     | DESC  | start = partition.size            |
+|  10. |                |                |          | ASC   | scan forward until R2             |
+|      |                |                |          |       | such that R2.sk is not null       |
+|      |                |                |          |       | start = R2.idx                    |
+|  11. | FOLLOWING      | unsigned int   | not NULL | DESC  | scan forward until row R2         |
 |      |                |                |          |       | such that R.sk - R2.sk > amt      |
 |      |                |                |          |       | start = R2.idx                    |
-|  10. |                |                |          | ASC   | scan forward until row R2         |
+|  12. |                |                |          | ASC   | scan forward until row R2         |
 |      |                |                |          |       | such that R2.sk - R.sk > amt      |
 |------+----------------+----------------+----------+-------+-----------------------------------|
    */
@@ -122,19 +126,24 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
 
     if ( sortKey == null ) {
       // Use Case 2.
-      while ( sortKey == null && rowIdx >= 0 ) {
-        --rowIdx;
-        if ( rowIdx >= 0 ) {
-          sortKey = computeValue(p.getAt(rowIdx));
-        }
+      if ( expressionDef.getOrder() == Order.ASC ) {
+        return 0;
       }
-      return rowIdx+1;
+      else { // Use Case 3.
+        while ( sortKey == null && rowIdx >= 0 ) {
+          --rowIdx;
+          if ( rowIdx >= 0 ) {
+            sortKey = computeValue(p.getAt(rowIdx));
+          }
+        }
+        return rowIdx+1;
+      }
     }
 
     Object rowVal = sortKey;
     int r = rowIdx;
 
-    // Use Case 3.
+    // Use Case 4.
     if ( expressionDef.getOrder() == Order.DESC ) {
       while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
         r--;
@@ -144,7 +153,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
       return r + 1;
     }
-    else { // Use Case 4.
+    else { // Use Case 5.
       while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
         r--;
         if ( r >= 0 ) {
@@ -158,7 +167,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
   protected int computeStartCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
     Object sortKey = computeValue(p.getAt(rowIdx));
 
-    // Use Case 5.
+    // Use Case 6.
     if ( sortKey == null ) {
       while ( sortKey == null && rowIdx >= 0 ) {
         --rowIdx;
@@ -172,7 +181,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     Object rowVal = sortKey;
     int r = rowIdx;
 
-    // Use Case 6.
+    // Use Case 7.
     while (r >= 0 && isEqual(rowVal, sortKey) ) {
       r--;
       if ( r >= 0 ) {
@@ -190,11 +199,22 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     int r = rowIdx;
 
     if ( sortKey == null ) {
-      // Use Case 8.
-      return p.size();
+      // Use Case 9.
+      if ( expressionDef.getOrder() == Order.DESC) {
+        return p.size();
+      }
+      else { // Use Case 10.
+        while (r < p.size() && rowVal == null ) {
+          r++;
+          if ( r < p.size() ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r;
+      }
     }
 
-    // Use Case 9.
+    // Use Case 11.
     if ( expressionDef.getOrder() == Order.DESC) {
       while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
         r++;
@@ -204,7 +224,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
       return r;
     }
-    else { // Use Case 10.
+    else { // Use Case 12.
       while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
         r++;
         if ( r < p.size() ) {
@@ -220,25 +240,29 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
 | Case |                |               |          |       |                                   |
 |------+----------------+---------------+----------+-------+-----------------------------------|
 |   1. | PRECEDING      | UNB           | ANY      | ANY   | Error                             |
-|   2. | PRECEDING      | unsigned int  | NULL     | ANY   | end = partition.size()            |
-|   3. | PRECEDING      | unsigned int  | not null | DESC  | scan backward until row R2        |
+|   2. | PRECEDING      | unsigned int  | NULL     | DESC  | end = partition.size()            |
+|   3. |                |               |          | ASC   | end = 0                           |
+|   4. | PRECEDING      | unsigned int  | not null | DESC  | scan backward until row R2        |
 |      |                |               |          |       | such that R2.sk - R.sk > bnd.amt  |
 |      |                |               |          |       | end = R2.idx + 1                  |
-|   4. | PRECEDING      | unsigned int  | not null | ASC   | scan backward until row R2        |
+|   5. | PRECEDING      | unsigned int  | not null | ASC   | scan backward until row R2        |
 |      |                |               |          |       | such that R.sk -  R2.sk > bnd.amt |
 |      |                |               |          |       | end = R2.idx + 1                  |
-|   5. | CURRENT ROW    |               | NULL     | ANY   | scan forward until row R2         |
+|   6. | CURRENT ROW    |               | NULL     | ANY   | scan forward until row R2         |
 |      |                |               |          |       | such that R2.sk is not null       |
 |      |                |               |          |       | end = R2.idx                      |
-|   6. | CURRENT ROW    |               | not null | ANY   | scan forward until row R2         |
+|   7. | CURRENT ROW    |               | not null | ANY   | scan forward until row R2         |
 |      |                |               |          |       | such that R2.sk != R.sk           |
 |      |                |               |          |       | end = R2.idx                      |
-|   7. | FOLLOWING      | UNB           | ANY      | ANY   | end = partition.size()            |
-|   8. | FOLLOWING      | unsigned int  | NULL     | ANY   | end = partition.size()            |
-|   9. | FOLLOWING      | unsigned int  | not NULL | DESC  | scan forward until row R2         |
+|   8. | FOLLOWING      | UNB           | ANY      | ANY   | end = partition.size()            |
+|   9. | FOLLOWING      | unsigned int  | NULL     | DESC  | end = partition.size()            |
+|  10. |                |               |          | ASC   | scan forward until row R2         |
+|      |                |               |          |       | such that R2.sk is not null       |
+|      |                |               |          |       | end = R2.idx                      |
+|  11. | FOLLOWING      | unsigned int  | not NULL | DESC  | scan forward until row R2         |
 |      |                |               |          |       | such R.sk - R2.sk > bnd.amt       |
 |      |                |               |          |       | end = R2.idx                      |
-|  10. |                |               |          | ASC   | scan forward until row R2         |
+|  12. |                |               |          | ASC   | scan forward until row R2         |
 |      |                |               |          |       | such R2.sk - R2.sk > bnd.amt      |
 |      |                |               |          |       | end = R2.idx                      |
 |------+----------------+---------------+----------+-------+-----------------------------------|
@@ -265,13 +289,18 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
 
     if ( sortKey == null ) {
       // Use Case 2.
-      return p.size();
+      if ( expressionDef.getOrder() == Order.DESC ) {
+        return p.size();
+      }
+      else { // Use Case 3.
+        return 0;
+      }
     }
 
     Object rowVal = sortKey;
     int r = rowIdx;
 
-    // Use Case 3.
+    // Use Case 4.
     if ( expressionDef.getOrder() == Order.DESC ) {
       while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
         r--;
@@ -281,7 +310,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
       return r + 1;
     }
-    else { // Use Case 4.
+    else { // Use Case 5.
       while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
         r--;
         if ( r >= 0 ) {
@@ -295,7 +324,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
   protected int computeEndCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
     Object sortKey = computeValue(p.getAt(rowIdx));
 
-    // Use Case 5.
+    // Use Case 6.
     if ( sortKey == null ) {
       while ( sortKey == null && rowIdx < p.size() ) {
         ++rowIdx;
@@ -309,7 +338,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     Object rowVal = sortKey;
     int r = rowIdx;
 
-    // Use Case 6.
+    // Use Case 7.
     while (r < p.size() && isEqual(sortKey, rowVal) ) {
       r++;
       if ( r < p.size() ) {
@@ -322,7 +351,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
   protected int computeEndFollowing(int rowIdx, PTFPartition p) throws HiveException {
     int amt = end.getAmt();
 
-    // Use Case 7.
+    // Use Case 8.
     if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
       return p.size();
     }
@@ -332,11 +361,22 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     int r = rowIdx;
 
     if ( sortKey == null ) {
-      // Use Case 8.
-      return p.size();
+      // Use Case 9.
+      if ( expressionDef.getOrder() == Order.DESC) {
+        return p.size();
+      }
+      else { // Use Case 10.
+        while (r < p.size() && rowVal == null ) {
+          r++;
+          if ( r < p.size() ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r;
+      }
     }
 
-    // Use Case 9.
+    // Use Case 11.
     if ( expressionDef.getOrder() == Order.DESC) {
       while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
         r++;
@@ -346,7 +386,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
       return r;
     }
-    else { // Use Case 10.
+    else { // Use Case 12.
       while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
         r++;
         if ( r < p.size() ) {
