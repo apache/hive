@@ -609,6 +609,16 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         moveWork.setLoadTableWork(loadTableWork);
       }
 
+      if (loadFileType == LoadFileType.IGNORE) {
+        // if file is coped directly to the target location, then no need of move task in case the operation getting
+        // replayed is add partition. For insert operations, add partition task is anyways a no-op.
+        if (x.getEventType() == DumpType.EVENT_INSERT) {
+          copyTask.addDependentTask(TaskFactory.get(moveWork, x.getConf()));
+        } else {
+          copyTask.addDependentTask(addPartTask);
+        }
+        return copyTask;
+      }
       Task<?> loadPartTask = TaskFactory.get(moveWork, x.getConf());
       copyTask.addDependentTask(loadPartTask);
       addPartTask.addDependentTask(loadPartTask);

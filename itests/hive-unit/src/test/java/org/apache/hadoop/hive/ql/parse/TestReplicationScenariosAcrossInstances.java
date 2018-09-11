@@ -1393,7 +1393,7 @@ public class TestReplicationScenariosAcrossInstances {
             .run("insert overwrite table t1 select * from t2")
             .dump(primaryDbName, tuple.lastReplicationId);
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "INSERT", tuple);
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION", tuple);
   }
 
   @Test
@@ -1468,6 +1468,84 @@ public class TestReplicationScenariosAcrossInstances {
             .run("select country from " + tbl + " where country == 'india'")
             .verifyResults(Arrays.asList("india"))
             .run(" drop database if exists " + replicatedDbName_CM + " cascade");
+  }
+
+  private void injectableForTaskCreation(String primarydb, String replicadb, String tbl, String eventType,
+                                             String eventTypeExpect, WarehouseInstance.Tuple tuple) throws Throwable {
+    List<String> withConfigs = Arrays.asList("'hive.repl.move.optimized.scheme'= ' hDfs , '");
+
+    // fail add notification for given event type.
+    BehaviourInjection<NotificationEvent, Boolean> callerVerifier
+            = new BehaviourInjection<NotificationEvent, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable NotificationEvent entry) {
+        if (entry.getEventType().equalsIgnoreCase(eventType) && entry.getTableName().equalsIgnoreCase(tbl)) {
+          injectionPathCalled = true;
+          LOG.warn("Verifier - DB: " + String.valueOf(entry.getDbName())
+                  + " Table: " + String.valueOf(entry.getTableName())
+                  + " Event: " + String.valueOf(entry.getEventType()));
+          return false;
+        }
+        if (entry.getEventType().equalsIgnoreCase(eventTypeExpect) && entry.getTableName().equalsIgnoreCase(tbl)) {
+          nonInjectedPathCalled = true;
+        }
+        return true;
+      }
+    };
+
+    InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
+    try {
+      replica.load(replicadb, tuple.dumpLocation, withConfigs);
+    } finally {
+      InjectableBehaviourObjectStore.resetAddNotificationModifier();
+    }
+
+    callerVerifier.assertInjectionsPerformed(false, true);
+  }
+
+  @Test
+  public void testTaskCreationOptimization() throws Throwable {
+
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .dump(primaryDbName, null);
+
+    //no insert event should be added
+    injectableForTaskCreation(primaryDbName, replicatedDbName, "t2",
+            "INSERT", "ADD_PARTITION", tuple);
+
+    replica.run("use " + replicatedDbName)
+            .run("select country from t2 where country == 'india'")
+            .verifyResults(Arrays.asList("india"));
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("insert into table t2 partition(country='india') values ('delhi')")
+            .dump(primaryDbName, tuple.lastReplicationId);
+
+    //no ADD_PARTITION event should be added
+    injectableForTaskCreation(primaryDbName, replicatedDbName, "t2","ADD_PARTITION",
+            "INSERT", tuple);
+
+    replica.run("use " + replicatedDbName)
+            .run("select place from t2 where country == 'india'")
+            .verifyResults(Arrays.asList("bangalore", "delhi"));
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("insert into table t2 partition(country='us') values ('sf')")
+            .dump(primaryDbName, tuple.lastReplicationId);
+
+    //no insert event should be added
+    injectableForTaskCreation(primaryDbName, replicatedDbName, "t2","INSERT",
+            "ADD_PARTITION", tuple);
+
+    replica.run("use " + replicatedDbName)
+            .run("select place from t2 where country == 'india'")
+            .verifyResults(Arrays.asList("bangalore", "delhi"))
+            .run("select place from t2 where country == 'us'")
+            .verifyResults(Arrays.asList("sf"));
   }
 
   @Test

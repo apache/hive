@@ -244,7 +244,12 @@ public class LoadPartitions {
         tmpPath,
         context.hiveConf, false, false
     );
-    Task<?> movePartitionTask = movePartitionTask(table, partSpec, tmpPath, loadFileType);
+
+    Task<?> movePartitionTask = null;
+    if (loadFileType != LoadFileType.IGNORE) {
+      // no need to create move task, if file is moved directly to target location.
+      movePartitionTask = movePartitionTask(table, partSpec, tmpPath, loadFileType);
+    }
 
     // Set Checkpoint task as dependant to add partition tasks. So, if same dump is retried for
     // bootstrap, we skip current partition update.
@@ -260,10 +265,14 @@ public class LoadPartitions {
     } else {
       ptnRootTask.addDependentTask(copyTask);
     }
-    copyTask.addDependentTask(addPartTask);
-    addPartTask.addDependentTask(movePartitionTask);
-    movePartitionTask.addDependentTask(ckptTask);
 
+    copyTask.addDependentTask(addPartTask);
+    if (movePartitionTask != null) {
+      addPartTask.addDependentTask(movePartitionTask);
+      movePartitionTask.addDependentTask(ckptTask);
+    } else {
+      addPartTask.addDependentTask(ckptTask);
+    }
     return ptnRootTask;
   }
 

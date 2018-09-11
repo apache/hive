@@ -50,6 +50,7 @@ import java.util.Map;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
@@ -83,8 +84,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   public static final String LAST_REPL_ID_KEY = "hive.repl.last.repl.id";
   public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   public static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
-
-  private static final List<String> CLOUD_SCHEME_PREFIXES = Arrays.asList("s3a", "wasb");
 
   ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -222,7 +221,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private boolean isCloudFS(Path filePath, org.apache.hadoop.conf.Configuration conf) throws Exception {
+  private boolean ifEnableMoveOptimization(Path filePath, org.apache.hadoop.conf.Configuration conf) throws Exception {
     if (filePath == null) {
       throw new HiveException("filePath cannot be null");
     }
@@ -233,7 +232,16 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (StringUtils.isBlank(scheme)) {
       throw new HiveException("Cannot get valid scheme for " + filePath);
     }
-    return CLOUD_SCHEME_PREFIXES.contains(scheme.toLowerCase().trim());
+
+    LOG.info("scheme is " + scheme);
+
+    String[] schmeList = conf.get(REPL_MOVE_OPTIMIZED_FILE_SCHEMES.varname).toLowerCase().split(",");
+    for (String schemeIter : schmeList) {
+      if (schemeIter.trim().equalsIgnoreCase(scheme.trim())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // REPL LOAD
@@ -326,7 +334,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         Warehouse wh = new Warehouse(conf);
         Path filePath = wh.getWhRoot();
-        if (isCloudFS(filePath, conf)) {
+        if (ifEnableMoveOptimization(filePath, conf)) {
           conf.setBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION, true);
           LOG.info(" Set move optimization to true for warehouse " + filePath.toString());
         }
