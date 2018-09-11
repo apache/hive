@@ -507,7 +507,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc,cstring2
             druid.fieldTypes timestamp with local time zone,string
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"or","fields":[{"type":"selector","dimension":"cstring2","value":"user1"},{"type":"selector","dimension":"__time","value":"2010-01-01T08:00:00.000Z","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"selector","dimension":"__time","value":"2011-01-01T08:00:00.000Z","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","cstring2"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"or","fields":[{"type":"in","dimension":"__time","values":["2010-01-01T08:00:00.000Z","2011-01-01T08:00:00.000Z"],"extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"selector","dimension":"cstring2","value":"user1"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","cstring2"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp with local time zone), cstring2 (type: string)
