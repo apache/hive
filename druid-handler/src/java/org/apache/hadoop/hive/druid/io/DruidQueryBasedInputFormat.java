@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Lists;
-import com.metamx.http.client.Request;
+import io.druid.java.util.http.client.Request;
 import io.druid.query.BaseQuery;
 import io.druid.query.LocatedSegmentDescriptor;
 import io.druid.query.Query;
