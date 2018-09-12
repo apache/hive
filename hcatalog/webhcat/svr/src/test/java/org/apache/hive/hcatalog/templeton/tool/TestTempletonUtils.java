@@ -90,6 +90,9 @@ public class TestTempletonUtils {
 
     String fifty = "2011-12-15 18:12:36,333 [main] INFO  org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.MapReduceLauncher - 50% complete";
     Assert.assertEquals("50% complete", TempletonUtils.extractPercentComplete(fifty));
+
+    String beeline = "VERTICES: 01/02  [==========================>>] 70%  ELAPSED TIME: 3.79 s";
+    Assert.assertEquals("70% complete", TempletonUtils.extractPercentComplete(beeline));
   }
 
   @Test

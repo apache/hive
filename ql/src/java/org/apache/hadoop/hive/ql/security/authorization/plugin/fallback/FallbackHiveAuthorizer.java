@@ -157,9 +157,6 @@ public class FallbackHiveAuthorizer extends AbstractHiveAuthorizer {
   private void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> hiveObjects,
                                String userName, Operation2Privilege.IOType ioType, List<String> deniedMessages)
           throws HiveAuthzPluginException, HiveAccessControlException {
-    if (hiveObjects == null) {
-      return;
-    }
 
     boolean isAdmin = false;
     if (admins != null && admins.length > 0) {
@@ -178,12 +175,14 @@ public class FallbackHiveAuthorizer extends AbstractHiveAuthorizer {
     }
 
     boolean needAdmin = false;
-    for (HivePrivilegeObject hiveObj : hiveObjects) {
-      // If involving local file system
-      if (hiveObj.getType() == HivePrivilegeObject.HivePrivilegeObjectType.LOCAL_URI) {
-        needAdmin = true;
+    if (hiveObjects != null) {
+      for (HivePrivilegeObject hiveObj : hiveObjects) {
+        // If involving local file system
+        if (hiveObj.getType() == HivePrivilegeObject.HivePrivilegeObjectType.LOCAL_URI) {
+          needAdmin = true;
+        }
+        break;
       }
-      break;
     }
     switch (hiveOpType) {
       case ADD:
