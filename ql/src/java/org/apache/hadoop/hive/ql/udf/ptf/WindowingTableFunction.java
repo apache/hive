@@ -78,7 +78,6 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
   }
 
-  boolean nullsLast;
   StreamingState streamingState;
   RankLimit rnkLimitDef;
 

@@ -37,7 +37,7 @@ POSTHOOK: type: QUERY
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`push_or`
 WHERE `ds` = '2000-04-09' OR `key` = 5
-ORDER BY `key` NULLS LAST, `ds` NULLS LAST
+ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

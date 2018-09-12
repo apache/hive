@@ -31,7 +31,7 @@ POSTHOOK: type: QUERY
 OPTIMIZED SQL: SELECT `key`
 FROM `default`.`hdfs_table`
 GROUP BY `key`
-ORDER BY `key` NULLS LAST
+ORDER BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -306,7 +306,7 @@ POSTHOOK: type: QUERY
 OPTIMIZED SQL: SELECT `key`
 FROM `default`.`hdfs_table`
 GROUP BY `key`
-ORDER BY `key` NULLS LAST
+ORDER BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

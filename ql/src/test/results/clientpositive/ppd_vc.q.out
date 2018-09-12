@@ -330,7 +330,7 @@ WHERE `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`, `ds`, `hr`, `BLOCK__OFFSET__INSIDE__FILE`
 FROM `default`.`srcpart`
 WHERE `BLOCK__OFFSET__INSIDE__FILE` < 50 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t2`.`ds` NULLS LAST, `t2`.`hr` NULLS LAST, `t2`.`BLOCK__OFFSET__INSIDE__FILE` NULLS LAST
+ORDER BY `t2`.`ds`, `t2`.`hr`, `t2`.`BLOCK__OFFSET__INSIDE__FILE`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

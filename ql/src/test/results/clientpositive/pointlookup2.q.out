@@ -101,7 +101,7 @@ POSTHOOK: type: QUERY
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' AND `key` = 1 OR `ds` = '2000-04-09' AND `key` = 2
-ORDER BY `key` NULLS LAST, `value` NULLS LAST, `ds` NULLS LAST
+ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -288,7 +288,7 @@ WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key` NULLS LAST) AS `t4`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -524,7 +524,7 @@ WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key` NULLS LAST) AS `t4`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -809,7 +809,7 @@ WHERE `ds` = '2000-04-08' OR `ds` = '2000-04-09') AS `t0`
 INNER JOIN (SELECT `ds`, `key`, `value`
 FROM `default`.`pcr_t2_n0`
 WHERE `key` = 1 OR `key` = 2) AS `t2` ON `t0`.`ds` = '2000-04-08' AND `t2`.`key` = 1 OR `t0`.`ds` = '2000-04-09' AND `t2`.`key` = 2
-ORDER BY `t2`.`key` NULLS LAST, `t2`.`value` NULLS LAST, `t0`.`ds` NULLS LAST
+ORDER BY `t2`.`key`, `t2`.`value`, `t0`.`ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1135,7 +1135,7 @@ WHERE `key` = 1 OR `key` = 2) AS `t0`
 INNER JOIN (SELECT `ds`, `key`, `value`
 FROM `default`.`pcr_t2_n0`
 WHERE `ds` = '2000-04-08' OR `ds` = '2000-04-09') AS `t2` ON `t2`.`ds` = '2000-04-08' AND `t0`.`key` = 1 OR `t2`.`ds` = '2000-04-09' AND `t0`.`key` = 2
-ORDER BY `t0`.`key` NULLS LAST, `t0`.`value` NULLS LAST, `t2`.`ds` NULLS LAST
+ORDER BY `t0`.`key`, `t0`.`value`, `t2`.`ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1870,7 +1870,7 @@ WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key` NULLS LAST) AS `t4`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2106,7 +2106,7 @@ WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds`
 FROM `default`.`pcr_t1_n2`
 WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key` NULLS LAST) AS `t4`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
