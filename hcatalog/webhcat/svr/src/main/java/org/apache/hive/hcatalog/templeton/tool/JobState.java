@@ -127,19 +127,6 @@ public class JobState {
   }
 
   /**
-   * The job type
-   */
-  public String getJobType()
-          throws IOException {
-    return getField("jobType");
-  }
-
-  public void setJobType(String jobType)
-          throws IOException {
-    setField("jobType", jobType);
-  }
-
-  /**
    * Add a jobid to the list of children of this job.
    *
    * @param jobid

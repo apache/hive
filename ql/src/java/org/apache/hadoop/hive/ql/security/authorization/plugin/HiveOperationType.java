@@ -178,9 +178,7 @@ public enum HiveOperationType {
   GET_SCHEMAS, // getSchemas()
   GET_TABLES, // getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)
   GET_TABLETYPES,// getTableTypes()
-  GET_TYPEINFO, // getTypeInfo()
+  GET_TYPEINFO // getTypeInfo()
   // ==== HiveServer2 metadata api types ends here ==== //
 
-  // ==== Special operation just to test if user has admin privilege
-  ADMIN_TEST
 }

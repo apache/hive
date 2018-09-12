@@ -22,10 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.KillQuery;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.ApplicationsRequestScope;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
@@ -67,9 +64,7 @@ public class KillQueryImpl implements KillQuery {
     GetApplicationsResponse apps = proxy.getApplications(gar);
     List<ApplicationReport> appsList = apps.getApplicationList();
     for(ApplicationReport appReport : appsList) {
-      if (isAdmin() || appReport.getApplicationTags().contains("userid=" + SessionState.get().getUserName())) {
-        childYarnJobs.add(appReport.getApplicationId());
-      }
+      childYarnJobs.add(appReport.getApplicationId());
     }
 
     if (childYarnJobs.isEmpty()) {
@@ -96,21 +91,8 @@ public class KillQueryImpl implements KillQuery {
         }
       }
     } catch (IOException | YarnException ye) {
-      LOG.warn("Exception occurred while killing child job({})", ye);
+      throw new RuntimeException("Exception occurred while killing child job(s)", ye);
     }
-  }
-
-  private static boolean isAdmin() {
-    boolean isAdmin = false;
-    if (SessionState.get().getAuthorizerV2() != null) {
-      try {
-        SessionState.get().getAuthorizerV2().checkPrivileges(HiveOperationType.KILL_QUERY,
-                null, null, new HiveAuthzContext.Builder().build());
-        isAdmin = true;
-      } catch (Exception e) {
-      }
-    }
-    return isAdmin;
   }
 
   @Override
@@ -138,17 +120,12 @@ public class KillQueryImpl implements KillQuery {
         queryTag = queryId;
       }
 
-      if (isAdmin() || operation ==null || operation.getParentSession().getUserName().equals(SessionState.get()
-              .getAuthenticator().getUserName())) {
-        LOG.info("Killing yarn jobs for query id : " + queryId + " using tag :" + queryTag);
-        killChildYarnJobs(conf, queryTag);
+      LOG.info("Killing yarn jobs for query id : " + queryId + " using tag :" + queryTag);
+      killChildYarnJobs(conf, queryTag);
 
-        if (operation != null) {
-          OperationHandle handle = operation.getHandle();
-          operationManager.cancelOperation(handle, errMsg);
-        }
-      } else {
-        throw new HiveSQLException("No privilege");
+      if (operation != null) {
+        OperationHandle handle = operation.getHandle();
+        operationManager.cancelOperation(handle, errMsg);
       }
     } catch (HiveSQLException e) {
       LOG.error("Kill query failed for query " + queryId, e);
