@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -177,6 +178,11 @@ public class MiniHS2 extends AbstractHiveService {
     public MiniHS2 build() throws Exception {
       if (miniClusterType == MiniClusterType.MR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
+      }
+      Iterator<Map.Entry<String, String>> iter = hiveConf.iterator();
+      while (iter.hasNext()) {
+        String key = iter.next().getKey();
+        hiveConf.set(key, hiveConf.get(key));
       }
       if (isHTTPTransMode) {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_HTTP_MODE);
