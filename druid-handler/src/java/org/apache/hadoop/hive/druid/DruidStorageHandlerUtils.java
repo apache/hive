@@ -30,62 +30,63 @@ import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
-import io.druid.data.input.impl.DimensionSchema;
-import io.druid.data.input.impl.StringDimensionSchema;
-import io.druid.jackson.DefaultObjectMapper;
-import io.druid.java.util.common.JodaUtils;
-import io.druid.java.util.common.MapUtils;
-import io.druid.java.util.common.Pair;
-import io.druid.java.util.common.granularity.Granularity;
-import io.druid.java.util.emitter.EmittingLogger;
-import io.druid.java.util.emitter.core.NoopEmitter;
-import io.druid.java.util.emitter.service.ServiceEmitter;
-import io.druid.java.util.http.client.HttpClient;
-import io.druid.java.util.http.client.Request;
-import io.druid.java.util.http.client.response.FullResponseHandler;
-import io.druid.java.util.http.client.response.FullResponseHolder;
-import io.druid.java.util.http.client.response.InputStreamResponseHandler;
-import io.druid.math.expr.ExprMacroTable;
-import io.druid.metadata.MetadataStorageTablesConfig;
-import io.druid.metadata.SQLMetadataConnector;
-import io.druid.metadata.storage.mysql.MySQLConnector;
-import io.druid.query.aggregation.AggregatorFactory;
-import io.druid.query.aggregation.DoubleSumAggregatorFactory;
-import io.druid.query.aggregation.FloatSumAggregatorFactory;
-import io.druid.query.aggregation.LongSumAggregatorFactory;
-import io.druid.query.expression.LikeExprMacro;
-import io.druid.query.expression.RegexpExtractExprMacro;
-import io.druid.query.expression.TimestampCeilExprMacro;
-import io.druid.query.expression.TimestampExtractExprMacro;
-import io.druid.query.expression.TimestampFloorExprMacro;
-import io.druid.query.expression.TimestampFormatExprMacro;
-import io.druid.query.expression.TimestampParseExprMacro;
-import io.druid.query.expression.TimestampShiftExprMacro;
-import io.druid.query.expression.TrimExprMacro;
-import io.druid.query.scan.ScanQuery;
-import io.druid.query.select.SelectQueryConfig;
-import io.druid.query.spec.MultipleIntervalSegmentSpec;
-import io.druid.segment.IndexIO;
-import io.druid.segment.IndexMergerV9;
-import io.druid.segment.IndexSpec;
-import io.druid.segment.data.BitmapSerdeFactory;
-import io.druid.segment.data.ConciseBitmapSerdeFactory;
-import io.druid.segment.data.RoaringBitmapSerdeFactory;
-import io.druid.segment.indexing.granularity.GranularitySpec;
-import io.druid.segment.indexing.granularity.UniformGranularitySpec;
-import io.druid.segment.loading.DataSegmentPusher;
-import io.druid.segment.realtime.appenderator.SegmentIdentifier;
-import io.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
-import io.druid.storage.hdfs.HdfsDataSegmentPusher;
-import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
-import io.druid.timeline.DataSegment;
-import io.druid.timeline.TimelineObjectHolder;
-import io.druid.timeline.VersionedIntervalTimeline;
-import io.druid.timeline.partition.LinearShardSpec;
-import io.druid.timeline.partition.NoneShardSpec;
-import io.druid.timeline.partition.NumberedShardSpec;
-import io.druid.timeline.partition.PartitionChunk;
-import io.druid.timeline.partition.ShardSpec;
+import org.apache.druid.data.input.impl.DimensionSchema;
+import org.apache.druid.data.input.impl.StringDimensionSchema;
+import org.apache.druid.jackson.DefaultObjectMapper;
+import org.apache.druid.java.util.common.JodaUtils;
+import org.apache.druid.java.util.common.MapUtils;
+import org.apache.druid.java.util.common.Pair;
+import org.apache.druid.java.util.common.granularity.Granularity;
+import org.apache.druid.java.util.emitter.EmittingLogger;
+import org.apache.druid.java.util.emitter.core.NoopEmitter;
+import org.apache.druid.java.util.emitter.service.ServiceEmitter;
+import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.java.util.http.client.Request;
+import org.apache.druid.java.util.http.client.response.FullResponseHandler;
+import org.apache.druid.java.util.http.client.response.FullResponseHolder;
+import org.apache.druid.java.util.http.client.response.InputStreamResponseHandler;
+import org.apache.druid.math.expr.ExprMacroTable;
+import org.apache.druid.metadata.MetadataStorageTablesConfig;
+import org.apache.druid.metadata.SQLMetadataConnector;
+import org.apache.druid.metadata.storage.mysql.MySQLConnector;
+import org.apache.druid.query.DruidProcessingConfig;
+import org.apache.druid.query.aggregation.AggregatorFactory;
+import org.apache.druid.query.aggregation.DoubleSumAggregatorFactory;
+import org.apache.druid.query.aggregation.FloatSumAggregatorFactory;
+import org.apache.druid.query.aggregation.LongSumAggregatorFactory;
+import org.apache.druid.query.expression.LikeExprMacro;
+import org.apache.druid.query.expression.RegexpExtractExprMacro;
+import org.apache.druid.query.expression.TimestampCeilExprMacro;
+import org.apache.druid.query.expression.TimestampExtractExprMacro;
+import org.apache.druid.query.expression.TimestampFloorExprMacro;
+import org.apache.druid.query.expression.TimestampFormatExprMacro;
+import org.apache.druid.query.expression.TimestampParseExprMacro;
+import org.apache.druid.query.expression.TimestampShiftExprMacro;
+import org.apache.druid.query.expression.TrimExprMacro;
+import org.apache.druid.query.scan.ScanQuery;
+import org.apache.druid.query.select.SelectQueryConfig;
+import org.apache.druid.query.spec.MultipleIntervalSegmentSpec;
+import org.apache.druid.segment.IndexIO;
+import org.apache.druid.segment.IndexMergerV9;
+import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.data.BitmapSerdeFactory;
+import org.apache.druid.segment.data.ConciseBitmapSerdeFactory;
+import org.apache.druid.segment.data.RoaringBitmapSerdeFactory;
+import org.apache.druid.segment.indexing.granularity.GranularitySpec;
+import org.apache.druid.segment.indexing.granularity.UniformGranularitySpec;
+import org.apache.druid.segment.loading.DataSegmentPusher;
+import org.apache.druid.segment.realtime.appenderator.SegmentIdentifier;
+import org.apache.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
+import org.apache.druid.storage.hdfs.HdfsDataSegmentPusher;
+import org.apache.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
+import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.TimelineObjectHolder;
+import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.partition.LinearShardSpec;
+import org.apache.druid.timeline.partition.NoneShardSpec;
+import org.apache.druid.timeline.partition.NumberedShardSpec;
+import org.apache.druid.timeline.partition.PartitionChunk;
+import org.apache.druid.timeline.partition.ShardSpec;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -224,9 +225,11 @@ public final class DruidStorageHandlerUtils {
   /**
    * Used by druid to perform IO on indexes.
    */
-  public static final IndexIO
-      INDEX_IO =
-      new IndexIO(JSON_MAPPER, TmpFileSegmentWriteOutMediumFactory.instance(), () -> 0);
+  public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, new DruidProcessingConfig() {
+    @Override public String getFormatString() {
+      return "%s-%s";
+    }
+  });
 
   /**
    * Used by druid to merge indexes.
@@ -244,11 +247,10 @@ public final class DruidStorageHandlerUtils {
    * Method that creates a request for Druid query using SMILE format.
    *
    * @param address of the host target.
-   * @param query druid query.
-   *
+   * @param query   druid query.
    * @return Request object to be submitted.
    */
-  public static Request createSmileRequest(String address, io.druid.query.Query query) {
+  public static Request createSmileRequest(String address, org.apache.druid.query.Query query) {
     try {
       return new Request(HttpMethod.POST, new URL(String.format("%s/druid/v2/", "http://" + address))).setContent(
           SMILE_MAPPER.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE, SMILE_CONTENT_TYPE);
@@ -265,11 +267,9 @@ public final class DruidStorageHandlerUtils {
    * Method that submits a request to an Http address and retrieves the result.
    * The caller is responsible for closing the stream once it finishes consuming it.
    *
-   * @param client Http Client will be used to submit request.
+   * @param client  Http Client will be used to submit request.
    * @param request Http request to be submitted.
-   *
    * @return response object.
-   *
    * @throws IOException in case of request IO error.
    */
   public static InputStream submitRequest(HttpClient client, Request request) throws IOException {
@@ -316,9 +316,7 @@ public final class DruidStorageHandlerUtils {
    *                the descriptor path will be
    *                ../workingPath/task_id/{@link DruidStorageHandler#SEGMENTS_DESCRIPTOR_DIR_NAME}/*.json
    * @param conf    hadoop conf to get the file system
-   *
    * @return List of DataSegments
-   *
    * @throws IOException can be for the case we did not produce data.
    */
   public static List<DataSegment> getCreatedSegments(Path taskDir, Configuration conf) throws IOException {
@@ -339,7 +337,6 @@ public final class DruidStorageHandlerUtils {
    * @param outputFS       filesystem.
    * @param segment        DataSegment object.
    * @param descriptorPath path.
-   *
    * @throws IOException in case any IO issues occur.
    */
   public static void writeSegmentDescriptor(final FileSystem outputFS,
@@ -362,7 +359,6 @@ public final class DruidStorageHandlerUtils {
   /**
    * @param connector                   SQL metadata connector to the metadata storage
    * @param metadataStorageTablesConfig Table config
-   *
    * @return all the active data sources in the metadata storage
    */
   static Collection<String> getAllDataSourceNames(SQLMetadataConnector connector,
@@ -382,7 +378,6 @@ public final class DruidStorageHandlerUtils {
    * @param connector                   SQL connector to metadata
    * @param metadataStorageTablesConfig Tables configuration
    * @param dataSource                  Name of data source
-   *
    * @return true if the data source was successfully disabled false otherwise
    */
   static boolean disableDataSource(SQLMetadataConnector connector,
@@ -411,17 +406,15 @@ public final class DruidStorageHandlerUtils {
    * Then moves segments to druid deep storage with updated metadata/version.
    * ALL IS DONE IN ONE TRANSACTION
    *
-   * @param connector DBI connector to commit
+   * @param connector                   DBI connector to commit
    * @param metadataStorageTablesConfig Druid metadata tables definitions
-   * @param dataSource Druid datasource name
-   * @param segments List of segments to move and commit to metadata
-   * @param overwrite if it is an insert overwrite
-   * @param conf Configuration
-   * @param dataSegmentPusher segment pusher
-   *
+   * @param dataSource                  Druid datasource name
+   * @param segments                    List of segments to move and commit to metadata
+   * @param overwrite                   if it is an insert overwrite
+   * @param conf                        Configuration
+   * @param dataSegmentPusher           segment pusher
    * @return List of successfully published Druid segments.
    * This list has the updated versions and metadata about segments after move and timeline sorting
-   *
    * @throws CallbackFailedException in case the connector can not add the segment to the DB.
    */
   @SuppressWarnings("unchecked") static List<DataSegment> publishSegmentsAndCommit(final SQLMetadataConnector connector,
@@ -551,7 +544,6 @@ public final class DruidStorageHandlerUtils {
    * @param connector                   SQL connector to metadata
    * @param metadataStorageTablesConfig Tables configuration
    * @param dataSource                  Name of data source
-   *
    * @return List of all data segments part of the given data source
    */
   static List<DataSegment> getDataSegmentList(final SQLMetadataConnector connector,
@@ -577,7 +569,6 @@ public final class DruidStorageHandlerUtils {
 
   /**
    * @param connector SQL DBI connector.
-   *
    * @return streaming fetch size.
    */
   private static int getStreamingFetchSize(SQLMetadataConnector connector) {
@@ -588,9 +579,8 @@ public final class DruidStorageHandlerUtils {
   }
 
   /**
-   * @param pushedSegment the pushed data segment object
+   * @param pushedSegment         the pushed data segment object
    * @param segmentsDescriptorDir actual directory path for descriptors.
-   *
    * @return a sanitize file name
    */
   public static Path makeSegmentDescriptorOutputPath(DataSegment pushedSegment, Path segmentsDescriptorDir) {
@@ -673,12 +663,12 @@ public final class DruidStorageHandlerUtils {
   @Nullable public static List<String> getListProperty(Table table, String propertyName) {
     List<String> rv = new ArrayList<>();
     String values = getTableProperty(table, propertyName);
-    if(values == null) {
+    if (values == null) {
       return null;
     }
     String[] vals = values.trim().split(",");
-    for(String val : vals) {
-      if(org.apache.commons.lang.StringUtils.isNotBlank(val)) {
+    for (String val : vals) {
+      if (org.apache.commons.lang.StringUtils.isNotBlank(val)) {
         rv.add(val);
       }
     }
@@ -867,8 +857,8 @@ public final class DruidStorageHandlerUtils {
       case TIMESTAMP:
         // Granularity column
         String tColumnName = columnNames.get(i);
-        if (!tColumnName.equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME) && !tColumnName.equals(
-            DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
+        if (!tColumnName.equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)
+            && !tColumnName.equals(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
           throw new IllegalArgumentException("Dimension "
               + tColumnName
               + " does not have STRING type: "

@@ -91,7 +91,7 @@
       <version>${joda.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>org.apache.druid</groupId>
       <artifactId>druid-server</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -108,14 +108,14 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>io.druid</groupId>
+          <groupId>org.apache.druid</groupId>
           <artifactId>druid-aws-common</artifactId>
         </exclusion>
       </exclusions>
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>org.apache.druid</groupId>
       <artifactId>druid-processing</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -128,7 +128,7 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>druid-hdfs-storage</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -155,7 +155,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>mysql-metadata-storage</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -166,7 +166,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>postgresql-metadata-storage</artifactId>
       <version>${druid.version}</version>
     </dependency>
@@ -240,7 +240,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>org.apache.druid</groupId>
       <artifactId>druid-indexing-hadoop</artifactId>
       <version>${druid.version}</version>
       <scope>test</scope>
@@ -291,8 +291,8 @@
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <relocations>
                     <relocation>
-                      <pattern>io.druid</pattern>
-                      <shadedPattern>org.apache.hive.druid.io.druid</shadedPattern>
+                      <pattern>org.apache.druid</pattern>
+                      <shadedPattern>org.apache.hive.druid.org.apache.druid</shadedPattern>
                     </relocation>
                     <relocation>
                       <pattern>io.netty</pattern>
@@ -321,8 +321,8 @@
                   </relocations>
                   <artifactSet>
                     <includes>
-                      <include>io.druid:*</include>
-                      <include>io.druid.extensions:*</include>
+                      <include>org.apache.druid:*</include>
+                      <include>org.apache.druid.extensions:*</include>
                       <include>io.netty:*</include>
                       <include>org.apache.calcite:*</include>
                       <include>com.fasterxml.jackson.core:*</include>

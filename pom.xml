@@ -147,7 +147,7 @@
     <derby.version>10.14.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <druid.version>0.12.1</druid.version>
+    <druid.version>0.13.0-incubating</druid.version>
     <flatbuffers.version>1.2.0-3f79e055</flatbuffers.version>
     <guava.version>19.0</guava.version>
     <groovy.version>2.4.11</groovy.version>
@@ -265,6 +265,16 @@
        </releases>
        <snapshots>
          <enabled>false</enabled>
+       </snapshots>
+    </repository>
+    <repository>
+       <id>druid-apache-rc-testing</id>
+       <url>https://repository.apache.org/content/repositories/orgapachedruid-1001/</url>
+       <releases>
+         <enabled>true</enabled>
+       </releases>
+       <snapshots>
+         <enabled>true</enabled>
        </snapshots>
     </repository>
   </repositories>

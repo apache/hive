@@ -35,9 +35,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import io.druid.java.util.http.client.HttpClient;
-import io.druid.java.util.http.client.response.HttpResponseHandler;
-import io.druid.query.scan.ScanResultValue;
+import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.java.util.http.client.response.HttpResponseHandler;
+import org.apache.druid.query.scan.ScanResultValue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -80,12 +80,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.SettableFuture;
 
-import io.druid.data.input.Row;
-import io.druid.query.Query;
-import io.druid.query.Result;
-import io.druid.query.select.SelectResultValue;
-import io.druid.query.timeseries.TimeseriesResultValue;
-import io.druid.query.topn.TopNResultValue;
+import org.apache.druid.data.input.Row;
+import org.apache.druid.query.Query;
+import org.apache.druid.query.Result;
+import org.apache.druid.query.select.SelectResultValue;
+import org.apache.druid.query.timeseries.TimeseriesResultValue;
+import org.apache.druid.query.topn.TopNResultValue;
 import org.junit.rules.ExpectedException;
 
 /**

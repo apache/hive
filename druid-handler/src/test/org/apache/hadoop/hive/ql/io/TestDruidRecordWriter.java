@@ -23,33 +23,33 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.druid.data.input.Firehose;
-import io.druid.data.input.InputRow;
-import io.druid.data.input.impl.DimensionsSpec;
-import io.druid.data.input.impl.InputRowParser;
-import io.druid.data.input.impl.MapInputRowParser;
-import io.druid.data.input.impl.StringDimensionSchema;
-import io.druid.data.input.impl.TimeAndDimsParseSpec;
-import io.druid.data.input.impl.TimestampSpec;
-import io.druid.java.util.common.granularity.Granularities;
-import io.druid.query.aggregation.AggregatorFactory;
-import io.druid.query.aggregation.LongSumAggregatorFactory;
-import io.druid.query.aggregation.hyperloglog.HyperUniquesAggregatorFactory;
-import io.druid.segment.IndexSpec;
-import io.druid.segment.QueryableIndex;
-import io.druid.segment.QueryableIndexStorageAdapter;
-import io.druid.segment.data.RoaringBitmapSerdeFactory;
-import io.druid.segment.indexing.DataSchema;
-import io.druid.segment.indexing.RealtimeTuningConfig;
-import io.druid.segment.indexing.granularity.UniformGranularitySpec;
-import io.druid.segment.loading.DataSegmentPusher;
-import io.druid.segment.loading.LocalDataSegmentPuller;
-import io.druid.segment.loading.LocalDataSegmentPusher;
-import io.druid.segment.loading.LocalDataSegmentPusherConfig;
-import io.druid.segment.loading.SegmentLoadingException;
-import io.druid.segment.realtime.firehose.IngestSegmentFirehose;
-import io.druid.segment.realtime.firehose.WindowedStorageAdapter;
-import io.druid.timeline.DataSegment;
+import org.apache.druid.data.input.Firehose;
+import org.apache.druid.data.input.InputRow;
+import org.apache.druid.data.input.impl.DimensionsSpec;
+import org.apache.druid.data.input.impl.InputRowParser;
+import org.apache.druid.data.input.impl.MapInputRowParser;
+import org.apache.druid.data.input.impl.StringDimensionSchema;
+import org.apache.druid.data.input.impl.TimeAndDimsParseSpec;
+import org.apache.druid.data.input.impl.TimestampSpec;
+import org.apache.druid.java.util.common.granularity.Granularities;
+import org.apache.druid.query.aggregation.AggregatorFactory;
+import org.apache.druid.query.aggregation.LongSumAggregatorFactory;
+import org.apache.druid.query.aggregation.hyperloglog.HyperUniquesAggregatorFactory;
+import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.QueryableIndex;
+import org.apache.druid.segment.QueryableIndexStorageAdapter;
+import org.apache.druid.segment.data.RoaringBitmapSerdeFactory;
+import org.apache.druid.segment.indexing.DataSchema;
+import org.apache.druid.segment.indexing.RealtimeTuningConfig;
+import org.apache.druid.segment.indexing.granularity.UniformGranularitySpec;
+import org.apache.druid.segment.loading.DataSegmentPusher;
+import org.apache.druid.segment.loading.LocalDataSegmentPuller;
+import org.apache.druid.segment.loading.LocalDataSegmentPusher;
+import org.apache.druid.segment.loading.LocalDataSegmentPusherConfig;
+import org.apache.druid.segment.loading.SegmentLoadingException;
+import org.apache.druid.segment.realtime.firehose.IngestSegmentFirehose;
+import org.apache.druid.segment.realtime.firehose.WindowedStorageAdapter;
+import org.apache.druid.timeline.DataSegment;
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -152,6 +152,7 @@ import java.util.stream.Collectors;
         new RealtimeTuningConfig(null,
             null,
             null,
+            null,
             temporaryFolder.newFolder(),
             null,
             null,
@@ -164,7 +165,8 @@ import java.util.stream.Collectors;
             null,
             null,
             0L,
-            null);
+            null,
+                null);
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     DataSegmentPusher dataSegmentPusher = new LocalDataSegmentPusher(new LocalDataSegmentPusherConfig() {
       @Override public File getStorageDirectory() {

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.druid.security;
 
-import io.druid.java.util.http.client.response.ClientResponse;
-import io.druid.java.util.http.client.response.HttpResponseHandler;
+import org.apache.druid.java.util.http.client.response.ClientResponse;
+import org.apache.druid.java.util.http.client.response.HttpResponseHandler;
 import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
@@ -42,7 +42,8 @@ public class RetryIfUnauthorizedResponseHandler<Intermediate, Final>
     this.httpResponseHandler = httpResponseHandler;
   }
 
-  @Override public ClientResponse<RetryResponseHolder<Intermediate>> handleResponse(HttpResponse httpResponse) {
+  @Override public ClientResponse<RetryResponseHolder<Intermediate>> handleResponse(HttpResponse httpResponse,
+      TrafficCop trafficCop) {
     LOG.debug("UnauthorizedResponseHandler - Got response status {}", httpResponse.getStatus());
     if (httpResponse.getStatus().equals(HttpResponseStatus.UNAUTHORIZED)) {
       // Drain the buffer
@@ -50,20 +51,20 @@ public class RetryIfUnauthorizedResponseHandler<Intermediate, Final>
       httpResponse.getContent().toString();
       return ClientResponse.unfinished(RetryResponseHolder.retry());
     } else {
-      return wrap(httpResponseHandler.handleResponse(httpResponse));
+      return wrap(httpResponseHandler.handleResponse(httpResponse, trafficCop));
     }
   }
 
   @Override public ClientResponse<RetryResponseHolder<Intermediate>> handleChunk(
       ClientResponse<RetryResponseHolder<Intermediate>> clientResponse,
-      HttpChunk httpChunk) {
+      HttpChunk httpChunk, long chunkNum) {
     if (clientResponse.getObj().shouldRetry()) {
       // Drain the buffer
       //noinspection ResultOfMethodCallIgnored
       httpChunk.getContent().toString();
       return clientResponse;
     } else {
-      return wrap(httpResponseHandler.handleChunk(unwrap(clientResponse), httpChunk));
+      return wrap(httpResponseHandler.handleChunk(unwrap(clientResponse), httpChunk, chunkNum));
     }
   }
 
