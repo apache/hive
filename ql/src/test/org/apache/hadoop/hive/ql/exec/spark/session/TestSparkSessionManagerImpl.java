@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.StringUtils;
 
+import org.apache.hive.spark.client.SparkClientFactory;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -31,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
@@ -214,6 +217,38 @@ public class TestSparkSessionManagerImpl {
     assertEquals("0", ss.getSparkSession().getSessionId());
   }
 
+  @Test
+  public void testConfigsForInitialization() {
+    //Test to make sure that configs listed in RpcConfiguration.HIVE_SPARK_RSC_CONFIGS which are passed
+    // through HiveConf are included in the Spark configuration.
+    HiveConf hiveConf = getHiveConf();
+    hiveConf.setVar(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT, "49152-49222,49223,49224-49333");
+    hiveConf.setVar(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS, "test-rpc-server-address");
+    Map<String, String> sparkConf = HiveSparkClientFactory.initiateSparkConf(hiveConf, null);
+    assertEquals("49152-49222,49223,49224-49333", sparkConf.get(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname));
+    assertEquals("test-rpc-server-address", sparkConf.get(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname));
+  }
+
+  @Test
+  public void testServerPortAssignment() throws Exception {
+    HiveConf conf = getHiveConf();
+    conf.setVar(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT, "49152-49222,49223,49224-49333");
+    SparkSessionManagerImpl testSessionManager = SparkSessionManagerImpl.getInstance();
+    testSessionManager.setup(conf);
+
+    assertTrue("Port should be within configured port range:" + SparkClientFactory.getServerPort(),
+        SparkClientFactory.getServerPort() >= 49152 && SparkClientFactory.getServerPort() <= 49333);
+
+    //Verify that new spark session can be created to ensure that new SparkSession
+    // is successfully able to connect to the RpcServer with custom port.
+    try {
+      testSessionManager.getSession(null, conf, true);
+    } catch (HiveException e) {
+      Assert.fail("Failed test to connect to the RpcServer with custom port");
+    }
+
+    testSessionManager.shutdown();
+  }
   private void checkHiveException(SparkSessionImpl ss, Throwable e, ErrorMsg expectedErrMsg) {
     checkHiveException(ss, e, expectedErrMsg, null);
   }
