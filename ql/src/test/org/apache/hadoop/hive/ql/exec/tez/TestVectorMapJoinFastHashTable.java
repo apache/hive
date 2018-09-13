@@ -101,10 +101,10 @@ public class TestVectorMapJoinFastHashTable {
     cjm.hashTableLoadFactor = .75f;
     switch (l) {
     case MULTI_KEY:
-      compilerEstimate = cjm.computeOnlineDataSizeFast3(stat);
+      compilerEstimate = cjm.computeOnlineDataSizeFastCompositeKeyed(stat);
       break;
     case LONG:
-      compilerEstimate = cjm.computeOnlineDataSizeFast2(stat);
+      compilerEstimate = cjm.computeOnlineDataSizeFastLongKeyed(stat);
       break;
     }
     LOG.info("stats: {}", stat);
