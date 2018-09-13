@@ -911,7 +911,7 @@ POSTHOOK: query: select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6078	2.7308662809692383E7
+6078	2.7308662793799996E7
 PREHOOK: query: select count(distinct cstring2), sum(2 * cdouble) FROM druid_table_alltypesorc GROUP  BY floor_year(`__time`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -920,7 +920,7 @@ POSTHOOK: query: select count(distinct cstring2), sum(2 * cdouble) FROM druid_ta
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6078	5.4617325619384766E7
+6078	5.461732558759999E7
 PREHOOK: query: select count(DISTINCT cstring2) FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -1010,7 +1010,7 @@ POSTHOOK: query: select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6078	2.7308662809692383E7
+6078	2.7308662793799996E7
 PREHOOK: query: select count(distinct cstring2 || '_'|| cstring1), sum(cdouble), min(cint) FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -1019,7 +1019,7 @@ POSTHOOK: query: select count(distinct cstring2 || '_'|| cstring1), sum(cdouble)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6095	2.7308662809692383E7	-1073279343
+6095	2.7308662793799996E7	-1073279343
 PREHOOK: query: select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -1616,7 +1616,7 @@ GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DAT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-3.832948323764436E14	1969-12-01
+3.83294831503382E14	1969-12-01
 PREHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -2003,7 +2003,7 @@ POSTHOOK: query: SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1970-01-01	1970-01-01
+NULL	NULL
 2004-04-04	2004-04-04
 2004-04-09	2004-04-09
 2004-04-11	2004-04-11
@@ -2361,7 +2361,7 @@ POSTHOOK: query: select max(cint * cdouble) from (select `cfloat`, `cstring1`, `
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-8.256991051261554E15
+8.256991041892764E15
 PREHOOK: query: explain select max(cint * cfloat) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
