@@ -74,7 +74,8 @@ import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
+import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -130,7 +131,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   protected transient StringObjectInspector stringOI;
   protected transient IntObjectInspector intOI;
   protected transient JobConf jc;
-  protected transient HiveConf conf;
   private boolean orderByQuery;
   private boolean forceSingleSplit;
   private ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
@@ -250,8 +250,14 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
     if(num == 0) {
       //Schema only
-      Schema schema = new Schema(convertSchema(HiveUtils.parseQuery(conf, query)));
-      return new PlanFragment(null, schema, null);
+      try {
+        List<FieldSchema> fieldSchemas =
+            HiveMaterializedViewsRegistry.parseQueryAndGetSchema(conf, query);
+        Schema schema = new Schema(convertSchema(fieldSchemas));
+        return new PlanFragment(null, schema, null);
+      } catch (IOException | ParseException e) {
+        throw new HiveException(e);
+      }
     }
 
     try {

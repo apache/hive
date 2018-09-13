@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -64,9 +65,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
+import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -224,10 +227,12 @@ public final class HiveMaterializedViewsRegistry {
           " ignored; error creating view replacement");
       return null;
     }
-    final RelNode queryRel = parseQuery(conf, viewQuery);
-    if (queryRel == null) {
+    final RelNode queryRel;
+    try {
+      queryRel = parseQuery(conf, viewQuery);
+    } catch (Exception e) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
-          " ignored; error parsing original query");
+          " ignored; error parsing original query; " + e);
       return null;
     }
 
@@ -400,22 +405,27 @@ public final class HiveMaterializedViewsRegistry {
     return tableRel;
   }
 
-  private static RelNode parseQuery(HiveConf conf, String viewQuery) {
-    try {
-      final ASTNode node = ParseUtils.parse(viewQuery);
-      final QueryState qs =
-          new QueryState.Builder().withHiveConf(conf).build();
-      CalcitePlanner analyzer = new CalcitePlanner(qs);
-      Context ctx = new Context(conf);
-      ctx.setIsLoadingMaterializedView(true);
-      analyzer.initCtx(ctx);
-      analyzer.init(false);
-      return analyzer.genLogicalPlan(node);
-    } catch (Exception e) {
-      // We could not parse the view
-      LOG.error("Error parsing original query for materialized view", e);
-      return null;
-    }
+  private static RelNode parseQuery(HiveConf conf, String viewQuery)
+      throws SemanticException, IOException, ParseException {
+    return getAnalyzer(conf).genLogicalPlan(ParseUtils.parse(viewQuery));
+  }
+
+  public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)
+      throws SemanticException, IOException, ParseException {
+    final CalcitePlanner analyzer = getAnalyzer(conf);
+    analyzer.genLogicalPlan(ParseUtils.parse(viewQuery));
+    return analyzer.getResultSchema();
+  }
+
+  private static CalcitePlanner getAnalyzer(HiveConf conf) throws SemanticException, IOException {
+    final QueryState qs =
+        new QueryState.Builder().withHiveConf(conf).build();
+    CalcitePlanner analyzer = new CalcitePlanner(qs);
+    Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    analyzer.initCtx(ctx);
+    analyzer.init(false);
+    return analyzer;
   }
 
   private static TableType obtainTableType(Table tabMetaData) {
