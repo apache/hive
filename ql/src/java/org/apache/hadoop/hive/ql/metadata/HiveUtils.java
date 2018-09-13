@@ -21,7 +21,14 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -446,5 +453,24 @@ public final class HiveUtils {
       return new Path(root, dbName + "." + tableName);
     }
     return new Path(root, dbName);
+  }
+
+  public static List<FieldSchema> parseQuery(HiveConf conf, String viewQuery) {
+    try {
+      final ASTNode node = ParseUtils.parse(viewQuery);
+      final QueryState qs =
+          new QueryState.Builder().withHiveConf(conf).build();
+      CalcitePlanner analyzer = new CalcitePlanner(qs);
+      Context ctx = new Context(conf);
+      ctx.setIsLoadingMaterializedView(true);
+      analyzer.initCtx(ctx);
+      analyzer.init(false);
+      analyzer.genLogicalPlan(node);
+      return analyzer.getResultSchema();
+    } catch (Exception e) {
+      // We could not parse the view
+      LOG.error("Error parsing original query for materialized view", e);
+      return null;
+    }
   }
 }
