@@ -119,9 +119,7 @@ public class QueryState {
     } else {
       jobTag = jobTag.concat("," + queryTag);
     }
-    if (SessionState.get() != null) {
-      jobTag = jobTag.concat("," + "userid=" + SessionState.get().getUserName());
-    }
+    jobTag = jobTag.concat("," + "userid=" + SessionState.get().getUserName());
     queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
     queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);
   }
