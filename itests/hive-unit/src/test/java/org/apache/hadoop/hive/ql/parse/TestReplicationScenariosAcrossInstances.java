@@ -1400,4 +1400,25 @@ public class TestReplicationScenariosAcrossInstances {
             .run("select id from t4")
             .verifyResult(null); // Returns null as create table event doesn't list files
   }
+
+  @Test
+  public void testDumpExternalTableWithAddPartitionEvent() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary.dump("repl dump " + primaryDbName);
+
+    replica.load(replicatedDbName, tuple.dumpLocation);
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table t1 (place string) partitioned by (country string)")
+            .run("alter table t1 add partition(country='india')")
+            .run("alter table t1 add partition(country='us')")
+            .dump("repl dump " + primaryDbName + " from " + tuple.lastReplicationId
+                    + " with ('hive.repl.include.external.tables'='true')");
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show partitions t1")
+            .verifyResults(new String[] { "country=india", "country=us" });
+  }
 }
