@@ -3238,14 +3238,14 @@ public class TestReplicationScenarios {
 
     run("insert into " + tableNameNoPart + " values (1) ", driver);
     run("insert into " + tableNameNoPart + " values (2) ", driver);
-    verifySetup("SELECT fld from " + tableNameNoPart , new String[]{ "1" , "2" }, driver);
+    verifyRun("SELECT fld from " + tableNameNoPart , new String[]{ "1" , "2" }, driver);
 
     run("insert into " + tableNamePart + " partition (part=10) values (1) ", driver);
     run("insert into " + tableNamePart + " partition (part=10) values (2) ", driver);
     run("insert into " + tableNamePart + " partition (part=11) values (3) ", driver);
-    verifySetup("SELECT fld from " + tableNamePart , new String[]{ "1" , "2" , "3"}, driver);
-    verifySetup("SELECT fld from " + tableNamePart + " where part = 10" , new String[]{ "1" , "2"}, driver);
-    verifySetup("SELECT fld from " + tableNamePart + " where part = 11" , new String[]{ "3" }, driver);
+    verifyRun("SELECT fld from " + tableNamePart , new String[]{ "1" , "2" , "3"}, driver);
+    verifyRun("SELECT fld from " + tableNamePart + " where part = 10" , new String[]{ "1" , "2"}, driver);
+    verifyRun("SELECT fld from " + tableNamePart + " where part = 11" , new String[]{ "3" }, driver);
 
     String replDbName = dbName + "_replica";
     Tuple dump = replDumpDb(dbName, null, null, null);
@@ -3280,8 +3280,7 @@ public class TestReplicationScenarios {
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
     verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
-    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned", driver);
-    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned", driver);
+    run("CREATE TABLE " + dbName + ".unptned_late AS SELECT * FROM " + dbName + ".unptned", driver);
     verifySetup("SELECT * from " + dbName + ".unptned_late ORDER BY a", unptn_data, driver);
 
     Tuple incrementalDump = replDumpDb(dbName, replDumpId, null, null);

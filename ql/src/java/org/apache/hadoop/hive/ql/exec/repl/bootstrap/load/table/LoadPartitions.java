@@ -228,12 +228,13 @@ public class LoadPartitions {
     Path tmpPath = replicaWarehousePartitionLocation;
 
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
-    LoadFileType loadFileType =
-            event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+    LoadFileType loadFileType;
     if (event.replicationSpec().isInReplicationScope() &&
             context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
       loadFileType = LoadFileType.IGNORE;
     } else {
+      loadFileType =
+              event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
       tmpPath = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
     }
 
@@ -241,7 +242,7 @@ public class LoadPartitions {
         event.replicationSpec(),
         sourceWarehousePartitionLocation,
         tmpPath,
-        context.hiveConf
+        context.hiveConf, false, false
     );
     Task<?> movePartitionTask = movePartitionTask(table, partSpec, tmpPath, loadFileType);
 

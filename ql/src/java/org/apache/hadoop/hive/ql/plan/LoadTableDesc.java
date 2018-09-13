@@ -67,7 +67,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
      */
     OVERWRITE_EXISTING,
     /**
-     * No need to rename the file, used in case of replication to s3
+     * No need to move the file, used in case of replication to s3
      */
     IGNORE
   }
