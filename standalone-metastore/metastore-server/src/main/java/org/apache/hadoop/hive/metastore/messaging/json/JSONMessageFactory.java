@@ -125,9 +125,8 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp) {
-    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
-                                    before, after, isTruncateOp, now());
+  public AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp, Long writeId) {
+    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, before, after, isTruncateOp, writeId, now());
   }
 
   @Override
@@ -144,9 +143,9 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-      Partition after, boolean isTruncateOp) {
+      Partition after, boolean isTruncateOp, Long writeId) {
     return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
-                                        table, before, after, isTruncateOp, now());
+                                        table, before, after, isTruncateOp, writeId, now());
   }
 
   @Override

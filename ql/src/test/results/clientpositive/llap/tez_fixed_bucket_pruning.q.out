@@ -543,7 +543,7 @@ STAGE PLANS:
                                 Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
                                   key expressions: _col0 (type: bigint), _col1 (type: bigint)
-                                  null sort order: aa
+                                  null sort order: zz
                                   sort order: ++
                                   Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                                   tag: -1
@@ -918,11 +918,11 @@ POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104
 POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
-7147200	NULL	27114
-7147200	NULL	27114
-7147200	NULL	27114
-7147200	NULL	27114
-7147200	NULL	27114
+7147200	189561	27114
+7147200	191205	27114
+7147200	195775	27114
+7147200	234349	27114
+7147200	350519	27114
 Warning: Map Join MAPJOIN[48][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
@@ -1042,7 +1042,7 @@ STAGE PLANS:
                                 Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
                                   key expressions: _col0 (type: bigint), _col1 (type: bigint)
-                                  null sort order: aa
+                                  null sort order: zz
                                   sort order: ++
                                   Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                                   tag: -1
@@ -1418,8 +1418,8 @@ POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104
 POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
-7147200	NULL	27114
-7147200	NULL	27114
-7147200	NULL	27114
-7147200	NULL	27114
-7147200	NULL	27114
+7147200	189561	27114
+7147200	191205	27114
+7147200	195775	27114
+7147200	234349	27114
+7147200	350519	27114

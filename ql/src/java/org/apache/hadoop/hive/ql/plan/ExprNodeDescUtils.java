@@ -938,7 +938,7 @@ public class ExprNodeDescUtils {
     return true;
   }
 
-  // Given an expression this method figures out of the type for the expression belongs to string group
+  // Given an expression this method figures out if the type for the expression belongs to string group
   // e.g. (String, Char, Varchar etc)
   public static boolean isStringType(ExprNodeDesc expr) {
     TypeInfo typeInfo = expr.getTypeInfo();
@@ -946,6 +946,21 @@ public class ExprNodeDescUtils {
       PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
       if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory) ==
           PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP) {
+        return true;
+      }
+    }
+    return false;
+  }
+    // Given an expression this method figures out if the type for the expression is integer
+  // i.e. INT, SHORT, TINYINT (BYTE) or LONG
+  public static boolean isIntegerType(ExprNodeDesc expr) {
+    TypeInfo typeInfo = expr.getTypeInfo();
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      if(primitiveCategory == PrimitiveCategory.INT
+        || primitiveCategory == PrimitiveCategory.SHORT
+          || primitiveCategory == PrimitiveCategory.BYTE
+        || primitiveCategory == PrimitiveCategory.LONG){
         return true;
       }
     }

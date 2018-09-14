@@ -148,7 +148,7 @@ public class Initiator extends CompactorThread {
               // The response will have one entry per table and hence we get only one ValidWriteIdList
               String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
               GetValidWriteIdsRequest rqst
-                      = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+                      = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
               ValidWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
                       txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
 

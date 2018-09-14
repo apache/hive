@@ -57,6 +57,11 @@ public final class WriteBuffers implements RandomAccessOutput, MemoryEstimate {
       memSize += (2 * jdm.primitive1());
       return memSize;
     }
+    public void set(Position pos) {
+      buffer = pos.buffer;
+      bufferIndex = pos.bufferIndex;
+      offset = pos.offset;
+    }
   }
 
   Position writePos = new Position(); // Position where we'd write
@@ -552,6 +557,21 @@ public final class WriteBuffers implements RandomAccessOutput, MemoryEstimate {
     return v;
   }
 
+  public long readNByteLong(int bytes, Position readPos) {
+    long v = 0;
+    if (isAllInOneReadBuffer(bytes, readPos)) {
+      for (int i = 0; i < bytes; ++i) {
+        v = (v << 8) + (readPos.buffer[readPos.offset + i] & 0xff);
+      }
+      readPos.offset += bytes;
+    } else {
+      for (int i = 0; i < bytes; ++i) {
+        v = (v << 8) + (readNextByte(readPos) & 0xff);
+      }
+    }
+    return v;
+  }
+
   public void writeFiveByteULong(long offset, long v) {
     int prevIndex = writePos.bufferIndex, prevOffset = writePos.offset;
     setWritePoint(offset);
@@ -574,8 +594,41 @@ public final class WriteBuffers implements RandomAccessOutput, MemoryEstimate {
     writePos.offset = prevOffset;
   }
 
+  public void writeFiveByteULong(long v) {
+    if (isAllInOneWriteBuffer(5)) {
+      writePos.buffer[writePos.offset] = (byte)(v >>> 32);
+      writePos.buffer[writePos.offset + 1] = (byte)(v >>> 24);
+      writePos.buffer[writePos.offset + 2] = (byte)(v >>> 16);
+      writePos.buffer[writePos.offset + 3] = (byte)(v >>> 8);
+      writePos.buffer[writePos.offset + 4] = (byte)(v);
+      writePos.offset += 5;
+    } else {
+      write((byte)(v >>> 32));
+      write((byte)(v >>> 24));
+      write((byte)(v >>> 16));
+      write((byte)(v >>> 8));
+      write((byte)(v));
+    }
+  }
+
   public int readInt(long offset) {
     return (int)unsafeReadNByteLong(offset, 4);
+  }
+
+  public int readInt(long offset, Position readPos) {
+    setReadPoint(offset, readPos);
+    long v = 0;
+    if (isAllInOneReadBuffer(4, readPos)) {
+      for (int i = 0; i < 4; ++i) {
+        v = (v << 8) + (readPos.buffer[readPos.offset + i] & 0xff);
+      }
+      readPos.offset += 4;
+    } else {
+      for (int i = 0; i < 4; ++i) {
+        v = (v << 8) + (readNextByte(readPos) & 0xff);
+      }
+    }
+    return (int) v;
   }
 
   @Override

@@ -57,10 +57,11 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
     TruncateTableDesc truncateTableDesc = new TruncateTableDesc(
             actualDbName + "." + actualTblName, partSpec,
             context.eventOnlyReplicationSpec());
+    truncateTableDesc.setWriteId(msg.getWriteId());
     Task<DDLWork> truncatePtnTask = TaskFactory.get(
         new DDLWork(readEntitySet, writeEntitySet, truncateTableDesc), context.hiveConf);
-    context.log.debug("Added truncate ptn task : {}:{}", truncatePtnTask.getId(),
-        truncateTableDesc.getTableName());
+    context.log.debug("Added truncate ptn task : {}:{}:{}", truncatePtnTask.getId(),
+        truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, partSpec);
     return Collections.singletonList(truncatePtnTask);
   }
