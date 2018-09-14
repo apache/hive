@@ -490,7 +490,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (CAST( _col1 AS decimal(15,4)) / CAST( _col2 AS decimal(15,4))) ASC NULLS FIRST
+                        order by: (CAST( _col1 AS decimal(15,4)) / CAST( _col2 AS decimal(15,4))) ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -527,7 +527,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (CAST( _col4 AS decimal(15,4)) / CAST( _col5 AS decimal(15,4))) ASC NULLS FIRST
+                        order by: (CAST( _col4 AS decimal(15,4)) / CAST( _col5 AS decimal(15,4))) ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -645,7 +645,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (CAST( _col1 AS decimal(15,4)) / CAST( _col2 AS decimal(15,4))) ASC NULLS FIRST
+                        order by: (CAST( _col1 AS decimal(15,4)) / CAST( _col2 AS decimal(15,4))) ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -682,7 +682,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (CAST( _col4 AS decimal(15,4)) / CAST( _col5 AS decimal(15,4))) ASC NULLS FIRST
+                        order by: (CAST( _col4 AS decimal(15,4)) / CAST( _col5 AS decimal(15,4))) ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -769,7 +769,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (CAST( _col1 AS decimal(15,4)) / CAST( _col2 AS decimal(15,4))) ASC NULLS FIRST
+                        order by: (CAST( _col1 AS decimal(15,4)) / CAST( _col2 AS decimal(15,4))) ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -806,7 +806,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (CAST( _col4 AS decimal(15,4)) / CAST( _col5 AS decimal(15,4))) ASC NULLS FIRST
+                        order by: (CAST( _col4 AS decimal(15,4)) / CAST( _col5 AS decimal(15,4))) ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
