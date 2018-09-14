@@ -200,7 +200,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -260,7 +260,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -313,7 +313,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: CASE WHEN (_col4 is not null) THEN (_col4) ELSE (_col1) END ASC NULLS FIRST
+                        order by: CASE WHEN (_col4 is not null) THEN (_col4) ELSE (_col1) END ASC NULLS LAST
                         partition by: CASE WHEN (_col3 is not null) THEN (_col3) ELSE (_col0) END
                         raw input shape:
                         window functions:
