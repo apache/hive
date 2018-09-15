@@ -434,7 +434,6 @@ public class QTestUtil {
     llap(CoreClusterType.TEZ, FsType.hdfs),
     llap_local(CoreClusterType.TEZ, FsType.local),
     none(CoreClusterType.MR, FsType.local),
-    druid(CoreClusterType.TEZ, FsType.hdfs),
     druidLocal(CoreClusterType.TEZ, FsType.local),
     druidKafka(CoreClusterType.TEZ, FsType.hdfs),
     kafka(CoreClusterType.TEZ, FsType.hdfs);
@@ -472,8 +471,6 @@ public class QTestUtil {
         return llap;
       } else if (type.equals("llap_local")) {
         return llap_local;
-      } else if (type.equals("druid")) {
-        return druid;
       } else if (type.equals("druidLocal")) {
         return druidLocal;
       } else if (type.equals("druid-kafka")) {
@@ -636,8 +633,7 @@ public class QTestUtil {
 
     String uriString = fs.getUri().toString();
 
-    if (clusterType == MiniClusterType.druid
-        || clusterType == MiniClusterType.druidKafka
+    if (clusterType == MiniClusterType.druidKafka
         || clusterType == MiniClusterType.druidLocal) {
       final String tempDir = System.getProperty("test.tmp.dir");
       druidCluster = new MiniDruidCluster("mini-druid",
@@ -683,7 +679,7 @@ public class QTestUtil {
           MiniClusterType.llap,
           MiniClusterType.llap_local,
           MiniClusterType.druidLocal,
-          MiniClusterType.druid
+          MiniClusterType.druidKafka
       ).contains(clusterType)) {
         llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, setup.zooKeeperCluster, confDir);
       } else {
@@ -699,7 +695,7 @@ public class QTestUtil {
             conf,
             numTrackers,
             uriString,
-            EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local, MiniClusterType.druid).contains(clusterType)
+            EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local, MiniClusterType.druidKafka).contains(clusterType)
         );
       }
     } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
