@@ -22,6 +22,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -144,6 +145,14 @@ public class ColumnType {
     NumericCastOrder.put(DOUBLE_TYPE_NAME, 7);
   }
 
+  private static final Set<String> decoratedTypeNames = new HashSet<>();
+
+  static {
+    decoratedTypeNames.add("char");
+    decoratedTypeNames.add("decimal");
+    decoratedTypeNames.add("varchar");
+  }
+
   private static final Map<String, String> alternateTypeNames = new HashMap<>();
 
   static {
@@ -199,6 +208,9 @@ public class ColumnType {
   public static String getTypeName(String typeString) {
     if (typeString == null) return null;
     String protoType = typeString.toLowerCase().split("\\W")[0];
+    if (decoratedTypeNames.contains(protoType)) {
+      return protoType;
+    }
     String realType = alternateTypeNames.get(protoType);
     return realType == null ? protoType : realType;
   }
@@ -217,8 +229,9 @@ public class ColumnType {
         return NumericCastOrder.get(from) < NumericCastOrder.get(to);
       }
 
-      // Allow string to double conversion
-      if (StringTypes.contains(from) && to.equals(DOUBLE_TYPE_NAME)) return true;
+      // Allow string to double/decimal conversion
+      if (StringTypes.contains(from) &&
+          (to.equals(DOUBLE_TYPE_NAME) || to.equals(DECIMAL_TYPE_NAME))) return true;
 
       // Void can go to anything
       if (from.equals(VOID_TYPE_NAME)) return true;
