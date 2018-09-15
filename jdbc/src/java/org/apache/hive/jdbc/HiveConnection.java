@@ -1492,6 +1492,9 @@ public class HiveConnection implements java.sql.Connection {
     if (schema == null || schema.isEmpty()) {
       throw new SQLException("Schema name is null or empty");
     }
+    if (schema.contains(";")) {
+      throw new SQLException("invalid schema name");
+    }
     Statement stmt = createStatement();
     stmt.execute("use " + schema);
     stmt.close();
