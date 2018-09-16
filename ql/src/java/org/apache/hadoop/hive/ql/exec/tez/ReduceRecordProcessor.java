@@ -262,7 +262,7 @@ public class ReduceRecordProcessor extends RecordProcessor {
             e.getMessage());
         throw (InterruptedException) e;
       } else {
-        throw new RuntimeException("Reduce operator initialization failed", e);
+        throw new RuntimeException(redWork.getName() + " operator initialization failed", e);
       }
     }
 

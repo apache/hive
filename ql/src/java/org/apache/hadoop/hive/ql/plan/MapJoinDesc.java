@@ -33,10 +33,16 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * Map Join operator Descriptor implementation.
@@ -91,6 +97,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.keys = clone.keys;
     this.keyTblDesc = clone.keyTblDesc;
     this.valueTblDescs = clone.valueTblDescs;
+    this.valueFilteredTblDescs = clone.valueFilteredTblDescs;
     this.posBigTable = clone.posBigTable;
     this.valueIndices = clone.valueIndices;
     this.retainList = clone.retainList;
@@ -208,6 +215,16 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.dumpFilePrefix = dumpFilePrefix;
   }
 
+  // NOTE: Debugging only.
+  @Explain(displayName = "keyExpressions", explainLevels = { Level.DEBUG })
+  public Map<Byte, String> getKeyExpressionString() {
+    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+    for (Map.Entry<Byte, List<ExprNodeDesc>> k: getKeys().entrySet()) {
+      keyMap.put(k.getKey(), k.getValue().toString());
+    }
+    return keyMap;
+  }
+
   /**
    * @return the keys in string form
    */
@@ -290,6 +307,60 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
    */
   public List<TableDesc> getValueTblDescs() {
     return valueTblDescs;
+  }
+
+  // NOTE: Debugging only.
+  @Explain(displayName = "keyContext", explainLevels = { Level.DEBUG })
+  public String getDebugKeyContext() {
+    MapJoinObjectSerDeContext keyContext;
+    try {
+      AbstractSerDe keySerde =
+          (AbstractSerDe) ReflectionUtil.newInstance(
+              keyTblDesc.getDeserializerClass(), null);
+      SerDeUtils.initializeSerDe(keySerde, null, keyTblDesc.getProperties(), null);
+      keyContext = new MapJoinObjectSerDeContext(keySerde, false);
+    } catch (SerDeException e) {
+      return null;
+    }
+    return keyContext.stringify();
+  }
+
+  private boolean hasFilter(int alias, int[][] filterMaps) {
+    return filterMaps != null && filterMaps[alias] != null;
+  }
+
+  // NOTE: Debugging only.
+  @Explain(displayName = "valueContexts", explainLevels = { Level.DEBUG })
+  public String getDebugValueContext() {
+    List<String> valueContextStringList = new ArrayList<String>();
+    try {
+      boolean noOuterJoin = getNoOuterJoin();
+      // Order in which the results should be output.
+      Byte[] order = getTagOrder();
+      int[][] filterMaps = getFilterMap();
+
+      for (int pos = 0; pos < order.length; pos++) {
+        if (pos == posBigTable) {
+          continue;
+        }
+        TableDesc valueTableDesc;
+        if (noOuterJoin) {
+          valueTableDesc = getValueTblDescs().get(pos);
+        } else {
+          valueTableDesc = getValueFilteredTblDescs().get(pos);
+        }
+        AbstractSerDe valueSerDe =
+            (AbstractSerDe) ReflectionUtil.newInstance(
+                valueTableDesc.getDeserializerClass(), null);
+        SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
+        MapJoinObjectSerDeContext valueContext =
+            new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos, filterMaps));
+        valueContextStringList.add(pos + ":" + valueContext.stringify());
+      }
+    } catch (SerDeException e) {
+      return null;
+    }
+    return valueContextStringList.toString();
   }
 
   /**
@@ -378,12 +449,33 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     return genJoinKeys;
   }
 
+  @Explain(displayName = "DynamicPartitionHashJoin", explainLevels = { Level.USER, Level.DEFAULT,
+      Level.EXTENDED }, displayOnlyOnTrue = true)
   public boolean isDynamicPartitionHashJoin() {
     return isDynamicPartitionHashJoin;
   }
 
   public void setDynamicPartitionHashJoin(boolean isDistributedHashJoin) {
     this.isDynamicPartitionHashJoin = isDistributedHashJoin;
+  }
+
+  // NOTE: Debugging only.
+  @Explain(displayName = "outer filter mappings", explainLevels = { Level.DEBUG })
+  public String getDebugOuterFilterMapString() {
+    if (conds.length != 1) {
+      return null;
+    }
+    JoinCondDesc cond = conds[0];
+    if (cond.getType() != JoinDesc.FULL_OUTER_JOIN &&
+        cond.getType() != JoinDesc.LEFT_OUTER_JOIN &&
+        cond.getType() != JoinDesc.RIGHT_OUTER_JOIN) {
+      return null;
+    }
+    int[][] fm = getFilterMap();
+    if (fm == null) {
+      return null;
+    }
+    return Arrays.deepToString(fm);
   }
 
   // Use LinkedHashSet to give predictable display order.
@@ -401,7 +493,9 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     public MapJoinOperatorExplainVectorization(MapJoinDesc mapJoinDesc,
         VectorMapJoinDesc vectorMapJoinDesc) {
       // VectorMapJoinOperator is not native vectorized.
-      super(vectorMapJoinDesc, vectorMapJoinDesc.getHashTableImplementationType() != HashTableImplementationType.NONE);
+      super(
+          vectorMapJoinDesc,
+          vectorMapJoinDesc.getHashTableImplementationType() != HashTableImplementationType.NONE);
       this.mapJoinDesc = mapJoinDesc;
       this.vectorMapJoinDesc = vectorMapJoinDesc;
       vectorMapJoinInfo =
@@ -414,7 +508,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
       String engine = vectorMapJoinDesc.getEngine();
       String engineInSupportedCondName =
-          HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname + " " + engine + " IN " + vectorizableMapJoinNativeEngines;
+          HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname + " " +
+              engine + " IN " + vectorizableMapJoinNativeEngines;
       boolean engineInSupported = vectorizableMapJoinNativeEngines.contains(engine);
 
       boolean isFastHashTableEnabled = vectorMapJoinDesc.getIsFastHashTableEnabled();
@@ -469,7 +564,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       return conditions;
     }
 
-    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeConditionsMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeConditionsMet",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getNativeConditionsMet() {
       if (nativeConditions == null) {
         nativeConditions = createNativeConditions();
@@ -477,7 +573,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       return VectorizationCondition.getConditionsMet(nativeConditions);
     }
 
-    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeConditionsNotMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeConditionsNotMet",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getNativeConditionsNotMet() {
       if (nativeConditions == null) {
         nativeConditions = createNativeConditions();
@@ -485,7 +582,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       return VectorizationCondition.getConditionsNotMet(nativeConditions);
     }
 
-    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "bigTableKeyExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "bigTableKeyExpressions",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getBigTableKeyExpressions() {
       return vectorExpressionsToStringList(
           isNative ?
@@ -493,8 +591,18 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
               vectorMapJoinDesc.getAllBigTableKeyExpressions());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableKeyColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getBigTableKeyColumnNums() {
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "hashTableImplementationType",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String hashTableImplementationType() {
+      if (!isNative) {
+        return null;
+      }
+      return vectorMapJoinDesc.getHashTableImplementationType().name();
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableKeyColumns",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getBigTableKeyColumns() {
       if (!isNative) {
         return null;
       }
@@ -502,10 +610,13 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       if (bigTableKeyColumnMap.length == 0) {
         return null;
       }
-      return Arrays.toString(bigTableKeyColumnMap);
+      return outputColumnsAndTypesToStringList(
+          vectorMapJoinInfo.getBigTableKeyColumnMap(),
+          vectorMapJoinInfo.getBigTableKeyTypeInfos());
     }
 
-    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "bigTableValueExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "bigTableValueExpressions",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getBigTableValueExpressions() {
       return vectorExpressionsToStringList(
           isNative ?
@@ -513,8 +624,18 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
               vectorMapJoinDesc.getAllBigTableValueExpressions());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableValueColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getBigTableValueColumnNums() {
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "bigTableFilterExpressions",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getBigTableFilterExpressions() {
+      if (!isNative) {
+        return null;
+      }
+      return vectorExpressionsToStringList(vectorMapJoinInfo.getBigTableFilterExpressions());
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableValueColumns",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getBigTableValueColumns() {
       if (!isNative) {
         return null;
       }
@@ -522,48 +643,78 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       if (bigTableValueColumnMap.length == 0) {
         return null;
       }
-      return Arrays.toString(bigTableValueColumnMap);
+      return outputColumnsAndTypesToStringList(
+          vectorMapJoinInfo.getBigTableValueColumnMap(),
+          vectorMapJoinInfo.getBigTableValueTypeInfos());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "smallTableMapping", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getSmallTableColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "smallTableValueMapping",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getSmallTableColumns() {
       if (!isNative) {
         return null;
       }
-      return outputColumnsToStringList(vectorMapJoinInfo.getSmallTableMapping());
+      return outputColumnsAndTypesToStringList(vectorMapJoinInfo.getSmallTableValueMapping());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "projectedOutputColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getProjectedOutputColumnNums() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "projectedOutput",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getProjectedOutputColumnNums() {
       if (!isNative) {
         return null;
       }
-      return outputColumnsToStringList(vectorMapJoinInfo.getProjectionMapping());
+      return outputColumnsAndTypesToStringList(vectorMapJoinInfo.getProjectionMapping());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableOuterKeyMapping", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public List<String> getBigTableOuterKey() {
-      if (!isNative || vectorMapJoinDesc.getVectorMapJoinVariation() != VectorMapJoinVariation.OUTER) {
-        return null;
-      }
-      return columnMappingToStringList(vectorMapJoinInfo.getBigTableOuterKeyMapping());
-    }
-
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableRetainedColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableRetainColumnNums",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public String getBigTableRetainedColumnNums() {
       if (!isNative) {
         return null;
       }
-      return outputColumnsToStringList(vectorMapJoinInfo.getBigTableRetainedMapping());
+      return Arrays.toString(vectorMapJoinInfo.getBigTableRetainColumnMap());
     }
 
-    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeNotSupportedKeyTypes", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "nonOuterSmallTableKeyMapping",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getNonOuterSmallTableKeyMapping() {
+      if (!isNative ||
+          (vectorMapJoinDesc.getVectorMapJoinVariation() == VectorMapJoinVariation.OUTER ||
+          vectorMapJoinDesc.getVectorMapJoinVariation() == VectorMapJoinVariation.FULL_OUTER)) {
+        return null;
+      }
+      return Arrays.toString(vectorMapJoinInfo.getNonOuterSmallTableKeyColumnMap());
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "outerSmallTableKeyMapping",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getOuterSmallTableKeyMapping() {
+      if (!isNative ||
+          vectorMapJoinDesc.getVectorMapJoinVariation() != VectorMapJoinVariation.OUTER) {
+        return null;
+      }
+      return columnMappingToStringList(vectorMapJoinInfo.getOuterSmallTableKeyMapping());
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "fullOuterSmallTableKeyMapping",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getFullOuterSmallTableKeyMapping() {
+      if (!isNative ||
+          vectorMapJoinDesc.getVectorMapJoinVariation() != VectorMapJoinVariation.FULL_OUTER) {
+        return null;
+      }
+      return columnMappingToStringList(vectorMapJoinInfo.getFullOuterSmallTableKeyMapping());
+    }
+
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeNotSupportedKeyTypes",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getNativeNotSupportedKeyTypes() {
       return vectorMapJoinDesc.getNotSupportedKeyTypes();
     }
   }
 
-  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Map Join Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Map Join Vectorization",
+      explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public MapJoinOperatorExplainVectorization getMapJoinVectorization() {
     VectorMapJoinDesc vectorMapJoinDesc = (VectorMapJoinDesc) getVectorDesc();
     if (vectorMapJoinDesc == null || this instanceof SMBJoinDesc) {
@@ -587,7 +738,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   // Handle dual nature.
-  @Explain(vectorization = Vectorization.OPERATOR, displayName = "SMB Map Join Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "SMB Map Join Vectorization",
+      explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public SMBJoinOperatorExplainVectorization getSMBJoinVectorization() {
     VectorSMBJoinDesc vectorSMBJoinDesc = (VectorSMBJoinDesc) getVectorDesc();
     if (vectorSMBJoinDesc == null || !(this instanceof SMBJoinDesc)) {

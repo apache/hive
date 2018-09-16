@@ -73,6 +73,9 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLeftSemiString
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterStringOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinFullOuterLongOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinFullOuterMultiKeyOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinFullOuterStringOperator;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFOperator;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -122,6 +125,7 @@ import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -289,15 +293,15 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private HiveConf hiveConf;
 
-  public static enum VectorizationEnabledOverride {
+  public enum EnabledOverride {
     NONE,
     DISABLE,
     ENABLE;
 
-    public final static Map<String,VectorizationEnabledOverride> nameMap =
-        new HashMap<String,VectorizationEnabledOverride>();
+    public static final Map<String, EnabledOverride> nameMap =
+        new HashMap<String, EnabledOverride>();
     static {
-      for (VectorizationEnabledOverride vectorizationEnabledOverride : values()) {
+      for (EnabledOverride vectorizationEnabledOverride : values()) {
         nameMap.put(
             vectorizationEnabledOverride.name().toLowerCase(), vectorizationEnabledOverride);
       }
@@ -305,7 +309,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   boolean isVectorizationEnabled;
-  private VectorizationEnabledOverride vectorizationEnabledOverride;
+  private EnabledOverride vectorizationEnabledOverride;
   boolean isTestForcedVectorizationEnable;
 
   private boolean useVectorizedInputFileFormat;
@@ -725,8 +729,61 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
   }
 
-  private List<Operator<? extends OperatorDesc>> newOperatorList() {
+  private static List<Operator<? extends OperatorDesc>> newOperatorList() {
     return new ArrayList<Operator<? extends OperatorDesc>>();
+  }
+
+  public static void debugDisplayJoinOperatorTree(Operator<? extends OperatorDesc> joinOperator,
+      String prefix) {
+    List<Operator<? extends OperatorDesc>> currentParentList = newOperatorList();
+    currentParentList.add(joinOperator);
+
+    int depth = 0;
+    do {
+      List<Operator<? extends OperatorDesc>> nextParentList = newOperatorList();
+
+      final int count = currentParentList.size();
+      for (int i = 0; i < count; i++) {
+        Operator<? extends OperatorDesc> parent = currentParentList.get(i);
+        System.out.println(prefix + " parent depth " + depth + " " +
+            parent.getClass().getSimpleName() + " " + parent.toString());
+
+        List<Operator<? extends OperatorDesc>> parentList = parent.getParentOperators();
+        if (parentList == null || parentList.size() == 0) {
+          continue;
+        }
+
+        nextParentList.addAll(parentList);
+      }
+
+      currentParentList = nextParentList;
+      depth--;
+    } while (currentParentList.size() > 0);
+
+    List<Operator<? extends OperatorDesc>> currentChildList = newOperatorList();
+    currentChildList.addAll(joinOperator.getChildOperators());
+
+    depth = 1;
+    do {
+      List<Operator<? extends OperatorDesc>> nextChildList = newOperatorList();
+
+      final int count = currentChildList.size();
+      for (int i = 0; i < count; i++) {
+        Operator<? extends OperatorDesc> child = currentChildList.get(i);
+        System.out.println(prefix + " child depth " + depth + " " +
+            child.getClass().getSimpleName() + " " + child.toString());
+
+        List<Operator<? extends OperatorDesc>> childList = child.getChildOperators();
+        if (childList == null || childList.size() == 0) {
+          continue;
+        }
+
+        nextChildList.addAll(childList);
+      }
+
+      currentChildList = nextChildList;
+      depth--;
+    } while (currentChildList.size() > 0);
   }
 
   private Operator<? extends OperatorDesc> validateAndVectorizeOperatorTree(
@@ -973,7 +1030,15 @@ public class Vectorizer implements PhysicalPlanResolver {
             if (isReduceVectorizationEnabled) {
               convertReduceWork(reduceWork);
             }
+
             logReduceWorkExplainVectorization(reduceWork);
+          } else if (baseWork instanceof MergeJoinWork){
+            MergeJoinWork mergeJoinWork = (MergeJoinWork) baseWork;
+
+            // Always set the EXPLAIN conditions.
+            setMergeJoinWorkExplainConditions(mergeJoinWork);
+
+            logMergeJoinWorkExplainVectorization(mergeJoinWork);
           }
         }
       } else if (currTask instanceof SparkTask) {
@@ -1027,6 +1092,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       reduceWork.setReduceVectorizationEnabled(isReduceVectorizationEnabled);
       reduceWork.setVectorReduceEngine(
           HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE));
+    }
+
+    private void setMergeJoinWorkExplainConditions(MergeJoinWork mergeJoinWork) {
+
+      setExplainConditions(mergeJoinWork);
     }
 
     private boolean logExplainVectorization(BaseWork baseWork, String name) {
@@ -1099,6 +1169,13 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Reducer " + HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCE_ENABLED.varname +
           ": " + reduceWork.getReduceVectorizationEnabled());
       LOG.info("Reducer engine: " + reduceWork.getVectorReduceEngine());
+    }
+
+    private void logMergeJoinWorkExplainVectorization(MergeJoinWork mergeJoinWork) {
+
+      if (!logExplainVectorization(mergeJoinWork, "MergeJoin")) {
+        return;
+      }
     }
 
     private void convertMapWork(MapWork mapWork, boolean isTezOrSpark) throws SemanticException {
@@ -2319,7 +2396,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         HiveConf.getVar(hiveConf,
             HiveConf.ConfVars.HIVE_TEST_VECTORIZATION_ENABLED_OVERRIDE);
     vectorizationEnabledOverride =
-        VectorizationEnabledOverride.nameMap.get(vectorizationEnabledOverrideString);
+        EnabledOverride.nameMap.get(vectorizationEnabledOverrideString);
 
     isVectorizationEnabled = HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
@@ -3264,7 +3341,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     HashTableImplementationType hashTableImplementationType = HashTableImplementationType.NONE;
     HashTableKind hashTableKind = HashTableKind.NONE;
     HashTableKeyType hashTableKeyType = HashTableKeyType.NONE;
-    VectorMapJoinVariation vectorMapJoinVariation = VectorMapJoinVariation.NONE;
+    VectorMapJoinVariation vectorMapJoinVariation = null;
 
     if (vectorDesc.getIsFastHashTableEnabled()) {
       hashTableImplementationType = HashTableImplementationType.FAST;
@@ -3334,6 +3411,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       vectorMapJoinVariation = VectorMapJoinVariation.OUTER;
       hashTableKind = HashTableKind.HASH_MAP;
       break;
+    case JoinDesc.FULL_OUTER_JOIN:
+      vectorMapJoinVariation = VectorMapJoinVariation.FULL_OUTER;
+      hashTableKind = HashTableKind.HASH_MAP;
+      break;
     case JoinDesc.LEFT_SEMI_JOIN:
       vectorMapJoinVariation = VectorMapJoinVariation.LEFT_SEMI;
       hashTableKind = HashTableKind.HASH_SET;
@@ -3363,6 +3444,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       case OUTER:
         opClass = VectorMapJoinOuterLongOperator.class;
         break;
+      case FULL_OUTER:
+        opClass = VectorMapJoinFullOuterLongOperator.class;
+        break;
       default:
         throw new HiveException("Unknown operator variation " + vectorMapJoinVariation);
       }
@@ -3380,6 +3464,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         break;
       case OUTER:
         opClass = VectorMapJoinOuterStringOperator.class;
+        break;
+      case FULL_OUTER:
+        opClass = VectorMapJoinFullOuterStringOperator.class;
         break;
       default:
         throw new HiveException("Unknown operator variation " + vectorMapJoinVariation);
@@ -3399,6 +3486,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       case OUTER:
         opClass = VectorMapJoinOuterMultiKeyOperator.class;
         break;
+      case FULL_OUTER:
+        opClass = VectorMapJoinFullOuterMultiKeyOperator.class;
+        break;
       default:
         throw new HiveException("Unknown operator variation " + vectorMapJoinVariation);
       }
@@ -3414,6 +3504,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorDesc.setHashTableKind(hashTableKind);
     vectorDesc.setHashTableKeyType(hashTableKeyType);
     vectorDesc.setVectorMapJoinVariation(vectorMapJoinVariation);
+    if (vectorMapJoinVariation == VectorMapJoinVariation.FULL_OUTER) {
+
+      vectorDesc.setIsFullOuter(true);
+    }
     vectorDesc.setMinMaxEnabled(minMaxEnabled);
     vectorDesc.setVectorMapJoinInfo(vectorMapJoinInfo);
 
@@ -3526,6 +3620,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     /*
      * Similarly, we need a mapping since a value expression can be a calculation and the value
      * will go into a scratch column.
+     *
+     * Value expressions include keys? YES.
      */
     int[] bigTableValueColumnMap = new int[allBigTableValueExpressions.length];
     String[] bigTableValueColumnNames = new String[allBigTableValueExpressions.length];
@@ -3565,18 +3661,24 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorDesc.setAllBigTableValueExpressions(allBigTableValueExpressions);
 
     /*
-     * Small table information.
+     * Column mapping.
      */
-    VectorColumnOutputMapping bigTableRetainedMapping =
-        new VectorColumnOutputMapping("Big Table Retained Mapping");
+    VectorColumnOutputMapping bigTableRetainMapping =
+        new VectorColumnOutputMapping("Big Table Retain Mapping");
 
-    VectorColumnOutputMapping bigTableOuterKeyMapping =
-        new VectorColumnOutputMapping("Big Table Outer Key Mapping");
+    VectorColumnOutputMapping nonOuterSmallTableKeyMapping =
+        new VectorColumnOutputMapping("Non Outer Small Table Key Key Mapping");
+
+    VectorColumnOutputMapping outerSmallTableKeyMapping =
+        new VectorColumnOutputMapping("Outer Small Table Key Mapping");
+
+    VectorColumnSourceMapping fullOuterSmallTableKeyMapping =
+        new VectorColumnSourceMapping("Full Outer Small Table Key Mapping");
 
     // The order of the fields in the LazyBinary small table value must be used, so
     // we use the source ordering flavor for the mapping.
-    VectorColumnSourceMapping smallTableMapping =
-        new VectorColumnSourceMapping("Small Table Mapping");
+    VectorColumnSourceMapping smallTableValueMapping =
+        new VectorColumnSourceMapping("Small Table Value Mapping");
 
     Byte[] order = desc.getTagOrder();
     Byte posSingleVectorMapJoinSmallTable = (order[0] == posBigTable ? order[1] : order[0]);
@@ -3586,7 +3688,6 @@ public class Vectorizer implements PhysicalPlanResolver {
      * Gather up big and small table output result information from the MapJoinDesc.
      */
     List<Integer> bigTableRetainList = desc.getRetainList().get(posBigTable);
-    int bigTableRetainSize = bigTableRetainList.size();
 
     int[] smallTableIndices;
     int smallTableIndicesSize;
@@ -3623,6 +3724,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     VectorColumnSourceMapping projectionMapping = new VectorColumnSourceMapping("Projection Mapping");
 
     int nextOutputColumn = (order[0] == posBigTable ? 0 : smallTableResultSize);
+
+    final int bigTableRetainSize = bigTableRetainList.size();
     for (int i = 0; i < bigTableRetainSize; i++) {
 
       // Since bigTableValueExpressions may do a calculation and produce a scratch column, we
@@ -3636,9 +3739,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       projectionMapping.add(nextOutputColumn, batchColumnIndex, typeInfo);
 
       // Collect columns we copy from the big table batch to the overflow batch.
-      if (!bigTableRetainedMapping.containsOutputColumn(batchColumnIndex)) {
+      if (!bigTableRetainMapping.containsOutputColumn(batchColumnIndex)) {
+
         // Tolerate repeated use of a big table column.
-        bigTableRetainedMapping.add(batchColumnIndex, batchColumnIndex, typeInfo);
+        bigTableRetainMapping.add(batchColumnIndex, batchColumnIndex, typeInfo);
       }
 
       nextOutputColumn++;
@@ -3655,10 +3759,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     nextOutputColumn = firstSmallTableOutputColumn;
 
     // Small table indices has more information (i.e. keys) than retain, so use it if it exists...
-    String[] bigTableRetainedNames;
     if (smallTableIndicesSize > 0) {
       smallTableOutputCount = smallTableIndicesSize;
-      bigTableRetainedNames = new String[smallTableOutputCount];
 
       for (int i = 0; i < smallTableIndicesSize; i++) {
         if (smallTableIndices[i] >= 0) {
@@ -3670,8 +3772,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
           // Since bigTableKeyExpressions may do a calculation and produce a scratch column, we
           // need to map the right column.
-          int batchKeyColumn = bigTableKeyColumnMap[keyIndex];
-          bigTableRetainedNames[i] = bigTableKeyColumnNames[keyIndex];
+          int bigTableKeyColumn = bigTableKeyColumnMap[keyIndex];
           TypeInfo typeInfo = bigTableKeyTypeInfos[keyIndex];
 
           if (!isOuterJoin) {
@@ -3679,25 +3780,30 @@ public class Vectorizer implements PhysicalPlanResolver {
             // Optimize inner join keys of small table results.
 
             // Project the big table key into the small table result "area".
-            projectionMapping.add(nextOutputColumn, batchKeyColumn, typeInfo);
+            projectionMapping.add(nextOutputColumn, bigTableKeyColumn, typeInfo);
 
-            if (!bigTableRetainedMapping.containsOutputColumn(batchKeyColumn)) {
-              // If necessary, copy the big table key into the overflow batch's small table
-              // result "area".
-              bigTableRetainedMapping.add(batchKeyColumn, batchKeyColumn, typeInfo);
+            if (!bigTableRetainMapping.containsOutputColumn(bigTableKeyColumn)) {
+
+              // When the Big Key is not retained in the output result, we do need to copy the
+              // Big Table key into the overflow batch so the projection of it (Big Table key) to
+              // the Small Table key will work properly...
+              //
+              nonOuterSmallTableKeyMapping.add(bigTableKeyColumn, bigTableKeyColumn, typeInfo);
             }
           } else {
 
-            // For outer joins, since the small table key can be null when there is no match,
+            // For outer joins, since the small table key can be null when there for NOMATCH,
             // we must have a physical (scratch) column for those keys.  We cannot use the
-            // projection optimization used by inner joins above.
+            // projection optimization used by non-[FULL} OUTER joins above.
 
             int scratchColumn = vContext.allocateScratchColumn(typeInfo);
             projectionMapping.add(nextOutputColumn, scratchColumn, typeInfo);
 
-            bigTableRetainedMapping.add(batchKeyColumn, scratchColumn, typeInfo);
+            outerSmallTableKeyMapping.add(bigTableKeyColumn, scratchColumn, typeInfo);
 
-            bigTableOuterKeyMapping.add(batchKeyColumn, scratchColumn, typeInfo);
+            // For FULL OUTER MapJoin, we need to be able to deserialize a Small Table key
+            // into the output result.
+            fullOuterSmallTableKeyMapping.add(keyIndex, scratchColumn, typeInfo);
           }
         } else {
 
@@ -3711,21 +3817,18 @@ public class Vectorizer implements PhysicalPlanResolver {
             smallTableExprVectorizes = false;
           }
 
-          bigTableRetainedNames[i] = smallTableExprNode.toString();
-
           TypeInfo typeInfo = smallTableExprNode.getTypeInfo();
 
           // Make a new big table scratch column for the small table value.
           int scratchColumn = vContext.allocateScratchColumn(typeInfo);
           projectionMapping.add(nextOutputColumn, scratchColumn, typeInfo);
 
-          smallTableMapping.add(smallTableValueIndex, scratchColumn, typeInfo);
+          smallTableValueMapping.add(smallTableValueIndex, scratchColumn, typeInfo);
         }
         nextOutputColumn++;
       }
     } else if (smallTableRetainSize > 0) {
       smallTableOutputCount = smallTableRetainSize;
-      bigTableRetainedNames = new String[smallTableOutputCount];
 
       // Only small table values appear in join output result.
 
@@ -3738,20 +3841,23 @@ public class Vectorizer implements PhysicalPlanResolver {
           smallTableExprVectorizes = false;
         }
 
-        bigTableRetainedNames[i] = smallTableExprNode.toString();
-
         // Make a new big table scratch column for the small table value.
         TypeInfo typeInfo = smallTableExprNode.getTypeInfo();
         int scratchColumn = vContext.allocateScratchColumn(typeInfo);
 
         projectionMapping.add(nextOutputColumn, scratchColumn, typeInfo);
 
-        smallTableMapping.add(smallTableValueIndex, scratchColumn, typeInfo);
+        smallTableValueMapping.add(smallTableValueIndex, scratchColumn, typeInfo);
         nextOutputColumn++;
       }
-    } else {
-      bigTableRetainedNames = new String[0];
     }
+
+    Map<Byte, List<ExprNodeDesc>> filterExpressions = desc.getFilters();
+    VectorExpression[] bigTableFilterExpressions =
+        vContext.getVectorExpressions(
+            filterExpressions.get(posBigTable),
+            VectorExpressionDescriptor.Mode.FILTER);
+    vectorMapJoinInfo.setBigTableFilterExpressions(bigTableFilterExpressions);
 
     boolean useOptimizedTable =
         HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
@@ -3808,15 +3914,23 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // Convert dynamic arrays and maps to simple arrays.
 
-    bigTableRetainedMapping.finalize();
+    bigTableRetainMapping.finalize();
+    vectorMapJoinInfo.setBigTableRetainColumnMap(bigTableRetainMapping.getOutputColumns());
+    vectorMapJoinInfo.setBigTableRetainTypeInfos(bigTableRetainMapping.getTypeInfos());
 
-    bigTableOuterKeyMapping.finalize();
+    nonOuterSmallTableKeyMapping.finalize();
+    vectorMapJoinInfo.setNonOuterSmallTableKeyColumnMap(nonOuterSmallTableKeyMapping.getOutputColumns());
+    vectorMapJoinInfo.setNonOuterSmallTableKeyTypeInfos(nonOuterSmallTableKeyMapping.getTypeInfos());
 
-    smallTableMapping.finalize();
+    outerSmallTableKeyMapping.finalize();
+    fullOuterSmallTableKeyMapping.finalize();
 
-    vectorMapJoinInfo.setBigTableRetainedMapping(bigTableRetainedMapping);
-    vectorMapJoinInfo.setBigTableOuterKeyMapping(bigTableOuterKeyMapping);
-    vectorMapJoinInfo.setSmallTableMapping(smallTableMapping);
+    vectorMapJoinInfo.setOuterSmallTableKeyMapping(outerSmallTableKeyMapping);
+    vectorMapJoinInfo.setFullOuterSmallTableKeyMapping(fullOuterSmallTableKeyMapping);
+
+    smallTableValueMapping.finalize();
+
+    vectorMapJoinInfo.setSmallTableValueMapping(smallTableValueMapping);
 
     projectionMapping.finalize();
 
