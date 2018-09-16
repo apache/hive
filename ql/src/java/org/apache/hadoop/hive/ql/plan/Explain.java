@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Explain {
   public enum Level {
-    USER, DEFAULT, EXTENDED;
+    USER, DEFAULT, EXTENDED, DEBUG;
     public boolean in(Level[] levels) {
       for (Level level : levels) {
         if (level.equals(this)) {

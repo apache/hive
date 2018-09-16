@@ -34,14 +34,22 @@ public class VectorMapJoinFastStringHashMap extends VectorMapJoinFastBytesHashMa
 
   @Override
   public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
-    stringCommon.adaptPutRow(this, currentKey, currentValue);
+    if (!stringCommon.adaptPutRow(this, currentKey, currentValue)) {
+
+      // Ignore NULL keys, except for FULL OUTER.
+      if (isFullOuter) {
+        addFullOuterNullKeyValue(currentValue);
+      }
+    }
   }
 
   public VectorMapJoinFastStringHashMap(
-      boolean isOuterJoin,
+      boolean isFullOuter,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
-    stringCommon = new VectorMapJoinFastStringCommon(isOuterJoin);
+    super(
+        isFullOuter,
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    stringCommon = new VectorMapJoinFastStringCommon();
   }
 
   @Override

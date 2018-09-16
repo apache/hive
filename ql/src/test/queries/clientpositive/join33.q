@@ -2,6 +2,7 @@
 --! qt:dataset:src1
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
+
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE dest_j1_n7(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE;

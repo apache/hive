@@ -24,13 +24,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
@@ -131,32 +137,34 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
   /*
    * Setup our outer join specific members.
    */
-  protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
-    super.commonSetup(batch);
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
 
     // Outer join specific.
     VectorMapJoinHashMap baseHashMap = (VectorMapJoinHashMap) vectorMapJoinHashTable;
 
-    hashMapResults = new VectorMapJoinHashMapResult[batch.DEFAULT_SIZE];
+    hashMapResults = new VectorMapJoinHashMapResult[VectorizedRowBatch.DEFAULT_SIZE];
     for (int i = 0; i < hashMapResults.length; i++) {
       hashMapResults[i] = baseHashMap.createHashMapResult();
     }
 
-    inputSelected = new int[batch.DEFAULT_SIZE];
+    inputSelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
-    allMatchs = new int[batch.DEFAULT_SIZE];
+    allMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
-    equalKeySeriesHashMapResultIndices = new int[batch.DEFAULT_SIZE];
-    equalKeySeriesAllMatchIndices = new int[batch.DEFAULT_SIZE];
-    equalKeySeriesIsSingleValue = new boolean[batch.DEFAULT_SIZE];
-    equalKeySeriesDuplicateCounts = new int[batch.DEFAULT_SIZE];
+    equalKeySeriesHashMapResultIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    equalKeySeriesAllMatchIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    equalKeySeriesIsSingleValue = new boolean[VectorizedRowBatch.DEFAULT_SIZE];
+    equalKeySeriesDuplicateCounts = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
-    spills = new int[batch.DEFAULT_SIZE];
-    spillHashMapResultIndices = new int[batch.DEFAULT_SIZE];
+    spills = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    spillHashMapResultIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
-    nonSpills = new int[batch.DEFAULT_SIZE];
-    noMatchs = new int[batch.DEFAULT_SIZE];
-    merged = new int[batch.DEFAULT_SIZE];
+    nonSpills = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    noMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    merged = new int[VectorizedRowBatch.DEFAULT_SIZE];
+
+    matchTracker = null;
 
   }
 
@@ -174,15 +182,16 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
     // For join operators that can generate small table results, reset their
     // (target) scratch columns.
 
-    for (int column : smallTableOutputVectorColumns) {
+    for (int column : outerSmallTableKeyColumnMap) {
+      ColumnVector bigTableOuterKeyColumn = batch.cols[column];
+      bigTableOuterKeyColumn.reset();
+    }
+
+    for (int column : smallTableValueColumnMap) {
       ColumnVector smallTableColumn = batch.cols[column];
       smallTableColumn.reset();
     }
 
-    for (int column : bigTableOuterKeyOutputVectorColumns) {
-      ColumnVector bigTableOuterKeyColumn = batch.cols[column];
-      bigTableOuterKeyColumn.reset();
-    }
   }
 
   /**
@@ -569,27 +578,28 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    protected void generateOuterNulls(VectorizedRowBatch batch, int[] noMatchs,
        int noMatchSize) throws IOException, HiveException {
 
-     // Set null information in the small table results area.
+    // Set null information in the small table results area.
 
-     for (int i = 0; i < noMatchSize; i++) {
-       int batchIndex = noMatchs[i];
+    for (int i = 0; i < noMatchSize; i++) {
+      int batchIndex = noMatchs[i];
 
-       // Mark any scratch small table scratch columns that would normally receive a copy of the
-       // key as null, too.
-       for (int column : bigTableOuterKeyOutputVectorColumns) {
-         ColumnVector colVector = batch.cols[column];
-         colVector.noNulls = false;
-         colVector.isNull[batchIndex] = true;
-       }
+      // Mark any scratch small table scratch columns that would normally receive a copy of the
+      // key as null, too.
+      //
+      for (int column : outerSmallTableKeyColumnMap) {
+        ColumnVector colVector = batch.cols[column];
+        colVector.noNulls = false;
+        colVector.isNull[batchIndex] = true;
+      }
 
-       // Small table values are set to null.
-       for (int column : smallTableOutputVectorColumns) {
-         ColumnVector colVector = batch.cols[column];
-         colVector.noNulls = false;
-         colVector.isNull[batchIndex] = true;
-       }
-     }
-   }
+      // Small table values are set to null.
+      for (int column : smallTableValueColumnMap) {
+        ColumnVector colVector = batch.cols[column];
+        colVector.noNulls = false;
+        colVector.isNull[batchIndex] = true;
+      }
+    }
+  }
 
   /**
    * Generate the outer join output results for one vectorized row batch with a repeated key.
@@ -734,20 +744,310 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    */
   protected void generateOuterNullsRepeatedAll(VectorizedRowBatch batch) throws HiveException {
 
-    for (int column : smallTableOutputVectorColumns) {
+    // Mark any scratch small table scratch columns that would normally receive a copy of the
+    // key as null, too.
+    //
+    for (int column : outerSmallTableKeyColumnMap) {
       ColumnVector colVector = batch.cols[column];
       colVector.noNulls = false;
       colVector.isNull[0] = true;
       colVector.isRepeating = true;
     }
 
-    // Mark any scratch small table scratch columns that would normally receive a copy of the key
-    // as null, too.
-   for (int column : bigTableOuterKeyOutputVectorColumns) {
+    for (int column : smallTableValueColumnMap) {
       ColumnVector colVector = batch.cols[column];
       colVector.noNulls = false;
       colVector.isNull[0] = true;
       colVector.isRepeating = true;
     }
+  }
+
+  private void markBigTableColumnsAsNullRepeating() {
+
+    /*
+     * For non-match FULL OUTER Small Table results, the Big Table columns are all NULL.
+     */
+    for (int column : bigTableRetainColumnMap) {
+      ColumnVector colVector = overflowBatch.cols[column];
+      colVector.isRepeating = true;
+      colVector.noNulls = false;
+      colVector.isNull[0] = true;
+    }
+  }
+
+  /*
+   * For FULL OUTER MapJoin, find the non matched Small Table keys and values and odd them to the
+   * join output result.
+   */
+  @Override
+  protected void generateFullOuterSmallTableNoMatches(byte smallTablePos,
+      MapJoinTableContainer substituteSmallTable) throws HiveException {
+
+    /*
+     * For dynamic partition hash join, both the Big Table and Small Table are partitioned (sent)
+     * to the Reducer using the key hash code.  So, we can generate the non-match Small Table
+     * results locally.
+     *
+     * Scan the Small Table for keys that didn't match and generate the non-matchs into the
+     * overflowBatch.
+     */
+
+    /*
+     * If there were no matched keys sent, we need to do our common initialization.
+     */
+    if (needCommonSetup) {
+
+      // Our one time process method initialization.
+      commonSetup();
+
+      needCommonSetup = false;
+    }
+
+    if (needHashTableSetup) {
+
+      // Setup our hash table specialization.  It will be the first time the process
+      // method is called, or after a Hybrid Grace reload.
+
+      hashTableSetup();
+
+      needHashTableSetup = false;
+    }
+
+    /*
+     * To support fancy NULL repeating columns, let's flush the overflowBatch if it has anything.
+     */
+    if (overflowBatch.size > 0) {
+      forwardOverflow();
+    }
+    markBigTableColumnsAsNullRepeating();
+
+    switch (hashTableKeyType) {
+    case BOOLEAN:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+      generateFullOuterLongKeySmallTableNoMatches();
+      break;
+    case STRING:
+      generateFullOuterStringKeySmallTableNoMatches();
+      break;
+    case MULTI_KEY:
+      generateFullOuterMultiKeySmallTableNoMatches();
+      break;
+    default:
+      throw new RuntimeException("Unexpected hash table key type " + hashTableKeyType);
+    }
+  }
+
+  /*
+   * For FULL OUTER MapJoin, find the non matched Small Table Long keys and values and odd them to
+   * the join output result.
+   */
+  protected void generateFullOuterLongKeySmallTableNoMatches()
+      throws HiveException {
+
+    final LongColumnVector singleSmallTableKeyOutputColumnVector;
+    if (allSmallTableKeyColumnIncluded[0]) {
+      singleSmallTableKeyOutputColumnVector =
+        (LongColumnVector) overflowBatch.cols[allSmallTableKeyColumnNums[0]];
+    } else {
+      singleSmallTableKeyOutputColumnVector = null;
+    }
+
+    VectorMapJoinLongHashMap hashMap = (VectorMapJoinLongHashMap) vectorMapJoinHashTable;
+
+    VectorMapJoinNonMatchedIterator nonMatchedIterator =
+        hashMap.createNonMatchedIterator(matchTracker);
+    nonMatchedIterator.init();
+    while (nonMatchedIterator.findNextNonMatched()) {
+
+      final long longKey;
+      boolean isKeyNull = !nonMatchedIterator.readNonMatchedLongKey();
+      if (!isKeyNull) {
+        longKey = nonMatchedIterator.getNonMatchedLongKey();
+      } else {
+        longKey = 0;
+      }
+
+      VectorMapJoinHashMapResult hashMapResult = nonMatchedIterator.getNonMatchedHashMapResult();
+
+      ByteSegmentRef byteSegmentRef = hashMapResult.first();
+      while (byteSegmentRef != null) {
+
+        // NOTE: Big Table result columns were marked repeating NULL already.
+
+        if (singleSmallTableKeyOutputColumnVector != null) {
+          if (isKeyNull) {
+            singleSmallTableKeyOutputColumnVector.isNull[overflowBatch.size] = true;
+            singleSmallTableKeyOutputColumnVector.noNulls = false;
+          } else {
+            singleSmallTableKeyOutputColumnVector.vector[overflowBatch.size] = longKey;
+            singleSmallTableKeyOutputColumnVector.isNull[overflowBatch.size] = false;
+          }
+        }
+
+        if (smallTableValueVectorDeserializeRow != null) {
+
+          doSmallTableValueDeserializeRow(overflowBatch, overflowBatch.size,
+              byteSegmentRef, hashMapResult);
+        }
+
+        overflowBatch.size++;
+        if (overflowBatch.size == overflowBatch.DEFAULT_SIZE) {
+          forwardOverflow();
+          markBigTableColumnsAsNullRepeating();
+        }
+        byteSegmentRef = hashMapResult.next();
+      }
+    }
+  }
+
+  private void doSmallTableKeyDeserializeRow(VectorizedRowBatch batch, int batchIndex,
+      byte[] keyBytes, int keyOffset, int keyLength)
+          throws HiveException {
+
+    smallTableKeyOuterVectorDeserializeRow.setBytes(keyBytes, keyOffset, keyLength);
+
+    try {
+      // Our hash tables are immutable.  We can safely do by reference STRING, CHAR/VARCHAR, etc.
+      smallTableKeyOuterVectorDeserializeRow.deserializeByRef(batch, batchIndex);
+    } catch (Exception e) {
+      throw new HiveException(
+          "\nDeserializeRead detail: " +
+              smallTableKeyOuterVectorDeserializeRow.getDetailedReadPositionString(),
+          e);
+    }
+  }
+
+  /*
+   * For FULL OUTER MapJoin, find the non matched Small Table Multi-Keys and values and odd them to
+   * the join output result.
+   */
+  protected void generateFullOuterMultiKeySmallTableNoMatches() throws HiveException {
+
+    VectorMapJoinBytesHashMap hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+
+    VectorMapJoinNonMatchedIterator nonMatchedIterator =
+        hashMap.createNonMatchedIterator(matchTracker);
+    nonMatchedIterator.init();
+    while (nonMatchedIterator.findNextNonMatched()) {
+
+      nonMatchedIterator.readNonMatchedBytesKey();
+      byte[] keyBytes = nonMatchedIterator.getNonMatchedBytes();
+      final int keyOffset = nonMatchedIterator.getNonMatchedBytesOffset();
+      final int keyLength = nonMatchedIterator.getNonMatchedBytesLength();
+
+      VectorMapJoinHashMapResult hashMapResult = nonMatchedIterator.getNonMatchedHashMapResult();
+
+      ByteSegmentRef byteSegmentRef = hashMapResult.first();
+      while (byteSegmentRef != null) {
+
+        // NOTE: Big Table result columns were marked repeating NULL already.
+
+        if (smallTableKeyOuterVectorDeserializeRow != null) {
+          doSmallTableKeyDeserializeRow(overflowBatch, overflowBatch.size,
+              keyBytes, keyOffset, keyLength);
+        }
+
+        if (smallTableValueVectorDeserializeRow != null) {
+
+          doSmallTableValueDeserializeRow(overflowBatch, overflowBatch.size,
+              byteSegmentRef, hashMapResult);
+        }
+
+        overflowBatch.size++;
+        if (overflowBatch.size == overflowBatch.DEFAULT_SIZE) {
+          forwardOverflow();
+          markBigTableColumnsAsNullRepeating();
+        }
+        byteSegmentRef = hashMapResult.next();
+      }
+    }
+
+    // NOTE: We don't have to deal with FULL OUTER All-NULL key values like we do for single-column
+    // LONG and STRING because we do store them in the hash map...
+  }
+
+  /*
+   * For FULL OUTER MapJoin, find the non matched Small Table String keys and values and odd them to
+   * the join output result.
+   */
+  protected void generateFullOuterStringKeySmallTableNoMatches() throws HiveException {
+
+    final BytesColumnVector singleSmallTableKeyOutputColumnVector;
+    if (allSmallTableKeyColumnIncluded[0]) {
+      singleSmallTableKeyOutputColumnVector =
+        (BytesColumnVector) overflowBatch.cols[allSmallTableKeyColumnNums[0]];
+    } else {
+      singleSmallTableKeyOutputColumnVector = null;
+    }
+
+    VectorMapJoinBytesHashMap hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+
+    VectorMapJoinNonMatchedIterator nonMatchedIterator =
+        hashMap.createNonMatchedIterator(matchTracker);
+    nonMatchedIterator.init();
+    while (nonMatchedIterator.findNextNonMatched()) {
+
+      final byte[] keyBytes;
+      final int keyOffset;
+      final int keyLength;
+      boolean isKeyNull = !nonMatchedIterator.readNonMatchedBytesKey();
+      if (!isKeyNull) {
+        keyBytes = nonMatchedIterator.getNonMatchedBytes();
+        keyOffset = nonMatchedIterator.getNonMatchedBytesOffset();
+        keyLength = nonMatchedIterator.getNonMatchedBytesLength();
+      } else {
+        keyBytes = null;
+        keyOffset = 0;
+        keyLength = 0;
+      }
+
+      VectorMapJoinHashMapResult hashMapResult = nonMatchedIterator.getNonMatchedHashMapResult();
+
+      ByteSegmentRef byteSegmentRef = hashMapResult.first();
+      while (byteSegmentRef != null) {
+
+        // NOTE: Big Table result columns were marked repeating NULL already.
+
+        if (singleSmallTableKeyOutputColumnVector != null) {
+          if (isKeyNull) {
+            singleSmallTableKeyOutputColumnVector.isNull[overflowBatch.size] = true;
+            singleSmallTableKeyOutputColumnVector.noNulls = false;
+          } else {
+            singleSmallTableKeyOutputColumnVector.setVal(
+                overflowBatch.size,
+                keyBytes, keyOffset, keyLength);
+            singleSmallTableKeyOutputColumnVector.isNull[overflowBatch.size] = false;
+          }
+        }
+
+        if (smallTableValueVectorDeserializeRow != null) {
+
+          doSmallTableValueDeserializeRow(overflowBatch, overflowBatch.size,
+              byteSegmentRef, hashMapResult);
+        }
+
+        overflowBatch.size++;
+        if (overflowBatch.size == overflowBatch.DEFAULT_SIZE) {
+          forwardOverflow();
+          markBigTableColumnsAsNullRepeating();
+        }
+        byteSegmentRef = hashMapResult.next();
+      }
+    }
+  }
+
+  protected void fullOuterHashTableSetup() {
+
+    // Always track key matches for FULL OUTER.
+    matchTracker = vectorMapJoinHashTable.createMatchTracker();
+
+  }
+
+  protected void fullOuterIntersectHashTableSetup() {
+
+    matchTracker = vectorMapJoinHashTable.createMatchTracker();
   }
 }

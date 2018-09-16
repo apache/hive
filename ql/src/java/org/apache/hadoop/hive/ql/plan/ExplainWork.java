@@ -165,6 +165,10 @@ public class ExplainWork implements Serializable {
     return config.getVectorizationDetailLevel();
   }
 
+  public boolean isDebug() {
+    return config.isDebug();
+  }
+
   public ParseContext getParseContext() {
     return pCtx;
   }

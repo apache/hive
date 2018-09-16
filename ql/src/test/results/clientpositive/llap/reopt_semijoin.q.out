@@ -336,7 +336,7 @@ STAGE PLANS:
                 TableScan
                   alias: d
                   filterExpr: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
-                  Statistics: (RUNTIME) Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: (RUNTIME) Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
                     Statistics: (RUNTIME) Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

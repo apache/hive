@@ -24,16 +24,16 @@ POSTHOOK: query: select x from (select * from (select value as x from src order 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
 val_0
 val_0
 val_0
 val_10
 val_100
-NULL
-NULL
-NULL
-NULL
-NULL
 PREHOOK: query: select * from (select * from (select cast(null as string) as N from src1 group by key)a UNION ALL select * from (select cast(null as string) as N from src1 group by key)b ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
