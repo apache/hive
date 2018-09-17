@@ -38,6 +38,7 @@ import org.apache.thrift.transport.TTransport;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -58,6 +59,7 @@ public class TestHs2ConnectionMetricsHttp extends Hs2ConnectionMetrics {
     Hs2ConnectionMetrics.tearDown();
   }
 
+  @Ignore("Flaky test. Should be re-enabled in HIVE-20578")
   @Test
   public void testOpenConnectionMetrics() throws Exception {
     CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
