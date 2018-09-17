@@ -88,8 +88,8 @@ POSTHOOK: Input: default@masking_test_n7
 #### A masked pattern was here ####
 8	1
 0	3
-4	1
 2	1
+4	1
 PREHOOK: query: explain
 select key, count(*) from masking_test_n7 group by key
 PREHOOK: type: QUERY
@@ -168,5 +168,5 @@ POSTHOOK: Input: default@masking_test_n7
 #### A masked pattern was here ####
 8	1
 0	3
-4	1
 2	1
+4	1

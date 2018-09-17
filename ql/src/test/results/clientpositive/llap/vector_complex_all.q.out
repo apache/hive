@@ -1297,9 +1297,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 str	_c1
+line1	4501
 line2	4501
 line3	4501
-line1	4501
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct.B, count(val) FROM orc_create_complex_n0 GROUP BY strct.B
 PREHOOK: type: QUERY
@@ -1444,9 +1444,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 strct.b	_c1
+four	4501
 six	4501
 two	4501
-four	4501
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct, mp, lst, str, count(val) FROM orc_create_complex_n0 GROUP BY strct, mp, lst, str
 PREHOOK: type: QUERY

@@ -470,18 +470,18 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
-2222	222	22	16
-2222	333	44	22
-2222	222	44	18
-2222	333	33	21
 2222	111	33	13
 2222	222	11	15
+2222	222	22	16
 2222	333	22	20
+2222	333	44	22
 2222	111	11	11
 2222	111	22	12
 2222	111	44	14
 2222	222	33	17
+2222	222	44	18
 2222	333	11	19
+2222	333	33	21
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 >= '2222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -514,18 +514,18 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
+2222	111	44	14
+2222	222	22	16
+2222	222	33	17
+2222	333	11	19
 2222	333	44	22
 2222	111	11	11
+2222	111	22	12
 2222	111	33	13
 2222	222	11	15
 2222	222	44	18
 2222	333	22	20
 2222	333	33	21
-2222	111	44	14
-2222	222	22	16
-2222	222	33	17
-2222	333	11	19
-2222	111	22	12
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 !='2222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -558,18 +558,18 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	22	16
 1111	222	33	17
+1111	222	44	18
+1111	333	11	19
+1111	111	11	11
+1111	111	22	12
 1111	111	33	13
 1111	222	11	15
 1111	333	22	20
 1111	333	33	21
 1111	333	44	22
-1111	111	44	14
-1111	222	44	18
-1111	333	11	19
-1111	111	11	11
-1111	111	22	12
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -595,11 +595,11 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=44
 #### A masked pattern was here ####
 1111	222	22	16
-1111	222	44	18
-2222	222	33	17
 1111	222	33	17
+1111	222	44	18
 2222	222	11	15
 2222	222	22	16
+2222	222	33	17
 1111	222	11	15
 2222	222	44	18
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 <= '222' group by level1, level2, level3
@@ -642,22 +642,22 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	22	16
 1111	222	33	17
-1111	111	33	13
-1111	222	11	15
-2222	111	11	11
-2222	111	33	13
-2222	222	11	15
-2222	222	44	18
-1111	111	44	14
 1111	222	44	18
 2222	111	44	14
 2222	222	22	16
 2222	222	33	17
 1111	111	11	11
 1111	111	22	12
+1111	111	33	13
+1111	222	11	15
+2222	111	11	11
 2222	111	22	12
+2222	111	33	13
+2222	222	11	15
+2222	222	44	18
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 != '222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -698,22 +698,22 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
+1111	333	11	19
+2222	111	44	14
+2222	333	11	19
 2222	333	44	22
+1111	111	11	11
+1111	111	22	12
 1111	111	33	13
 1111	333	22	20
 1111	333	33	21
 1111	333	44	22
 2222	111	11	11
+2222	111	22	12
 2222	111	33	13
 2222	333	22	20
 2222	333	33	21
-1111	111	44	14
-1111	333	11	19
-2222	111	44	14
-2222	333	11	19
-1111	111	11	11
-1111	111	22	12
-2222	111	22	12
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -734,12 +734,12 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=111/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=22
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 #### A masked pattern was here ####
-2222	111	22	12
-2222	222	22	16
 1111	333	22	20
 2222	333	22	20
 1111	111	22	12
 1111	222	22	16
+2222	111	22	12
+2222	222	22	16
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 >= '22' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -784,24 +784,24 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	22	16
 1111	222	33	17
-2222	333	44	22
-1111	111	33	13
-1111	333	22	20
-1111	333	33	21
-1111	333	44	22
-2222	111	33	13
-2222	222	44	18
-2222	333	22	20
-2222	333	33	21
-1111	111	44	14
 1111	222	44	18
 2222	111	44	14
 2222	222	22	16
 2222	222	33	17
+2222	333	44	22
 1111	111	22	12
+1111	111	33	13
+1111	333	22	20
+1111	333	33	21
+1111	333	44	22
 2222	111	22	12
+2222	111	33	13
+2222	222	44	18
+2222	333	22	20
+2222	333	33	21
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 != '22' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -846,8 +846,15 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	33	17
+1111	222	44	18
+1111	333	11	19
+2222	111	44	14
+2222	222	33	17
+2222	333	11	19
 2222	333	44	22
+1111	111	11	11
 1111	111	33	13
 1111	222	11	15
 1111	333	33	21
@@ -857,13 +864,6 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	222	11	15
 2222	222	44	18
 2222	333	33	21
-1111	111	44	14
-1111	222	44	18
-1111	333	11	19
-2222	111	44	14
-2222	222	33	17
-2222	333	11	19
-1111	111	11	11
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -880,10 +880,10 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-2222	222	33	17
 1111	333	33	21
 2222	333	33	21
 1111	222	33	17
+2222	222	33	17
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 <= '1111' and level3 >= '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -904,12 +904,12 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	33	17
+1111	222	44	18
 1111	111	33	13
 1111	333	33	21
 1111	333	44	22
-1111	111	44	14
-1111	222	44	18
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -930,12 +930,12 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-2222	222	22	16
-2222	333	33	21
 2222	222	11	15
+2222	222	22	16
 2222	333	22	20
 2222	222	33	17
 2222	333	11	19
+2222	333	33	21
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -956,12 +956,12 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-2222	222	22	16
-2222	333	33	21
 2222	222	11	15
+2222	222	22	16
 2222	333	22	20
 2222	222	33	17
 2222	333	11	19
+2222	333	33	21
 PREHOOK: query: explain select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1077,18 +1077,18 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
-2222	222	22	16
-2222	333	44	22
-2222	222	44	18
-2222	333	33	21
 2222	111	33	13
 2222	222	11	15
+2222	222	22	16
 2222	333	22	20
+2222	333	44	22
 2222	111	11	11
 2222	111	22	12
 2222	111	44	14
 2222	222	33	17
+2222	222	44	18
 2222	333	11	19
+2222	333	33	21
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 >= '2222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1121,18 +1121,18 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
+2222	111	44	14
+2222	222	22	16
+2222	222	33	17
+2222	333	11	19
 2222	333	44	22
 2222	111	11	11
+2222	111	22	12
 2222	111	33	13
 2222	222	11	15
 2222	222	44	18
 2222	333	22	20
 2222	333	33	21
-2222	111	44	14
-2222	222	22	16
-2222	222	33	17
-2222	333	11	19
-2222	111	22	12
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 !='2222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1165,18 +1165,18 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	22	16
 1111	222	33	17
+1111	222	44	18
+1111	333	11	19
+1111	111	11	11
+1111	111	22	12
 1111	111	33	13
 1111	222	11	15
 1111	333	22	20
 1111	333	33	21
 1111	333	44	22
-1111	111	44	14
-1111	222	44	18
-1111	333	11	19
-1111	111	11	11
-1111	111	22	12
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1202,11 +1202,11 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=44
 #### A masked pattern was here ####
 1111	222	22	16
-1111	222	44	18
-2222	222	33	17
 1111	222	33	17
+1111	222	44	18
 2222	222	11	15
 2222	222	22	16
+2222	222	33	17
 1111	222	11	15
 2222	222	44	18
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 <= '222' group by level1, level2, level3
@@ -1249,22 +1249,22 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	22	16
 1111	222	33	17
-1111	111	33	13
-1111	222	11	15
-2222	111	11	11
-2222	111	33	13
-2222	222	11	15
-2222	222	44	18
-1111	111	44	14
 1111	222	44	18
 2222	111	44	14
 2222	222	22	16
 2222	222	33	17
 1111	111	11	11
 1111	111	22	12
+1111	111	33	13
+1111	222	11	15
+2222	111	11	11
 2222	111	22	12
+2222	111	33	13
+2222	222	11	15
+2222	222	44	18
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 != '222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1305,22 +1305,22 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
+1111	333	11	19
+2222	111	44	14
+2222	333	11	19
 2222	333	44	22
+1111	111	11	11
+1111	111	22	12
 1111	111	33	13
 1111	333	22	20
 1111	333	33	21
 1111	333	44	22
 2222	111	11	11
+2222	111	22	12
 2222	111	33	13
 2222	333	22	20
 2222	333	33	21
-1111	111	44	14
-1111	333	11	19
-2222	111	44	14
-2222	333	11	19
-1111	111	11	11
-1111	111	22	12
-2222	111	22	12
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1341,12 +1341,12 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=111/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=22
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 #### A masked pattern was here ####
-2222	111	22	12
-2222	222	22	16
 1111	333	22	20
 2222	333	22	20
 1111	111	22	12
 1111	222	22	16
+2222	111	22	12
+2222	222	22	16
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 >= '22' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1391,24 +1391,24 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	22	16
 1111	222	33	17
-2222	333	44	22
-1111	111	33	13
-1111	333	22	20
-1111	333	33	21
-1111	333	44	22
-2222	111	33	13
-2222	222	44	18
-2222	333	22	20
-2222	333	33	21
-1111	111	44	14
 1111	222	44	18
 2222	111	44	14
 2222	222	22	16
 2222	222	33	17
+2222	333	44	22
 1111	111	22	12
+1111	111	33	13
+1111	333	22	20
+1111	333	33	21
+1111	333	44	22
 2222	111	22	12
+2222	111	33	13
+2222	222	44	18
+2222	333	22	20
+2222	333	33	21
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 != '22' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1453,8 +1453,15 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	33	17
+1111	222	44	18
+1111	333	11	19
+2222	111	44	14
+2222	222	33	17
+2222	333	11	19
 2222	333	44	22
+1111	111	11	11
 1111	111	33	13
 1111	222	11	15
 1111	333	33	21
@@ -1464,13 +1471,6 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	222	11	15
 2222	222	44	18
 2222	333	33	21
-1111	111	44	14
-1111	222	44	18
-1111	333	11	19
-2222	111	44	14
-2222	222	33	17
-2222	333	11	19
-1111	111	11	11
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1487,10 +1487,10 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-2222	222	33	17
 1111	333	33	21
 2222	333	33	21
 1111	222	33	17
+2222	222	33	17
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 <= '1111' and level3 >= '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1511,12 +1511,12 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=33
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=44
 #### A masked pattern was here ####
+1111	111	44	14
 1111	222	33	17
+1111	222	44	18
 1111	111	33	13
 1111	333	33	21
 1111	333	44	22
-1111	111	44	14
-1111	222	44	18
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1537,12 +1537,12 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-2222	222	22	16
-2222	333	33	21
 2222	222	11	15
+2222	222	22	16
 2222	333	22	20
 2222	222	33	17
 2222	333	11	19
+2222	333	33	21
 PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
@@ -1563,12 +1563,12 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-2222	222	22	16
-2222	333	33	21
 2222	222	11	15
+2222	222	22	16
 2222	333	22	20
 2222	222	33	17
 2222	333	11	19
+2222	333	33	21
 PREHOOK: query: explain select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
