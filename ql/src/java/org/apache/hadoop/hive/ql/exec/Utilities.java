@@ -4298,14 +4298,15 @@ public final class Utilities {
       }
     }
 
-    HashSet<String> committed = new HashSet<>();
+    HashSet<Path> committed = new HashSet<>();
     for (Path mfp : manifests) {
       try (FSDataInputStream mdis = fs.open(mfp)) {
         int fileCount = mdis.readInt();
         for (int i = 0; i < fileCount; ++i) {
           String nextFile = mdis.readUTF();
           Utilities.FILE_OP_LOGGER.trace("Looking at committed file: {}", nextFile);
-          if (!committed.add(nextFile)) {
+          Path path = fs.makeQualified(new Path(nextFile));
+          if (!committed.add(path)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
         }
@@ -4366,7 +4367,7 @@ public final class Utilities {
   }
 
   private static void cleanMmDirectory(Path dir, FileSystem fs, String unionSuffix,
-      int lbLevels, HashSet<String> committed) throws IOException, HiveException {
+      int lbLevels, HashSet<Path> committed) throws IOException, HiveException {
     for (FileStatus child : fs.listStatus(dir)) {
       Path childPath = child.getPath();
       if (lbLevels > 0) {
@@ -4378,7 +4379,7 @@ public final class Utilities {
               "Recursion into LB directory {}; levels remaining ", childPath, lbLevels - 1);
           cleanMmDirectory(childPath, fs, unionSuffix, lbLevels - 1, committed);
         } else {
-          if (committed.contains(childPath.toString())) {
+          if (committed.contains(childPath)) {
             throw new HiveException("LB FSOP has commited "
                 + childPath + " outside of LB directory levels " + lbLevels);
           }
@@ -4388,12 +4389,12 @@ public final class Utilities {
       }
       // No more LB directories expected.
       if (unionSuffix == null) {
-        if (committed.remove(childPath.toString())) {
+        if (committed.remove(childPath)) {
           continue; // A good file.
         }
         deleteUncommitedFile(childPath, fs);
       } else if (!child.isDirectory()) {
-        if (committed.contains(childPath.toString())) {
+        if (committed.contains(childPath)) {
           throw new HiveException("Union FSOP has commited "
               + childPath + " outside of union directory " + unionSuffix);
         }
