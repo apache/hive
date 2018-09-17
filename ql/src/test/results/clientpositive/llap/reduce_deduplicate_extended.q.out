@@ -1896,21 +1896,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
+128	384.0
+213	426.0
 224	448.0
 273	819.0
 401	2005.0
-146	292.0
-150	150.0
-311	933.0
-369	1107.0
-66	66.0
-128	384.0
-213	426.0
 406	1624.0
 98	196.0
+146	292.0
+150	150.0
 238	476.0
 255	510.0
 278	556.0
+311	933.0
+369	1107.0
+66	66.0
 PREHOOK: query: select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -4466,21 +4466,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
+128	384.0
+213	426.0
 224	448.0
 273	819.0
 401	2005.0
-146	292.0
-150	150.0
-311	933.0
-369	1107.0
-66	66.0
-128	384.0
-213	426.0
 406	1624.0
 98	196.0
+146	292.0
+150	150.0
 238	476.0
 255	510.0
 278	556.0
+311	933.0
+369	1107.0
+66	66.0
 PREHOOK: query: select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

@@ -251,13 +251,13 @@ POSTHOOK: query: select s_store_id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
-AAAAAAAACAAAAAAA
 NULL
 AAAAAAAABAAAAAAA
 AAAAAAAAEAAAAAAA
 AAAAAAAAHAAAAAAA
 AAAAAAAAIAAAAAAA
 AAAAAAAAKAAAAAAA
+AAAAAAAACAAAAAAA
 PREHOOK: query: explain vectorization expression
 select s_store_id, GROUPING__ID
  from store_n1
@@ -393,13 +393,13 @@ POSTHOOK: query: select s_store_id, GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
-AAAAAAAACAAAAAAA	0
 NULL	1
 AAAAAAAABAAAAAAA	0
 AAAAAAAAEAAAAAAA	0
 AAAAAAAAHAAAAAAA	0
 AAAAAAAAIAAAAAAA	0
 AAAAAAAAKAAAAAAA	0
+AAAAAAAACAAAAAAA	0
 PREHOOK: query: explain
 select s_store_id, GROUPING__ID
  from store_n1

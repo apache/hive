@@ -1495,22 +1495,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-273	val_273	3
-401	val_401	5
-146	val_146	2
-150	val_150	1
-311	val_311	3
-66	val_66	1
 	NULL	10
 128	NULL	1
 213	val_213	2
+273	val_273	3
+401	val_401	5
 406	val_406	4
 98	val_98	2
+146	val_146	2
+150	val_150	1
 224	NULL	1
 238	val_238	2
 255	val_255	2
 278	val_278	2
+311	val_311	3
 369	NULL	1
+66	val_66	1
 PREHOOK: query: EXPLAIN
 SELECT x.key, y.value, count(1) AS cnt
 FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key AND x.value = y.value)
@@ -1632,22 +1632,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-273	val_273	3
-401	val_401	5
-146	val_146	2
-150	val_150	1
-311	val_311	3
-66	val_66	1
 	NULL	10
 128	NULL	1
 213	val_213	2
+273	val_273	3
+401	val_401	5
 406	val_406	4
 98	val_98	2
+146	val_146	2
+150	val_150	1
 224	NULL	1
 238	val_238	2
 255	val_255	2
 278	val_278	2
+311	val_311	3
 369	NULL	1
+66	val_66	1
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
