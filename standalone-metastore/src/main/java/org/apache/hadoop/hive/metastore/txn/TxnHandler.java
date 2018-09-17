@@ -1273,6 +1273,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       Statement stmt = null;
       ValidTxnList validTxnList;
 
+      // We should prepare the valid write ids list based on validTxnList of current txn.
+      // If no txn exists in the caller, then they would pass null for validTxnList and so it is
+      // required to get the current state of txns to make validTxnList
+      if (rqst.isSetValidTxnList()) {
+        validTxnList = new ValidReadTxnList(rqst.getValidTxnList());
+      } else {
+        // Passing 0 for currentTxn means, this validTxnList is not wrt to any txn
+        validTxnList = TxnUtils.createValidReadTxnList(getOpenTxns(), 0);
+      }
       try {
         /**
          * This runs at READ_COMMITTED for exactly the same reason as {@link #getOpenTxnsInfo()}
