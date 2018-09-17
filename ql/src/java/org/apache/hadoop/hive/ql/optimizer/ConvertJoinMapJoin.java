@@ -89,6 +89,7 @@ import com.google.common.math.DoubleMath;
 public class ConvertJoinMapJoin implements NodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
+  private static final int DEFAULT_MAX_EXECUTORS_PER_QUERY_CONTAINER_MODE = 3;
   public float hashTableLoadFactor;
   private long maxJoinMemory;
   private HashMapDataStructureType hashMapDataStructure;
@@ -366,7 +367,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
                                                 LlapClusterStateForCompile llapInfo) {
     long maxSize = conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
     final double overSubscriptionFactor = conf.getFloatVar(ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
-    final int maxSlotsPerQuery = conf.getIntVar(ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY);
+    final int maxSlotsPerQuery = getMaxSlotsPerQuery(conf, llapInfo);
     final long memoryCheckInterval = conf.getLongVar(ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
     final float inflationFactor = conf.getFloatVar(ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR);
     final MemoryMonitorInfo memoryMonitorInfo;
@@ -402,6 +403,18 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
     }
     return memoryMonitorInfo;
+  }
+
+  private int getMaxSlotsPerQuery(HiveConf conf, LlapClusterStateForCompile llapInfo) {
+    int maxExecutorsPerQuery = conf.getIntVar(ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY);
+    if (maxExecutorsPerQuery == -1) {
+      if (llapInfo == null) {
+        maxExecutorsPerQuery = DEFAULT_MAX_EXECUTORS_PER_QUERY_CONTAINER_MODE;
+      } else {
+        maxExecutorsPerQuery = Math.min(Math.max(1, llapInfo.getNumExecutorsPerNode() / 3), 8);
+      }
+    }
+    return maxExecutorsPerQuery;
   }
 
   @SuppressWarnings("unchecked")
