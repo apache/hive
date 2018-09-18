@@ -89,7 +89,7 @@ import java.util.Properties;
       LOG.debug("Consumer poll timeout [{}] ms", pollTimeout);
       this.recordsCursor =
           startOffset == endOffset ?
-              new KafkaRecordIterator.EmptyIterator() :
+              new EmptyIterator() :
               new KafkaRecordIterator(consumer, topicPartition, startOffset, endOffset, pollTimeout);
       started = true;
     }
@@ -155,6 +155,19 @@ import java.util.Properties;
     if (consumer != null) {
       consumer.wakeup();
       consumer.close();
+    }
+  }
+
+  /**
+   * Empty iterator for empty splits when startOffset == endOffset, this is added to avoid clumsy if condition.
+   */
+  private static final class EmptyIterator implements Iterator<ConsumerRecord<byte[], byte[]>> {
+    @Override public boolean hasNext() {
+      return false;
+    }
+
+    @Override public ConsumerRecord<byte[], byte[]> next() {
+      throw new IllegalStateException("this is an empty iterator");
     }
   }
 }

@@ -38,7 +38,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.utils.Time;
 import org.junit.After;
@@ -192,9 +191,13 @@ public class KafkaRecordIteratorTest {
     recordReader.close();
   }
 
-  @Test(expected = TimeoutException.class) public void testPullingBeyondLimit() {
-    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 0L, 101L, POLL_TIMEOUT_MS);
-    this.compareIterator(RECORDS, this.kafkaRecordIterator);
+  @Test(expected = IllegalStateException.class) public void testPullingBeyondLimit() {
+    //FYI In the Tx world Commits can introduce offset gaps therefore
+    //this (RECORD_NUMBER + 1) as beyond limit offset is only true if the topic has not Tx or any Control msg.
+    this.kafkaRecordIterator = new KafkaRecordIterator(this.consumer, TOPIC_PARTITION, 19383L, (long) RECORD_NUMBER + 1, POLL_TIMEOUT_MS);
+    this.compareIterator(RECORDS.stream()
+        .filter((consumerRecord) -> consumerRecord.offset() >= 19383L)
+        .collect(Collectors.toList()), this.kafkaRecordIterator);
   }
 
   @Test(expected = IllegalStateException.class) public void testPullingStartGreaterThanEnd() {
@@ -202,13 +205,13 @@ public class KafkaRecordIteratorTest {
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
-  @Test(expected = TimeoutException.class) public void testPullingFromEmptyTopic() {
+  @Test(expected = IllegalStateException.class) public void testPullingFromEmptyTopic() {
     this.kafkaRecordIterator =
         new KafkaRecordIterator(this.consumer, new TopicPartition("noHere", 0), 0L, 100L, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
   }
 
-  @Test(expected = TimeoutException.class) public void testPullingFromEmptyPartition() {
+  @Test(expected = IllegalStateException.class) public void testPullingFromEmptyPartition() {
     this.kafkaRecordIterator =
         new KafkaRecordIterator(this.consumer, new TopicPartition(TOPIC, 1), 0L, 100L, POLL_TIMEOUT_MS);
     this.compareIterator(RECORDS, this.kafkaRecordIterator);
@@ -268,18 +271,19 @@ public class KafkaRecordIteratorTest {
     consumerProps.setProperty("enable.auto.commit", "false");
     consumerProps.setProperty("auto.offset.reset", "none");
     consumerProps.setProperty("bootstrap.servers", "127.0.0.1:9092");
-    this.conf.set("kafka.bootstrap.servers", "127.0.0.1:9092");
+    conf.set("kafka.bootstrap.servers", "127.0.0.1:9092");
     consumerProps.setProperty("key.deserializer", ByteArrayDeserializer.class.getName());
     consumerProps.setProperty("value.deserializer", ByteArrayDeserializer.class.getName());
     consumerProps.setProperty("request.timeout.ms", "3002");
     consumerProps.setProperty("fetch.max.wait.ms", "3001");
     consumerProps.setProperty("session.timeout.ms", "3001");
     consumerProps.setProperty("metadata.max.age.ms", "100");
+    consumerProps.setProperty("max.poll.records", String.valueOf(RECORD_NUMBER - 1));
     this.consumer = new KafkaConsumer<>(consumerProps);
   }
 
   private static void sendData() {
-    LOG.info("Sending {} records", RECORD_NUMBER);
+    LOG.info("Sending [{}] records", RECORDS.size());
     RECORDS.stream()
         .map(consumerRecord -> new ProducerRecord<>(consumerRecord.topic(),
             consumerRecord.partition(),
