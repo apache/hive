@@ -49,6 +49,12 @@ public class ReplCopyWork extends CopyWork {
   // If set to false, it'll behave as a traditional CopyTask.
   protected boolean readSrcAsFilesList = false;
 
+  private boolean deleteDestIfExist = false;
+
+  private boolean isAutoPurge = false;
+
+  private boolean needRecycle = false;
+
   private String distCpDoAsUser = null;
 
   public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty) {
@@ -69,5 +75,29 @@ public class ReplCopyWork extends CopyWork {
 
   public String distCpDoAsUser() {
     return distCpDoAsUser;
+  }
+
+  public boolean getDeleteDestIfExist() {
+    return deleteDestIfExist;
+  }
+
+  public void setDeleteDestIfExist(boolean deleteDestIfExist) {
+    this.deleteDestIfExist = deleteDestIfExist;
+  }
+
+  public boolean getNeedRecycle() {
+    return needRecycle;
+  }
+
+  public void setNeedRecycle(boolean needRecycle) {
+    this.needRecycle = needRecycle;
+  }
+
+  public boolean getIsAutoPerge() {
+    return isAutoPurge;
+  }
+
+  public void setAutoPurge(boolean isAutoPurge) {
+    this.isAutoPurge = isAutoPurge;
   }
 }
