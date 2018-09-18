@@ -185,6 +185,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     private int logFileCount = 0;
     private ProtoMessageWriter<HiveHookEventProto> writer;
     private LocalDate writerDate;
+    private boolean eventPerFile;
 
     EventLogger(HiveConf conf, Clock clock) {
       this.clock = clock;
@@ -196,6 +197,8 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         LOG.error(ConfVars.HIVE_PROTO_EVENTS_BASE_PATH.varname + " is not set, logging disabled.");
       }
 
+      eventPerFile = conf.getBoolVar(ConfVars.HIVE_PROTO_FILE_PER_EVENT);
+      LOG.info("Event per file enabled: {}", eventPerFile);
       DatePartitionedLogger<HiveHookEventProto> tmpLogger = null;
       try {
         if (baseDir != null) {
@@ -303,7 +306,16 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
             writerDate = logger.getDateFromDir(writer.getPath().getParent().getName());
           }
           writer.writeProto(event);
-          writer.hflush();
+          if (eventPerFile) {
+            if (writer != null) {
+              LOG.debug("Event per file enabled. Closing proto event file: {}", writer.getPath());
+              IOUtils.closeQuietly(writer);
+            }
+            // rollover to next file
+            writer = logger.getWriter(logFileName + "_" + ++logFileCount);
+          } else {
+            writer.hflush();
+          }
           return;
         } catch (IOException e) {
           // Something wrong with writer, lets close and reopen.
