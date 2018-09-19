@@ -612,6 +612,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_ALLOC_FRACTION", "ALLOC_FRACTION");
     xlateMap.put("KW_SCHEDULING_POLICY", "SCHEDULING_POLICY");
     xlateMap.put("KW_PATH", "PATH");
+    xlateMap.put("KW_AST", "AST");
+    xlateMap.put("KW_TRANSACTIONAL", "TRANSACTIONAL");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -1077,7 +1079,7 @@ databaseComment
 createTableStatement
 @init { pushMsg("create table statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (temp=KW_TEMPORARY)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
+    : KW_CREATE (temp=KW_TEMPORARY)? (trans=KW_TRANSACTIONAL)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
       (  like=KW_LIKE likeName=tableName
          tableRowFormat?
          tableFileFormat?
@@ -1094,7 +1096,7 @@ createTableStatement
          tablePropertiesPrefixed?
          (KW_AS selectStatementWithCTE)?
       )
-    -> ^(TOK_CREATETABLE $name $temp? $ext? ifNotExists?
+    -> ^(TOK_CREATETABLE $name $temp? $trans? $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
          columnNameTypeOrConstraintList?
          tableComment?
