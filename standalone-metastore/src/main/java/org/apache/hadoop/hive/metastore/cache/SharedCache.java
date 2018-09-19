@@ -430,7 +430,7 @@ public class SharedCache {
       }
       LOG.debug("Current cache size: {} bytes", currentCacheSizeInBytes);
     }
-    if (!table.isSetPartitionKeys() && (tableColStats != null)) {
+    if (table.getPartitionKeys().isEmpty() && (tableColStats != null)) {
       if (!tblWrapper.updateTableColStats(tableColStats.getStatsObj())) {
         return false;
       }
@@ -458,6 +458,10 @@ public class SharedCache {
       tblWrapper.cacheAggrPartitionColStats(aggrStatsAllPartitions,
           aggrStatsAllButDefaultPartition);
     }
+    tblWrapper.isPartitionCacheDirty.set(false);
+    tblWrapper.isTableColStatsCacheDirty.set(false);
+    tblWrapper.isPartitionColStatsCacheDirty.set(false);
+    tblWrapper.isAggrPartitionColStatsCacheDirty.set(false);
     try {
       cacheLock.writeLock().lock();
       // 2. Skip overwriting exisiting table object
@@ -485,7 +489,7 @@ public class SharedCache {
         LOG.debug("Skipping table cache update; the table list we have is dirty.");
         return false;
       }
-      Map<String, TableWrapper> newTableCache = new HashMap<>();
+      Map<String, TableWrapper> newCacheForDB = new TreeMap<>();
       for (Table tbl : tables) {
         String tblName = StringUtils.normalizeIdentifier(tbl.getTableName());
         TableWrapper tblWrapper =
@@ -495,13 +499,22 @@ public class SharedCache {
         } else {
           tblWrapper = createTableWrapper(catName, dbName, tblName, tbl);
         }
-        newTableCache.put(CacheUtils.buildTableKey(catName, dbName, tblName), tblWrapper);
+        newCacheForDB.put(CacheUtils.buildTableKey(catName, dbName, tblName), tblWrapper);
       }
-      tableCache.clear();
-      tableCache = newTableCache;
+      cacheLock.writeLock().lock();
+      Iterator<Entry<String, TableWrapper>> entryIterator = tableCache.entrySet().iterator();
+      while (entryIterator.hasNext()) {
+        String key = entryIterator.next().getKey();
+        if (key.startsWith(CacheUtils.buildDbKeyWithDelimiterSuffix(catName, dbName))) {
+          entryIterator.remove();
+        }
+      }
+      tableCache.putAll(newCacheForDB);
       return true;
     } finally {
-      cacheLock.writeLock().unlock();
+      if (cacheLock.writeLock().isHeldByCurrentThread()) {
+        cacheLock.writeLock().unlock();
+      }
     }
   }
 
@@ -580,11 +593,13 @@ public class SharedCache {
       }
       TableWrapper tblWrapper =
           tableCache.remove(CacheUtils.buildTableKey(catName, dbName, tblName));
-      byte[] sdHash = tblWrapper.getSdHash();
-      if (sdHash != null) {
-        decrSd(sdHash);
+      if (tblWrapper != null) {
+        byte[] sdHash = tblWrapper.getSdHash();
+        if (sdHash != null) {
+          decrSd(sdHash);
+        }
+        isTableCacheDirty.set(true);
       }
-      isTableCacheDirty.set(true);
     } finally {
       cacheLock.writeLock().unlock();
     }
@@ -1693,6 +1708,12 @@ public class SharedCache {
     catalogCache.clear();
     catalogsDeletedDuringPrewarm.clear();
     isCatalogCacheDirty.set(false);
+  }
+
+  void clearDirtyFlags() {
+    isCatalogCacheDirty.set(false);
+    isDatabaseCacheDirty.set(false);
+    isTableCacheDirty.set(false);
   }
 
   public long getUpdateCount() {
