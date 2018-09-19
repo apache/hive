@@ -74,8 +74,8 @@ import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -251,8 +251,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     if(num == 0) {
       //Schema only
       try {
-        List<FieldSchema> fieldSchemas =
-            HiveMaterializedViewsRegistry.parseQueryAndGetSchema(conf, query);
+        List<FieldSchema> fieldSchemas = ParseUtils.parseQueryAndGetSchema(conf, query);
         Schema schema = new Schema(convertSchema(fieldSchemas));
         return new PlanFragment(null, schema, null);
       } catch (IOException | ParseException e) {
