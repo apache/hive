@@ -67,13 +67,13 @@ public class TestTezSessionPool {
   public void testGetNonDefaultSession() {
     poolManager = new TestTezSessionPoolManager();
     try {
-      TezSessionState sessionState = poolManager.getSession(null, conf, true, false);
-      TezSessionState sessionState1 = poolManager.getSession(sessionState, conf, true, false);
+      TezSession sessionState = poolManager.getSession(null, conf, true, false);
+      TezSession sessionState1 = poolManager.getSession(sessionState, conf, true, false);
       if (sessionState1 != sessionState) {
         fail();
       }
       conf.set("tez.queue.name", "nondefault");
-      TezSessionState sessionState2 = poolManager.getSession(sessionState, conf, true, false);
+      TezSession sessionState2 = poolManager.getSession(sessionState, conf, true, false);
       if (sessionState2 == sessionState) {
         fail();
       }
@@ -97,7 +97,7 @@ public class TestTezSessionPool {
       // this is now a LIFO operation
 
       // draw 1 and replace
-      TezSessionState sessionState = poolManager.getSession(null, conf, true, false);
+      TezSession sessionState = poolManager.getSession(null, conf, true, false);
       assertEquals("a", sessionState.getQueueName());
       poolManager.returnSession(sessionState);
 
@@ -108,13 +108,13 @@ public class TestTezSessionPool {
       // [a,b,c,a,b,c]
 
       // draw 2 and return in order - further run should return last returned
-      TezSessionState first = poolManager.getSession(null, conf, true, false);
-      TezSessionState second = poolManager.getSession(null, conf, true, false);
+      TezSession first = poolManager.getSession(null, conf, true, false);
+      TezSession second = poolManager.getSession(null, conf, true, false);
       assertEquals("a", first.getQueueName());
       assertEquals("b", second.getQueueName());
       poolManager.returnSession(first);
       poolManager.returnSession(second);
-      TezSessionState third = poolManager.getSession(null, conf, true, false);
+      TezSession third = poolManager.getSession(null, conf, true, false);
       assertEquals("b", third.getQueueName());
       poolManager.returnSession(third);
 
@@ -157,7 +157,7 @@ public class TestTezSessionPool {
       poolManager = new TestTezSessionPoolManager();
       poolManager.setupPool(conf);
       poolManager.startPool(conf, null);
-      TezSessionState[] sessions = new TezSessionState[12];
+      TezSession[] sessions = new TezSession[12];
       int[] queueCounts = new int[3];
       for (int i = 0; i < sessions.length; ++i) {
         sessions[i] = poolManager.getSession(null, conf, true, false);
@@ -184,7 +184,7 @@ public class TestTezSessionPool {
       conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE, 1);
 
       poolManager = new TestTezSessionPoolManager();
-      TezSessionState session = Mockito.mock(TezSessionState.class);
+      TezSession session = Mockito.mock(TezSession.class);
       Mockito.when(session.getQueueName()).thenReturn("default");
       Mockito.when(session.isDefault()).thenReturn(false);
       Mockito.when(session.getConf()).thenReturn(conf);
@@ -192,7 +192,7 @@ public class TestTezSessionPool {
       poolManager.reopen(session);
 
       Mockito.verify(session).close(false);
-      Mockito.verify(session).open(Mockito.<TezSessionState.HiveResources>any());
+      Mockito.verify(session).open(Mockito.<TezSession.HiveResources>any());
 
       // mocked session starts with default queue
       assertEquals("default", session.getQueueName());
@@ -278,7 +278,7 @@ public class TestTezSessionPool {
           tmpConf.set("tez.queue.name", "");
         }
 
-        TezSessionState session = poolManager.getSession(null, tmpConf, true, llap);
+        TezSession session = poolManager.getSession(null, tmpConf, true, llap);
         Thread.sleep((random.nextInt(9) % 10) * 1000);
         session.setLegacyLlapMode(llap);
         poolManager.returnSession(session);
@@ -323,20 +323,20 @@ public class TestTezSessionPool {
   @Test
   public void testCloseAndOpenDefault() throws Exception {
     poolManager = new TestTezSessionPoolManager();
-    TezSessionState session = Mockito.mock(TezSessionState.class);
+    TezSession session = Mockito.mock(TezSession.class);
     Mockito.when(session.isDefault()).thenReturn(false);
     Mockito.when(session.getConf()).thenReturn(conf);
 
     poolManager.reopen(session);
 
     Mockito.verify(session).close(false);
-    Mockito.verify(session).open(Mockito.<TezSessionState.HiveResources>any());
+    Mockito.verify(session).open(Mockito.<TezSession.HiveResources>any());
   }
 
   @Test
   public void testSessionDestroy() throws Exception {
     poolManager = new TestTezSessionPoolManager();
-    TezSessionState session = Mockito.mock(TezSessionState.class);
+    TezSession session = Mockito.mock(TezSession.class);
     Mockito.when(session.isDefault()).thenReturn(false);
 
     poolManager.destroy(session);

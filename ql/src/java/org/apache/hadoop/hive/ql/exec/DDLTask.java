@@ -58,6 +58,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -129,6 +130,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
+import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -3299,7 +3301,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int killQuery(Hive db, KillQueryDesc desc) throws HiveException {
     SessionState sessionState = SessionState.get();
     for (String queryId : desc.getQueryIds()) {
-      sessionState.getKillQuery().killQuery(queryId, "User invoked KILL QUERY", db.getConf());
+      // For now, get the config setting here; we can only have one type of the session present.
+      // Ideally we should check each session separately.
+      boolean isExternal = HiveConf.getBoolVar(
+          db.getConf(), ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS);
+      sessionState.getKillQuery().killQuery(
+          queryId, "User invoked KILL QUERY", db.getConf(), !isExternal);
     }
     LOG.info("kill query called ({})", desc.getQueryIds());
     return 0;

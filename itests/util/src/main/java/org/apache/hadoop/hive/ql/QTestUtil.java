@@ -96,6 +96,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
+import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
@@ -1419,7 +1420,7 @@ public class QTestUtil {
     if (oldSs != null && canReuseSession
         && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       // Copy the tezSessionState from the old CliSessionState.
-      TezSessionState tezSessionState = oldSs.getTezSession();
+      TezSession tezSessionState = oldSs.getTezSession();
       oldSs.setTezSession(null);
       ss.setTezSession(tezSessionState);
       oldSs.close();

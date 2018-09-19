@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public class WorkloadManagerFederation {
   private static final Logger LOG = LoggerFactory.getLogger(WorkloadManagerFederation.class);
 
-  public static TezSessionState getSession(TezSessionState session, HiveConf conf,
+  public static TezSession getSession(TezSession session, HiveConf conf,
       MappingInput input, boolean isUnmanagedLlapMode, WmContext wmContext) throws Exception {
     Set<String> desiredCounters = new HashSet<>();
     // 1. If WM is not present just go to unmanaged.
@@ -59,8 +59,8 @@ public class WorkloadManagerFederation {
     }
   }
 
-  private static TezSessionState getUnmanagedSession(
-    TezSessionState session, HiveConf conf, Set<String> desiredCounters, boolean isWorkLlapNode,
+  private static TezSession getUnmanagedSession(
+    TezSession session, HiveConf conf, Set<String> desiredCounters, boolean isWorkLlapNode,
     final WmContext wmContext) throws Exception {
     TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
     session = pm.getSession(session, conf, false, isWorkLlapNode);

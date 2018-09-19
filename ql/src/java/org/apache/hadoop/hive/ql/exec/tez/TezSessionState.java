@@ -17,17 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.registry.client.api.RegistryOperations;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -37,6 +33,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -59,12 +56,15 @@ import org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.registry.client.api.RegistryOperations;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -89,16 +89,15 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 /**
- * Holds session state related to Tez
+ * The basic implementation of TezSession.
  */
 @JsonSerialize
-public class TezSessionState {
+public class TezSessionState implements TezSession {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TezSessionState.class.getName());
   private static final String TEZ_DIR = "_tez_session_dir";
@@ -107,16 +106,16 @@ public class TezSessionState {
   private static final String LLAP_LAUNCHER = LlapContainerLauncher.class.getName();
   private static final String LLAP_TASK_COMMUNICATOR = LlapTaskCommunicator.class.getName();
 
-  private final HiveConf conf;
+  protected final HiveConf conf;
   private Path tezScratchDir;
-  private LocalResource appJarLr;
+  protected LocalResource appJarLr;
   private TezClient session;
   private Future<TezClient> sessionFuture;
   /** Console used for user feedback during async session opening. */
   private LogHelper console;
   @JsonProperty("sessionId")
   private String sessionId;
-  private final DagUtils utils;
+  protected final DagUtils utils;
   @JsonProperty("queueName")
   private String queueName;
   @JsonProperty("defaultQueue")
@@ -126,29 +125,13 @@ public class TezSessionState {
 
   private AtomicReference<String> ownerThread = new AtomicReference<>(null);
 
-  public static final class HiveResources {
-    public HiveResources(Path dagResourcesDir) {
-      this.dagResourcesDir = dagResourcesDir;
-    }
-    /** A directory that will contain resources related to DAGs and specified in configs. */
-    public final Path dagResourcesDir;
-    public final Map<String, LocalResource> additionalFilesNotFromConf = new HashMap<String, LocalResource>();
-    /** Localized resources of this session; both from conf and not from conf (above). */
-    public final Set<LocalResource> localizedResources = new HashSet<>();
-
-    @Override
-    public String toString() {
-      return dagResourcesDir + "; " + additionalFilesNotFromConf.size() + " additional files, "
-          + localizedResources.size() + " localized resources";
-    }
-  }
 
   private HiveResources resources;
   @JsonProperty("doAsEnabled")
   private boolean doAsEnabled;
   private boolean isLegacyLlapMode;
-  private WmContext wmContext;
-  private KillQuery killQuery;
+  protected WmContext wmContext;
+  protected KillQuery killQuery;
 
   private static final Cache<String, String> shaCache = CacheBuilder.newBuilder().maximumSize(100).build();
   /**
@@ -231,9 +214,9 @@ public class TezSessionState {
     return UUID.randomUUID().toString();
   }
 
+  @Override
   public void open() throws IOException, LoginException, URISyntaxException, TezException {
-    String[] noFiles = null;
-    open(noFiles);
+    open(false);
   }
 
   public boolean reconnect(String applicationId, long amAgeMs)
@@ -264,18 +247,19 @@ public class TezSessionState {
     // the previous HS2, this one will try to localize them again and find they're already there.
     ensureLocalResources(conf, null);
 
-    boolean llapMode = isLlapMode();
-
     // exec and LLAP jars are definitely already localized... we just need to init the fields.
     // TODO: perhaps we could improve this method to share some fields when multiple
     //       sessions are being reconnected at the same time.
-    final Map<String, LocalResource> commonLocalResources = makeCombinedJarMap(llapMode);
+
+    final Map<String, LocalResource> commonLocalResources = addExecJarAndLocalResources();
+
+    final boolean llapMode = addLlapJarsIfNeeded(commonLocalResources);
 
     // generate basic tez config
-    final TezConfiguration tezConfig = createTezConfiguration();
+    final TezConfiguration tezConfig = createTezConfig();
+    tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
     final Credentials llapCredentials = createLlapCredentials(llapMode, tezConfig);
-    final ServicePluginsDescriptor spd = createPluginDescriptor(llapMode, tezConfig);
-    setupSessionAcls(tezConfig, conf);
+    final ServicePluginsDescriptor spd = createServicePluginDescriptor(llapMode, tezConfig);
 
     // Do not initialize prewarm here. Either it's already prewarmed or we don't care (for now).
 
@@ -295,7 +279,7 @@ public class TezSessionState {
         conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
   }
 
-  private TezClient createTezClientObject(TezConfiguration tezConfig,
+  protected final TezClient createTezClientObject(TezConfiguration tezConfig,
       Map<String, LocalResource> commonLocalResources,
       Credentials llapCredentials, ServicePluginsDescriptor spd) {
     return TezClient.newBuilder("HIVE-" + sessionId, tezConfig).setIsSession(true)
@@ -303,105 +287,40 @@ public class TezSessionState {
         .setServicePluginDescriptor(spd).build();
   }
 
-  private ServicePluginsDescriptor createPluginDescriptor(
-      final boolean llapMode, final TezConfiguration tezConfig)
-      throws IOException {
-    ServicePluginsDescriptor servicePluginsDescriptor;
-    if (llapMode) {
-      // TODO Change this to not serialize the entire Configuration - minor.
-      UserPayload servicePluginPayload = TezUtils.createUserPayloadFromConf(tezConfig);
-      // we need plugins to handle llap and uber mode
-      servicePluginsDescriptor = ServicePluginsDescriptor.create(true,
-          new TaskSchedulerDescriptor[] { TaskSchedulerDescriptor.create(
-              LLAP_SERVICE, LLAP_SCHEDULER).setUserPayload(servicePluginPayload) },
-          new ContainerLauncherDescriptor[] { ContainerLauncherDescriptor.create(
-              LLAP_SERVICE, LLAP_LAUNCHER) },
-          new TaskCommunicatorDescriptor[] { TaskCommunicatorDescriptor.create(
-              LLAP_SERVICE, LLAP_TASK_COMMUNICATOR).setUserPayload(servicePluginPayload) });
-    } else {
-      servicePluginsDescriptor = ServicePluginsDescriptor.create(true);
-    }
-    return servicePluginsDescriptor;
-  }
-
-  private Credentials createLlapCredentials(
-      boolean llapMode, TezConfiguration tezConfig) throws IOException {
-    Credentials llapCredentials = null;
-    if (llapMode && UserGroupInformation.isSecurityEnabled()) {
-      llapCredentials = new Credentials();
-      llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, getLlapToken(user, tezConfig));
-    }
-    return llapCredentials;
-  }
-
-  private TezConfiguration createTezConfiguration() {
-    final TezConfiguration tezConfig = new TezConfiguration(true);
-    tezConfig.addResource(conf);
-
-    setupTezParamsBasedOnMR(tezConfig);
-    tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
-    conf.stripHiddenConfigurations(tezConfig);
-    return tezConfig;
-  }
-
-  private Map<String, LocalResource> makeCombinedJarMap(final boolean llapMode)
-      throws IOException, LoginException, URISyntaxException {
-    appJarLr = createJarLocalResource(utils.getExecJarPathLocal(conf));
-
-    final Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
-    commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
-    for (LocalResource lr : this.resources.localizedResources) {
-      commonLocalResources.put(DagUtils.getBaseName(lr), lr);
-    }
-
-    if (llapMode) {
-      // localize llap client jars
-      addJarLRByClass(LlapTaskSchedulerService.class, commonLocalResources);
-      addJarLRByClass(LlapProtocolClientImpl.class, commonLocalResources);
-      addJarLRByClass(LlapProtocolClientProxy.class, commonLocalResources);
-      addJarLRByClass(RegistryOperations.class, commonLocalResources);
-    }
-    return commonLocalResources;
-  }
-
   /**
    * Creates a tez session. A session is tied to either a cli/hs2 session. You can
    * submit multiple DAGs against a session (as long as they are executed serially).
    */
+  @Override
   public void open(String[] additionalFilesNotFromConf)
       throws IOException, LoginException, URISyntaxException, TezException {
-    openInternal(additionalFilesNotFromConf, false, null, null);
+    openInternal(additionalFilesNotFromConf, false, null, null, false);
   }
 
 
+  @Override
   public void open(HiveResources resources)
       throws LoginException, IOException, URISyntaxException, TezException {
-    openInternal(null, false, null, resources);
+    openInternal(null, false, null, resources, false);
   }
 
+  @Override
+  public void open(boolean isPoolInit)
+      throws LoginException, IOException, URISyntaxException, TezException {
+    String[] noFiles = null;
+    openInternal(noFiles, false, null, null, isPoolInit);
+  }
+
+  @Override
   public void beginOpen(String[] additionalFiles, LogHelper console)
       throws IOException, LoginException, URISyntaxException, TezException {
-    openInternal(additionalFiles, true, console, null);
+    openInternal(additionalFiles, true, console, null, false);
   }
 
   protected void openInternal(String[] additionalFilesNotFromConf,
-      boolean isAsync, LogHelper console, HiveResources resources)
+      boolean isAsync, LogHelper console, HiveResources resources, boolean isPoolInit)
           throws IOException, LoginException, URISyntaxException, TezException {
-    // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
-    String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
-    if (queueName != null && !queueName.equals(confQueueName)) {
-      LOG.warn("Resetting a queue name that was already set: was "
-          + queueName + ", now " + confQueueName);
-    }
-    this.queueName = confQueueName;
-    this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
-
-    final boolean llapMode = isLlapMode();
-
-    // TODO This - at least for the session pool - will always be the hive user. How does doAs above this affect things ?
-    UserGroupInformation ugi = Utils.getUGI();
-    user = ugi.getShortUserName();
-    LOG.info("User of session id " + sessionId + " is " + user);
+    initQueueAndUser();
 
     // Create the tez tmp dir and a directory for Hive resources.
     tezScratchDir = createTezDir(sessionId, null);
@@ -415,19 +334,23 @@ public class TezSessionState {
       LOG.info("Created new resources: " + resources);
     }
 
-    final Map<String, LocalResource> commonLocalResources = makeCombinedJarMap(llapMode);
+
+    // configuration for the application master
+    final Map<String, LocalResource> commonLocalResources = addExecJarAndLocalResources();
+    final boolean llapMode = addLlapJarsIfNeeded(commonLocalResources);
 
     // Create environment for AM.
     // TODO: this is unused since AMConfiguration was replaced with TezConfiguration.
     Map<String, String> amEnv = new HashMap<String, String>();
     MRHelpers.updateEnvBasedOnMRAMEnv(conf, amEnv);
 
-    final TezConfiguration tezConfig = createTezConfiguration();
-
-    ServicePluginsDescriptor servicePluginsDescriptor;
+    // and finally we're ready to create and start the session
+    // generate basic tez config
+    final TezConfiguration tezConfig = createTezConfig();
+    tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
 
     Credentials llapCredentials = createLlapCredentials(llapMode, tezConfig);
-    servicePluginsDescriptor = createPluginDescriptor(llapMode, tezConfig);
+    ServicePluginsDescriptor spd = createServicePluginDescriptor(llapMode, tezConfig);
 
     // container prewarming. tell the am how many containers we need
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
@@ -438,10 +361,8 @@ public class TezSessionState {
       tezConfig.setInt(TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS, n);
     }
 
-    setupSessionAcls(tezConfig, conf);
-
-    final TezClient session = createTezClientObject(
-        tezConfig, commonLocalResources, llapCredentials, servicePluginsDescriptor);
+    TezClient session = createTezClientObject(
+        tezConfig, commonLocalResources, llapCredentials, spd);
 
     LOG.info("Opening new Tez Session (id: " + sessionId
         + ", scratch dir: " + tezScratchDir + ")");
@@ -449,7 +370,7 @@ public class TezSessionState {
     TezJobMonitor.initShutdownHook();
     if (!isAsync) {
       startSessionAndContainers(session, conf, commonLocalResources, tezConfig, false);
-      this.session = session;
+      setTezClient(session);
     } else {
       FutureTask<TezClient> sessionFuture = new FutureTask<>(new Callable<TezClient>() {
         @Override
@@ -461,7 +382,7 @@ public class TezSessionState {
           } catch (Throwable t) {
             // The caller has already stopped the session.
             LOG.error("Failed to start Tez session", t);
-            throw (t instanceof Exception) ? (Exception)t : new Exception(t);
+            throw (t instanceof Exception) ? (Exception) t : new Exception(t);
           }
           // Check interrupt at the last moment in case we get cancelled quickly.
           // This is not bulletproof but should allow us to close session in most cases.
@@ -479,6 +400,79 @@ public class TezSessionState {
       this.sessionFuture = sessionFuture;
     }
   }
+
+  private Map<String, LocalResource> addExecJarAndLocalResources()
+      throws IOException, LoginException, URISyntaxException {
+    final Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
+    appJarLr = createJarLocalResource(utils.getExecJarPathLocal(conf));
+    commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
+    for (LocalResource lr : this.resources.localizedResources) {
+      commonLocalResources.put(DagUtils.getBaseName(lr), lr);
+    }
+    return commonLocalResources;
+  }
+
+  protected static ServicePluginsDescriptor createServicePluginDescriptor(boolean llapMode,
+      TezConfiguration tezConfig) throws IOException {
+    if (!llapMode) return ServicePluginsDescriptor.create(true);
+    // TODO Change this to not serialize the entire Configuration - minor.
+    UserPayload servicePluginPayload = TezUtils.createUserPayloadFromConf(tezConfig);
+    // we need plugins to handle llap and uber mode
+    return ServicePluginsDescriptor.create(true,
+        new TaskSchedulerDescriptor[] { TaskSchedulerDescriptor.create(
+            LLAP_SERVICE, LLAP_SCHEDULER).setUserPayload(servicePluginPayload) },
+        new ContainerLauncherDescriptor[] { ContainerLauncherDescriptor.create(
+            LLAP_SERVICE, LLAP_LAUNCHER) },
+        new TaskCommunicatorDescriptor[] { TaskCommunicatorDescriptor.create(
+            LLAP_SERVICE, LLAP_TASK_COMMUNICATOR).setUserPayload(servicePluginPayload) });
+  }
+
+  protected final Credentials createLlapCredentials(boolean llapMode,
+      TezConfiguration tezConfig) throws IOException {
+    if (!llapMode || !UserGroupInformation.isSecurityEnabled()) return null;
+    Credentials llapCredentials = new Credentials();
+    llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, getLlapToken(user, tezConfig));
+    return llapCredentials;
+  }
+
+  protected final TezConfiguration createTezConfig() throws IOException {
+    TezConfiguration tezConfig = new TezConfiguration(true);
+    tezConfig.addResource(conf);
+    setupTezParamsBasedOnMR(tezConfig);
+    conf.stripHiddenConfigurations(tezConfig);
+    setupSessionAcls(tezConfig, conf);
+    return tezConfig;
+  }
+
+  protected final boolean addLlapJarsIfNeeded(Map<String, LocalResource> commonLocalResources)
+      throws IOException, LoginException {
+    if (!isLlapMode()) {
+      return false;
+    }
+    // localize llap client jars
+    addJarLRByClass(LlapTaskSchedulerService.class, commonLocalResources);
+    addJarLRByClass(LlapProtocolClientImpl.class, commonLocalResources);
+    addJarLRByClass(LlapProtocolClientProxy.class, commonLocalResources);
+    addJarLRByClass(RegistryOperations.class, commonLocalResources);
+    return true;
+  }
+
+  protected final void initQueueAndUser() throws LoginException, IOException {
+    // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
+    String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
+    if (queueName != null && !queueName.equals(confQueueName)) {
+      LOG.warn("Resetting a queue name that was already set: was "
+          + queueName + ", now " + confQueueName);
+    }
+    this.queueName = confQueueName;
+    this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
+
+    // TODO This - at least for the session pool - will always be the hive user. How does doAs above this affect things ?
+    UserGroupInformation ugi = Utils.getUGI();
+    user = ugi.getShortUserName();
+    LOG.info("User of session id " + sessionId + " is " + user);
+  }
+
 
   private static Token<LlapTokenIdentifier> getLlapToken(
       String user, final Configuration conf) throws IOException {
@@ -577,7 +571,7 @@ public class TezSessionState {
       if (session == null) {
         throw new RuntimeException("Initialization was interrupted");
       }
-      this.session = session;
+      setTezClient(session);
     } catch (ExecutionException e) {
       throw new RuntimeException(e);
     }
@@ -679,6 +673,7 @@ public class TezSessionState {
   }
 
   /** This is called in openInternal and in TezTask.updateSession to localize conf resources. */
+  @Override
   public void ensureLocalResources(Configuration conf, String[] newFilesNotFromConf)
           throws IOException, LoginException, URISyntaxException, TezException {
     if (resources == null) {
@@ -746,7 +741,8 @@ public class TezSessionState {
    *          whether or not to remove the scratch dir at the same time.
    * @throws Exception
    */
-  void close(boolean keepDagFilesDir) throws Exception {
+  @Override
+  public void close(boolean keepDagFilesDir) throws Exception {
     console = null;
     appJarLr = null;
 
@@ -809,11 +805,17 @@ public class TezSessionState {
     }
   }
 
+  @Override
   public String getSessionId() {
     return sessionId;
   }
 
-  public TezClient getSession() {
+  protected final void setTezClient(TezClient session) {
+    this.session = session;
+  }
+
+  @Override
+  public TezClient getTezClient() {
     if (session == null && sessionFuture != null) {
       if (!sessionFuture.isDone()) {
         console.printInfo("Waiting for Tez session and AM to be ready...");
@@ -889,7 +891,7 @@ public class TezSessionState {
    * @throws LoginException when we are unable to determine the user.
    * @throws URISyntaxException when current jar location cannot be determined.
    */
-  private LocalResource createJarLocalResource(String localJarPath)
+  protected final LocalResource createJarLocalResource(String localJarPath)
       throws IOException, LoginException, IllegalArgumentException {
     // TODO Reduce the number of lookups that happen here. This shouldn't go to HDFS for each call.
     // The hiveJarDir can be determined once per client.
@@ -964,27 +966,34 @@ public class TezSessionState {
     }
     return sha256;
   }
+
+  @Override
   public void setQueueName(String queueName) {
     this.queueName = queueName;
   }
 
+  @Override
   public String getQueueName() {
     return queueName;
   }
 
+  @Override
   public void setDefault() {
     defaultQueue = true;
   }
 
+  @Override
   public boolean isDefault() {
     return defaultQueue;
   }
 
+  @Override
   public HiveConf getConf() {
     return conf;
   }
 
   public List<LocalResource> getLocalizedResources() {
+    if (resources == null) return new ArrayList<>();
     return new ArrayList<>(resources.localizedResources);
   }
 
@@ -992,19 +1001,22 @@ public class TezSessionState {
     return user;
   }
 
+  @Override
   public boolean getDoAsEnabled() {
     return doAsEnabled;
   }
 
   /** Mark session as free for use from TezTask, for safety/debugging purposes. */
-  public void markFree() {
+  @Override
+  public void unsetOwnerThread() {
     if (ownerThread.getAndSet(null) == null) {
       throw new AssertionError("Not in use");
     }
   }
 
   /** Mark session as being in use from TezTask, for safety/debugging purposes. */
-  public void markInUse() {
+  @Override
+  public void setOwnerThread() {
     String newName = Thread.currentThread().getName();
     do {
       String oldName = ownerThread.get();
@@ -1015,29 +1027,35 @@ public class TezSessionState {
     } while (!ownerThread.compareAndSet(null, newName));
   }
 
-  void setLegacyLlapMode(boolean value) {
+  @Override
+  public void setLegacyLlapMode(boolean value) {
     this.isLegacyLlapMode = value;
   }
 
-  boolean getLegacyLlapMode() {
+  @Override
+  public boolean getLegacyLlapMode() {
     return this.isLegacyLlapMode;
   }
 
+  @Override
   public void returnToSessionManager() throws Exception {
     // By default, TezSessionPoolManager handles this for both pool and non-pool session.
     TezSessionPoolManager.getInstance().returnSession(this);
   }
 
-  public TezSessionState reopen() throws Exception {
+  @Override
+  public TezSession reopen() throws Exception {
     // By default, TezSessionPoolManager handles this for both pool and non-pool session.
     return TezSessionPoolManager.getInstance().reopen(this);
   }
 
+  @Override
   public void destroy() throws Exception {
     // By default, TezSessionPoolManager handles this for both pool and non-pool session.
     TezSessionPoolManager.getInstance().destroy(this);
   }
 
+  @Override
   public WmContext getWmContext() {
     return wmContext;
   }
@@ -1050,16 +1068,13 @@ public class TezSessionState {
     this.killQuery = killQuery;
   }
 
-  public KillQuery getKillQuery() {
-    return killQuery;
-  }
-
   public HiveResources extractHiveResources() {
     HiveResources result = resources;
     resources = null;
     return result;
   }
 
+  @Override
   public Path replaceHiveResources(HiveResources resources, boolean isAsync) {
     Path dir = null;
     if (this.resources != null) {
@@ -1076,5 +1091,15 @@ public class TezSessionState {
     }
     this.resources = resources;
     return dir;
+  }
+
+  @Override
+  public boolean killQuery(String reason) throws HiveException {
+    if (killQuery == null || wmContext == null) return false;
+    String queryId = wmContext.getQueryId();
+    if (queryId == null) return false;
+    LOG.info("Killing the query {}: {}", queryId, reason);
+    killQuery.killQuery(queryId, reason, conf, true);
+    return true;
   }
 }
