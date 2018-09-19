@@ -1914,14 +1914,14 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PART_COL_STATS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
-  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+PREHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.2000' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.2000' AS `VERSION_COMMENT`
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: SYS@VERSION
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
-  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+POSTHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.2000' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.2000' AS `VERSION_COMMENT`
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: SYS@VERSION
@@ -2468,11 +2468,10 @@ SELECT DISTINCT
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D LEFT JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  NOT restrict_information_schema() OR
-  D.`DB_ID` = T.`DB_ID`
-  AND T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND current_authorizer() = P.`AUTHORIZER`
@@ -2501,11 +2500,10 @@ SELECT DISTINCT
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D LEFT JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  NOT restrict_information_schema() OR
-  D.`DB_ID` = T.`DB_ID`
-  AND T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND current_authorizer() = P.`AUTHORIZER`
@@ -2516,9 +2514,9 @@ POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: SCHEMATA.catalog_name SIMPLE []
-POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog EXPRESSION []
-POSTHOOK: Lineage: SCHEMATA.default_character_set_name EXPRESSION []
-POSTHOOK: Lineage: SCHEMATA.default_character_set_schema EXPRESSION []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog SIMPLE []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_name SIMPLE []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_schema SIMPLE []
 POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 #### A masked pattern was here ####
 POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
@@ -2551,12 +2549,12 @@ SELECT DISTINCT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+  `sys`.`TBLS` T JOIN `sys`.`DBS` D ON (D.`DB_ID` = T.`DB_ID`)
+                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
@@ -2593,12 +2591,12 @@ SELECT DISTINCT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+  `sys`.`TBLS` T JOIN `sys`.`DBS` D ON (D.`DB_ID` = T.`DB_ID`)
+                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
@@ -2606,18 +2604,18 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@TABLES
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: TABLES.commit_action EXPRESSION []
+POSTHOOK: Lineage: TABLES.commit_action SIMPLE []
 POSTHOOK: Lineage: TABLES.is_insertable_into EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.is_typed SIMPLE []
-POSTHOOK: Lineage: TABLES.reference_generation EXPRESSION []
-POSTHOOK: Lineage: TABLES.self_referencing_column_name EXPRESSION []
+POSTHOOK: Lineage: TABLES.reference_generation SIMPLE []
+POSTHOOK: Lineage: TABLES.self_referencing_column_name SIMPLE []
 POSTHOOK: Lineage: TABLES.table_catalog SIMPLE []
 POSTHOOK: Lineage: TABLES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.table_type EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: TABLES.user_defined_type_catalog EXPRESSION []
-POSTHOOK: Lineage: TABLES.user_defined_type_name EXPRESSION []
-POSTHOOK: Lineage: TABLES.user_defined_type_schema EXPRESSION []
+POSTHOOK: Lineage: TABLES.user_defined_type_catalog SIMPLE []
+POSTHOOK: Lineage: TABLES.user_defined_type_name SIMPLE []
+POSTHOOK: Lineage: TABLES.user_defined_type_schema SIMPLE []
 PREHOOK: query: CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
 (
   `GRANTOR`,
@@ -2639,18 +2637,15 @@ SELECT DISTINCT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  `sys`.`TBL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                      JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                      LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  P.`TBL_ID` = T.`TBL_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR
+  (P2.`TBL_ID` IS NOT NULL AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer()
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer())
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
@@ -2678,18 +2673,15 @@ SELECT DISTINCT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  `sys`.`TBL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                      JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                      LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  P.`TBL_ID` = T.`TBL_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR
+  (P2.`TBL_ID` IS NOT NULL AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer()
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer())
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
@@ -2843,21 +2835,16 @@ SELECT DISTINCT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  `sys`.`COLUMNS_V2` C,
-  `sys`.`SDS` S,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_COL_PRIVS` P
+  `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
+                       JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
+                       JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND C.`CD_ID` = S.`CD_ID`
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
@@ -3005,21 +2992,16 @@ SELECT DISTINCT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  `sys`.`COLUMNS_V2` C,
-  `sys`.`SDS` S,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_COL_PRIVS` P
+  `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
+                       JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
+                       JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND C.`CD_ID` = S.`CD_ID`
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
@@ -3030,13 +3012,13 @@ POSTHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: COLUMNS.character_maximum_length EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.character_octet_length EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.character_set_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.character_set_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.character_set_schema EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.collation_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.collation_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.collation_schema EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.column_default EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.character_set_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.character_set_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.character_set_schema SIMPLE []
+POSTHOOK: Lineage: COLUMNS.collation_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.collation_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.collation_schema SIMPLE []
+POSTHOOK: Lineage: COLUMNS.column_default SIMPLE []
 POSTHOOK: Lineage: COLUMNS.column_name SIMPLE [(columns_v2)c.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.data_type SIMPLE [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.datetime_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
@@ -3044,15 +3026,15 @@ POSTHOOK: Lineage: COLUMNS.declared_data_type SIMPLE [(columns_v2)c.FieldSchema(
 POSTHOOK: Lineage: COLUMNS.declared_numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.declared_numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.dtd_identifier SIMPLE [(columns_v2)c.FieldSchema(name:cd_id, type:bigint, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.generation_expression EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_cycle EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_generation EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_increment EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_maximum EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_minimum EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_start EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.interval_precision EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.interval_type EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.generation_expression SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_cycle SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_generation SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_increment SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_maximum SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_minimum SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_start SIMPLE []
+POSTHOOK: Lineage: COLUMNS.interval_precision SIMPLE []
+POSTHOOK: Lineage: COLUMNS.interval_type SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_generated SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_identity SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_nullable SIMPLE []
@@ -3060,21 +3042,21 @@ POSTHOOK: Lineage: COLUMNS.is_self_referencing SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_system_time_period_end SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_system_time_period_start SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_updatable SIMPLE []
-POSTHOOK: Lineage: COLUMNS.maximum_cardinality EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.maximum_cardinality SIMPLE []
 POSTHOOK: Lineage: COLUMNS.numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_precision_radix EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.ordinal_position SIMPLE [(columns_v2)c.FieldSchema(name:integer_idx, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.scope_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.scope_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.scope_schema EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.system_time_period_timestamp_generation EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.scope_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.scope_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.scope_schema SIMPLE []
+POSTHOOK: Lineage: COLUMNS.system_time_period_timestamp_generation SIMPLE []
 POSTHOOK: Lineage: COLUMNS.table_catalog SIMPLE []
 POSTHOOK: Lineage: COLUMNS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.udt_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.udt_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.udt_schema EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.udt_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.udt_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.udt_schema SIMPLE []
 PREHOOK: query: CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
   `GRANTOR`,
@@ -3096,20 +3078,16 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`SDS` S,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                          JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                          JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
+                          LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND P.`TBL_ID` = T.`TBL_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR P2.`TBL_ID` IS NOT NULL
+  AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer())
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
@@ -3139,20 +3117,16 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`SDS` S,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                          JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                          JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
+                          LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND P.`TBL_ID` = T.`TBL_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR P2.`TBL_ID` IS NOT NULL
+  AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer())
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
@@ -3194,14 +3168,11 @@ SELECT DISTINCT
   false,
   false
 FROM
-  `sys`.`DBS` D,
-  `sys`.`TBLS` T,
-  `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND length(T.VIEW_ORIGINAL_TEXT) > 0
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
@@ -3236,14 +3207,11 @@ SELECT DISTINCT
   false,
   false
 FROM
-  `sys`.`DBS` D,
-  `sys`.`TBLS` T,
-  `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND length(T.VIEW_ORIGINAL_TEXT) > 0
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
@@ -3253,7 +3221,7 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@VIEWS
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: VIEWS.check_option EXPRESSION []
+POSTHOOK: Lineage: VIEWS.check_option SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_insertable_into SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_trigger_deletable SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_trigger_insertable_into SIMPLE []
@@ -3281,15 +3249,477 @@ key	0
 key	0
 key	0
 value	0
-PREHOOK: query: select count(*) from cds
+PREHOOK: query: select t.tbl_name, c.column_name from tbls t join sds s on t.sd_id=s.sd_id join columns_v2 c on s.cd_id=c.cd_id order by t.tbl_name, c.column_name
 PREHOOK: type: QUERY
-PREHOOK: Input: sys@cds
+PREHOOK: Input: sys@columns_v2
+PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from cds
+POSTHOOK: query: select t.tbl_name, c.column_name from tbls t join sds s on t.sd_id=s.sd_id join columns_v2 c on s.cd_id=c.cd_id order by t.tbl_name, c.column_name
 POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@cds
+POSTHOOK: Input: sys@columns_v2
+POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-71
+alltypesorc	cbigint
+alltypesorc	cboolean1
+alltypesorc	cboolean2
+alltypesorc	cdouble
+alltypesorc	cfloat
+alltypesorc	cint
+alltypesorc	csmallint
+alltypesorc	cstring1
+alltypesorc	cstring2
+alltypesorc	ctimestamp1
+alltypesorc	ctimestamp2
+alltypesorc	ctinyint
+alltypesparquet	cbigint
+alltypesparquet	cboolean1
+alltypesparquet	cboolean2
+alltypesparquet	cdouble
+alltypesparquet	cfloat
+alltypesparquet	cint
+alltypesparquet	csmallint
+alltypesparquet	cstring1
+alltypesparquet	cstring2
+alltypesparquet	ctimestamp1
+alltypesparquet	ctimestamp2
+alltypesparquet	ctinyint
+bucketing_cols	bucket_col_name
+bucketing_cols	integer_idx
+bucketing_cols	sd_id
+cbo_t1	c_boolean
+cbo_t1	c_float
+cbo_t1	c_int
+cbo_t1	key
+cbo_t1	value
+cbo_t2	c_boolean
+cbo_t2	c_float
+cbo_t2	c_int
+cbo_t2	key
+cbo_t2	value
+cbo_t3	c_boolean
+cbo_t3	c_float
+cbo_t3	c_int
+cbo_t3	key
+cbo_t3	value
+cds	cd_id
+column_privileges	column_name
+column_privileges	grantee
+column_privileges	grantor
+column_privileges	is_grantable
+column_privileges	privilege_type
+column_privileges	table_catalog
+column_privileges	table_name
+column_privileges	table_schema
+columns	character_maximum_length
+columns	character_octet_length
+columns	character_set_catalog
+columns	character_set_name
+columns	character_set_schema
+columns	collation_catalog
+columns	collation_name
+columns	collation_schema
+columns	column_default
+columns	column_name
+columns	data_type
+columns	datetime_precision
+columns	declared_data_type
+columns	declared_numeric_precision
+columns	declared_numeric_scale
+columns	dtd_identifier
+columns	generation_expression
+columns	identity_cycle
+columns	identity_generation
+columns	identity_increment
+columns	identity_maximum
+columns	identity_minimum
+columns	identity_start
+columns	interval_precision
+columns	interval_type
+columns	is_generated
+columns	is_identity
+columns	is_nullable
+columns	is_self_referencing
+columns	is_system_time_period_end
+columns	is_system_time_period_start
+columns	is_updatable
+columns	maximum_cardinality
+columns	numeric_precision
+columns	numeric_precision_radix
+columns	numeric_scale
+columns	ordinal_position
+columns	scope_catalog
+columns	scope_name
+columns	scope_schema
+columns	system_time_period_timestamp_generation
+columns	table_catalog
+columns	table_name
+columns	table_schema
+columns	udt_catalog
+columns	udt_name
+columns	udt_schema
+columns_v2	cd_id
+columns_v2	column_name
+columns_v2	comment
+columns_v2	integer_idx
+columns_v2	type_name
+database_params	db_id
+database_params	param_key
+database_params	param_value
+db_privs	authorizer
+db_privs	create_time
+db_privs	db_grant_id
+db_privs	db_id
+db_privs	db_priv
+db_privs	grant_option
+db_privs	grantor
+db_privs	grantor_type
+db_privs	principal_name
+db_privs	principal_type
+db_version	schema_version
+db_version	ver_id
+db_version	version_comment
+dbs	db_id
+dbs	db_location_uri
+dbs	name
+#### A masked pattern was here ####
+funcs	class_name
+funcs	create_time
+funcs	db_id
+funcs	func_id
+funcs	func_name
+funcs	func_type
+#### A masked pattern was here ####
+global_privs	authorizer
+global_privs	create_time
+global_privs	grant_option
+global_privs	grantor
+global_privs	grantor_type
+global_privs	principal_name
+global_privs	principal_type
+global_privs	user_grant_id
+global_privs	user_priv
+key_constraints	child_cd_id
+key_constraints	child_integer_idx
+key_constraints	child_tbl_id
+key_constraints	constraint_name
+key_constraints	constraint_type
+key_constraints	default_value
+key_constraints	delete_rule
+key_constraints	enable_validate_rely
+key_constraints	parent_cd_id
+key_constraints	parent_integer_idx
+key_constraints	parent_tbl_id
+key_constraints	position
+key_constraints	update_rule
+lineitem	l_comment
+lineitem	l_commitdate
+lineitem	l_discount
+lineitem	l_extendedprice
+lineitem	l_linenumber
+lineitem	l_linestatus
+lineitem	l_orderkey
+lineitem	l_partkey
+lineitem	l_quantity
+lineitem	l_receiptdate
+lineitem	l_returnflag
+lineitem	l_shipdate
+lineitem	l_shipinstruct
+lineitem	l_shipmode
+lineitem	l_suppkey
+lineitem	l_tax
+moretypes	a
+moretypes	b
+moretypes	c
+moretypes	d
+moretypes	e
+moretypes	f
+moretypes	g
+mv_creation_metadata	db_name
+mv_creation_metadata	mv_creation_metadata_id
+mv_creation_metadata	tbl_name
+mv_creation_metadata	txn_list
+mv_tables_used	mv_creation_metadata_id
+mv_tables_used	tbl_id
+part	p_brand
+part	p_comment
+part	p_container
+part	p_mfgr
+part	p_name
+part	p_partkey
+part	p_retailprice
+part	p_size
+part	p_type
+part_col_privs	authorizer
+part_col_privs	column_name
+part_col_privs	create_time
+part_col_privs	grant_option
+part_col_privs	grantor
+part_col_privs	grantor_type
+part_col_privs	part_col_priv
+part_col_privs	part_column_grant_id
+part_col_privs	part_id
+part_col_privs	principal_name
+part_col_privs	principal_type
+part_col_stats	avg_col_len
+part_col_stats	big_decimal_high_value
+part_col_stats	big_decimal_low_value
+part_col_stats	column_name
+part_col_stats	column_type
+part_col_stats	cs_id
+part_col_stats	db_name
+part_col_stats	double_high_value
+part_col_stats	double_low_value
+part_col_stats	engine
+part_col_stats	last_analyzed
+part_col_stats	long_high_value
+part_col_stats	long_low_value
+part_col_stats	max_col_len
+part_col_stats	num_distincts
+part_col_stats	num_falses
+part_col_stats	num_nulls
+part_col_stats	num_trues
+part_col_stats	part_id
+part_col_stats	partition_name
+part_col_stats	table_name
+part_privs	authorizer
+part_privs	create_time
+part_privs	grant_option
+part_privs	grantor
+part_privs	grantor_type
+part_privs	part_grant_id
+part_privs	part_id
+part_privs	part_priv
+part_privs	principal_name
+part_privs	principal_type
+partition_key_vals	integer_idx
+partition_key_vals	part_id
+partition_key_vals	part_key_val
+partition_keys	integer_idx
+partition_keys	pkey_comment
+partition_keys	pkey_name
+partition_keys	pkey_type
+partition_keys	tbl_id
+partition_params	param_key
+partition_params	param_value
+partition_params	part_id
+partition_stats_view	column_stats_accurate
+partition_stats_view	num_files
+partition_stats_view	num_rows
+partition_stats_view	part_id
+partition_stats_view	raw_data_size
+partition_stats_view	total_size
+partition_stats_view	transient_last_ddl_time
+partitions	create_time
+partitions	last_access_time
+partitions	part_id
+partitions	part_name
+partitions	sd_id
+partitions	tbl_id
+role_map	add_time
+role_map	grant_option
+role_map	grantor
+role_map	grantor_type
+role_map	principal_name
+role_map	principal_type
+role_map	role_grant_id
+role_map	role_id
+roles	create_time
+#### A masked pattern was here ####
+roles	role_id
+roles	role_name
+schemata	catalog_name
+schemata	default_character_set_catalog
+schemata	default_character_set_name
+schemata	default_character_set_schema
+schemata	schema_name
+#### A masked pattern was here ####
+schemata	sql_path
+scr_txn	key
+scr_txn	value
+sd_params	param_key
+sd_params	param_value
+sd_params	sd_id
+sds	cd_id
+sds	input_format
+sds	is_compressed
+sds	is_storedassubdirectories
+sds	location
+sds	num_buckets
+sds	output_format
+sds	sd_id
+sds	serde_id
+sequence_table	next_val
+sequence_table	sequence_name
+serde_params	param_key
+serde_params	param_value
+serde_params	serde_id
+serdes	name
+serdes	serde_id
+serdes	slib
+skewed_col_names	integer_idx
+skewed_col_names	sd_id
+skewed_col_names	skewed_col_name
+skewed_col_value_loc_map	location
+skewed_col_value_loc_map	sd_id
+skewed_col_value_loc_map	string_list_id_kid
+skewed_string_list	string_list_id
+skewed_string_list_values	integer_idx
+skewed_string_list_values	string_list_id
+skewed_string_list_values	string_list_value
+skewed_values	integer_idx
+skewed_values	sd_id_oid
+skewed_values	string_list_id_eid
+sort_cols	column_name
+sort_cols	integer_idx
+sort_cols	order
+sort_cols	sd_id
+src	key
+src	value
+src1	key
+src1	value
+src_buck	key
+src_buck	value
+src_cbo	key
+src_cbo	value
+src_json	json
+src_sequencefile	key
+src_sequencefile	value
+src_skew	key
+src_thrift	aint
+src_thrift	astring
+src_thrift	attributes
+src_thrift	lint
+src_thrift	lintstring
+src_thrift	lstring
+src_thrift	mstringstring
+src_thrift	unionfield1
+src_thrift	unionfield2
+src_thrift	unionfield3
+srcbucket	key
+srcbucket	value
+srcbucket2	key
+srcbucket2	value
+srcpart	key
+srcpart	value
+tab_col_stats	avg_col_len
+tab_col_stats	big_decimal_high_value
+tab_col_stats	big_decimal_low_value
+tab_col_stats	column_name
+tab_col_stats	column_type
+tab_col_stats	cs_id
+tab_col_stats	db_name
+tab_col_stats	double_high_value
+tab_col_stats	double_low_value
+tab_col_stats	engine
+tab_col_stats	last_analyzed
+tab_col_stats	long_high_value
+tab_col_stats	long_low_value
+tab_col_stats	max_col_len
+tab_col_stats	num_distincts
+tab_col_stats	num_falses
+tab_col_stats	num_nulls
+tab_col_stats	num_trues
+tab_col_stats	table_name
+tab_col_stats	tbl_id
+table_params	param_key
+table_params	param_value
+table_params	tbl_id
+table_privileges	grantee
+table_privileges	grantor
+table_privileges	is_grantable
+table_privileges	privilege_type
+table_privileges	table_catalog
+table_privileges	table_name
+table_privileges	table_schema
+table_privileges	with_hierarchy
+table_stats_view	column_stats_accurate
+table_stats_view	num_files
+table_stats_view	num_rows
+table_stats_view	raw_data_size
+table_stats_view	tbl_id
+table_stats_view	total_size
+table_stats_view	transient_last_ddl_time
+tables	commit_action
+tables	is_insertable_into
+tables	is_typed
+tables	reference_generation
+tables	self_referencing_column_name
+tables	table_catalog
+tables	table_name
+tables	table_schema
+tables	table_type
+tables	user_defined_type_catalog
+tables	user_defined_type_name
+tables	user_defined_type_schema
+tbl_col_privs	authorizer
+tbl_col_privs	column_name
+tbl_col_privs	create_time
+tbl_col_privs	grant_option
+tbl_col_privs	grantor
+tbl_col_privs	grantor_type
+tbl_col_privs	principal_name
+tbl_col_privs	principal_type
+tbl_col_privs	tbl_col_priv
+tbl_col_privs	tbl_column_grant_id
+tbl_col_privs	tbl_id
+tbl_privs	authorizer
+tbl_privs	create_time
+tbl_privs	grant_option
+tbl_privs	grantor
+tbl_privs	grantor_type
+tbl_privs	principal_name
+tbl_privs	principal_type
+tbl_privs	tbl_grant_id
+tbl_privs	tbl_id
+tbl_privs	tbl_priv
+tbls	create_time
+tbls	db_id
+tbls	is_rewrite_enabled
+tbls	last_access_time
+#### A masked pattern was here ####
+tbls	retention
+tbls	sd_id
+tbls	tbl_id
+tbls	tbl_name
+tbls	tbl_type
+tbls	view_expanded_text
+tbls	view_original_text
+version	schema_version
+version	ver_id
+version	version_comment
+views	check_option
+views	is_insertable_into
+views	is_trigger_deletable
+views	is_trigger_insertable_into
+views	is_trigger_updatable
+views	is_updatable
+views	table_catalog
+views	table_name
+views	table_schema
+views	view_definition
+wm_mappings	entity_name
+wm_mappings	entity_type
+wm_mappings	ordering
+wm_mappings	pool_path
+wm_mappings	rp_name
+wm_pools	alloc_fraction
+wm_pools	path
+wm_pools	query_parallelism
+wm_pools	rp_name
+wm_pools	scheduling_policy
+wm_pools_to_triggers	pool_path
+wm_pools_to_triggers	rp_name
+wm_pools_to_triggers	trigger_name
+wm_resourceplans	default_pool_path
+wm_resourceplans	name
+wm_resourceplans	query_parallelism
+wm_resourceplans	status
+wm_triggers	action_expression
+wm_triggers	name
+wm_triggers	rp_name
+wm_triggers	trigger_expression
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3560,19 +3990,6 @@ POSTHOOK: query: select param_key, param_value from sd_params order by param_key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sd_params
 #### A masked pattern was here ####
-PREHOOK: query: select sequence_name from sequence_table order by sequence_name limit 5
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@sequence_table
-#### A masked pattern was here ####
-POSTHOOK: query: select sequence_name from sequence_table order by sequence_name limit 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@sequence_table
-#### A masked pattern was here ####
-org.apache.hadoop.hive.metastore.model.MCatalog
-org.apache.hadoop.hive.metastore.model.MColumnDescriptor
-org.apache.hadoop.hive.metastore.model.MDatabase
-org.apache.hadoop.hive.metastore.model.MFunction
-org.apache.hadoop.hive.metastore.model.MGlobalPrivilege
 PREHOOK: query: select name, slib from serdes order by name, slib limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serdes
@@ -3745,7 +4162,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: sys@version
 #### A masked pattern was here ####
-3.1.0
+3.1.2000
 PREHOOK: query: select func_name, func_type from funcs order by func_name, func_type limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@funcs
@@ -3768,21 +4185,21 @@ sys_pk_bucketing_cols
 sys_pk_cds
 sys_pk_col_value_loc_map
 sys_pk_col_value_loc_map
-PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by COLUMN_STATS_ACCURATE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@table_params
 PREHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
-POSTHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+POSTHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by COLUMN_STATS_ACCURATE limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","create_time":"true","db_grant_id":"true","db_id":"true","db_priv":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","user_grant_id":"true","user_priv":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"cd_id":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"entity_name":"true","entity_type":"true","ordering":"true","pool_path":"true","rp_name":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"integer_idx":"true","part_id":"true","part_key_val":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","column_name":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","part_col_priv":"true","part_column_grant_id":"true","part_id":"true","principal_name":"true","principal_type":"true"}}	0	0	0	0
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3902,8 +4319,6 @@ PREHOOK: Input: database:information_schema
 POSTHOOK: query: use INFORMATION_SCHEMA
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:information_schema
-Warning: Shuffle Join MERGEJOIN[22][tables = [d, t]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[23][tables = [d, t, p]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from SCHEMATA
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@schemata
@@ -3919,7 +4334,6 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 3
-Warning: Shuffle Join MERGEJOIN[29][tables = [t, d, p]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from TABLES order by TABLE_SCHEMA, TABLE_NAME
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@tables
@@ -3934,7 +4348,77 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[41][tables = [p, t, d, p2]] in Stage 'Reducer 4' is a cross product
+default	default	alltypesorc	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	alltypesparquet	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	cbo_t1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	cbo_t2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	cbo_t3	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	lineitem	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	moretypes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	part	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	scr_txn	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_buck	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_cbo	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_json	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_sequencefile	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_skew	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_thrift	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	srcbucket	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	srcbucket2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	srcpart	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	information_schema	column_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	columns	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	schemata	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	table_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	tables	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	views	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	bucketing_cols	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	cds	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	columns_v2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	database_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	db_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	db_version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	dbs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	funcs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	global_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	part_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	part_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	part_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	partition_key_vals	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	role_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	roles	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	sd_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	sds	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	sequence_table	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	serde_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	serdes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_col_names	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_col_value_loc_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_string_list	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_string_list_values	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_values	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	sort_cols	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	tab_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	table_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	table_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	tbl_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	tbl_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	tbls	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	version	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	wm_mappings	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_pools	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_pools_to_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_resourceplans	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@table_privileges
@@ -3949,8 +4433,17 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[52][tables = [c, s, t, d, p]] in Stage 'Reducer 5' is a cross product
-PREHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
+hive_test_user	hive_test_user	default	default	alltypesorc	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesorc	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesorc	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesorc	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesparquet	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesparquet	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesparquet	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesparquet	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
+PREHOOK: query: select table_catalog,table_schema,table_name,column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length,character_octet_length,numeric_precision,numeric_precision_radix,numeric_scale,datetime_precision,interval_type,interval_precision,character_set_catalog,character_set_schema,character_set_name,collation_catalog,collation_schema,collation_name,udt_catalog,udt_schema,udt_name,scope_catalog,scope_schema,scope_name,maximum_cardinality,is_self_referencing,is_identity,identity_generation,identity_start,identity_increment,identity_maximum,identity_minimum,identity_cycle,is_generated,generation_expression,is_system_time_period_start,is_system_time_period_end,system_time_period_timestamp_generation,is_updatable,declared_data_type,declared_numeric_precision,declared_numeric_scale from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@columns
 PREHOOK: Input: sys@columns_v2
@@ -3959,7 +4452,7 @@ PREHOOK: Input: sys@sds
 PREHOOK: Input: sys@tbl_col_privs
 PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-POSTHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
+POSTHOOK: query: select table_catalog,table_schema,table_name,column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length,character_octet_length,numeric_precision,numeric_precision_radix,numeric_scale,datetime_precision,interval_type,interval_precision,character_set_catalog,character_set_schema,character_set_name,collation_catalog,collation_schema,collation_name,udt_catalog,udt_schema,udt_name,scope_catalog,scope_schema,scope_name,maximum_cardinality,is_self_referencing,is_identity,identity_generation,identity_start,identity_increment,identity_maximum,identity_minimum,identity_cycle,is_generated,generation_expression,is_system_time_period_start,is_system_time_period_end,system_time_period_timestamp_generation,is_updatable,declared_data_type,declared_numeric_precision,declared_numeric_scale from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 POSTHOOK: type: QUERY
 POSTHOOK: Input: information_schema@columns
 POSTHOOK: Input: sys@columns_v2
@@ -3968,7 +4461,25 @@ POSTHOOK: Input: sys@sds
 POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[52][tables = [p, t, d, s, p2]] in Stage 'Reducer 5' is a cross product
+default	default	alltypesorc	cbigint	3	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
+default	default	alltypesorc	cboolean1	10	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
+default	default	alltypesorc	cboolean2	11	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
+default	default	alltypesorc	cdouble	5	NULL	YES	double	NULL	NULL	53	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	double	53	2
+default	default	alltypesorc	cfloat	4	NULL	YES	float	NULL	NULL	23	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	float	23	2
+default	default	alltypesorc	cint	2	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
+default	default	alltypesorc	csmallint	1	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
+default	default	alltypesorc	cstring1	6	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
+default	default	alltypesorc	cstring2	7	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
+default	default	alltypesorc	ctimestamp1	8	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
+default	default	alltypesorc	ctimestamp2	9	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
+default	default	alltypesorc	ctinyint	0	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
+default	default	moretypes	a	0	NULL	YES	decimal(10,2)	NULL	NULL	10	10	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	decimal(10,2)	10	10
+default	default	moretypes	b	1	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
+default	default	moretypes	c	2	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
+default	default	moretypes	d	3	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
+default	default	moretypes	e	4	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
+default	default	moretypes	f	5	NULL	YES	varchar(10)	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	varchar(10)	NULL	NULL
+default	default	moretypes	g	6	NULL	YES	char(3)	3	3	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	char(3)	NULL	NULL
 PREHOOK: query: select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@column_privileges
@@ -3987,7 +4498,6 @@ POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[28][tables = [d, t, p]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@views
