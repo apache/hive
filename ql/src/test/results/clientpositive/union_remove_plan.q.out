@@ -1,0 +1,134 @@
+PREHOOK: query: create table if not exists test_table(column1 string, column2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
+POSTHOOK: query: create table if not exists test_table(column1 string, column2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table
+PREHOOK: query: insert into test_table values('a',1),('b',2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: insert into test_table values('a',1),('b',2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_table
+POSTHOOK: Lineage: test_table.column1 SCRIPT []
+POSTHOOK: Lineage: test_table.column2 SCRIPT []
+PREHOOK: query: explain
+select column1 from test_table group by column1
+union all
+select column1 from test_table group by column1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select column1 from test_table group by column1
+union all
+select column1 from test_table group by column1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-1, Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_table
+            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: column1 (type: string)
+              outputColumnNames: column1
+              Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: column1 (type: string)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_table
+            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: column1 (type: string)
+              outputColumnNames: column1
+              Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: column1 (type: string)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select column1 from test_table group by column1
+union all
+select column1 from test_table group by column1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: select column1 from test_table group by column1
+union all
+select column1 from test_table group by column1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
+a
+b
+a
+b
+PREHOOK: query: drop table test_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: drop table test_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table
