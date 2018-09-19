@@ -116,7 +116,8 @@ public class KillQueryImpl implements KillQuery {
   }
 
   @Override
-  public void killQuery(String queryId, String errMsg, HiveConf conf) throws HiveException {
+  public void killQuery(
+      String queryId, String errMsg, HiveConf conf, boolean isYarn) throws HiveException {
     try {
       String queryTag = null;
 
@@ -142,8 +143,10 @@ public class KillQueryImpl implements KillQuery {
 
       if (isAdmin() || operation ==null || operation.getParentSession().getUserName().equals(SessionState.get()
               .getAuthenticator().getUserName())) {
-        LOG.info("Killing yarn jobs for query id : " + queryId + " using tag :" + queryTag);
-        killChildYarnJobs(conf, queryTag);
+        if (isYarn) {
+          LOG.info("Killing yarn jobs for query id : " + queryId + " using tag :" + queryTag);
+          killChildYarnJobs(conf, queryTag);
+        }
 
         if (operation != null) {
           OperationHandle handle = operation.getHandle();

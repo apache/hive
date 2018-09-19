@@ -172,7 +172,7 @@ public class TestTezTask {
     SessionState.start(hiveConf);
     session = mock(TezClient.class);
     sessionState = mock(TezSessionState.class);
-    when(sessionState.getSession()).thenReturn(session);
+    when(sessionState.getTezClient()).thenReturn(session);
     when(sessionState.reopen()).thenReturn(sessionState);
     when(session.submitDAG(any(DAG.class)))
       .thenThrow(new SessionNotRunning(""))

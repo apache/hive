@@ -133,7 +133,7 @@ public class TezTask extends Task<TezWork> {
     int rc = 1;
     boolean cleanContext = false;
     Context ctx = null;
-    Ref<TezSessionState> sessionRef = Ref.from(null);
+    Ref<TezSession> sessionRef = Ref.from(null);
 
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
@@ -151,7 +151,7 @@ public class TezTask extends Task<TezWork> {
       SessionState ss = SessionState.get();
       // Note: given that we return pool sessions to the pool in the finally block below, and that
       //       we need to set the global to null to do that, this "reuse" may be pointless.
-      TezSessionState session = sessionRef.value = ss.getTezSession();
+      TezSession session = sessionRef.value = ss.getTezSession();
       if (session != null && !session.isOpen()) {
         LOG.warn("The session: " + session + " has not been opened");
       }
@@ -360,8 +360,8 @@ public class TezTask extends Task<TezWork> {
    */
   @VisibleForTesting
   void ensureSessionHasResources(
-      TezSessionState session, String[] nonConfResources) throws Exception {
-    TezClient client = session.getSession();
+      TezSession session, String[] nonConfResources) throws Exception {
+    TezClient client = session.getTezClient();
     // TODO null can also mean that this operation was interrupted. Should we really try to re-create the session in that case ?
     if (client == null) {
       // Note: the only sane case where this can happen is the non-pool one. We should get rid
@@ -523,29 +523,29 @@ public class TezTask extends Task<TezWork> {
     dag.setAccessControls(ac);
   }
 
-  private TezSessionState getNewTezSessionOnError(
-      TezSessionState oldSession) throws Exception {
+  private TezSession getNewTezSessionOnError(
+      TezSession oldSession) throws Exception {
     // Note: we don't pass the config to reopen. If the session was already open, it would
     //       have kept running with its current config - preserve that behavior.
-    TezSessionState newSession = oldSession.reopen();
+    TezSession newSession = oldSession.reopen();
     console.printInfo("Session re-established.");
     return newSession;
   }
 
-  DAGClient submit(JobConf conf, DAG dag, Ref<TezSessionState> sessionStateRef) throws Exception {
+  DAGClient submit(JobConf conf, DAG dag, Ref<TezSession> sessionStateRef) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
-    TezSessionState sessionState = sessionStateRef.value;
+    TezSession sessionState = sessionStateRef.value;
     try {
       try {
         // ready to start execution on the cluster
-        dagClient = sessionState.getSession().submitDAG(dag);
+        dagClient = sessionState.getTezClient().submitDAG(dag);
       } catch (SessionNotRunning nr) {
         console.printInfo("Tez session was closed. Reopening...");
         sessionStateRef.value = null;
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         console.printInfo("Session re-established.");
-        dagClient = sessionState.getSession().submitDAG(dag);
+        dagClient = sessionState.getTezClient().submitDAG(dag);
       }
     } catch (Exception e) {
       // In case of any other exception, retry. If this also fails, report original error and exit.
@@ -554,7 +554,7 @@ public class TezTask extends Task<TezWork> {
             + Arrays.toString(e.getStackTrace()) + " retrying...");
         sessionStateRef.value = null;
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
-        dagClient = sessionState.getSession().submitDAG(dag);
+        dagClient = sessionState.getTezClient().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.
         sessionStateRef.value = null;
