@@ -53,7 +53,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           filter predicates:
             0 {(VALUE._col0 = 40)}
             1 {(VALUE._col0 = 40)}
@@ -156,7 +156,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           filter predicates:
             0 {(VALUE._col0 = 40)} {(VALUE._col1 = 40)}
             1 {(VALUE._col0 = 40)}
@@ -259,7 +259,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           filter predicates:
             0 {(VALUE._col0 = 40)}
             1 {(VALUE._col0 = 40)}
@@ -362,7 +362,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           filter predicates:
             0 {(VALUE._col0 > 40)} {(VALUE._col1 > 50)} {(VALUE._col0 = VALUE._col1)}
             1 {(VALUE._col0 > 40)} {(VALUE._col1 > 50)} {(VALUE._col0 = VALUE._col1)}

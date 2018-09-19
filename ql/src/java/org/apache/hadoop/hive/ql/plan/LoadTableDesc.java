@@ -65,7 +65,11 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
      * the file instead of making a duplicate copy.
      * If any file exist while copy, then just overwrite the file
      */
-    OVERWRITE_EXISTING
+    OVERWRITE_EXISTING,
+    /**
+     * No need to move the file, used in case of replication to s3
+     */
+    IGNORE
   }
   public LoadTableDesc(final LoadTableDesc o) {
     super(o.getSourcePath(), o.getWriteType());

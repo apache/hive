@@ -122,7 +122,11 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     if (conf != null && conf.isGatherStats()) {
       gatherStats(row);
     }
-    forward(row, inputObjInspectors[tag], vectorized);
+    if (vectorized) {
+      vectorForward((VectorizedRowBatch) row);
+    } else {
+      forward(row, inputObjInspectors[tag]);
+    }
   }
 
   private boolean checkSetDone(Object row, int tag) {

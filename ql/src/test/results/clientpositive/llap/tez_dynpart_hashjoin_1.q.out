@@ -410,11 +410,11 @@ order by a.csmallint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	6
 -13036	1
 -8915	1
 -3799	1
 10782	1
+NULL	6
 PREHOOK: query: explain select
   *
 from alltypesorc a left outer join alltypesorc b on a.cint = b.cint and a.csmallint != a.cint
@@ -500,6 +500,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 4
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 Reduce Output Operator
                   key expressions: _col2 (type: int)
@@ -639,6 +640,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 4
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 Reduce Output Operator
                   key expressions: _col2 (type: int)
@@ -773,6 +775,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 4
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 Group By Operator
                   aggregations: count()
@@ -908,6 +911,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 5
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 Group By Operator
                   aggregations: count()
@@ -976,8 +980,8 @@ order by cs
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	6
 -13036	1
 -8915	1
 -3799	1
 10782	1
+NULL	6

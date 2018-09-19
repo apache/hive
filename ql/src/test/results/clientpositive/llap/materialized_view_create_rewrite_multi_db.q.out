@@ -159,7 +159,7 @@ STAGE PLANS:
         TableScan
           alias: db2.cmv_mat_view2_n2
           Select Operator
-            expressions: 3 (type: int), c (type: decimal(10,2))
+            expressions: a (type: int), c (type: decimal(10,2))
             outputColumnNames: _col0, _col1
             ListSink
 

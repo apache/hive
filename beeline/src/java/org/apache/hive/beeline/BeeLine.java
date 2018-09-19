@@ -1026,12 +1026,15 @@ public class BeeLine implements Closeable {
     getOpts().setNullEmptyString(true);
   }
 
+  public int begin(String[] args, InputStream inputStream) throws IOException {
+    return begin(args, inputStream, true);
+  }
   /**
    * Start accepting input from stdin, and dispatch it
    * to the appropriate {@link CommandHandler} until the
    * global variable <code>exit</code> is true.
    */
-  public int begin(String[] args, InputStream inputStream) throws IOException {
+  public int begin(String[] args, InputStream inputStream, boolean keepHistory) throws IOException {
     try {
       // load the options first, so we can override on the command line
       getOpts().load();
@@ -1039,7 +1042,9 @@ public class BeeLine implements Closeable {
       // nothing
     }
 
-    setupHistory();
+    if (keepHistory) {
+      setupHistory();
+    }
 
     //add shutdown hook to cleanup the beeline for smooth exit
     addBeelineShutdownHook();
@@ -1341,7 +1346,11 @@ public class BeeLine implements Closeable {
 
     try {
       // now set the output for the history
-      consoleReader.setHistory(this.history);
+      if (this.history != null) {
+        consoleReader.setHistory(this.history);
+      } else {
+        consoleReader.setHistoryEnabled(false);
+      }
     } catch (Exception e) {
       handleException(e);
     }

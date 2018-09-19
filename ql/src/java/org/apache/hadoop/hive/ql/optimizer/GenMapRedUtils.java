@@ -952,6 +952,7 @@ public final class GenMapRedUtils {
         SparkWork work = sparkTask.getWork();
         for (BaseWork w : work.getAllWorkUnsorted()) {
           if (w instanceof MapWork) {
+            ((MapWork) w).internTable(interner);
             ((MapWork) w).deriveLlap(conf, false);
           }
         }

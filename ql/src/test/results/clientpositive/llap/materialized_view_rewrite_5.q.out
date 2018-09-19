@@ -19,12 +19,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps_n2
 PREHOOK: query: insert into emps_n2 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps_n2
 POSTHOOK: query: insert into emps_n2 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps_n2
@@ -94,11 +94,11 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dependents_n1
-PREHOOK: query: insert into dependents_n1 values (10, 'Michael'), (10, 'Jane')
+PREHOOK: query: insert into dependents_n1 values (10, 'Michael'), (20, 'Jane')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dependents_n1
-POSTHOOK: query: insert into dependents_n1 values (10, 'Michael'), (10, 'Jane')
+POSTHOOK: query: insert into dependents_n1 values (10, 'Michael'), (20, 'Jane')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dependents_n1
@@ -128,11 +128,11 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@locations_n1
-PREHOOK: query: insert into locations_n1 values (10, 'San Francisco'), (10, 'San Diego')
+PREHOOK: query: insert into locations_n1 values (10, 'San Francisco'), (20, 'San Diego')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@locations_n1
-POSTHOOK: query: insert into locations_n1 values (10, 'San Francisco'), (10, 'San Diego')
+POSTHOOK: query: insert into locations_n1 values (10, 'San Francisco'), (20, 'San Diego')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@locations_n1
@@ -612,11 +612,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n1
-                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: deptno (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: int)
                       mode: hash
@@ -735,7 +735,8 @@ POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
 10	100	100	1
-10	110	220	2
+10	110	110	1
+10	120	120	1
 10	150	150	1
 20	200	200	1
 PREHOOK: query: drop materialized view mv1_n1
@@ -799,67 +800,33 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: depts_n1
-                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: deptno (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Map 4 
-            Map Operator Tree:
-                TableScan
                   alias: default.mv1_n1
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: empid (type: int), deptno (type: int), s (type: double)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col1 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col1 (type: int)
-                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col2 (type: double)
+                    expressions: empid (type: int), s (type: double)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col1)
+                      keys: _col0 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col1 (type: int)
-                outputColumnNames: _col1, _col3
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: sum(_col3)
-                  keys: _col1 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col1 (type: double)
-        Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -1079,7 +1046,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select a.empid deptno from
 (select * from emps_n2 where empid = 1) a
@@ -1161,7 +1128,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select a.empid, a.deptno from
 (select * from emps_n2 where empid = 1) a
@@ -1310,7 +1277,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 on (emps_n2.deptno = depts_n1.deptno)
@@ -1392,7 +1359,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[48][tables = [$hdt$_2, $hdt$_3, $hdt$_1, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 a on (emps_n2.deptno=a.deptno)

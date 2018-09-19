@@ -170,15 +170,18 @@ public class VectorRandomRowSource {
 
     private final GenerationKind generationKind;
     private final TypeInfo typeInfo;
+    private final boolean columnAllowNulls;
     private final TypeInfo sourceTypeInfo;
     private final StringGenerationOption stringGenerationOption;
     private final List<Object> valueList;
 
-    private GenerationSpec(GenerationKind generationKind, TypeInfo typeInfo,
+    private GenerationSpec(
+        GenerationKind generationKind, TypeInfo typeInfo, boolean columnAllowNulls,
         TypeInfo sourceTypeInfo, StringGenerationOption stringGenerationOption,
         List<Object> valueList) {
       this.generationKind = generationKind;
       this.typeInfo = typeInfo;
+      this.columnAllowNulls = columnAllowNulls;
       this.sourceTypeInfo = sourceTypeInfo;
       this.stringGenerationOption = stringGenerationOption;
       this.valueList = valueList;
@@ -190,6 +193,10 @@ public class VectorRandomRowSource {
 
     public TypeInfo getTypeInfo() {
       return typeInfo;
+    }
+
+    public boolean getColumnAllowNulls() {
+      return columnAllowNulls;
     }
 
     public TypeInfo getSourceTypeInfo() {
@@ -206,34 +213,46 @@ public class VectorRandomRowSource {
 
     public static GenerationSpec createSameType(TypeInfo typeInfo) {
       return new GenerationSpec(
-          GenerationKind.SAME_TYPE, typeInfo, null, null, null);
+          GenerationKind.SAME_TYPE, typeInfo, true,
+          null, null, null);
+    }
+
+    public static GenerationSpec createSameType(TypeInfo typeInfo, boolean allowNulls) {
+      return new GenerationSpec(
+          GenerationKind.SAME_TYPE, typeInfo, allowNulls,
+          null, null, null);
     }
 
     public static GenerationSpec createOmitGeneration(TypeInfo typeInfo) {
       return new GenerationSpec(
-          GenerationKind.OMIT_GENERATION, typeInfo, null, null, null);
+          GenerationKind.OMIT_GENERATION, typeInfo, true,
+          null, null, null);
     }
 
     public static GenerationSpec createStringFamily(TypeInfo typeInfo,
         StringGenerationOption stringGenerationOption) {
       return new GenerationSpec(
-          GenerationKind.STRING_FAMILY, typeInfo, null, stringGenerationOption, null);
+          GenerationKind.STRING_FAMILY, typeInfo, true,
+          null, stringGenerationOption, null);
     }
 
     public static GenerationSpec createStringFamilyOtherTypeValue(TypeInfo typeInfo,
         TypeInfo otherTypeTypeInfo) {
       return new GenerationSpec(
-          GenerationKind.STRING_FAMILY_OTHER_TYPE_VALUE, typeInfo, otherTypeTypeInfo, null, null);
+          GenerationKind.STRING_FAMILY_OTHER_TYPE_VALUE, typeInfo, true,
+          otherTypeTypeInfo, null, null);
     }
 
     public static GenerationSpec createTimestampMilliseconds(TypeInfo typeInfo) {
       return new GenerationSpec(
-          GenerationKind.TIMESTAMP_MILLISECONDS, typeInfo, null, null, null);
+          GenerationKind.TIMESTAMP_MILLISECONDS, typeInfo, true,
+          null, null, null);
     }
 
     public static GenerationSpec createValueList(TypeInfo typeInfo, List<Object> valueList) {
       return new GenerationSpec(
-          GenerationKind.VALUE_LIST, typeInfo, null, null, valueList);
+          GenerationKind.VALUE_LIST, typeInfo, true,
+          null, null, valueList);
     }
   }
 
@@ -620,7 +639,9 @@ public class VectorRandomRowSource {
 
       if (generationSpecList != null) {
         typeName = generationSpecList.get(c).getTypeInfo().getTypeName();
-        dataTypePhysicalVariation = explicitDataTypePhysicalVariationList.get(c);
+        dataTypePhysicalVariation =
+            explicitDataTypePhysicalVariationList != null ?
+                explicitDataTypePhysicalVariationList.get(c) : DataTypePhysicalVariation.NONE;
       } else if (onlyOne || allowedTypeNameSet != null) {
         typeName = getRandomTypeName(r, supportedTypes, allowedTypeNameSet);
       } else {
@@ -887,7 +908,7 @@ public class VectorRandomRowSource {
         Object object;
         switch (generationKind) {
         case SAME_TYPE:
-          object = randomWritable(c);
+          object = randomWritable(c, generationSpec.getColumnAllowNulls());
           break;
         case OMIT_GENERATION:
           object = null;
@@ -1452,6 +1473,12 @@ public class VectorRandomRowSource {
     default:
       throw new RuntimeException("Unexpected category " + category);
     }
+  }
+
+  public Object randomWritable(int column, boolean columnAllowNull) {
+    return randomWritable(
+        r, typeInfos[column], objectInspectorList.get(column), dataTypePhysicalVariations[column],
+        columnAllowNull && allowNull);
   }
 
   public Object randomWritable(int column) {

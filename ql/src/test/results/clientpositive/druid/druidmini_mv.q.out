@@ -164,12 +164,12 @@ STAGE PLANS:
         TableScan
           alias: cmv_mat_view2_n0
           properties:
-            druid.fieldNames vc,c
+            druid.fieldNames a,c
             druid.fieldTypes int,double
-            druid.query.json {"queryType":"scan","dataSource":"default.cmv_mat_view2_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"3","outputType":"LONG"}],"columns":["vc","c"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.cmv_mat_view2_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"columns":["a","c"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: int), c (type: double)
+            expressions: a (type: int), c (type: double)
             outputColumnNames: _col0, _col1
             ListSink
 
