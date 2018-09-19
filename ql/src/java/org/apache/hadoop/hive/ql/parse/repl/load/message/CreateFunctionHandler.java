@@ -195,7 +195,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
 
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
           metadata.getReplicationSpec(), new Path(sourceUri), qualifiedDestinationPath,
-          context.hiveConf
+          context.hiveConf, false, false
       );
       replCopyTasks.add(copyTask);
       ResourceUri destinationUri =

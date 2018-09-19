@@ -658,7 +658,7 @@ public class MetaStoreUtils {
     // requires to calculate stats if new and old have different fast stats
     if ((oldPart != null) && (oldPart.getParameters() != null)) {
       for (String stat : StatsSetupConst.fastStats) {
-        if (oldPart.getParameters().containsKey(stat)) {
+        if (oldPart.getParameters().containsKey(stat) && newPart.getParameters().containsKey(stat)) {
           Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
           Long newStat = Long.parseLong(newPart.getParameters().get(stat));
           if (!oldStat.equals(newStat)) {
