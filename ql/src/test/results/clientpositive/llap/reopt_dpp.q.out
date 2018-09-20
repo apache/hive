@@ -244,7 +244,7 @@ Stage-0
                     Output:["_col0"]
                     Filter Operator [FIL_24] (runtime: rows=1 width=8)
                       predicate:((d_year = 2000) and d_date_sk is not null)
-                      TableScan [TS_3] (runtime: rows=2 width=8)
+                      TableScan [TS_3] (runtime: rows=1 width=8)
                         default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year"]
                 Dynamic Partitioning Event Operator [EVENT_29] (runtime: rows=1 width=8)
                   Group By Operator [GBY_28] (runtime: rows=1 width=8)

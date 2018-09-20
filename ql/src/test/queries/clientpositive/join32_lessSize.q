@@ -2,6 +2,7 @@
 --! qt:dataset:src1
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
+
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE dest_j1_n21(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE;
@@ -10,6 +11,7 @@ CREATE TABLE dest_j2_n1(key STRING, value STRING, val2 STRING) STORED AS TEXTFIL
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=4000;
+set hive.llap.memory.oversubscription.max.executors.per.query=3;
 
 -- Since the inputs are small, it should be automatically converted to mapjoin
 
@@ -92,3 +94,5 @@ FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res
 JOIN srcpart y ON (res.value = y.value and y.ds='2008-04-08' and y.hr=11);
 
 select * from dest_j2_n1;
+
+reset hive.llap.memory.oversubscription.max.executors.per.query;

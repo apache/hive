@@ -343,7 +343,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='2' and (key='484' and value='val_484')
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, CAST('val_484' AS STRING) AS `value`, CAST('1' AS STRING) AS `ds`, CAST('2' AS STRING) AS `hr`
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`, CAST('val_484' AS STRING) AS `$f1`, CAST('1' AS STRING) AS `$f2`, CAST('2' AS STRING) AS `$f3`
 FROM `default`.`fact_daily_n3`
 WHERE `ds` = '1' AND `hr` = '2' AND `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:
@@ -468,7 +468,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='3' and (key='327' and value='val_327')
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('327' AS STRING) AS `key`, CAST('val_327' AS STRING) AS `value`, CAST('1' AS STRING) AS `ds`, CAST('3' AS STRING) AS `hr`
+OPTIMIZED SQL: SELECT CAST('327' AS STRING) AS `$f0`, CAST('val_327' AS STRING) AS `$f1`, CAST('1' AS STRING) AS `$f2`, CAST('3' AS STRING) AS `$f3`
 FROM `default`.`fact_daily_n3`
 WHERE `ds` = '1' AND `hr` = '3' AND `key` = '327' AND `value` = 'val_327'
 STAGE DEPENDENCIES:

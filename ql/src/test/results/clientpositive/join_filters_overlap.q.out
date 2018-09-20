@@ -780,7 +780,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
                Left Outer Join 1 to 2
                Left Outer Join 0 to 3
           filter mappings:

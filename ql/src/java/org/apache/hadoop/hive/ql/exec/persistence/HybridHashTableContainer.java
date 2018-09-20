@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.NonMatchedSmallTableIterator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.rowbytescontainer.VectorRowBytesContainer;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
@@ -95,6 +96,9 @@ public class HybridHashTableContainer
 
   /** The OI used to deserialize values. We never deserialize keys. */
   private LazyBinaryStructObjectInspector internalValueOi;
+  private MapJoinObjectSerDeContext keyContext;
+  private MapJoinObjectSerDeContext valueContext;
+  private AbstractSerDe keySerde;
   private boolean[] sortableSortOrders;
   private byte[] nullMarkers;
   private byte[] notNullMarkers;
@@ -776,6 +780,12 @@ public class HybridHashTableContainer
   }
 
   @Override
+  public NonMatchedSmallTableIterator createNonMatchedSmallTableIterator(
+      MatchTracker matchTracker) {
+    throw new RuntimeException("Not applicable");
+  }
+
+  @Override
   public void seal() {
     for (HashPartition hp : hashPartitions) {
       // Only seal those partitions that haven't been spilled and cleared,
@@ -834,6 +844,18 @@ public class HybridHashTableContainer
                   sortableSortOrders, nullMarkers, notNullMarkers));
     }
 
+    /*
+     * This variation is for FULL OUTER MapJoin.  It does key match tracking only if the key has
+     * no NULLs.
+     */
+    @Override
+    public JoinUtil.JoinResult setFromVectorNoNulls(VectorHashKeyWrapperBase kw,
+        VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch,
+        MatchTracker matchTracker)
+        throws HiveException {
+      throw new RuntimeException("Not supported");
+    }
+
     @Override
     public JoinUtil.JoinResult setFromRow(Object row, List<ExprNodeEvaluator> fields,
         List<ObjectInspector> ois) throws HiveException {
@@ -848,6 +870,16 @@ public class HybridHashTableContainer
       return currentValue.setFromOutput(
           MapJoinKey.serializeRow(output, currentKey, ois,
                   sortableSortOrders, nullMarkers, notNullMarkers));
+    }
+
+    /*
+     * This variation is for FULL OUTER MapJoin.  It does key match tracking only if the key has
+     * no NULLs.
+     */
+    @Override
+    public JoinUtil.JoinResult setFromRowNoNulls(Object row, List<ExprNodeEvaluator> fields,
+        List<ObjectInspector> ois, MatchTracker matchTracker) throws HiveException {
+      throw new RuntimeException("Not supported");
     }
 
     @Override
@@ -884,8 +916,14 @@ public class HybridHashTableContainer
 
     @Override
     public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
-        BytesBytesMultiHashMap.Result hashMapResult) {
-      return currentValue.setDirect(bytes, offset, length, hashMapResult);
+        BytesBytesMultiHashMap.Result hashMapResult, MatchTracker matchTracker) {
+      return currentValue.setDirect(
+          bytes, offset, length, hashMapResult, matchTracker);
+    }
+
+    @Override
+    public MatchTracker createMatchTracker() {
+      throw new RuntimeException("Not supported");
     }
 
     @Override
@@ -935,6 +973,10 @@ public class HybridHashTableContainer
       clearRows();
     }
 
+    public BytesBytesMultiHashMap.Result getHashMapResult() {
+      return hashMapResult;
+    }
+
     /* Determine if there is a match between big table row and the corresponding hashtable
      * Three states can be returned:
      * MATCH: a match is found
@@ -963,10 +1005,9 @@ public class HybridHashTableContainer
         toSpillPartitionId = partitionId;
         hashMapResult.forget();
         return JoinUtil.JoinResult.SPILL;
-      }
-      else {
+      } else {
         aliasFilter = hashPartitions[partitionId].hashMap.getValueResult(output.getData(), 0,
-            output.getLength(), hashMapResult);
+            output.getLength(), hashMapResult, /* matchTracker */ null);
         dummyRow = null;
         if (hashMapResult.hasRows()) {
           return JoinUtil.JoinResult.MATCH;
@@ -975,6 +1016,46 @@ public class HybridHashTableContainer
           return JoinUtil.JoinResult.NOMATCH;
         }
       }
+    }
+
+    public JoinUtil.JoinResult setFromOutput(Output output, MatchTracker matchTracker) {
+      int keyHash = HashCodeUtil.murmurHash(output.getData(), 0, output.getLength());
+
+      if (bloom1 != null && !bloom1.testLong(keyHash)) {
+        /*
+         * if the keyHash is missing in the bloom filter, then the value cannot
+         * exist in any of the spilled partition - return NOMATCH
+         */
+        dummyRow = null;
+        aliasFilter = (byte) 0xff;
+        hashMapResult.forget();
+        return JoinResult.NOMATCH;
+      }
+
+      partitionId = keyHash & (hashPartitions.length - 1);
+
+      // If the target hash table is on disk, spill this row to disk as well to be processed later
+      if (isOnDisk(partitionId)) {
+        toSpillPartitionId = partitionId;
+        hashMapResult.forget();
+        return JoinUtil.JoinResult.SPILL;
+      } else {
+        aliasFilter = hashPartitions[partitionId].hashMap.getValueResult(
+            output.getData(), 0, output.getLength(),
+            hashMapResult,
+            /* matchTracker */ null);
+        dummyRow = null;
+        if (hashMapResult.hasRows()) {
+          return JoinUtil.JoinResult.MATCH;
+        } else {
+          aliasFilter = (byte) 0xff;
+          return JoinUtil.JoinResult.NOMATCH;
+        }
+      }
+    }
+
+    public void reset() {
+      hashMapResult.forget();
     }
 
     @Override
@@ -1094,7 +1175,7 @@ public class HybridHashTableContainer
     // Direct access.
 
     public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
-        BytesBytesMultiHashMap.Result hashMapResult) {
+        BytesBytesMultiHashMap.Result hashMapResult, MatchTracker matchTracker) {
 
       int keyHash = HashCodeUtil.murmurHash(bytes, offset, length);
       partitionId = keyHash & (hashPartitions.length - 1);
@@ -1115,8 +1196,10 @@ public class HybridHashTableContainer
         return JoinUtil.JoinResult.SPILL;
       }
       else {
-        aliasFilter = hashPartitions[partitionId].hashMap.getValueResult(bytes, offset, length,
-            hashMapResult);
+        aliasFilter = hashPartitions[partitionId].hashMap.getValueResult(
+            bytes, offset, length,
+            hashMapResult,
+            /* matchTracker */ null);
         dummyRow = null;
         if (hashMapResult.hasRows()) {
           return JoinUtil.JoinResult.MATCH;
@@ -1168,10 +1251,27 @@ public class HybridHashTableContainer
     return totalSize;
   }
 
+  public MapJoinObjectSerDeContext getKeyContext() {
+    return keyContext;
+  }
+
+  public MapJoinObjectSerDeContext getValueContext() {
+    return valueContext;
+  }
+
   @Override
   public void setSerde(MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx)
       throws SerDeException {
-    AbstractSerDe keySerde = keyCtx.getSerDe(), valSerde = valCtx.getSerDe();
+
+    // Save the key and value contexts in case the MapJoinOperator needs them when creating
+    // a stand alone spill MapJoinBytesTableContainer.
+    keyContext = keyCtx;
+    valueContext = valCtx;
+
+    // Save the key serde for possible use by NonMatchedSmallTableIteratorImpl.
+    keySerde = keyCtx.getSerDe();
+
+    AbstractSerDe valSerde = valCtx.getSerDe();
 
     if (writeHelper == null) {
       LOG.info("Initializing container with " + keySerde.getClass().getName() + " and "

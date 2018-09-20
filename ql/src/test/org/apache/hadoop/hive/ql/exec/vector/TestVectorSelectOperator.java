@@ -62,9 +62,8 @@ public class TestVectorSelectOperator {
      * Override forward to do validation
      */
     @Override
-    public void forward(Object row, ObjectInspector rowInspector, boolean isVectorized)
+    public void vectorForward(VectorizedRowBatch vrg)
             throws HiveException {
-      VectorizedRowBatch vrg = (VectorizedRowBatch) row;
 
       int[] projections = vrg.projectedColumns;
       assertEquals(2, vrg.projectionSize);

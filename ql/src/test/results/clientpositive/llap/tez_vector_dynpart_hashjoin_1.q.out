@@ -499,6 +499,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 4
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 Reduce Output Operator
                   key expressions: _col2 (type: int)
@@ -633,6 +634,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 4
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 Group By Operator
                   aggregations: count()
@@ -768,6 +770,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 5
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 Group By Operator
                   aggregations: count()

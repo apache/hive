@@ -19,12 +19,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps_n5
 PREHOOK: query: insert into emps_n5 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps_n5
 POSTHOOK: query: insert into emps_n5 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps_n5
@@ -94,11 +94,11 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dependents_n3
-PREHOOK: query: insert into dependents_n3 values (10, 'Michael'), (10, 'Jane')
+PREHOOK: query: insert into dependents_n3 values (10, 'Michael'), (20, 'Jane')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dependents_n3
-POSTHOOK: query: insert into dependents_n3 values (10, 'Michael'), (10, 'Jane')
+POSTHOOK: query: insert into dependents_n3 values (10, 'Michael'), (20, 'Jane')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dependents_n3
@@ -128,11 +128,11 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@locations_n3
-PREHOOK: query: insert into locations_n3 values (10, 'San Francisco'), (10, 'San Diego')
+PREHOOK: query: insert into locations_n3 values (10, 'San Francisco'), (20, 'San Diego')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@locations_n3
-POSTHOOK: query: insert into locations_n3 values (10, 'San Francisco'), (10, 'San Diego')
+POSTHOOK: query: insert into locations_n3 values (10, 'San Francisco'), (20, 'San Diego')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@locations_n3
@@ -274,7 +274,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps_n5
 POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
-Bill	2	210
+Bill	2	220
 Eric	1	200
 Sebastian	1	150
 Theodore	1	110
@@ -345,7 +345,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps_n5
 POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
-10000.0	Bill	210	2
+10000.0	Bill	220	2
 10000.0	Theodore	110	1
 7000.0	Sebastian	150	1
 8000.0	Eric	200	1
@@ -411,14 +411,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n3
-                  Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: deptno (type: int), c (type: bigint), s (type: bigint)
-                    outputColumnNames: deptno, c, s
-                    Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: c (type: bigint), s (type: bigint), deptno (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: $sum0(c), sum(s)
-                      keys: deptno (type: int)
+                      aggregations: $sum0(_col0), sum(_col1)
+                      keys: _col2 (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
@@ -469,7 +469,7 @@ POSTHOOK: Input: default@depts_n4
 POSTHOOK: Input: default@emps_n5
 POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
-10	4	470
+10	4	480
 20	1	200
 PREHOOK: query: drop materialized view mv1_n3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
@@ -534,10 +534,10 @@ STAGE PLANS:
                 TableScan
                   alias: default.mv1_n3
                   filterExpr: (deptno > 10) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 10) (type: boolean)
-                    Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(s)
                       keys: deptno (type: int)
@@ -655,14 +655,14 @@ STAGE PLANS:
                 TableScan
                   alias: default.mv1_n3
                   filterExpr: (deptno > 10) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 10) (type: boolean)
-                    Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), s (type: bigint)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col1)
                         keys: _col0 (type: int)

@@ -7,6 +7,7 @@ set hive.explain.user=false;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=30000;
+set hive.llap.memory.oversubscription.max.executors.per.query=3;
 
 CREATE TABLE srcbucket_mapjoin_n18(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 CREATE TABLE tab_part_n11 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
@@ -157,3 +158,5 @@ FROM my_fact JOIN my_dim ON my_fact.join_col = my_dim.join_col
 WHERE my_fact.fiscal_year = '2015'
 AND my_dim.filter_col IN ( 'VAL1', 'VAL2' )
 and my_fact.accounting_period in (10);
+
+reset hive.llap.memory.oversubscription.max.executors.per.query;
