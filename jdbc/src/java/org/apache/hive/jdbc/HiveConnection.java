@@ -157,6 +157,79 @@ public class HiveConnection implements java.sql.Connection {
     }
     return ZooKeeperHiveClientHelper.getDirectParamsList(params);
   }
+  
+  public static List<String> getAllUrlStrings(String zookeeperBasedHS2Url) throws Exception {
+    List<String> jdbcUrls = new ArrayList<>();
+    List<JdbcConnectionParams> allConnectionParams = getAllUrls(zookeeperBasedHS2Url);
+    for (JdbcConnectionParams cp : allConnectionParams) {
+      String jdbcUrl = makeDirectJDBCUrlFromConnectionParams(cp);
+      if ((jdbcUrl != null) && (!jdbcUrl.isEmpty())) {
+        jdbcUrls.add(jdbcUrl);
+      }
+    }
+    return jdbcUrls;
+  }
+
+  private static String makeDirectJDBCUrlFromConnectionParams(JdbcConnectionParams cp) {
+    // Direct JDBC Url format: 
+    // jdbc:hive2://<host1>:<port1>/dbName;sess_var_list?hive_conf_list#hive_var_list
+    StringBuilder url = new StringBuilder("");
+    if (cp != null) {
+      if (cp.getHost() != null) {
+        url.append(cp.getHost());
+        url.append(":");
+        url.append(cp.getPort());
+        url.append("/");
+        url.append(cp.getDbName());
+        // Add session vars
+        if ((cp.getSessionVars() != null) && (!cp.getSessionVars().isEmpty())) {
+          for (Entry<String, String> sessVar : cp.getSessionVars().entrySet()) {
+            if ((sessVar.getKey().equalsIgnoreCase(JdbcConnectionParams.SERVICE_DISCOVERY_MODE))
+                || (sessVar.getKey().equalsIgnoreCase(JdbcConnectionParams.ZOOKEEPER_NAMESPACE))) {
+              continue;
+            }
+            url.append(";");
+            url.append(sessVar.getKey());
+            url.append("=");
+            url.append(sessVar.getValue());
+          }
+        }
+        // Add hive confs
+        if ((cp.getHiveConfs() != null) && (!cp.getHiveConfs().isEmpty())) {
+          url.append("?");
+          boolean firstKV = true;
+          for (Entry<String, String> hiveConf : cp.getHiveConfs().entrySet()) {
+            if (!firstKV) {
+              url.append(";");
+            } else {
+              firstKV = false;
+            }
+            url.append(hiveConf.getKey());
+            url.append("=");
+            url.append(hiveConf.getValue());
+          }
+        }
+        // Add hive vars
+        if ((cp.getHiveVars() != null) && (!cp.getHiveVars().isEmpty())) {
+          url.append("#");
+          boolean firstKV = true;
+          for (Entry<String, String> hiveVar : cp.getHiveVars().entrySet()) {
+            if (!firstKV) {
+              url.append(";");
+            } else {
+              firstKV = false;
+            }
+            url.append(hiveVar.getKey());
+            url.append("=");
+            url.append(hiveVar.getValue());
+          }
+        }
+      } else {
+        return url.toString();
+      }
+    }
+    return url.toString();
+  }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
     setupLoginTimeout();
