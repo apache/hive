@@ -179,6 +179,13 @@ public class TestBuddyAllocator {
     }
   }
 
+  @Test
+  public void testCachedirCreated() throws Exception {
+    int min = 3, max = 8, maxAlloc = 1 << max;
+    new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc, maxAlloc, 0, tmpDir + "/testifcreated",
+        new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"), null);
+  }
+
   static void syncThreadStart(final CountDownLatch cdlIn, final CountDownLatch cdlOut) {
     cdlIn.countDown();
     try {

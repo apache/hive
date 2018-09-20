@@ -131,8 +131,11 @@ public final class BuddyAllocator
     maxAllocation = maxAllocVal;
     if (isMapped) {
       try {
-        cacheDir = Files.createTempDirectory(
-            FileSystems.getDefault().getPath(mapPath), "llap-", RWX);
+        Path path = FileSystems.getDefault().getPath(mapPath);
+        if (!Files.exists(path)) {
+          Files.createDirectory(path);
+        }
+        cacheDir = Files.createTempDirectory(path, "llap-", RWX);
       } catch (IOException ioe) {
         // conf validator already checks this, so it will never trigger usually
         throw new AssertionError("Configured mmap directory should be writable", ioe);
@@ -558,7 +561,7 @@ public final class BuddyAllocator
   /**
    * Unlocks the buffer after the discard has been abandoned.
    */
-  private void cancelDiscard(LlapAllocatorBuffer buf, int arenaIx, int headerIx) {
+  private void cancelDiscard(LlapAllocatorBuffer buf, int arenaIx) {
     Boolean result = buf.cancelDiscard();
     if (result == null) return;
     // If the result is not null, the buffer was evicted during the move.
@@ -982,12 +985,12 @@ public final class BuddyAllocator
         if (assertsEnabled) {
           assertBufferLooksValid(freeListIx, buf, arenaIx, headerIx);
         }
-        cancelDiscard(buf, arenaIx, headerIx);
+        cancelDiscard(buf, arenaIx);
       } else {
         if (assertsEnabled) {
           checkHeader(headerIx, -1, true);
         }
-        addToFreeListWithMerge(headerIx, freeListIx, null, src);
+        addToFreeListWithMerge(headerIx, freeListIx, src);
       }
     }
 
@@ -1249,7 +1252,7 @@ public final class BuddyAllocator
             lastSplitNextHeader = headerIx; // If anything remains, this is where it starts.
             headerIx = getNextFreeListItem(origOffset);
           }
-          replaceListHeadUnderLock(splitList, headerIx, splitListIx); // In the end, update free list head.
+          replaceListHeadUnderLock(splitList, headerIx); // In the end, update free list head.
         } finally {
           splitList.lock.unlock();
         }
@@ -1265,7 +1268,7 @@ public final class BuddyAllocator
           int newListIndex = freeListIx;
           while (lastSplitBlocksRemaining > 0) {
             if ((lastSplitBlocksRemaining & 1) == 1) {
-              addToFreeListWithMerge(lastSplitNextHeader, newListIndex, null, src);
+              addToFreeListWithMerge(lastSplitNextHeader, newListIndex, src);
               lastSplitNextHeader += (1 << newListIndex);
             }
             lastSplitBlocksRemaining >>>= 1;
@@ -1284,7 +1287,7 @@ public final class BuddyAllocator
       buffer.setNewAllocLocation(arenaIx, headerIx);
     }
 
-    private void replaceListHeadUnderLock(FreeList freeList, int headerIx, int ix) {
+    private void replaceListHeadUnderLock(FreeList freeList, int headerIx) {
       if (headerIx == freeList.listHead) return;
       if (headerIx >= 0) {
         int newHeadOffset = offsetFromHeaderIndex(headerIx);
@@ -1354,7 +1357,7 @@ public final class BuddyAllocator
         }
         ++destIx;
       }
-      replaceListHeadUnderLock(freeList, current, freeListIx);
+      replaceListHeadUnderLock(freeList, current);
       return destIx;
     }
 
@@ -1383,12 +1386,11 @@ public final class BuddyAllocator
           checkHeader(headerIx, freeListIx, true);
         }
         buffers[headerIx] = null;
-        addToFreeListWithMerge(headerIx, freeListIx, buffer, CasLog.Src.DEALLOC);
+        addToFreeListWithMerge(headerIx, freeListIx, CasLog.Src.DEALLOC);
       }
     }
 
-    private void addToFreeListWithMerge(int headerIx, int freeListIx,
-        LlapAllocatorBuffer buffer, CasLog.Src src) {
+    private void addToFreeListWithMerge(int headerIx, int freeListIx, CasLog.Src src) {
       while (true) {
         FreeList freeList = freeLists[freeListIx];
         int bHeaderIx = getBuddyHeaderIx(freeListIx, headerIx);
