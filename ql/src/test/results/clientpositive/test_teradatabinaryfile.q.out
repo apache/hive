@@ -444,7 +444,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"test_date\":\"true\",\"test_decimal\":\"true\",\"test_timestamp\":\"true\",\"test_tinyint\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	50                  

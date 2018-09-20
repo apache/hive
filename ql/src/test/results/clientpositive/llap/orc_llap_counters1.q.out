@@ -230,7 +230,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bo\":\"true\",\"c\":\"true\",\"d\":\"true\",\"da\":\"true\",\"dec\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"si\":\"true\",\"t\":\"true\",\"v\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	2100                

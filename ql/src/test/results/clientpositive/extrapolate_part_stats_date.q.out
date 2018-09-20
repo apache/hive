@@ -273,7 +273,7 @@ STAGE PLANS:
             partition values:
               d_date_sk 2416948
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"d_date":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns d_date
