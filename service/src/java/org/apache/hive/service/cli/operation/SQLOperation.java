@@ -320,6 +320,9 @@ public class SQLOperation extends ExecuteStatementOperation {
             setOperationException(e);
             LOG.error("Error running hive query: ", e);
           } finally {
+            // Call Hive.closeCurrent() that closes the HMS connection, causes
+            // HMS connection leaks otherwise.
+            Hive.closeCurrent();
             LogUtils.unregisterLoggingContext();
           }
           return null;

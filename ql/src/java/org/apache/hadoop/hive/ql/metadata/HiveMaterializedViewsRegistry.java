@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import com.google.common.collect.ImmutableList;
 
@@ -142,7 +143,9 @@ public final class HiveMaterializedViewsRegistry {
       LOG.info("Using dummy materialized views registry");
     } else {
       // We initialize the cache
-      ExecutorService pool = Executors.newCachedThreadPool();
+      ExecutorService pool = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true)
+        .setNameFormat("HiveMaterializedViewsRegistry-%d")
+         .build());
       pool.submit(new Loader(db));
       pool.shutdown();
     }
