@@ -367,8 +367,8 @@ public class UpgradeTool {
         //but will have to look at ORC footers - treat these as copyN files?
         numCopyNFiles++;
       }
-      int wrtieId = fileId / numBuckets + 1;//start with delta_1 (not delta_0)
-      Path deltaDir = new Path(p, AcidUtils.deltaSubdir(wrtieId, wrtieId));
+      int writeId = fileId / numBuckets + 1; // start with delta_1 (not delta_0)
+      Path deltaDir = new Path(p, AcidUtils.deltaSubdir(writeId, writeId));
       if (execute) {
         if (!fs.mkdirs(deltaDir)) {
           String msg = "Failed to create directory " + deltaDir;

@@ -43,7 +43,7 @@
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
-    <kafka.version>0.10.2.0</kafka.version>
+    <kafka.version>1.0.1</kafka.version>
   </properties>
       <dependencies>
         <dependency>

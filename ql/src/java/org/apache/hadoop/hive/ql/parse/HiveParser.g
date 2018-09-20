@@ -616,6 +616,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_ALLOC_FRACTION", "ALLOC_FRACTION");
     xlateMap.put("KW_SCHEDULING_POLICY", "SCHEDULING_POLICY");
     xlateMap.put("KW_PATH", "PATH");
+    xlateMap.put("KW_AST", "AST");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -765,6 +766,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
   public void setHiveConf(Configuration hiveConf) {
     this.hiveConf = hiveConf;
   }
+  protected boolean nullsLast() {
+    if(hiveConf == null){
+      return false;
+    }
+    return HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST);
+  }
 }
 
 @rulecatch {
@@ -801,6 +808,7 @@ explainOption
     | KW_ANALYZE
     | KW_REOPTIMIZATION
     | KW_LOCKS
+    | KW_AST
     | (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
     ;
 
@@ -2365,7 +2373,9 @@ columnNameOrder
 @init { pushMsg("column name order", state); }
 @after { popMsg(state); }
     : identifier orderSpec=orderSpecification? nullSpec=nullOrdering?
-    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null && nullsLast()}?
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST identifier))
+    -> {$orderSpec.tree == null && $nullSpec.tree == null && !nullsLast()}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST identifier))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec identifier))
@@ -2395,7 +2405,9 @@ columnRefOrder
 @init { pushMsg("column order", state); }
 @after { popMsg(state); }
     : expression orderSpec=orderSpecification? nullSpec=nullOrdering?
-    -> {$orderSpec.tree == null && $nullSpec.tree == null}?
+    -> {$orderSpec.tree == null && $nullSpec.tree == null && nullsLast()}?
+            ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_LAST expression))
+    -> {$orderSpec.tree == null && $nullSpec.tree == null && !nullsLast()}?
             ^(TOK_TABSORTCOLNAMEASC ^(TOK_NULLS_FIRST expression))
     -> {$orderSpec.tree == null}?
             ^(TOK_TABSORTCOLNAMEASC ^($nullSpec expression))

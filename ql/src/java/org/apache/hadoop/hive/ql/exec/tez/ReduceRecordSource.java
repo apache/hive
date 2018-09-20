@@ -451,6 +451,11 @@ public class ReduceRecordSource implements RecordSource {
           }
           reducer.process(batch, tag);
 
+          // Do the non-column batch reset logic.
+          batch.selectedInUse = false;
+          batch.size = 0;
+          batch.endOfFile = false;
+
           // Reset just the value columns and value buffer.
           for (int i = firstValueColumnOffset; i < batch.numCols; i++) {
             // Note that reset also resets the data buffer for bytes column vectors.

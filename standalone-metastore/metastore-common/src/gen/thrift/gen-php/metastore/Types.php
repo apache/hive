@@ -17822,6 +17822,10 @@ class GetValidWriteIdsRequest {
    * @var string
    */
   public $validTxnList = null;
+  /**
+   * @var int
+   */
+  public $writeId = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -17838,6 +17842,10 @@ class GetValidWriteIdsRequest {
           'var' => 'validTxnList',
           'type' => TType::STRING,
           ),
+        3 => array(
+          'var' => 'writeId',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -17846,6 +17854,9 @@ class GetValidWriteIdsRequest {
       }
       if (isset($vals['validTxnList'])) {
         $this->validTxnList = $vals['validTxnList'];
+      }
+      if (isset($vals['writeId'])) {
+        $this->writeId = $vals['writeId'];
       }
     }
   }
@@ -17893,6 +17904,13 @@ class GetValidWriteIdsRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->writeId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -17926,6 +17944,11 @@ class GetValidWriteIdsRequest {
     if ($this->validTxnList !== null) {
       $xfer += $output->writeFieldBegin('validTxnList', TType::STRING, 2);
       $xfer += $output->writeString($this->validTxnList);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->writeId !== null) {
+      $xfer += $output->writeFieldBegin('writeId', TType::I64, 3);
+      $xfer += $output->writeI64($this->writeId);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

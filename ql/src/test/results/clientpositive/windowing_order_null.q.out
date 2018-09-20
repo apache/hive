@@ -80,13 +80,13 @@ POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
 NULL	alice ichabod	NULL	NULL
 NULL	calvin miller	NULL	NULL
-0.01	NULL	NULL	NULL
-0.01	NULL	NULL	NULL
 0.01	calvin miller	8.39	8.390000343322754
-0.02	NULL	NULL	NULL
+0.01	NULL	NULL	8.390000343322754
+0.01	NULL	NULL	8.390000343322754
 0.02	holly polk	5.29	5.289999961853027
 0.02	wendy quirinius	25.5	30.789999961853027
 0.02	yuri laertes	37.59	68.38000011444092
+0.02	NULL	NULL	68.38000011444092
 0.03	nick steinbeck	79.24	79.23999786376953
 PREHOOK: query: select ts, s, f, sum(f) over (partition by ts order by f asc nulls first range between current row and unbounded following) from over10k limit 10
 PREHOOK: type: QUERY

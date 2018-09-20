@@ -144,7 +144,7 @@ public class Worker extends CompactorThread {
         // Compaction doesn't work under a transaction and hence pass 0 for current txn Id
         // The response will have one entry per table and hence we get only one OpenWriteIds
         String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
-        GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+        GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
         final ValidWriteIdList tblValidWriteIds =
                 TxnUtils.createValidCompactWriteIdList(txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
         LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());

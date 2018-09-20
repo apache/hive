@@ -193,7 +193,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     Table after = tableEvent.getNewTable();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_TABLE.toString(), msgFactory
-            .buildAlterTableMessage(before, after, tableEvent.getIsTruncateOp()).toString());
+            .buildAlterTableMessage(before, after, tableEvent.getIsTruncateOp(), tableEvent.getWriteId()).toString());
     event.setCatName(after.isSetCatName() ? after.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(after.getDbName());
     event.setTableName(after.getTableName());
@@ -342,7 +342,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     Partition after = partitionEvent.getNewPartition();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_PARTITION.toString(), msgFactory
-            .buildAlterPartitionMessage(partitionEvent.getTable(), before, after, partitionEvent.getIsTruncateOp()).toString());
+            .buildAlterPartitionMessage(partitionEvent.getTable(), before, after, partitionEvent.getIsTruncateOp(),
+                    partitionEvent.getWriteId()).toString());
     event.setCatName(before.isSetCatName() ? before.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(before.getDbName());
     event.setTableName(before.getTableName());

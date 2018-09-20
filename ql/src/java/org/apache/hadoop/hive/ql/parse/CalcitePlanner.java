@@ -1441,12 +1441,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return Optimized SQL text (or null, if failed)
    */
   public String getOptimizedSql(RelNode optimizedOptiqPlan) {
+    boolean nullsLast = HiveConf.getBoolVar(conf, ConfVars.HIVE_DEFAULT_NULLS_LAST);
+    NullCollation nullCollation = nullsLast ? NullCollation.LAST : NullCollation.LOW;
     SqlDialect dialect = new HiveSqlDialect(SqlDialect.EMPTY_CONTEXT
         .withDatabaseProduct(SqlDialect.DatabaseProduct.HIVE)
         .withDatabaseMajorVersion(4) // TODO: should not be hardcoded
         .withDatabaseMinorVersion(0)
         .withIdentifierQuoteString("`")
-        .withNullCollation(NullCollation.LOW)) {
+        .withNullCollation(nullCollation)) {
       @Override
       protected boolean allowsAs() {
         return true;
@@ -3269,59 +3271,60 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private boolean genSubQueryRelNode(QB qb, ASTNode node, RelNode srcRel, boolean forHavingClause,
-                                       Map<ASTNode, RelNode> subQueryToRelNode) throws SemanticException {
+                                       Map<ASTNode, RelNode> subQueryToRelNode) throws CalciteSubquerySemanticException {
 
       Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
-      Set<ASTNode> scalarQueriesWithAggNoWinNoGby= new HashSet<ASTNode>();
-      //disallow subqueries which HIVE doesn't currently support
-      subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, corrScalarQueriesWithAgg,
-          scalarQueriesWithAggNoWinNoGby);
-      Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
-      stack.push(node);
-
+      Set<ASTNode> scalarQueriesWithAggNoWinNoGby = new HashSet<ASTNode>();
       boolean isSubQuery = false;
+      try {
+        //disallow subqueries which HIVE doesn't currently support
+        subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, corrScalarQueriesWithAgg,
+            scalarQueriesWithAggNoWinNoGby);
+        Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
+        stack.push(node);
 
-      while (!stack.isEmpty()) {
-        ASTNode next = stack.pop();
+        while (!stack.isEmpty()) {
+          ASTNode next = stack.pop();
 
-        switch(next.getType()) {
-        case HiveParser.TOK_SUBQUERY_EXPR:
+          switch (next.getType()) {
+          case HiveParser.TOK_SUBQUERY_EXPR:
               /*
                * Restriction 2.h Subquery isnot allowed in LHS
                */
-          if(next.getChildren().size() == 3
-              && next.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR){
-            throw new CalciteSemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-                next.getChild(2),
-                "SubQuery in LHS expressions are not supported."));
-          }
-          String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
-          QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
-          Phase1Ctx ctx1 = initPhase1Ctx();
-          doPhase1((ASTNode)next.getChild(1), qbSQ, ctx1, null);
-          getMetaData(qbSQ);
-          this.subqueryId++;
-          RelNode subQueryRelNode = genLogicalPlan(qbSQ, false,
-              relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
-          subQueryToRelNode.put(next, subQueryRelNode);
-          //keep track of subqueries which are scalar, correlated and contains aggregate
-          // subquery expression. This will later be special cased in Subquery remove rule
-          // for correlated scalar queries with aggregate we have take care of the case where
-          // inner aggregate happens on empty result
-          if(corrScalarQueriesWithAgg.contains(next)) {
-            corrScalarRexSQWithAgg.add(subQueryRelNode);
-          }
-          if(scalarQueriesWithAggNoWinNoGby.contains(next)) {
-            scalarAggNoGbyNoWin.add(subQueryRelNode);
-          }
-          isSubQuery = true;
-          break;
-        default:
-          int childCount = next.getChildCount();
-          for(int i = childCount - 1; i >= 0; i--) {
-            stack.push((ASTNode) next.getChild(i));
+            if (next.getChildren().size() == 3 && next.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR) {
+              throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION
+                  .getMsg(next.getChild(2), "SubQuery in LHS expressions are not supported."));
+            }
+            String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
+            QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
+            Phase1Ctx ctx1 = initPhase1Ctx();
+            doPhase1((ASTNode) next.getChild(1), qbSQ, ctx1, null);
+            getMetaData(qbSQ);
+            this.subqueryId++;
+            RelNode subQueryRelNode =
+                genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
+            subQueryToRelNode.put(next, subQueryRelNode);
+            //keep track of subqueries which are scalar, correlated and contains aggregate
+            // subquery expression. This will later be special cased in Subquery remove rule
+            // for correlated scalar queries with aggregate we have take care of the case where
+            // inner aggregate happens on empty result
+            if (corrScalarQueriesWithAgg.contains(next)) {
+              corrScalarRexSQWithAgg.add(subQueryRelNode);
+            }
+            if (scalarQueriesWithAggNoWinNoGby.contains(next)) {
+              scalarAggNoGbyNoWin.add(subQueryRelNode);
+            }
+            isSubQuery = true;
+            break;
+          default:
+            int childCount = next.getChildCount();
+            for (int i = childCount - 1; i >= 0; i--) {
+              stack.push((ASTNode) next.getChild(i));
+            }
           }
         }
+      } catch (SemanticException e) {
+        throw new CalciteSubquerySemanticException(e.getMessage());
       }
       return isSubQuery;
     }

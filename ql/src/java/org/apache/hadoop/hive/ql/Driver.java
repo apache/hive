@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
@@ -543,6 +544,11 @@ public class Driver implements IDriver {
     LockedDriverState.setLockedDriverState(lDrvState);
 
     String queryId = queryState.getQueryId();
+
+    SparkSession ss = SessionState.get().getSparkSession();
+    if (ss != null) {
+      ss.onQuerySubmission(queryId);
+    }
 
     if (ctx != null) {
       setTriggerContext(queryId);
@@ -2569,6 +2575,10 @@ public class Driver implements IDriver {
         }
         queryState.setNumModifiedRows(numModifiedRows);
         console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
+      }
+      SparkSession ss = SessionState.get().getSparkSession();
+      if (ss != null) {
+        ss.onQueryCompletion(queryId);
       }
       lDrvState.stateLock.lock();
       try {

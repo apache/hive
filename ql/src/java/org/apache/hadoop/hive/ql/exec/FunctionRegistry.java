@@ -514,6 +514,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("internal_interval", GenericUDFInternalInterval.class);
 
     system.registerGenericUDF("to_epoch_milli", GenericUDFEpochMilli.class);
+    system.registerGenericUDF("bucket_number", GenericUDFBucketNumber.class);
+
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);
     system.registerGenericUDTF("replicate_rows", GenericUDTFReplicateRows.class);
@@ -1678,7 +1680,7 @@ public final class FunctionRegistry {
   }
 
   public static FunctionInfo registerPermanentFunction(String functionName,
-      String className, boolean registerToSession, FunctionResource[] resources) {
+      String className, boolean registerToSession, FunctionResource[] resources) throws SemanticException {
     return system.registerPermanentFunction(functionName, className, registerToSession, resources);
   }
 

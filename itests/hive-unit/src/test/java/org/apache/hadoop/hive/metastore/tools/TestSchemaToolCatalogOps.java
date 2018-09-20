@@ -44,6 +44,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,6 +57,8 @@ public class TestSchemaToolCatalogOps {
   private static HiveConf conf;
   private IMetaStoreClient client;
   private static String testMetastoreDB;
+  private static PrintStream errStream;
+  private static PrintStream outStream;
   private static String argsBase;
 
   @BeforeClass
@@ -76,6 +79,8 @@ public class TestSchemaToolCatalogOps {
     String passWord = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
     schemaTool.setUserName(userName);
     schemaTool.setPassWord(passWord);
+    errStream = System.err;
+    outStream = System.out;
 
     argsBase = "-dbType derby -userName " + userName + " -passWord " + passWord + " ";
     execute(new SchemaToolTaskInit(), "-initSchema"); // Pre-install the database so all the tables are there.
@@ -87,6 +92,8 @@ public class TestSchemaToolCatalogOps {
     if (metaStoreDir.exists()) {
       FileUtils.forceDeleteOnExit(metaStoreDir);
     }
+    System.setOut(outStream);
+    System.setErr(errStream);
   }
 
   @Before

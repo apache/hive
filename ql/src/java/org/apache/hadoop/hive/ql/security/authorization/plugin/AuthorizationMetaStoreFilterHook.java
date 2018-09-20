@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -98,6 +100,18 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     }
     return objs;
   }
+
+   @Override
+   public List<TableMeta> filterTableMetas(String catName,String dbName,List<TableMeta> tableMetas) throws MetaException {
+     List<String> tableNames = new ArrayList<>();
+     for(TableMeta tableMeta: tableMetas){
+       tableNames.add(tableMeta.getTableName());
+     }
+     List<String> filteredTableNames = filterTableNames(catName,dbName,tableNames);
+     return tableMetas.stream()
+             .filter(e -> filteredTableNames.contains(e.getTableName())).collect(Collectors.toList());
+   }
+
 
 }
 
