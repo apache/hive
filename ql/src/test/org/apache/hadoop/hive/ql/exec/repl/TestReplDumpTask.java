@@ -133,7 +133,7 @@ public class TestReplDumpTask {
     );
 
     try {
-      task.bootStrapDump(mock(Path.class), null, mock(Path.class), same(hive));
+      task.bootStrapDump(mock(Path.class), null, mock(Path.class), hive);
     } finally {
       verifyStatic();
       Utils.resetDbBootstrapDumpState(same(hive), eq("default"), eq(dbRandomKey));
