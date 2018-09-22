@@ -35,6 +35,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +100,68 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   }
 
   @Override
+  public List<String> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException {
+    Connection conn = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+
+    try {
+      initializeDatabaseConnection(conf);
+      String metadataQuery = getMetaDataQuery(conf);
+      LOGGER.debug("Query to execute is [{}]", metadataQuery);
+
+      conn = dbcpDataSource.getConnection();
+      ps = conn.prepareStatement(metadataQuery);
+      rs = ps.executeQuery();
+
+      ResultSetMetaData metadata = rs.getMetaData();
+      int numColumns = metadata.getColumnCount();
+      List<String> columnTypes = new ArrayList<String>(numColumns);
+      for (int i = 0; i < numColumns; i++) {
+        switch (metadata.getColumnType(i + 1)) {
+        case Types.CHAR:
+          columnTypes.add(serdeConstants.STRING_TYPE_NAME);
+          break;
+        case Types.INTEGER:
+          columnTypes.add(serdeConstants.INT_TYPE_NAME);
+          break;
+        case Types.BIGINT:
+          columnTypes.add(serdeConstants.BIGINT_TYPE_NAME);
+          break;
+        case Types.DECIMAL:
+          columnTypes.add(serdeConstants.DECIMAL_TYPE_NAME);
+          break;
+        case Types.FLOAT:
+        case Types.REAL:
+          columnTypes.add(serdeConstants.FLOAT_TYPE_NAME);
+          break;
+        case Types.DOUBLE:
+          columnTypes.add(serdeConstants.DOUBLE_TYPE_NAME);
+          break;
+        case Types.DATE:
+          columnTypes.add(serdeConstants.DATE_TYPE_NAME);
+          break;
+        case Types.TIMESTAMP:
+          columnTypes.add(serdeConstants.TIMESTAMP_TYPE_NAME);
+          break;
+
+        default:
+          columnTypes.add(metadata.getColumnTypeName(i+1));
+          break;
+        }
+      }
+
+      return columnTypes;
+    } catch (Exception e) {
+      LOGGER.error("Error while trying to get column names.", e);
+      throw new HiveJdbcDatabaseAccessException("Error while trying to get column names: " + e.getMessage(), e);
+    } finally {
+      cleanupResources(conn, ps, rs);
+    }
+  }
+
+
+  @Override
   public int getTotalNumberOfRecords(Configuration conf) throws HiveJdbcDatabaseAccessException {
     Connection conn = null;
     PreparedStatement ps = null;
@@ -153,7 +216,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       ps.setFetchSize(getFetchSize(conf));
       rs = ps.executeQuery();
 
-      return new JdbcRecordIterator(conn, ps, rs, conf.get(serdeConstants.LIST_COLUMN_TYPES));
+      return new JdbcRecordIterator(conn, ps, rs);
     }
     catch (Exception e) {
       LOGGER.error("Caught exception while trying to execute query", e);
