@@ -23,7 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -748,11 +748,14 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
       String s = sqlGenerator.addForUpdateClause("select \"WNL_FILES\", \"WNL_ID\" from" +
                       " \"TXN_WRITE_NOTIFICATION_LOG\" " +
-                      "where \"WNL_DATABASE\" = " + quoteString(dbName) +
-                      "and \"WNL_TABLE\" = " + quoteString(tblName) +  " and \"WNL_PARTITION\" = " +
-                      quoteString(partition) + " and \"WNL_TXNID\" = " + Long.toString(acidWriteEvent.getTxnId()));
-      LOG.debug("Going to execute query <" + s + ">");
-      rs = stmt.executeQuery(s);
+                      "where \"WNL_DATABASE\" = ? " +
+                      "and \"WNL_TABLE\" = ? " +  " and \"WNL_PARTITION\" = ? " +
+                      "and \"WNL_TXNID\" = " + Long.toString(acidWriteEvent.getTxnId()));
+      List<String> params = Arrays.asList(dbName, tblName, partition);
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
+      LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">",
+              quoteString(dbName), quoteString(tblName), quoteString(partition));
+      rs = pst.executeQuery();
       if (!rs.next()) {
         // if rs is empty then no lock is taken and thus it can not cause deadlock.
         long nextNLId = getNextNLId(stmt, sqlGenerator,
@@ -761,6 +764,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
                 "(\"WNL_ID\", \"WNL_TXNID\", \"WNL_WRITEID\", \"WNL_DATABASE\", \"WNL_TABLE\", " +
                 "\"WNL_PARTITION\", \"WNL_TABLE_OBJ\", \"WNL_PARTITION_OBJ\", " +
                 "\"WNL_FILES\", \"WNL_EVENT_TIME\") VALUES (?,?,?,?,?,?,?,?,?,?)";
+        closeStmt(pst);
         int currentTime = now();
         pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(s));
         pst.setLong(1, nextNLId);
@@ -793,6 +797,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
                 " \"WNL_FILES\" = ? ," +
                 " \"WNL_EVENT_TIME\" = ?" +
                 " where \"WNL_ID\" = ?";
+        closeStmt(pst);
         pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(s));
         pst.setString(1, tableObj);
         pst.setString(2, partitionObj);
@@ -826,6 +831,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       return;
     }
     Statement stmt = null;
+    PreparedStatement pst = null;
     ResultSet rs = null;
     try {
       stmt = dbConn.createStatement();
@@ -852,21 +858,20 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       long nextNLId = getNextNLId(stmt, sqlGenerator,
               "org.apache.hadoop.hive.metastore.model.MNotificationLog");
 
-      List<String> insert = new ArrayList<>();
+      String insertVal = "(" + nextNLId + "," + nextEventId + "," + now() + ", ?, ?," +
+              quoteString(" ") + ",?, ?)";
 
-      insert.add(0, nextNLId + "," + nextEventId + "," + now() + "," +
-              quoteString(event.getEventType()) + "," + quoteString(event.getDbName()) + "," +
-              quoteString(" ") + "," + quoteString(event.getMessage()) + "," +
-              quoteString(event.getMessageFormat()));
+      s = "insert into \"NOTIFICATION_LOG\" (\"NL_ID\", \"EVENT_ID\", \"EVENT_TIME\", " +
+              " \"EVENT_TYPE\", \"DB_NAME\", " +
+              " \"TBL_NAME\", \"MESSAGE\", \"MESSAGE_FORMAT\") VALUES " + insertVal;
+      List<String> params = Arrays.asList(
+              event.getEventType(), event.getDbName(), event.getMessage(), event.getMessageFormat());
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
 
-      List<String> sql = sqlGenerator.createInsertValuesStmt(
-              "\"NOTIFICATION_LOG\" (\"NL_ID\", \"EVENT_ID\", \"EVENT_TIME\", " +
-                      " \"EVENT_TYPE\", \"DB_NAME\"," +
-                      " \"TBL_NAME\", \"MESSAGE\", \"MESSAGE_FORMAT\")", insert);
-      for (String q : sql) {
-        LOG.info("Going to execute insert <" + q + ">");
-        stmt.execute(q);
-      }
+      LOG.debug("Going to execute insert <" + s.replaceAll("\\?", "{}") + ">",
+              quoteString(event.getEventType()), quoteString(event.getDbName()),
+              quoteString(event.getMessage()), quoteString(event.getMessageFormat()));
+      pst.execute();
 
       // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
       if (event.isSetEventId()) {
@@ -879,6 +884,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       throw e;
     } finally {
       closeStmt(stmt);
+      closeStmt(pst);
       close(rs);
     }
   }
