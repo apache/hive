@@ -14,11 +14,6 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.NullWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +21,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -41,15 +35,12 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
   private Connection conn;
   private PreparedStatement ps;
   private ResultSet rs;
-  private ArrayList<TypeInfo> columnTypes = null;
 
-  public JdbcRecordIterator(Connection conn, PreparedStatement ps, ResultSet rs, String typeString) {
+
+  public JdbcRecordIterator(Connection conn, PreparedStatement ps, ResultSet rs) {
     this.conn = conn;
     this.ps = ps;
     this.rs = rs;
-    if (typeString != null) {
-      this.columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(typeString);
-    }
   }
 
 
@@ -73,48 +64,8 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
       Map<String, Object> record = new HashMap<String, Object>(numColumns);
       for (int i = 0; i < numColumns; i++) {
         String key = metadata.getColumnName(i + 1);
-        Object value;
-        if (columnTypes!=null && columnTypes.get(i) instanceof PrimitiveTypeInfo) {
-          // This is not a complete list, barely make information schema work
-          switch (((PrimitiveTypeInfo)columnTypes.get(i)).getTypeName()) {
-          case "int":
-          case "smallint":
-          case "tinyint":
-            value = rs.getInt(i + 1);
-            break;
-          case "bigint":
-            value = rs.getLong(i + 1);
-            break;
-          case "float":
-            value = rs.getFloat(i + 1);
-            break;
-          case "double":
-            value = rs.getDouble(i + 1);
-            break;
-          case "bigdecimal":
-            value = HiveDecimal.create(rs.getBigDecimal(i + 1));
-            break;
-          case "boolean":
-            value = rs.getBoolean(i + 1);
-            break;
-          case "string":
-          case "char":
-          case "varchar":
-            value = rs.getString(i + 1);
-            break;
-          case "datetime":
-            value = rs.getDate(i + 1);
-            break;
-          case "timestamp":
-            value = rs.getTimestamp(i + 1);
-            break;
-          default:
-            value = rs.getObject(i + 1);
-            break;
-          }
-        } else {
-          value = rs.getObject(i + 1);
-        }
+        Object value = rs.getObject(i + 1);
+
         record.put(key, value);
       }
 

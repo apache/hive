@@ -20,7 +20,7 @@ limit 1;
 
 CREATE EXTERNAL TABLE ext_simple_derby_table
 (
- kkey bigint
+ kkey int
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
