@@ -82,6 +82,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   private boolean isHybridHashJoin;
   private boolean isDynamicPartitionHashJoin = false;
 
+  private String cacheKey;
+
   public MapJoinDesc() {
     bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
   }
@@ -104,6 +106,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.parentDataSizes = clone.parentDataSizes;
     this.isBucketMapJoin = clone.isBucketMapJoin;
     this.isHybridHashJoin = clone.isHybridHashJoin;
+    this.cacheKey = clone.cacheKey;
   }
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
@@ -121,6 +124,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
     this.dumpFilePrefix = dumpFilePrefix;
     this.inMemoryDataSize = inMemoryDataSize;
+    this.cacheKey = null;
     initRetainExprList();
   }
 
@@ -384,6 +388,18 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public void setDynamicPartitionHashJoin(boolean isDistributedHashJoin) {
     this.isDynamicPartitionHashJoin = isDistributedHashJoin;
+  }
+
+  public String getCacheKey() {
+    return cacheKey;
+  }
+
+  public void setCacheKey(String cacheKey) {
+    this.cacheKey = cacheKey;
+  }
+
+  public static String generateCacheKey(String operatorId) {
+    return "HASH_MAP_" + operatorId + "_container";
   }
 
   // Use LinkedHashSet to give predictable display order.
