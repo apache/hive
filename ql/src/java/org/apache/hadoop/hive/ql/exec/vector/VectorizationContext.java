@@ -840,22 +840,11 @@ public class VectorizationContext {
             }
             break;
           case ALL:
-            // Check if this is UDF for _bucket_number
-            if (expr.getGenericUDF() instanceof GenericUDFBucketNumber) {
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("UDF to handle _bucket_number : Create BucketNumExpression");
-              }
-              int outCol = ocm.allocateOutputColumn(exprDesc.getTypeInfo());
-              ve = new BucketNumExpression(outCol);
-              ve.setInputTypeInfos(exprDesc.getTypeInfo());
-              ve.setOutputTypeInfo(exprDesc.getTypeInfo());
-            } else {
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("We will try to use the VectorUDFAdaptor for " + exprDesc.toString()
-                  + " because hive.vectorized.adaptor.usage.mode=all");
-              }
-              ve = getCustomUDFExpression(expr, mode);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("We will try to use the VectorUDFAdaptor for " + exprDesc.toString()
+                + " because hive.vectorized.adaptor.usage.mode=all");
             }
+            ve = getCustomUDFExpression(expr, mode);
             break;
           default:
             throw new RuntimeException("Unknown hive vector adaptor usage mode " +
@@ -2124,6 +2113,11 @@ public class VectorizationContext {
       ve = getCastToTimestamp((GenericUDFTimestamp)udf, childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFDate || udf instanceof GenericUDFToDate) {
       ve = getIdentityForDateToDate(childExpr, returnType);
+    } else if (udf instanceof GenericUDFBucketNumber) {
+      int outCol = ocm.allocateOutputColumn(returnType);
+      ve = new BucketNumExpression(outCol);
+      ve.setInputTypeInfos(returnType);
+      ve.setOutputTypeInfo(returnType);
     }
     if (ve != null) {
       return ve;
