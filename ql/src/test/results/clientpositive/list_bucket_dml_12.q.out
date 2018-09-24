@@ -18,10 +18,14 @@ PREHOOK: query: explain extended
 insert overwrite table list_bucketing_mul_col_n0 partition (ds = '2008-04-08',  hr = '11')
 select 1, key, 1, value, 1 from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_mul_col_n0 partition (ds = '2008-04-08',  hr = '11')
 select 1, key, 1, value, 1 from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 OPTIMIZED SQL: SELECT 1 AS `_o__c0`, `key`, 1 AS `_o__c2`, `value`, 1 AS `_o__c4`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
@@ -290,10 +294,16 @@ PREHOOK: query: explain extended
 select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "466" and col4 = "val_466"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_mul_col_n0
+PREHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "466" and col4 = "val_466"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_mul_col_n0
+POSTHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `col1`, CAST('466' AS STRING) AS `col2`, `col3`, CAST('val_466' AS STRING) AS `col4`, `col5`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`
 FROM `default`.`list_bucketing_mul_col_n0`
 WHERE `ds` = '2008-04-08' AND `hr` = '11' AND `col2` = '466' AND `col4` = 'val_466'
@@ -421,10 +431,16 @@ PREHOOK: query: explain extended
 select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "382" and col4 = "val_382"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_mul_col_n0
+PREHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "382" and col4 = "val_382"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_mul_col_n0
+POSTHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `col1`, CAST('382' AS STRING) AS `col2`, `col3`, CAST('val_382' AS STRING) AS `col4`, `col5`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`
 FROM `default`.`list_bucketing_mul_col_n0`
 WHERE `ds` = '2008-04-08' AND `hr` = '11' AND `col2` = '382' AND `col4` = 'val_382'

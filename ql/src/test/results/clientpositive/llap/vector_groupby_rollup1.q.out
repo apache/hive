@@ -29,9 +29,13 @@ POSTHOOK: Lineage: t1_n83.val SIMPLE [(t1_text_n5)t1_text_n5.FieldSchema(name:va
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -186,9 +190,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -283,9 +291,13 @@ NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -485,9 +497,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -621,11 +637,17 @@ FROM T1_n83
 INSERT OVERWRITE TABLE T2_n52 SELECT key, val, count(1) group by key, val with rollup
 INSERT OVERWRITE TABLE T3_n17 SELECT key, val, sum(1) group by rollup(key, val)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+PREHOOK: Output: default@t2_n52
+PREHOOK: Output: default@t3_n17
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 FROM T1_n83
 INSERT OVERWRITE TABLE T2_n52 SELECT key, val, count(1) group by key, val with rollup
 INSERT OVERWRITE TABLE T3_n17 SELECT key, val, sum(1) group by rollup(key, val)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+POSTHOOK: Output: default@t2_n52
+POSTHOOK: Output: default@t3_n17
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

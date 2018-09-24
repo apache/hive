@@ -32,6 +32,8 @@ select key, value from (
   select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@nzhang_part14_n0
 POSTHOOK: query: explain
 insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
@@ -42,6 +44,7 @@ select key, value from (
   select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-9, Stage-10

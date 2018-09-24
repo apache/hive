@@ -88,6 +88,8 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
@@ -110,6 +112,8 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -179,6 +183,8 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
@@ -201,6 +207,8 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -51,9 +51,17 @@ POSTHOOK: Lineage: orcfile_merge3a_n0 PARTITION(ds=2).value SIMPLE [(src)src.Fie
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b_n0
     SELECT key, value FROM orcfile_merge3a_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge3a_n0
+PREHOOK: Input: default@orcfile_merge3a_n0@ds=1
+PREHOOK: Input: default@orcfile_merge3a_n0@ds=2
+PREHOOK: Output: default@orcfile_merge3b_n0
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b_n0
     SELECT key, value FROM orcfile_merge3a_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge3a_n0
+POSTHOOK: Input: default@orcfile_merge3a_n0@ds=1
+POSTHOOK: Input: default@orcfile_merge3a_n0@ds=2
+POSTHOOK: Output: default@orcfile_merge3b_n0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

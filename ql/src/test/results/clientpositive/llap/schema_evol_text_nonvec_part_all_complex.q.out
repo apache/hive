@@ -134,9 +134,17 @@ complex_struct1_c_txt_n3.insert_num	complex_struct1_c_txt_n3.s1	complex_struct1_
 PREHOOK: query: explain vectorization detail
 select insert_num,part,s1,b from part_change_various_various_struct1_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_change_various_various_struct1_n3
+PREHOOK: Input: default@part_change_various_various_struct1_n3@part=1
+PREHOOK: Input: default@part_change_various_various_struct1_n3@part=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select insert_num,part,s1,b from part_change_various_various_struct1_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_change_various_various_struct1_n3
+POSTHOOK: Input: default@part_change_various_various_struct1_n3@part=1
+POSTHOOK: Input: default@part_change_various_various_struct1_n3@part=2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: false
@@ -412,9 +420,17 @@ complex_struct2_d_txt_n3.insert_num	complex_struct2_d_txt_n3.b	complex_struct2_d
 PREHOOK: query: explain vectorization detail
 select insert_num,part,b,s2 from part_add_various_various_struct2_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_add_various_various_struct2_n3
+PREHOOK: Input: default@part_add_various_various_struct2_n3@part=1
+PREHOOK: Input: default@part_add_various_various_struct2_n3@part=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select insert_num,part,b,s2 from part_add_various_various_struct2_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_add_various_various_struct2_n3
+POSTHOOK: Input: default@part_add_various_various_struct2_n3@part=1
+POSTHOOK: Input: default@part_add_various_various_struct2_n3@part=2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: false
@@ -616,9 +632,17 @@ complex_struct4_c_txt_n3.insert_num	complex_struct4_c_txt_n3.b	complex_struct4_c
 PREHOOK: query: explain vectorization detail
 select insert_num,part,b,s3 from part_add_to_various_various_struct4_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_add_to_various_various_struct4_n3
+PREHOOK: Input: default@part_add_to_various_various_struct4_n3@part=1
+PREHOOK: Input: default@part_add_to_various_various_struct4_n3@part=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select insert_num,part,b,s3 from part_add_to_various_various_struct4_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_add_to_various_various_struct4_n3
+POSTHOOK: Input: default@part_add_to_various_various_struct4_n3@part=1
+POSTHOOK: Input: default@part_add_to_various_various_struct4_n3@part=2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: false

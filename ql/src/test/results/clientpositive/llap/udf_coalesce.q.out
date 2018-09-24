@@ -34,6 +34,8 @@ SELECT COALESCE(1),
        COALESCE(IF(TRUE, NULL, 0), NULL)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COALESCE(1),
        COALESCE(1, 2),
@@ -55,6 +57,8 @@ SELECT COALESCE(1),
        COALESCE(IF(TRUE, NULL, 0), NULL)
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -122,12 +126,16 @@ SELECT COALESCE(src_thrift.lint[1], 999),
        COALESCE(src_thrift.mstringstring['key_2'], '999')
 FROM src_thrift
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COALESCE(src_thrift.lint[1], 999),
        COALESCE(src_thrift.lintstring[0].mystring, '999'),
        COALESCE(src_thrift.mstringstring['key_2'], '999')
 FROM src_thrift
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

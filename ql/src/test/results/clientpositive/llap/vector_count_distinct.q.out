@@ -1228,9 +1228,73 @@ POSTHOOK: Lineage: web_sales PARTITION(ws_web_site_sk=9).ws_wholesale_cost SIMPL
 PREHOOK: query: explain vectorization expression
 select count(distinct ws_order_number) from web_sales
 PREHOOK: type: QUERY
+PREHOOK: Input: default@web_sales
+PREHOOK: Input: default@web_sales@ws_web_site_sk=1
+PREHOOK: Input: default@web_sales@ws_web_site_sk=10
+PREHOOK: Input: default@web_sales@ws_web_site_sk=11
+PREHOOK: Input: default@web_sales@ws_web_site_sk=12
+PREHOOK: Input: default@web_sales@ws_web_site_sk=13
+PREHOOK: Input: default@web_sales@ws_web_site_sk=14
+PREHOOK: Input: default@web_sales@ws_web_site_sk=15
+PREHOOK: Input: default@web_sales@ws_web_site_sk=16
+PREHOOK: Input: default@web_sales@ws_web_site_sk=17
+PREHOOK: Input: default@web_sales@ws_web_site_sk=18
+PREHOOK: Input: default@web_sales@ws_web_site_sk=19
+PREHOOK: Input: default@web_sales@ws_web_site_sk=2
+PREHOOK: Input: default@web_sales@ws_web_site_sk=20
+PREHOOK: Input: default@web_sales@ws_web_site_sk=21
+PREHOOK: Input: default@web_sales@ws_web_site_sk=22
+PREHOOK: Input: default@web_sales@ws_web_site_sk=23
+PREHOOK: Input: default@web_sales@ws_web_site_sk=24
+PREHOOK: Input: default@web_sales@ws_web_site_sk=25
+PREHOOK: Input: default@web_sales@ws_web_site_sk=26
+PREHOOK: Input: default@web_sales@ws_web_site_sk=27
+PREHOOK: Input: default@web_sales@ws_web_site_sk=28
+PREHOOK: Input: default@web_sales@ws_web_site_sk=29
+PREHOOK: Input: default@web_sales@ws_web_site_sk=3
+PREHOOK: Input: default@web_sales@ws_web_site_sk=30
+PREHOOK: Input: default@web_sales@ws_web_site_sk=4
+PREHOOK: Input: default@web_sales@ws_web_site_sk=5
+PREHOOK: Input: default@web_sales@ws_web_site_sk=6
+PREHOOK: Input: default@web_sales@ws_web_site_sk=7
+PREHOOK: Input: default@web_sales@ws_web_site_sk=8
+PREHOOK: Input: default@web_sales@ws_web_site_sk=9
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(distinct ws_order_number) from web_sales
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=1
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=10
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=11
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=12
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=13
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=14
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=15
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=16
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=17
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=18
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=19
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=2
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=20
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=21
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=22
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=23
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=24
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=25
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=26
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=27
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=28
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=29
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=3
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=30
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=4
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=5
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=6
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=7
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=8
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=9
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

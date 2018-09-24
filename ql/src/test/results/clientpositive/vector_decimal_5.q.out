@@ -131,8 +131,12 @@ POSTHOOK: Input: default@decimal_5
 NULL
 PREHOOK: query: explain SELECT cast(key as decimal) FROM DECIMAL_5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(key as decimal) FROM DECIMAL_5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

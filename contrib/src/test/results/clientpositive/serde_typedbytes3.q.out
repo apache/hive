@@ -21,6 +21,8 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
 POSTHOOK: query: EXPLAIN
 FROM (
   FROM src
@@ -32,6 +34,8 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

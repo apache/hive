@@ -5,6 +5,8 @@ FROM
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT max(src1.c1), src1.c2 
 FROM
@@ -12,6 +14,8 @@ FROM
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -128,6 +132,8 @@ FROM
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT max(src1.c1), src1.c2 
 FROM
@@ -135,6 +141,8 @@ FROM
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

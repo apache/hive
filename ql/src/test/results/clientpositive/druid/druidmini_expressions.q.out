@@ -95,8 +95,12 @@ jiqEpNs7qXo0y37_Ynnw5opXqf6BU	nnw	YNNW5OPXQF6BU	jiqepns7qxo0y37	0.0
 TgS6dAlI2w4y_Ynh42DscA373RX27nBkft	nh4	YNH42DSCA373RX27NBKFT	tgs6dali2w4y	0.0
 PREHOOK: query: EXPLAIN SELECT count(*) FROM druid_table_alltypesorc WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM druid_table_alltypesorc WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -120,9 +124,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN SELECT SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
         FROM druid_table_alltypesorc WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
         FROM druid_table_alltypesorc WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -146,9 +154,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table_alltypesorc WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
          GROUP BY cstring1 || '_'|| cstring2, substring(cstring2, 2, 3), upper(cstring2), lower(cstring1) ORDER BY concat DESC LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table_alltypesorc WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
          GROUP BY cstring1 || '_'|| cstring2, substring(cstring2, 2, 3), upper(cstring2), lower(cstring1) ORDER BY concat DESC LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -171,8 +183,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select count(*) from (select `__time` from druid_table_alltypesorc limit 1) as src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain extended select count(*) from (select `__time` from druid_table_alltypesorc limit 1) as src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -349,8 +365,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 15:59:00.0 US/Pacific
 PREHOOK: query: EXPLAIN select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_alltypesorc GROUP  BY `__time`, `cstring1`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_alltypesorc GROUP  BY `__time`, `cstring1`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -420,8 +440,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(distinct cdouble), sum(cdouble) FROM druid_table_alltypesorc GROUP  BY `__time`, `cstring1`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(distinct cdouble), sum(cdouble) FROM druid_table_alltypesorc GROUP  BY `__time`, `cstring1`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -491,8 +515,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(distinct cstring2), sum(2 * cdouble) FROM druid_table_alltypesorc GROUP  BY `__time`, `cstring1`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(distinct cstring2), sum(2 * cdouble) FROM druid_table_alltypesorc GROUP  BY `__time`, `cstring1`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -562,8 +590,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(distinct cstring2 || '_'|| cstring1), sum(cdouble) FROM druid_table_alltypesorc GROUP  BY `__time`, `cstring1`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(distinct cstring2 || '_'|| cstring1), sum(cdouble) FROM druid_table_alltypesorc GROUP  BY `__time`, `cstring1`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -633,8 +665,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(DISTINCT cstring2) FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(DISTINCT cstring2) FROM druid_table_alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -696,8 +732,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -759,8 +799,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(distinct cstring2 || '_'|| cstring1), sum(cdouble), min(cint) FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(distinct cstring2 || '_'|| cstring1), sum(cdouble), min(cint) FROM druid_table_alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -867,8 +911,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 6095	2.7308662809692383E7	-1073279343
 PREHOOK: query: explain select unix_timestamp(from_unixtime(1396681200)) from druid_table_alltypesorc limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select unix_timestamp(from_unixtime(1396681200)) from druid_table_alltypesorc limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -900,8 +948,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1396681200
 PREHOOK: query: explain select unix_timestamp(`__time`) from druid_table_alltypesorc limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select unix_timestamp(`__time`) from druid_table_alltypesorc limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -935,10 +987,14 @@ PREHOOK: query: explain select FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as tim
 from druid_table_alltypesorc
 GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
 from druid_table_alltypesorc
 GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -975,8 +1031,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 16:00:00
 PREHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_alltypesorc GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_alltypesorc GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1026,8 +1086,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-01-01
 PREHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'MONTH') from druid_table_alltypesorc GROUP BY TRUNC(cast(`__time` as timestamp), 'MONTH')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'MONTH') from druid_table_alltypesorc GROUP BY TRUNC(cast(`__time` as timestamp), 'MONTH')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1077,8 +1141,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-01
 PREHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'QUARTER') from druid_table_alltypesorc GROUP BY TRUNC(cast(`__time` as timestamp), 'QUARTER')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'QUARTER') from druid_table_alltypesorc GROUP BY TRUNC(cast(`__time` as timestamp), 'QUARTER')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1119,8 +1187,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-10-01
 PREHOOK: query: explain select TO_DATE(`__time`) from druid_table_alltypesorc GROUP BY TO_DATE(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select TO_DATE(`__time`) from druid_table_alltypesorc GROUP BY TO_DATE(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1155,11 +1227,15 @@ PREHOOK: query: EXPLAIN SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table
 FROM `default`.`druid_table_alltypesorc` `druid_table_alias`
 GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table_alias`.`cdouble`)) AS `sum_calculation_4998925219892510720_ok`,
   CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE) AS `tmn___time_ok`
 FROM `default`.`druid_table_alltypesorc` `druid_table_alias`
 GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1197,8 +1273,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3.832948323764436E14	1969-12-01
 PREHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1272,11 +1352,15 @@ PREHOOK: query: -- Boolean Values
 
  EXPLAIN SELECT cboolean2, count(*) from druid_table_alltypesorc GROUP BY cboolean2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: -- Boolean Values
 
 
  EXPLAIN SELECT cboolean2, count(*) from druid_table_alltypesorc GROUP BY cboolean2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1323,8 +1407,12 @@ false	2653
 true	3452
 PREHOOK: query: EXPLAIN SELECT ctinyint > 2, count(*) from druid_table_alltypesorc GROUP BY ctinyint > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT ctinyint > 2, count(*) from druid_table_alltypesorc GROUP BY ctinyint > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1347,8 +1435,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 != 'en' group by 1.011
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 != 'en' group by 1.011
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1380,8 +1472,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 -39590.24724686146
 PREHOOK: query: EXPLAIN SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 != 'en' group by 1.011, 3.40
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cfloat) FROM druid_table_alltypesorc WHERE cstring1 != 'en' group by 1.011, 3.40
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1413,8 +1509,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 -39590.24724686146
 PREHOOK: query: EXPLAIN SELECT sum(cint) FROM druid_table_alltypesorc WHERE cfloat= 0.011 group by cfloat
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cint) FROM druid_table_alltypesorc WHERE cfloat= 0.011 group by cfloat
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1445,8 +1545,12 @@ POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT cfloat, sum(cint) FROM druid_table_alltypesorc WHERE cfloat= 0.011 group by cfloat
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT cfloat, sum(cint) FROM druid_table_alltypesorc WHERE cfloat= 0.011 group by cfloat
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1519,8 +1623,12 @@ POSTHOOK: Lineage: druid_table_n1.datetime1 SCRIPT []
 POSTHOOK: Lineage: druid_table_n1.time1 SCRIPT []
 PREHOOK: query: EXPLAIN SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

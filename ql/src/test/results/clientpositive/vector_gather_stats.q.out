@@ -60,9 +60,17 @@ POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_purchase_estimat
 PREHOOK: query: explain vectorization detail
 analyze table cd partition (cd_education_status) compute statistics
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cd
+PREHOOK: Input: default@cd@cd_education_status=Primary
+PREHOOK: Output: default@cd
+PREHOOK: Output: default@cd@cd_education_status=Primary
 POSTHOOK: query: explain vectorization detail
 analyze table cd partition (cd_education_status) compute statistics
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cd
+POSTHOOK: Input: default@cd@cd_education_status=Primary
+POSTHOOK: Output: default@cd
+POSTHOOK: Output: default@cd@cd_education_status=Primary
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -114,6 +114,8 @@ from noop(on part_orc
   order by p_name
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -124,6 +126,8 @@ from noop(on part_orc
   order by p_name
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -363,6 +367,8 @@ from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p
 distribute by j.p_mfgr
 sort by j.p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
@@ -370,6 +376,8 @@ from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p
 distribute by j.p_mfgr
 sort by j.p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -629,12 +637,16 @@ from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size
 from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -783,6 +795,8 @@ from noop(on part_orc
   order by p_name
   ) abc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -793,6 +807,8 @@ from noop(on part_orc
   order by p_name
   ) abc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1035,6 +1051,8 @@ from noop(on part_orc
           order by p_name 
           )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -1045,6 +1063,8 @@ from noop(on part_orc
           order by p_name 
           )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1256,6 +1276,8 @@ from noop(on part_orc
           ) 
 group by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -1267,6 +1289,8 @@ from noop(on part_orc
           ) 
 group by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1484,6 +1508,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select abc.* 
 from noop(on part_orc 
@@ -1491,6 +1517,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1703,6 +1731,8 @@ partition by p_mfgr
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select abc.* 
 from part_orc p1 join noop(on part_orc 
@@ -1710,6 +1740,8 @@ partition by p_mfgr
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1926,6 +1958,8 @@ from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
@@ -1933,6 +1967,8 @@ from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2150,6 +2186,8 @@ from noopwithmap(on part_orc
   partition by p_mfgr
   order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -2159,6 +2197,8 @@ from noopwithmap(on part_orc
   partition by p_mfgr
   order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2396,6 +2436,8 @@ from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -2405,6 +2447,8 @@ from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2645,6 +2689,8 @@ partition by p_mfgr
 order by p_mfgr, p_name
 )))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -2655,6 +2701,8 @@ partition by p_mfgr
 order by p_mfgr, p_name
 )))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2964,6 +3012,8 @@ order by p_name)
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
@@ -2977,6 +3027,8 @@ order by p_name)
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3186,6 +3238,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
@@ -3198,6 +3252,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3489,12 +3545,16 @@ from noop(on part_orc
 partition by p_mfgr 
 order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3703,6 +3763,9 @@ partition by p_mfgr
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mfgr_price_view_n0
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
@@ -3711,6 +3774,9 @@ partition by p_mfgr
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mfgr_price_view_n0
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3972,6 +4038,9 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+PREHOOK: Output: default@part_4
+PREHOOK: Output: default@part_5
 POSTHOOK: query: explain vectorization detail
 from noop(on part_orc 
 partition by p_mfgr 
@@ -3988,6 +4057,9 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+POSTHOOK: Output: default@part_4
+POSTHOOK: Output: default@part_5
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4495,6 +4567,8 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
@@ -4512,6 +4586,8 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4843,6 +4919,8 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -4860,6 +4938,8 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5192,6 +5272,8 @@ from noop(on
           partition by p_mfgr 
           order by p_mfgr))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -5207,6 +5289,8 @@ from noop(on
           partition by p_mfgr 
           order by p_mfgr))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5511,6 +5595,8 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
@@ -5528,6 +5614,8 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5877,6 +5965,8 @@ from noop(on
           order by p_mfgr
           ))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
@@ -5893,6 +5983,8 @@ from noop(on
           order by p_mfgr
           ))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6212,6 +6304,8 @@ from noopwithmap(on
               order by p_mfgr, p_name) 
           ))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -6226,6 +6320,8 @@ from noopwithmap(on
               order by p_mfgr, p_name) 
           ))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

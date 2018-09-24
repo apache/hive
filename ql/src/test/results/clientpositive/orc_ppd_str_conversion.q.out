@@ -36,8 +36,12 @@ POSTHOOK: Lineage: text_test.col1 SIMPLE [(orc_test_n0)orc_test_n0.FieldSchema(n
 POSTHOOK: Lineage: text_test.col2 SIMPLE [(orc_test_n0)orc_test_n0.FieldSchema(name:col2, type:char(10), comment:null), ]
 PREHOOK: query: explain select * from text_test where col2='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@text_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from text_test where col2='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@text_test
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

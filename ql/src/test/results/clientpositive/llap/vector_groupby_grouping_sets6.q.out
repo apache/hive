@@ -33,11 +33,15 @@ SELECT a, b FROM
 (SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n84
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
 (SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n84
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -175,11 +179,15 @@ SELECT a, b FROM
 (SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n84
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
 (SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n84
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

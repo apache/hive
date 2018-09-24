@@ -85,8 +85,20 @@ age                 	int
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN EXTENDED select * from test2_n6
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2_n6
+PREHOOK: Input: default@test2_n6@age=15
+PREHOOK: Input: default@test2_n6@age=30
+PREHOOK: Input: default@test2_n6@age=40
+PREHOOK: Input: default@test2_n6@age=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED select * from test2_n6
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2_n6
+POSTHOOK: Input: default@test2_n6@age=15
+POSTHOOK: Input: default@test2_n6@age=30
+POSTHOOK: Input: default@test2_n6@age=40
+POSTHOOK: Input: default@test2_n6@age=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `name`, `age`
 FROM `default`.`test2_n6`
 STAGE DEPENDENCIES:

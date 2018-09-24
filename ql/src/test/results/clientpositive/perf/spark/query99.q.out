@@ -32,6 +32,12 @@ order by substr(w_warehouse_name,1,20)
         ,cc_name
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@call_center
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@ship_mode
+PREHOOK: Input: default@warehouse
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  
    substr(w_warehouse_name,1,20)
@@ -66,6 +72,12 @@ order by substr(w_warehouse_name,1,20)
         ,cc_name
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@call_center
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@ship_mode
+POSTHOOK: Input: default@warehouse
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

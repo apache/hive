@@ -63,8 +63,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain INSERT OVERWRITE TABLE users SELECT 'user1', 'IA', 'USA', 0 FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@users
 POSTHOOK: query: explain INSERT OVERWRITE TABLE users SELECT 'user1', 'IA', 'USA', 0 FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@users
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage
@@ -280,8 +284,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from users
 PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from users
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -385,8 +393,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from users
 PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from users
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

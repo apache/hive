@@ -22,10 +22,14 @@ PREHOOK: query: EXPLAIN
 SELECT minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07')
 FROM src WHERE key = 86
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07')
 FROM src WHERE key = 86
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

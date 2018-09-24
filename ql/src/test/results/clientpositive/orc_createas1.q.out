@@ -48,10 +48,16 @@ PREHOOK: query: EXPLAIN CREATE TABLE orc_createas1b
     STORED AS ORC AS
     SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_createas1b
 POSTHOOK: query: EXPLAIN CREATE TABLE orc_createas1b
     STORED AS ORC AS
     SELECT * FROM src
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_createas1b
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -149,8 +155,12 @@ POSTHOOK: Lineage: orc_createas1b.key SIMPLE [(src)src.FieldSchema(name:key, typ
 POSTHOOK: Lineage: orc_createas1b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_createas1b
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_createas1b
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -213,12 +223,22 @@ PREHOOK: query: EXPLAIN
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM orc_createas1a
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@orc_createas1a
+PREHOOK: Input: default@orc_createas1a@ds=1
+PREHOOK: Input: default@orc_createas1a@ds=2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_createas1c
 POSTHOOK: query: EXPLAIN
     CREATE TABLE orc_createas1c
     STORED AS ORC AS 
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM orc_createas1a
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@orc_createas1a
+POSTHOOK: Input: default@orc_createas1a@ds=1
+POSTHOOK: Input: default@orc_createas1a@ds=2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_createas1c
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

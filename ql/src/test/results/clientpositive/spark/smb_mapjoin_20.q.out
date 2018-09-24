@@ -34,10 +34,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Output: default@test_table2@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Output: default@test_table2@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -159,10 +165,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.value, a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Output: default@test_table3@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.value, a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Output: default@test_table3@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1331,10 +1343,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key+a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Output: default@test_table2@ds=2
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key+a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Output: default@test_table2@ds=2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -139,11 +139,17 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -164,11 +170,17 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -192,11 +204,17 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -217,11 +235,17 @@ SELECT `lo_linenumber`, `c_region`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`, `c_region`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -302,11 +326,17 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -383,12 +413,20 @@ FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -413,12 +451,20 @@ FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -444,6 +490,10 @@ FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`) subq
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber` FROM
 (SELECT *
@@ -451,6 +501,10 @@ FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`) subq
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -527,12 +581,20 @@ FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -609,12 +671,20 @@ FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -724,11 +794,17 @@ SELECT `lo_linenumber`, `c_custkey`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`, `c_custkey`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Input: default@lineorder_removal_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

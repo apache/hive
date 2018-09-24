@@ -86,8 +86,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1023
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_complex_types
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_complex_types
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -171,8 +175,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 [118,119]	118	119	119	1
 PREHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_complex_types
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_complex_types
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -384,8 +392,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1024
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_complex_types
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_complex_types
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -469,8 +481,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 [118,119]	118	119	119	1
 PREHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_complex_types
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_complex_types
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -682,8 +698,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1025
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_complex_types
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_complex_types
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -767,8 +787,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 [118,119]	118	119	119	1
 PREHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_complex_types
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_complex_types
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

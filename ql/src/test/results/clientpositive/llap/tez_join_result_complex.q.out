@@ -133,6 +133,10 @@ inner join
 service_request_clean b
 on a.contact_event_id = b.cnctevn_id
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ct_events_clean
+PREHOOK: Input: default@service_request_clean
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ct_events1_test
 POSTHOOK: query: explain extended
 create table ct_events1_test
 as select  a.*,
@@ -148,6 +152,10 @@ inner join
 service_request_clean b
 on a.contact_event_id = b.cnctevn_id
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ct_events_clean
+POSTHOOK: Input: default@service_request_clean
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ct_events1_test
 OPTIMIZED SQL: SELECT `t0`.`contact_event_id`, `t0`.`ce_create_dt`, `t0`.`ce_end_dt`, `t0`.`contact_type`, `t0`.`cnctevs_cd`, `t0`.`contact_mode`, `t0`.`cntvnst_stts_cd`, `t0`.`total_transfers`, `t0`.`ce_notes`, `t2`.`svcrqst_id`, `t2`.`svcrqct_cds`, `t2`.`svcrtyp_cd`, `t2`.`cmpltyp_cd`, `t2`.`sum_reason_cd` AS `src`, `t2`.`cnctmd_cd`, `t2`.`notes`
 FROM (SELECT `contact_event_id`, `ce_create_dt`, `ce_end_dt`, `contact_type`, `cnctevs_cd`, `contact_mode`, `cntvnst_stts_cd`, `total_transfers`, `ce_notes`
 FROM `default`.`ct_events_clean`
@@ -1131,6 +1139,10 @@ inner join
 service_request_clean b
 on a.contact_event_id = b.cnctevn_id
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ct_events_clean
+PREHOOK: Input: default@service_request_clean
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ct_events1_test
 POSTHOOK: query: explain extended
 create table ct_events1_test
 as select  a.*,
@@ -1146,6 +1158,10 @@ inner join
 service_request_clean b
 on a.contact_event_id = b.cnctevn_id
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ct_events_clean
+POSTHOOK: Input: default@service_request_clean
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ct_events1_test
 OPTIMIZED SQL: SELECT `t0`.`contact_event_id`, `t0`.`ce_create_dt`, `t0`.`ce_end_dt`, `t0`.`contact_type`, `t0`.`cnctevs_cd`, `t0`.`contact_mode`, `t0`.`cntvnst_stts_cd`, `t0`.`total_transfers`, `t0`.`ce_notes`, `t2`.`svcrqst_id`, `t2`.`svcrqct_cds`, `t2`.`svcrtyp_cd`, `t2`.`cmpltyp_cd`, `t2`.`sum_reason_cd` AS `src`, `t2`.`cnctmd_cd`, `t2`.`notes`
 FROM (SELECT `contact_event_id`, `ce_create_dt`, `ce_end_dt`, `contact_type`, `cnctevs_cd`, `contact_mode`, `cntvnst_stts_cd`, `total_transfers`, `ce_notes`
 FROM `default`.`ct_events_clean`

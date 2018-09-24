@@ -53,9 +53,19 @@ POSTHOOK: Lineage: t2_n71 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(nam
 PREHOOK: query: explain
 select count(1) from t1_n121 join t2_n71 on t1_n121.key=t2_n71.key where t1_n121.ds='1' and t2_n71.ds='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n121
+PREHOOK: Input: default@t1_n121@ds=1
+PREHOOK: Input: default@t2_n71
+PREHOOK: Input: default@t2_n71@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from t1_n121 join t2_n71 on t1_n121.key=t2_n71.key where t1_n121.ds='1' and t2_n71.ds='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n121
+POSTHOOK: Input: default@t1_n121@ds=1
+POSTHOOK: Input: default@t2_n71
+POSTHOOK: Input: default@t2_n71@ds=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

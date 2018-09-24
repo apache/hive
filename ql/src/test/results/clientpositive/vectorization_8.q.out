@@ -23,6 +23,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ctimestamp1,
        cdouble,
@@ -48,6 +50,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -232,6 +236,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ctimestamp1,
        cdouble,
@@ -257,6 +263,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

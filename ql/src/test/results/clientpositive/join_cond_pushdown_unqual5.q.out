@@ -39,8 +39,14 @@ POSTHOOK: Lineage: rtable.rk1 SCRIPT []
 POSTHOOK: Lineage: rtable.rk2 SCRIPT []
 PREHOOK: query: EXPLAIN SELECT * FROM ltable l LEFT OUTER JOIN rtable r on (l.lk1 = r.rk1 AND l.lk2 = r.rk2) WHERE COALESCE(l.la,'EMPTY')=COALESCE(r.ra,'EMPTY')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ltable
+PREHOOK: Input: default@rtable
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM ltable l LEFT OUTER JOIN rtable r on (l.lk1 = r.rk1 AND l.lk2 = r.rk2) WHERE COALESCE(l.la,'EMPTY')=COALESCE(r.ra,'EMPTY')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ltable
+POSTHOOK: Input: default@rtable
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -114,8 +120,14 @@ POSTHOOK: Input: default@rtable
 2	NULL	CD5415192225530	00071	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN SELECT * FROM ltable l LEFT OUTER JOIN rtable r on (l.lk1 = r.rk1 AND l.lk2 = r.rk2) WHERE COALESCE(l.la,'EMPTY')=COALESCE(r.ra,'EMPTY')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ltable
+PREHOOK: Input: default@rtable
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM ltable l LEFT OUTER JOIN rtable r on (l.lk1 = r.rk1 AND l.lk2 = r.rk2) WHERE COALESCE(l.la,'EMPTY')=COALESCE(r.ra,'EMPTY')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ltable
+POSTHOOK: Input: default@rtable
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4

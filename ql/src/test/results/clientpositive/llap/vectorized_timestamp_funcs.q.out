@@ -218,6 +218,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(ctimestamp1) AS c1,
   year(ctimestamp1),
@@ -239,6 +241,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -436,6 +440,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
@@ -449,6 +455,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -630,6 +638,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1) AS c1,
   year(ctimestamp1) = year(stimestamp1),
@@ -643,6 +653,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -824,6 +836,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_wrong
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_wrong
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
@@ -837,6 +851,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_wrong
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_wrong
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -963,6 +979,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   count(*)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   min(ctimestamp1),
   max(ctimestamp1),
@@ -970,6 +988,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   count(*)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1093,10 +1113,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1230,6 +1254,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(avg(ctimestamp1), 0),
   variance(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
@@ -1241,6 +1267,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

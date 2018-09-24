@@ -51,6 +51,8 @@ max(p_retailprice) over w1 - min(p_retailprice) over w1 = last_value(p_retailpri
 from part
 window w1 as (distribute by p_mfgr sort by p_retailprice)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice, p_size,
 round(sum(p_retailprice) over w1 , 2) = round(sum(lag(p_retailprice,1,0.0)) over w1 + last_value(p_retailprice) over w1 , 2), 
@@ -58,6 +60,8 @@ max(p_retailprice) over w1 - min(p_retailprice) over w1 = last_value(p_retailpri
 from part
 window w1 as (distribute by p_mfgr sort by p_retailprice)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -244,6 +248,8 @@ sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between
 sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) -5 as s1
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice, p_size,
 rank() over (distribute by p_mfgr sort by p_retailprice) as r,
@@ -251,6 +257,8 @@ sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between
 sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) -5 as s1
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -442,9 +450,13 @@ Manufacturer#5	1789.69	31	5	7672.66	7667.66
 PREHOOK: query: explain vectorization detail
 select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n3 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -664,9 +676,13 @@ fred young	303	49.32	221.51001
 PREHOOK: query: explain vectorization detail
 select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n3 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -886,9 +902,13 @@ yuri johnson	65734	-27
 PREHOOK: query: explain vectorization detail
 select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n3 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1108,9 +1128,13 @@ gabriella zipper	279	30.41	229.2
 PREHOOK: query: explain vectorization detail
 select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n3 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1332,9 +1356,13 @@ yuri white	fred
 PREHOOK: query: explain vectorization detail
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1509,9 +1537,13 @@ Manufacturer#5	1611.66
 PREHOOK: query: explain vectorization detail
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1703,9 +1735,15 @@ POSTHOOK: Output: default@t2_n15
 PREHOOK: query: explain vectorization detail
 from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select *
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n3
+PREHOOK: Output: default@t1_n23
+PREHOOK: Output: default@t2_n15
 POSTHOOK: query: explain vectorization detail
 from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select *
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n3
+POSTHOOK: Output: default@t1_n23
+POSTHOOK: Output: default@t2_n15
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1946,6 +1984,8 @@ from part
 window w1 as (distribute by p_mfgr sort by p_retailprice)
 limit 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice, p_size,
 round(sum(p_retailprice) over w1 , 2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) over w1 + (last_value(p_retailprice) over w1),2)
@@ -1953,6 +1993,8 @@ from part
 window w1 as (distribute by p_mfgr sort by p_retailprice)
 limit 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

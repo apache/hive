@@ -46,12 +46,22 @@ PREHOOK: query: EXPLAIN
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM rcfile_createas1a
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@rcfile_createas1a
+PREHOOK: Input: default@rcfile_createas1a@ds=1
+PREHOOK: Input: default@rcfile_createas1a@ds=2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfile_createas1b
 POSTHOOK: query: EXPLAIN
     CREATE TABLE rcfile_createas1b
     STORED AS RCFILE AS 
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM rcfile_createas1a
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@rcfile_createas1a
+POSTHOOK: Input: default@rcfile_createas1a@ds=1
+POSTHOOK: Input: default@rcfile_createas1a@ds=2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rcfile_createas1b
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

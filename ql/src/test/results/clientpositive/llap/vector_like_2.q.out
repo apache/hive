@@ -22,9 +22,13 @@ POSTHOOK: Lineage: foo.a SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select a, a like "%bar" from foo order by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select a, a like "%bar" from foo order by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

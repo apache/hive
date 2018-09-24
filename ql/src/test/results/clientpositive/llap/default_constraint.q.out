@@ -71,8 +71,12 @@ Column Name:a       	Default Value:127Y
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(a) values(3Y)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(a) values(3Y)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -166,8 +170,12 @@ POSTHOOK: Input: default@numericdatatype_n1
 3	32767	2147483647	9223372036854775807	3.4E38	1234567.89
 PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(e,f) values(4.5, 678.4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(e,f) values(4.5, 678.4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -337,8 +345,12 @@ Column Name:t       	Default Value:TIMESTAMP'2016-02-22 12:45:07.000000000'
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO table1_n16(t) values ("1985-12-31 12:45:07")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1_n16
 POSTHOOK: query: EXPLAIN INSERT INTO table1_n16(t) values ("1985-12-31 12:45:07")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1_n16
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -414,8 +426,12 @@ POSTHOOK: Input: default@table1_n16
 2018-02-14	1985-12-31 12:45:07	2016-01-03 12:26:34.0 US/Pacific	true	NULL
 PREHOOK: query: EXPLAIN INSERT INTO table1_n16(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1_n16
 POSTHOOK: query: EXPLAIN INSERT INTO table1_n16(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1_n16
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -569,8 +585,12 @@ Column Name:v       	Default Value:cast('varchar_default_value' as varchar(350))
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO table2_n11(i) values('default')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2_n11
 POSTHOOK: query: EXPLAIN INSERT INTO table2_n11(i) values('default')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2_n11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -663,8 +683,12 @@ POSTHOOK: Input: default@table2_n11
 default	true	Current_User()	varchar_default_value	char_value          
 PREHOOK: query: EXPLAIN INSERT INTO table2_n11(v, c) values('varchar_default2', 'char')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2_n11
 POSTHOOK: query: EXPLAIN INSERT INTO table2_n11(v, c) values('varchar_default2', 'char')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2_n11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -819,8 +843,12 @@ Column Name:b1      	Default Value:cast('bin' as binary)
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO misc(b) values(false)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@misc
 POSTHOOK: query: EXPLAIN INSERT INTO misc(b) values(false)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@misc
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -910,8 +938,12 @@ POSTHOOK: Input: default@misc
 false	bin
 PREHOOK: query: EXPLAIN INSERT INTO misc(b1) values('011')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@misc
 POSTHOOK: query: EXPLAIN INSERT INTO misc(b1) values('011')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@misc
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1125,8 +1157,12 @@ Column Name:ts      	Default Value:cast('2016-01-01 12:01:01' as timestamp)
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO t11_n2(c4) values('vi')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t11_n2
 POSTHOOK: query: EXPLAIN INSERT INTO t11_n2(c4) values('vi')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t11_n2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1211,8 +1247,12 @@ POSTHOOK: Input: default@t11_n2
 2016-01-01 12:01:01	2016-01-03 12:26:34.0 US/Pacific	4.50	true	5	45	45.4	567	88	false	true	5.0	vi
 PREHOOK: query: EXPLAIN INSERT INTO t11_n2(b1,c4) values(true,'ga')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t11_n2
 POSTHOOK: query: EXPLAIN INSERT INTO t11_n2(b1,c4) values(true,'ga')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t11_n2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1378,8 +1418,12 @@ Column Name:f       	Default Value:1234567.89
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(456)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(456)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1542,8 +1586,12 @@ Column Name:f       	Default Value:1234567.89
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(56)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(56)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1801,8 +1849,12 @@ Column Name:a       	Default Value:127Y
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(f) values(847.45)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(f) values(847.45)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2137,8 +2189,12 @@ Column Name:a       	Default Value:108Y
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(f) values(847.45)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(f) values(847.45)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2294,8 +2350,12 @@ Column Name:j       	Default Value:'12345678901234567890123456789012345678901234
 	 	 
 PREHOOK: query: explain insert into t(i) values(3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
 POSTHOOK: query: explain insert into t(i) values(3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2388,8 +2448,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tablePartitioned_n0
 PREHOOK: query: explain INSERT INTO tablePartitioned_n0 partition(p1='today', p2=10) values('not', 'null', 'constraint')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tablepartitioned_n0@p1=today/p2=10
 POSTHOOK: query: explain INSERT INTO tablePartitioned_n0 partition(p1='today', p2=10) values('not', 'null', 'constraint')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tablepartitioned_n0@p1=today/p2=10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2540,8 +2604,12 @@ Column Name:f       	Default Value:1234567.89
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(456)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(456)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2704,8 +2772,12 @@ Column Name:f       	Default Value:1234567.89
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(56)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(56)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

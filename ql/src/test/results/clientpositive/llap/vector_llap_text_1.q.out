@@ -114,12 +114,22 @@ from tab_n7 a join tab_part_n8 b on a.key = b.key
 order by a.key, a.value, b.value
 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n7
+PREHOOK: Input: default@tab_n7@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n8
+PREHOOK: Input: default@tab_part_n8@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key, a.value, b.value
 from tab_n7 a join tab_part_n8 b on a.key = b.key
 order by a.key, a.value, b.value
 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n7
+POSTHOOK: Input: default@tab_n7@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n8
+POSTHOOK: Input: default@tab_part_n8@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

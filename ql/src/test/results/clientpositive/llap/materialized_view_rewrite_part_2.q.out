@@ -212,11 +212,21 @@ select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n00
+PREHOOK: Input: default@emps_n00
+PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n00
+POSTHOOK: Input: default@emps_n00
+POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -300,11 +310,21 @@ select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n00
+PREHOOK: Input: default@emps_n00
+PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n00
+POSTHOOK: Input: default@emps_n00
+POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -388,11 +408,21 @@ select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n00
+PREHOOK: Input: default@emps_n00
+PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n00
+POSTHOOK: Input: default@emps_n00
+POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -482,11 +512,23 @@ select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
 group by depts_n00.deptno, emps_n00.empid
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n00
+PREHOOK: Input: default@emps_n00
+PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno=10
+PREHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
 group by depts_n00.deptno, emps_n00.empid
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n00
+POSTHOOK: Input: default@emps_n00
+POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno=10
+POSTHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -584,11 +626,23 @@ select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
 group by depts_n00.deptno
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n00
+PREHOOK: Input: default@emps_n00
+PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno=10
+PREHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
 group by depts_n00.deptno
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n00
+POSTHOOK: Input: default@emps_n00
+POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno=10
+POSTHOOK: Input: default@mv1_part_n0@deptno=20
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -786,6 +840,13 @@ join emps_n00 on (emps_n00.deptno = depts_n00.deptno)
 where depts_n00.deptno > 10
 group by dependents_n00.empid
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents_n00
+PREHOOK: Input: default@depts_n00
+PREHOOK: Input: default@emps_n00
+PREHOOK: Input: default@mv1_part_n0
+PREHOOK: Input: default@mv1_part_n0@deptno2=20
+PREHOOK: Input: default@mv1_part_n0@deptno2=30
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select dependents_n00.empid
 from depts_n00
@@ -794,6 +855,13 @@ join emps_n00 on (emps_n00.deptno = depts_n00.deptno)
 where depts_n00.deptno > 10
 group by dependents_n00.empid
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents_n00
+POSTHOOK: Input: default@depts_n00
+POSTHOOK: Input: default@emps_n00
+POSTHOOK: Input: default@mv1_part_n0
+POSTHOOK: Input: default@mv1_part_n0@deptno2=20
+POSTHOOK: Input: default@mv1_part_n0@deptno2=30
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

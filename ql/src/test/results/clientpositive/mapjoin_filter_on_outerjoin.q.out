@@ -42,12 +42,18 @@ SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-1 depends on stages: Stage-4
@@ -198,12 +204,18 @@ SELECT * FROM src1
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-2 depends on stages: Stage-6

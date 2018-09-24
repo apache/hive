@@ -72,8 +72,10 @@ POSTHOOK: Input: default@tmp_srcpart
 2000
 PREHOOK: query: EXPLAIN TRUNCATE TABLE tmp_src
 PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@tmp_src
 POSTHOOK: query: EXPLAIN TRUNCATE TABLE tmp_src
 POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@tmp_src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -100,8 +102,10 @@ POSTHOOK: Input: default@tmp_src
 0
 PREHOOK: query: EXPLAIN TRUNCATE TABLE tmp_srcpart
 PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@tmp_srcpart
 POSTHOOK: query: EXPLAIN TRUNCATE TABLE tmp_srcpart
 POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@tmp_srcpart
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

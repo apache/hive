@@ -9,9 +9,13 @@ POSTHOOK: Output: default@non_orc_table
 PREHOOK: query: explain vectorization expression
 insert into table non_orc_table values(1, 'one'),(1, 'one'), (2, 'two'),(3, 'three')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@non_orc_table
 POSTHOOK: query: explain vectorization expression
 insert into table non_orc_table values(1, 'one'),(1, 'one'), (2, 'two'),(3, 'three')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@non_orc_table
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

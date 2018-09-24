@@ -24,6 +24,11 @@ where inv1.i_item_sk = inv2.i_item_sk
 order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
         ,inv2.d_moy,inv2.mean, inv2.cov
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 with inv as
 (select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
@@ -50,6 +55,11 @@ where inv1.i_item_sk = inv2.i_item_sk
 order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
         ,inv2.d_moy,inv2.mean, inv2.cov
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

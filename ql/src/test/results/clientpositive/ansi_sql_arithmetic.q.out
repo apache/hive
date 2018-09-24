@@ -1,7 +1,11 @@
 PREHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -46,8 +50,12 @@ POSTHOOK: Input: default@src
 1.00000000000
 PREHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

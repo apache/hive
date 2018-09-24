@@ -131,8 +131,14 @@ POSTHOOK: Input: default@table_19
 POSTHOOK: Output: default@table_19
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_19
+PREHOOK: Input: default@table_8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_19
+POSTHOOK: Input: default@table_8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -284,8 +290,14 @@ POSTHOOK: Input: default@table_8
 2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_19
+PREHOOK: Input: default@table_8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_19
+POSTHOOK: Input: default@table_8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

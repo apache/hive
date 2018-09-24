@@ -35,6 +35,8 @@ WHERE  ((762 = cbigint)
                     AND ((79.553 != cint)
                          AND (cboolean2 != cboolean1)))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT AVG(cint),
        (AVG(cint) + -3728),
@@ -72,6 +74,8 @@ WHERE  ((762 = cbigint)
                     AND ((79.553 != cint)
                          AND (cboolean2 != cboolean1)))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -299,6 +303,8 @@ WHERE  (((cbigint <= 197)
            OR ((cfloat > 79.553)
                AND (cstring2 LIKE '10%')))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MAX(cint),
        (MAX(cint) / -3728),
@@ -333,6 +339,8 @@ WHERE  (((cbigint <= 197)
            OR ((cfloat > 79.553)
                AND (cstring2 LIKE '10%')))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -553,6 +561,8 @@ WHERE  ((ctimestamp1 = ctimestamp2)
                   AND ((ctimestamp2 IS NOT NULL)
                        AND (cstring2 > 'a'))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT VAR_POP(cbigint),
        (-(VAR_POP(cbigint))),
@@ -586,6 +596,8 @@ WHERE  ((ctimestamp1 = ctimestamp2)
                   AND ((ctimestamp2 IS NOT NULL)
                        AND (cstring2 > 'a'))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -795,6 +807,8 @@ WHERE  (((ctimestamp2 <= ctimestamp1)
             AND (ctimestamp1 >= 0))
            OR (cfloat = 17))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT AVG(ctinyint),
        (AVG(ctinyint) + 6981),
@@ -818,6 +832,8 @@ WHERE  (((ctimestamp2 <= ctimestamp1)
             AND (ctimestamp1 >= 0))
            OR (cfloat = 17))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1021,6 +1037,8 @@ WHERE  (((cstring1 RLIKE 'a.*')
 ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 50
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cint,
        cdouble,
@@ -1058,6 +1076,8 @@ WHERE  (((cstring1 RLIKE 'a.*')
 ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 50
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1318,6 +1338,8 @@ WHERE  (((197 > ctinyint)
 ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15
 LIMIT 25
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cint,
        cbigint,
@@ -1354,6 +1376,8 @@ WHERE  (((197 > ctinyint)
 ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15
 LIMIT 25
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1564,6 +1588,8 @@ WHERE    (((csmallint > -26.28)
 ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 75
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cint,
          cstring1,
@@ -1599,6 +1625,8 @@ WHERE    (((csmallint > -26.28)
 ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 75
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1874,6 +1902,8 @@ WHERE    (((-1.389 >= cint)
 ORDER BY csmallint, cstring2, cdouble, cfloat, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 45
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   ctimestamp1,
          cstring2,
@@ -1902,6 +1932,8 @@ WHERE    (((-1.389 >= cint)
 ORDER BY csmallint, cstring2, cdouble, cfloat, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 45
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2125,6 +2157,8 @@ GROUP BY csmallint
 ORDER BY csmallint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   csmallint,
          (csmallint % -75) as c1,
@@ -2146,6 +2180,8 @@ GROUP BY csmallint
 ORDER BY csmallint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2394,6 +2430,8 @@ WHERE    (((cdouble > 2563.58))
 GROUP BY cdouble
 ORDER BY cdouble
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cdouble,
          VAR_SAMP(cdouble),
@@ -2422,6 +2460,8 @@ WHERE    (((cdouble > 2563.58))
 GROUP BY cdouble
 ORDER BY cdouble
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2686,6 +2726,8 @@ GROUP BY ctimestamp1, cstring1
 ORDER BY ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35, c36, c37
 LIMIT 50
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   ctimestamp1,
          cstring1,
@@ -2742,6 +2784,8 @@ GROUP BY ctimestamp1, cstring1
 ORDER BY ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35, c36, c37
 LIMIT 50
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3102,6 +3146,8 @@ WHERE    (((cboolean1 IS NOT NULL))
 GROUP BY cboolean1
 ORDER BY cboolean1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cboolean1,
          MAX(cfloat),
@@ -3143,6 +3189,8 @@ WHERE    (((cboolean1 IS NOT NULL))
 GROUP BY cboolean1
 ORDER BY cboolean1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3389,9 +3437,13 @@ POSTHOOK: Output: default@test_count
 PREHOOK: query: explain vectorization expression
 select count(*) from test_count
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from test_count
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3500,9 +3552,13 @@ POSTHOOK: Input: default@test_count
 PREHOOK: query: explain vectorization expression
 select count(i) from test_count
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_count
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(i) from test_count
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_count
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3687,9 +3743,13 @@ POSTHOOK: Lineage: alltypesnullorc.ctinyint SIMPLE [(alltypesnull)alltypesnull.F
 PREHOOK: query: explain vectorization expression
 select count(*) from alltypesnullorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from alltypesnullorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3798,9 +3858,13 @@ POSTHOOK: Input: default@alltypesnullorc
 PREHOOK: query: explain vectorization expression
 select count(ctinyint) from alltypesnullorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(ctinyint) from alltypesnullorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3911,9 +3975,13 @@ POSTHOOK: Input: default@alltypesnullorc
 PREHOOK: query: explain vectorization expression
 select count(cint) from alltypesnullorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(cint) from alltypesnullorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4024,9 +4092,13 @@ POSTHOOK: Input: default@alltypesnullorc
 PREHOOK: query: explain vectorization expression
 select count(cfloat) from alltypesnullorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(cfloat) from alltypesnullorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4137,9 +4209,13 @@ POSTHOOK: Input: default@alltypesnullorc
 PREHOOK: query: explain vectorization expression
 select count(cstring1) from alltypesnullorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(cstring1) from alltypesnullorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4250,9 +4326,13 @@ POSTHOOK: Input: default@alltypesnullorc
 PREHOOK: query: explain vectorization expression
 select count(cboolean1) from alltypesnullorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(cboolean1) from alltypesnullorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesnullorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

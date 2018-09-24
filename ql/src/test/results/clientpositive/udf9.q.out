@@ -9,6 +9,8 @@ SELECT DATEDIFF('2008-12-31', '2009-01-01'), DATEDIFF('2008-03-01', '2008-02-28'
        DATE_SUB('2007-02-28', 365), DATE_SUB('2007-02-28 01:12:34', 730)
        FROM src WHERE src.key = 86
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT DATEDIFF('2008-12-31', '2009-01-01'), DATEDIFF('2008-03-01', '2008-02-28'),
        DATEDIFF('2007-03-01', '2007-01-28'), DATEDIFF('2008-03-01 23:59:59', '2008-03-02 00:00:00'),
@@ -20,6 +22,8 @@ SELECT DATEDIFF('2008-12-31', '2009-01-01'), DATEDIFF('2008-03-01', '2008-02-28'
        DATE_SUB('2007-02-28', 365), DATE_SUB('2007-02-28 01:12:34', 730)
        FROM src WHERE src.key = 86
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

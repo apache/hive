@@ -32,9 +32,15 @@ POSTHOOK: Lineage: t1_n45 PARTITION(ds=1).val SIMPLE [(t1_n45)t1_n45.FieldSchema
 PREHOOK: query: EXPLAIN
 select count(distinct key) from T1_n45
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n45
+PREHOOK: Input: default@t1_n45@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 select count(distinct key) from T1_n45
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n45
+POSTHOOK: Input: default@t1_n45@ds=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

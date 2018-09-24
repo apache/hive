@@ -47,9 +47,13 @@ POSTHOOK: Output: default@over10k_n6
 PREHOOK: query: explain vectorization detail
 select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k_n6
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k_n6
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -10209,6 +10213,8 @@ sum(b) over (partition by s order by ts desc)
 from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, 
 rank() over (partition by s order by `dec` desc), 
@@ -10216,6 +10222,8 @@ sum(b) over (partition by s order by ts desc)
 from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -10491,9 +10499,13 @@ tom allen	14	81604381169
 PREHOOK: query: explain vectorization detail
 select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -10757,10 +10769,14 @@ PREHOOK: query: explain vectorization detail
 select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11031,9 +11047,13 @@ tom allen	7	2
 PREHOOK: query: explain vectorization detail
 select s, sum(f) over (partition by i), row_number() over (order by f) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, sum(f) over (partition by i), row_number() over (order by f) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11305,6 +11325,8 @@ window
 w1 as (partition by s order by `dec`), 
 w2 as (partition by si order by f)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, rank() over w1, 
 rank() over w2 
@@ -11314,6 +11336,8 @@ window
 w1 as (partition by s order by `dec`), 
 w2 as (partition by si order by f)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n6
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

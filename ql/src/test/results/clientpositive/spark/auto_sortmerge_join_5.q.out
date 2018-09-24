@@ -64,8 +64,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_big_n0
 PREHOOK: query: explain extended select count(*) FROM bucket_small_n0 a JOIN bucket_big_n0 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n0
+PREHOOK: Input: default@bucket_small_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_small_n0 a JOIN bucket_big_n0 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n0
+POSTHOOK: Input: default@bucket_small_n0
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM (SELECT `key`
 FROM `default`.`bucket_small_n0`
@@ -226,8 +232,14 @@ POSTHOOK: Input: default@bucket_small_n0
 19
 PREHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n0
+PREHOOK: Input: default@bucket_small_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n0
+POSTHOOK: Input: default@bucket_small_n0
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM (SELECT `key`
 FROM `default`.`bucket_big_n0`
@@ -388,8 +400,14 @@ POSTHOOK: Input: default@bucket_small_n0
 19
 PREHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n0
+PREHOOK: Input: default@bucket_small_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n0
+POSTHOOK: Input: default@bucket_small_n0
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM (SELECT `key`
 FROM `default`.`bucket_big_n0`

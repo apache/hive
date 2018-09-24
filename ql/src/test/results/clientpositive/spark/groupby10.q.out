@@ -35,11 +35,17 @@ FROM INPUT
 INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@input
+PREHOOK: Output: default@dest1_n0
+PREHOOK: Output: default@dest2
 POSTHOOK: query: EXPLAIN
 FROM INPUT 
 INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input
+POSTHOOK: Output: default@dest1_n0
+POSTHOOK: Output: default@dest2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -250,11 +256,17 @@ FROM INPUT
 INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@input
+PREHOOK: Output: default@dest1_n0
+PREHOOK: Output: default@dest2
 POSTHOOK: query: EXPLAIN
 FROM INPUT 
 INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input
+POSTHOOK: Output: default@dest1_n0
+POSTHOOK: Output: default@dest2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -465,11 +477,17 @@ FROM INPUT
 INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), avg(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@input
+PREHOOK: Output: default@dest1_n0
+PREHOOK: Output: default@dest2
 POSTHOOK: query: EXPLAIN
 FROM INPUT
 INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), avg(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input
+POSTHOOK: Output: default@dest1_n0
+POSTHOOK: Output: default@dest2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

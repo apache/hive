@@ -11,11 +11,15 @@ SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@implicit_test1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@implicit_test1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

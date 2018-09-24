@@ -60,8 +60,14 @@ POSTHOOK: Output: unicode_data_db@t_view_test
 POSTHOOK: Lineage: t_view_test.value SIMPLE [(t_test)t_test.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: explain select * from t_view_test
 PREHOOK: type: QUERY
+PREHOOK: Input: unicode_data_db@t_test
+PREHOOK: Input: unicode_data_db@t_view_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t_view_test
 POSTHOOK: type: QUERY
+POSTHOOK: Input: unicode_data_db@t_test
+POSTHOOK: Input: unicode_data_db@t_view_test
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

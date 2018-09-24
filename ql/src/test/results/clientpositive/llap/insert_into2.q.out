@@ -15,9 +15,13 @@ POSTHOOK: Output: default@insert_into2
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into2 PARTITION (ds='1') 
   SELECT * FROM src order by key LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into2@ds=1
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into2 PARTITION (ds='1') 
   SELECT * FROM src order by key LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into2@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -144,9 +148,13 @@ POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSche
 PREHOOK: query: explain
 select count (*) from insert_into2 where ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select count (*) from insert_into2 where ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -179,9 +187,13 @@ POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSche
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -219,9 +231,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into2 PARTITION (ds='2')
   SELECT * FROM src order by key LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into2@ds=2
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into2 PARTITION (ds='2')
   SELECT * FROM src order by key LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into2@ds=2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -367,9 +383,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -392,9 +412,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into2 PARTITION (ds='2')
   SELECT * FROM src order by key LIMIT 50
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into2@ds=2
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into2 PARTITION (ds='2')
   SELECT * FROM src order by key LIMIT 50
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into2@ds=2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -540,9 +564,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -575,9 +603,15 @@ POSTHOOK: Lineage: insert_into2 PARTITION(ds=2).value SCRIPT []
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 where ds='2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into2
+PREHOOK: Input: default@insert_into2@ds=2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 where ds='2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into2
+POSTHOOK: Input: default@insert_into2@ds=2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

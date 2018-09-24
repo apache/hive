@@ -40,6 +40,8 @@ CAST(1 AS BIGINT) ^ CAST(3 AS BIGINT)
 
 FROM dest1_n149
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n149
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT round(1.0), round(1.5), round(-1.5), floor(1.0), floor(1.5), floor(-1.5), sqrt(1.0), sqrt(-1.0), sqrt(0.0), ceil(1.0), ceil(1.5), ceil(-1.5), ceiling(1.0), rand(3), +3, -3, 1++2, 1+-2, 
 
@@ -65,6 +67,8 @@ CAST(1 AS BIGINT) ^ CAST(3 AS BIGINT)
 
 FROM dest1_n149
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n149
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

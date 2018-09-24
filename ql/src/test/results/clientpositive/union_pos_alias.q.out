@@ -4,12 +4,16 @@ UNION ALL
 select key, value from (select 'tst2' as key, count(1) as value from src s2 UNION ALL select 'tst3' as key, count(1) as value from src s3) s4
 order by 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select 'tst1' as key, count(1) as value from src s1
 UNION ALL
 select key, value from (select 'tst2' as key, count(1) as value from src s2 UNION ALL select 'tst3' as key, count(1) as value from src s3) s4
 order by 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3, Stage-4
@@ -208,12 +212,16 @@ UNION ALL
 select 'test', value from src_10 s3
 order by 2, 1 desc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select key as value, value as key from src_10
 UNION ALL
 select 'test', value from src_10 s3
 order by 2, 1 desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -369,9 +377,13 @@ POSTHOOK: Lineage: masking_test_n9.value SIMPLE [(src)src.FieldSchema(name:value
 PREHOOK: query: explain
 select * from masking_test_n9  union all select * from masking_test_n9
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from masking_test_n9  union all select * from masking_test_n9
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -450,9 +462,13 @@ POSTHOOK: Input: default@masking_test_n9
 PREHOOK: query: explain
 select key as k1, value as v1 from masking_test_n9 where key > 0 intersect all select key as k2, value as v2 from masking_test_n9 where key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key as k1, value as v1 from masking_test_n9 where key > 0 intersect all select key as k2, value as v2 from masking_test_n9 where key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3

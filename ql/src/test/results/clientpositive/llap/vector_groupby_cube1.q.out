@@ -17,9 +17,13 @@ POSTHOOK: Output: default@t1_n90
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -154,9 +158,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n90 GROUP BY CUBE(key, val)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n90 GROUP BY CUBE(key, val)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -317,9 +325,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID, count(1) FROM T1_n90 GROUP BY key, val with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID, count(1) FROM T1_n90 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -479,9 +491,13 @@ NULL	NULL	3	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -576,9 +592,13 @@ NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -784,9 +804,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n90
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -920,11 +944,17 @@ FROM T1_n90
 INSERT OVERWRITE TABLE T2_n55 SELECT key, val, count(1) group by key, val with cube
 INSERT OVERWRITE TABLE T3_n19 SELECT key, val, sum(1) group by key, val with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n90
+PREHOOK: Output: default@t2_n55
+PREHOOK: Output: default@t3_n19
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 FROM T1_n90
 INSERT OVERWRITE TABLE T2_n55 SELECT key, val, count(1) group by key, val with cube
 INSERT OVERWRITE TABLE T3_n19 SELECT key, val, sum(1) group by key, val with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n90
+POSTHOOK: Output: default@t2_n55
+POSTHOOK: Output: default@t3_n19
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

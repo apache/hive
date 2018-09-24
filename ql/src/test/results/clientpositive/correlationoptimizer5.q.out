@@ -95,6 +95,11 @@ JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n19
+PREHOOK: Input: default@t2_n11
+PREHOOK: Input: default@t3_n5
+PREHOOK: Input: default@t4_n1
+PREHOOK: Output: default@dest_co1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_co1
 SELECT b.key, d.val
@@ -104,6 +109,11 @@ JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n19
+POSTHOOK: Input: default@t2_n11
+POSTHOOK: Input: default@t3_n5
+POSTHOOK: Input: default@t4_n1
+POSTHOOK: Output: default@dest_co1
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-1 depends on stages: Stage-4
@@ -284,6 +294,11 @@ JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n19
+PREHOOK: Input: default@t2_n11
+PREHOOK: Input: default@t3_n5
+PREHOOK: Input: default@t4_n1
+PREHOOK: Output: default@dest_co2
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_co2
 SELECT b.key, d.val
@@ -293,6 +308,11 @@ JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n19
+POSTHOOK: Input: default@t2_n11
+POSTHOOK: Input: default@t3_n5
+POSTHOOK: Input: default@t4_n1
+POSTHOOK: Output: default@dest_co2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -482,6 +502,11 @@ JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n19
+PREHOOK: Input: default@t2_n11
+PREHOOK: Input: default@t3_n5
+PREHOOK: Input: default@t4_n1
+PREHOOK: Output: default@dest_co3
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_co3
 SELECT b.key, d.val
@@ -491,6 +516,11 @@ JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n19
+POSTHOOK: Input: default@t2_n11
+POSTHOOK: Input: default@t3_n5
+POSTHOOK: Input: default@t4_n1
+POSTHOOK: Output: default@dest_co3
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
   Stage-6 depends on stages: Stage-8

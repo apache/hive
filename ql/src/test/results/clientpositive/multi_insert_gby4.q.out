@@ -31,6 +31,10 @@ INSERT OVERWRITE TABLE e2_n5
 INSERT OVERWRITE TABLE e3_n0
     SELECT key, COUNT(*) WHERE key>490 GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n4
+PREHOOK: Output: default@e2_n5
+PREHOOK: Output: default@e3_n0
 POSTHOOK: query: explain
 FROM (SELECT key, value FROM src) a
 INSERT OVERWRITE TABLE e1_n4
@@ -40,6 +44,10 @@ INSERT OVERWRITE TABLE e2_n5
 INSERT OVERWRITE TABLE e3_n0
     SELECT key, COUNT(*) WHERE key>490 GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n4
+POSTHOOK: Output: default@e2_n5
+POSTHOOK: Output: default@e3_n0
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-0 depends on stages: Stage-3

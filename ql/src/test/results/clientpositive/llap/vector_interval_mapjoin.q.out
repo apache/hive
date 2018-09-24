@@ -158,6 +158,9 @@ join
       on v1.intrvl1 = v2.intrvl2 
       and v1.s = v2.s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab_a_1korc
+PREHOOK: Input: default@vectortab_b_1korc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
    v1.s,
@@ -180,6 +183,9 @@ join
       on v1.intrvl1 = v2.intrvl2 
       and v1.s = v2.s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab_a_1korc
+POSTHOOK: Input: default@vectortab_b_1korc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

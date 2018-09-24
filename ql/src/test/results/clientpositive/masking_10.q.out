@@ -14,8 +14,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test
 PREHOOK: query: explain select 2017 as a, value from masking_test group by 1, 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain select 2017 as a, value from masking_test group by 1, 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -95,6 +99,8 @@ select * from
   masking_test alias03
 on alias01.key = alias03.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from
   masking_test alias01
@@ -107,6 +113,8 @@ select * from
   masking_test alias03
 on alias01.key = alias03.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

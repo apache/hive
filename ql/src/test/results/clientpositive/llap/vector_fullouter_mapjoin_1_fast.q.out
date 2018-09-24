@@ -192,10 +192,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key, s.s_date FROM fullouter_long_big_1a b FULL OUTER JOIN fullouter_long_small_1a s ON b.key = s.key
 order by b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fullouter_long_big_1a
+PREHOOK: Input: default@fullouter_long_small_1a
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key, s.s_date FROM fullouter_long_big_1a b FULL OUTER JOIN fullouter_long_small_1a s ON b.key = s.key
 order by b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fullouter_long_big_1a
+POSTHOOK: Input: default@fullouter_long_small_1a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -442,10 +448,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key, s.s_date FROM fullouter_long_big_1a b FULL OUTER JOIN fullouter_long_small_1a s ON b.key = s.key
 order by b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fullouter_long_big_1a
+PREHOOK: Input: default@fullouter_long_small_1a
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key, s.s_date FROM fullouter_long_big_1a b FULL OUTER JOIN fullouter_long_small_1a s ON b.key = s.key
 order by b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fullouter_long_big_1a
+POSTHOOK: Input: default@fullouter_long_small_1a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1016,10 +1028,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key, s.s_timestamp FROM fullouter_long_big_1b b FULL OUTER JOIN fullouter_long_small_1b s ON b.key = s.key
 order by b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fullouter_long_big_1b
+PREHOOK: Input: default@fullouter_long_small_1b
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key, s.s_timestamp FROM fullouter_long_big_1b b FULL OUTER JOIN fullouter_long_small_1b s ON b.key = s.key
 order by b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fullouter_long_big_1b
+POSTHOOK: Input: default@fullouter_long_small_1b
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1386,10 +1404,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, b.b_string, s.key, s.s_decimal FROM fullouter_long_big_1c b FULL OUTER JOIN fullouter_long_small_1c s ON b.key = s.key
 order by b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fullouter_long_big_1c
+PREHOOK: Input: default@fullouter_long_small_1c
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, b.b_string, s.key, s.s_decimal FROM fullouter_long_big_1c b FULL OUTER JOIN fullouter_long_small_1c s ON b.key = s.key
 order by b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fullouter_long_big_1c
+POSTHOOK: Input: default@fullouter_long_small_1c
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1767,10 +1791,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key FROM fullouter_long_big_1d b FULL OUTER JOIN fullouter_long_small_1d s ON b.key = s.key
 order by b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fullouter_long_big_1d
+PREHOOK: Input: default@fullouter_long_small_1d
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key FROM fullouter_long_big_1d b FULL OUTER JOIN fullouter_long_small_1d s ON b.key = s.key
 order by b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fullouter_long_big_1d
+POSTHOOK: Input: default@fullouter_long_small_1d
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2221,10 +2251,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key0, b.key1, s.key0, s.key1 FROM fullouter_multikey_big_1a b FULL OUTER JOIN fullouter_multikey_small_1a s ON b.key0 = s.key0 AND b.key1 = s.key1
 order by b.key0, b.key1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fullouter_multikey_big_1a
+PREHOOK: Input: default@fullouter_multikey_small_1a
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key0, b.key1, s.key0, s.key1 FROM fullouter_multikey_big_1a b FULL OUTER JOIN fullouter_multikey_small_1a s ON b.key0 = s.key0 AND b.key1 = s.key1
 order by b.key0, b.key1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fullouter_multikey_big_1a
+POSTHOOK: Input: default@fullouter_multikey_small_1a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2970,10 +3006,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key0, b.key1, b.key2, s.key0, s.key1, s.key2, s.s_decimal FROM fullouter_multikey_big_1b b FULL OUTER JOIN fullouter_multikey_small_1b s ON b.key0 = s.key0 AND b.key1 = s.key1 AND b.key2 = s.key2
 order by b.key0, b.key1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fullouter_multikey_big_1b
+PREHOOK: Input: default@fullouter_multikey_small_1b
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key0, b.key1, b.key2, s.key0, s.key1, s.key2, s.s_decimal FROM fullouter_multikey_big_1b b FULL OUTER JOIN fullouter_multikey_small_1b s ON b.key0 = s.key0 AND b.key1 = s.key1 AND b.key2 = s.key2
 order by b.key0, b.key1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fullouter_multikey_big_1b
+POSTHOOK: Input: default@fullouter_multikey_small_1b
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3509,10 +3551,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key, s.s_date, s.s_timestamp FROM fullouter_string_big_1a b FULL OUTER JOIN fullouter_string_small_1a s ON b.key = s.key
 order by b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fullouter_string_big_1a
+PREHOOK: Input: default@fullouter_string_small_1a
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT b.key, s.key, s.s_date, s.s_timestamp FROM fullouter_string_big_1a b FULL OUTER JOIN fullouter_string_small_1a s ON b.key = s.key
 order by b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fullouter_string_big_1a
+POSTHOOK: Input: default@fullouter_string_small_1a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

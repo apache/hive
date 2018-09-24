@@ -5,6 +5,9 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
@@ -12,6 +15,9 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -225,6 +231,9 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
@@ -232,6 +241,9 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -445,6 +457,9 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
@@ -452,6 +467,9 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -660,6 +678,9 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
@@ -667,6 +688,9 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -860,6 +884,9 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
@@ -867,6 +894,9 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1060,6 +1090,9 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
@@ -1067,6 +1100,9 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

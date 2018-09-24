@@ -22,8 +22,12 @@ POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:st
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended select * from src_multi1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_multi1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from src_multi1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_multi1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`src_multi1`
 STAGE DEPENDENCIES:
@@ -475,8 +479,16 @@ POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 PREHOOK: query: explain select key from nzhang_part14
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part14
+PREHOOK: Input: default@nzhang_part14@value= 
+PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from nzhang_part14
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14@value= 
+POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -529,8 +541,26 @@ POSTHOOK: Lineage: nzhang_part14 PARTITION(value=val_311).key SIMPLE [(src5)src5
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=val_86).key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: explain select key from nzhang_part14
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part14
+PREHOOK: Input: default@nzhang_part14@value= 
+PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@nzhang_part14@value=val_165
+PREHOOK: Input: default@nzhang_part14@value=val_238
+PREHOOK: Input: default@nzhang_part14@value=val_27
+PREHOOK: Input: default@nzhang_part14@value=val_311
+PREHOOK: Input: default@nzhang_part14@value=val_86
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from nzhang_part14
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14@value= 
+POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@nzhang_part14@value=val_165
+POSTHOOK: Input: default@nzhang_part14@value=val_238
+POSTHOOK: Input: default@nzhang_part14@value=val_27
+POSTHOOK: Input: default@nzhang_part14@value=val_311
+POSTHOOK: Input: default@nzhang_part14@value=val_86
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -648,8 +678,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select * from alter5 where dt='a'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter5
+PREHOOK: Input: default@alter5@dt=a
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from alter5 where dt='a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter5
+POSTHOOK: Input: default@alter5@dt=a
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -766,8 +802,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select * from alter5 where dt='a'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter5
+PREHOOK: Input: default@alter5@dt=a
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from alter5 where dt='a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter5
+POSTHOOK: Input: default@alter5@dt=a
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1447,8 +1489,16 @@ POSTHOOK: Lineage: c_n1 PARTITION(ds=2010-05-11,hr=12).key SIMPLE [(srcpart)srcp
 POSTHOOK: Lineage: c_n1 PARTITION(ds=2010-05-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select key from a_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n3
+PREHOOK: Input: default@a_n3@ds=2010-03-11/hr=11
+PREHOOK: Input: default@a_n3@ds=2010-03-11/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from a_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n3
+POSTHOOK: Input: default@a_n3@ds=2010-03-11/hr=11
+POSTHOOK: Input: default@a_n3@ds=2010-03-11/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1466,8 +1516,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select value from b_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@b_n3
+PREHOOK: Input: default@b_n3@ds=2010-04-11/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select value from b_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b_n3
+POSTHOOK: Input: default@b_n3@ds=2010-04-11/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1485,8 +1541,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key from b_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@b_n3
+PREHOOK: Input: default@b_n3@ds=2010-04-11/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from b_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b_n3
+POSTHOOK: Input: default@b_n3@ds=2010-04-11/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1504,8 +1566,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select value from c_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@c_n1
+PREHOOK: Input: default@c_n1@ds=2010-05-11/hr=11
+PREHOOK: Input: default@c_n1@ds=2010-05-11/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select value from c_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c_n1
+POSTHOOK: Input: default@c_n1@ds=2010-05-11/hr=11
+POSTHOOK: Input: default@c_n1@ds=2010-05-11/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1523,8 +1593,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key from c_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@c_n1
+PREHOOK: Input: default@c_n1@ds=2010-05-11/hr=11
+PREHOOK: Input: default@c_n1@ds=2010-05-11/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from c_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c_n1
+POSTHOOK: Input: default@c_n1@ds=2010-05-11/hr=11
+POSTHOOK: Input: default@c_n1@ds=2010-05-11/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

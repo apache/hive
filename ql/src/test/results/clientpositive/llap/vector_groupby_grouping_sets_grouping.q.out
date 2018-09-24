@@ -32,11 +32,15 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -192,11 +196,15 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -358,12 +366,16 @@ from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value
 from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -524,6 +536,8 @@ group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, grouping(key)+grouping(value) as x
 from T1_n47
@@ -531,6 +545,8 @@ group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -732,11 +748,15 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -892,11 +912,15 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1058,12 +1082,16 @@ from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value
 from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1217,6 +1245,8 @@ group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, grouping(key)+grouping(value) as x
 from T1_n47
@@ -1224,6 +1254,8 @@ group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1426,11 +1458,15 @@ select key, value, grouping(key), grouping(value)
 from T1_n47
 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, grouping(key), grouping(value)
 from T1_n47
 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1581,11 +1617,15 @@ select key, value, grouping(value)
 from T1_n47
 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, grouping(value)
 from T1_n47
 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1737,12 +1777,16 @@ from T1_n47
 group by key, value
 having grouping(key) = 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value
 from T1_n47
 group by key, value
 having grouping(key) = 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1886,11 +1930,15 @@ select key, value, `grouping__id`, grouping(key, value)
 from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key, value)
 from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2051,11 +2099,15 @@ select key, value, `grouping__id`, grouping(value, key)
 from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(value, key)
 from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2216,11 +2268,15 @@ select key, value, `grouping__id`, grouping(key, value)
 from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key, value)
 from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2376,11 +2432,15 @@ select key, value, `grouping__id`, grouping(value, key)
 from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(value, key)
 from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n47
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

@@ -35,9 +35,15 @@ POSTHOOK: Output: default@destinTable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sourcetable
+PREHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+PREHOOK: Output: default@destintable@ds=2011-11-11/hr=11
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sourcetable
+POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+POSTHOOK: Output: default@destintable@ds=2011-11-11/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -225,8 +231,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destinTable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sourcetable
+PREHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+PREHOOK: Output: default@destintable
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sourcetable
+POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+POSTHOOK: Output: default@destintable
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -382,9 +394,15 @@ POSTHOOK: Output: default@destinTable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (DS='2011-11-11', HR='11') if not exists
 SELECT one,two FROM sourceTable WHERE DS='2011-11-11' AND HR='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sourcetable
+PREHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+PREHOOK: Output: default@destintable@ds=2011-11-11/hr=11
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (DS='2011-11-11', HR='11') if not exists
 SELECT one,two FROM sourceTable WHERE DS='2011-11-11' AND HR='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sourcetable
+POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+POSTHOOK: Output: default@destintable@ds=2011-11-11/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

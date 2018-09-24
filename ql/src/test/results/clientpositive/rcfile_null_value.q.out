@@ -72,6 +72,8 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1_rc SELECT c.c1, c.c2, c.c3, c.c4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_rc
 POSTHOOK: query: EXPLAIN
 FROM (
  FROM 
@@ -87,6 +89,8 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1_rc SELECT c.c1, c.c2, c.c3, c.c4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_rc
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

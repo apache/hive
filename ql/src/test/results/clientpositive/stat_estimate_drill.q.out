@@ -71,8 +71,12 @@ POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t3 where b in (2,3) group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t3 where b in (2,3) group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -136,8 +140,12 @@ POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t3 where a=1 or a=2 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 or a=2 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -201,8 +209,12 @@ POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t3 where a=1 or (a=2  and b=3) group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 or (a=2  and b=3) group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -266,8 +278,12 @@ POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t3 where a=1 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -335,8 +351,12 @@ POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t3 where a=1 and b=2 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 and b=2 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -402,8 +422,12 @@ POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t3 where a=1 and b=2 and c=3 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t3 where a=1 and b=2 and c=3 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -469,8 +493,12 @@ POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
