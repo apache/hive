@@ -23,8 +23,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-import java.nio.ByteBuffer;
-
 /**
  * An expression representing _bucket_number.
  */
@@ -32,6 +30,8 @@ public class BucketNumExpression extends VectorExpression {
   private static final long serialVersionUID = 1L;
   private int rowNum = -1;
   private int bucketNum = -1;
+  private boolean rowSet = false;
+  private boolean bucketNumSet = false;
 
   public BucketNumExpression(int outputColNum) {
     super(outputColNum);
@@ -43,19 +43,32 @@ public class BucketNumExpression extends VectorExpression {
     cv.initBuffer();
   }
 
-  public void setRowNum(final int rowNum) {
+  public void setRowNum(final int rowNum) throws HiveException{
     this.rowNum = rowNum;
+    if (rowSet) {
+      throw new HiveException("Row number is already set");
+    }
+    rowSet = true;
   }
 
-  public void setBucketNum(final int bucketNum) {
+  public void setBucketNum(final int bucketNum) throws HiveException{
     this.bucketNum = bucketNum;
+    if (bucketNumSet) {
+      throw new HiveException("Bucket number is already set");
+    }
+    bucketNumSet = true;
   }
 
   @Override
   public void evaluate(VectorizedRowBatch batch) throws HiveException {
+    if (!rowSet || !bucketNumSet) {
+      throw new HiveException("row number or bucket number is not set before evaluation");
+    }
     BytesColumnVector cv = (BytesColumnVector) batch.cols[outputColumnNum];
     String bucketNumStr = String.valueOf(bucketNum);
     cv.setVal(rowNum, bucketNumStr.getBytes(), 0, bucketNumStr.length());
+    rowSet = false;
+    bucketNumSet = false;
   }
 
   @Override

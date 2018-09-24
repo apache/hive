@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.reducesink;
 
-import java.lang.reflect.Method;
 import java.util.Random;
 import java.util.function.BiFunction;
 
@@ -90,8 +89,6 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
 
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
   private transient BucketNumExpression bucketExpr = null;
-  private transient Method buckectEvaluatorMethod;
-
 
   /** Kryo ctor. */
   protected VectorReduceSinkObjectHashOperator() {
@@ -144,9 +141,6 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     bucketExpr.evaluate(batch);
   }
 
-  private void evaluateBucketDummy(VectorizedRowBatch batch, int rowNum, int bucketNum) {
-  }
-
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
@@ -193,21 +187,13 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
       ObjectInspectorUtils::getBucketHashCodeOld;
 
     // Set function to evaluate _bucket_number if needed.
-    try {
-      buckectEvaluatorMethod = this.getClass().getDeclaredMethod("evaluateBucketDummy",
-        VectorizedRowBatch.class, int.class, int.class);
-      if (reduceSinkKeyExpressions != null) {
-        for (VectorExpression ve : reduceSinkKeyExpressions) {
-          if (ve instanceof BucketNumExpression) {
-            bucketExpr = (BucketNumExpression) ve;
-            buckectEvaluatorMethod = this.getClass().getDeclaredMethod("evaluateBucketExpr",
-              VectorizedRowBatch.class, int.class, int.class);
-            break;
-          }
+    if (reduceSinkKeyExpressions != null) {
+      for (VectorExpression ve : reduceSinkKeyExpressions) {
+        if (ve instanceof BucketNumExpression) {
+          bucketExpr = (BucketNumExpression) ve;
+          break;
         }
       }
-    } catch (NoSuchMethodException e) {
-      throw new HiveException("Failed to find method to evaluate _bucket_number");
     }
   }
 
@@ -294,7 +280,9 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
             final int bucketNum = ObjectInspectorUtils.getBucketNumber(
               hashFunc.apply(bucketFieldValues, bucketObjectInspectors), numBuckets);
             final int hashCode = nonPartitionRandom.nextInt() * 31 + bucketNum;
-            buckectEvaluatorMethod.invoke(this, batch, batchIndex, bucketNum);
+            if (bucketExpr != null) {
+              evaluateBucketExpr(batch, batchIndex, bucketNum);
+            }
             postProcess(batch, batchIndex, tag, hashCode);
           }
         } else { // isEmptyPartition = false
@@ -305,7 +293,9 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
             final int bucketNum = ObjectInspectorUtils.getBucketNumber(
               hashFunc.apply(bucketFieldValues, bucketObjectInspectors), numBuckets);
             final int hashCode = hashFunc.apply(partitionFieldValues, partitionObjectInspectors) * 31 + bucketNum;
-            buckectEvaluatorMethod.invoke(this, batch, batchIndex, bucketNum);
+            if (bucketExpr != null) {
+              evaluateBucketExpr(batch, batchIndex, bucketNum);
+            }
             postProcess(batch, batchIndex, tag, hashCode);
           }
         }
