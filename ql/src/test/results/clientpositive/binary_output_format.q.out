@@ -35,6 +35,8 @@ SELECT TRANSFORM(*)
     RECORDREADER 'org.apache.hadoop.hive.ql.exec.BinaryRecordReader'
 FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n109
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1_n109
 SELECT TRANSFORM(*)
@@ -48,6 +50,8 @@ SELECT TRANSFORM(*)
     RECORDREADER 'org.apache.hadoop.hive.ql.exec.BinaryRecordReader'
 FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n109
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

@@ -145,8 +145,12 @@ POSTHOOK: Input: default@testacid1
 3
 PREHOOK: query: explain update testacid1 set id = '206' where id = '0128'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testacid1
+PREHOOK: Output: default@testacid1
 POSTHOOK: query: explain update testacid1 set id = '206' where id = '0128'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testacid1
+POSTHOOK: Output: default@testacid1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

@@ -47,11 +47,17 @@ SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -171,6 +177,9 @@ ON (test1.value=test2.value
   AND test1.key between 100 and 102
   AND test2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
@@ -178,6 +187,9 @@ ON (test1.value=test2.value
   AND test1.key between 100 and 102
   AND test2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -309,12 +321,18 @@ FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102
   AND test2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102
   AND test2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -442,11 +460,17 @@ SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value AND true)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value AND true)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -563,11 +587,17 @@ SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -698,6 +728,9 @@ ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
@@ -705,6 +738,9 @@ ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -817,12 +853,18 @@ FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -933,12 +975,18 @@ FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1044,6 +1092,9 @@ ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
@@ -1051,6 +1102,9 @@ ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1157,6 +1211,9 @@ ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
@@ -1164,6 +1221,9 @@ ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1276,12 +1336,18 @@ FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1389,12 +1455,18 @@ FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1502,6 +1574,9 @@ ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
@@ -1509,6 +1584,9 @@ ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1613,6 +1691,9 @@ ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 FULL OUTER JOIN test2
@@ -1620,6 +1701,9 @@ ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1726,12 +1810,18 @@ FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1836,12 +1926,18 @@ FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1943,6 +2039,9 @@ ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1 FULL OUTER JOIN test2
@@ -1950,6 +2049,9 @@ ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

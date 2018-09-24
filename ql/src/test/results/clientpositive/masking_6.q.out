@@ -17,8 +17,14 @@ POSTHOOK: Lineage: masking_test_n0.key EXPRESSION [(src)src.FieldSchema(name:key
 POSTHOOK: Lineage: masking_test_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select * from masking_test_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n0
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from masking_test_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n0
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -73,8 +79,14 @@ POSTHOOK: Input: default@src
 2	2_lav	12
 PREHOOK: query: explain select * from masking_test_n0 where key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n0
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from masking_test_n0 where key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n0
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -160,8 +172,14 @@ POSTHOOK: Lineage: masking_test_n0._c9 SIMPLE []
 POSTHOOK: Lineage: masking_test_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain select * from masking_test_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n0
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from masking_test_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n0
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -216,8 +234,14 @@ POSTHOOK: Input: default@src
 2	12	12	12	12	12	12	12	12	12	12	12
 PREHOOK: query: explain select * from masking_test_n0 where key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n0
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from masking_test_n0 where key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n0
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

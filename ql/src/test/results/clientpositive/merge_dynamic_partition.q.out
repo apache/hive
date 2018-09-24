@@ -50,9 +50,14 @@ POSTHOOK: Output: default@srcpart_merge_dp_n1@ds=2008-04-08/hr=11
 PREHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1 partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp_n1 where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_merge_dp_n1
+PREHOOK: Input: default@srcpart_merge_dp_n1@ds=2008-04-08/hr=11
+PREHOOK: Output: default@merge_dynamic_part_n1@ds=2008-04-08
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1 partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp_n1 where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_merge_dp_n1
+POSTHOOK: Input: default@srcpart_merge_dp_n1@ds=2008-04-08/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -676,9 +681,15 @@ minFileSize:1358
 PREHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1 partition (ds='2008-04-08', hr=11) select key, value from srcpart_merge_dp_n1 where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_merge_dp_n1
+PREHOOK: Input: default@srcpart_merge_dp_n1@ds=2008-04-08/hr=11
+PREHOOK: Output: default@merge_dynamic_part_n1@ds=2008-04-08/hr=11
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1 partition (ds='2008-04-08', hr=11) select key, value from srcpart_merge_dp_n1 where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_merge_dp_n1
+POSTHOOK: Input: default@srcpart_merge_dp_n1@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@merge_dynamic_part_n1@ds=2008-04-08/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -1346,9 +1357,14 @@ minFileSize:5812
 PREHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1 partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp_n1 where ds='2008-04-08' and hr=11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_merge_dp_n1
+PREHOOK: Input: default@srcpart_merge_dp_n1@ds=2008-04-08/hr=11
+PREHOOK: Output: default@merge_dynamic_part_n1
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1 partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp_n1 where ds='2008-04-08' and hr=11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_merge_dp_n1
+POSTHOOK: Input: default@srcpart_merge_dp_n1@ds=2008-04-08/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

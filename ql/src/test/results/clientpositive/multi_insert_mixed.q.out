@@ -28,12 +28,20 @@ insert overwrite table src_multi1_n2 select key, count(1) group by key order by 
 insert overwrite table src_multi2_n3 select value, count(1) group by value order by value
 insert overwrite table src_multi3 select * where key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n2
+PREHOOK: Output: default@src_multi2_n3
+PREHOOK: Output: default@src_multi3
 POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1_n2 select key, count(1) group by key order by key
 insert overwrite table src_multi2_n3 select value, count(1) group by value order by value
 insert overwrite table src_multi3 select * where key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n2
+POSTHOOK: Output: default@src_multi2_n3
+POSTHOOK: Output: default@src_multi3
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-4 depends on stages: Stage-3

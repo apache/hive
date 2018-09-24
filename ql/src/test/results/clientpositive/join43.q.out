@@ -224,6 +224,10 @@ from (
   on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cart_history
+PREHOOK: Input: default@events
+PREHOOK: Input: default@purchase_history
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select s
 from (
@@ -240,6 +244,10 @@ from (
   on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cart_history
+POSTHOOK: Input: default@events
+POSTHOOK: Input: default@purchase_history
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -450,6 +458,10 @@ from (
   on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cart_history
+PREHOOK: Input: default@events
+PREHOOK: Input: default@purchase_history
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from (
@@ -466,6 +478,10 @@ from (
   on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cart_history
+POSTHOOK: Input: default@events
+POSTHOOK: Input: default@purchase_history
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2

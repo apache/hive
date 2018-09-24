@@ -18,6 +18,8 @@ WHERE    ((cstring2 LIKE '%b%')
               OR (cstring1 < 'a')))
 GROUP BY cstring1, cdouble, ctimestamp1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT   cstring1,
          cdouble,
@@ -38,6 +40,8 @@ WHERE    ((cstring2 LIKE '%b%')
               OR (cstring1 < 'a')))
 GROUP BY cstring1, cdouble, ctimestamp1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -107,8 +107,18 @@ POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain update srcpart_acid set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acid
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 POSTHOOK: query: explain update srcpart_acid set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acid
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -423,8 +433,26 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain delete from srcpart_acid where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acid
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 POSTHOOK: query: explain delete from srcpart_acid where key in( '1001', '213', '43')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acid
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -740,8 +768,18 @@ POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain update srcpart_acidb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidb
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 POSTHOOK: query: explain update srcpart_acidb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidb
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -932,8 +970,26 @@ POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain delete from srcpart_acidb where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidb
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 POSTHOOK: query: explain delete from srcpart_acidb where key in( '1001', '213', '43')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidb
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1250,9 +1306,19 @@ POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 PREHOOK: query: explain vectorization only detail
 update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidv
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 POSTHOOK: query: explain vectorization only detail
 update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidv
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1458,9 +1524,27 @@ POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 PREHOOK: query: explain vectorization only detail
 delete from srcpart_acidv where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidv
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: query: explain vectorization only detail
 delete from srcpart_acidv where key in( '1001', '213', '43')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidv
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1601,6 +1685,21 @@ when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set
 when matched and s.ds='2008-04-08' and s.hr=='12' then delete
 when not matched then insert values('this','should','not','be there')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidv
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@srcpart_acidv
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: query: explain vectorization only detail
 merge into srcpart_acidv t using (select distinct ds, hr, key, value from srcpart_acidv) s
 on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value
@@ -1608,6 +1707,20 @@ when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set
 when matched and s.ds='2008-04-08' and s.hr=='12' then delete
 when not matched then insert values('this','should','not','be there')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidv
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2043,9 +2156,19 @@ POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 PREHOOK: query: explain vectorization only detail
 update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidvb
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 POSTHOOK: query: explain vectorization only detail
 update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidvb
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2251,9 +2374,27 @@ POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 PREHOOK: query: explain vectorization only detail
 delete from srcpart_acidvb where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidvb
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: query: explain vectorization only detail
 delete from srcpart_acidvb where key in( '1001', '213', '43')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidvb
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2394,6 +2535,21 @@ when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set
 when matched and s.ds='2008-04-08' and s.hr=='12' then delete
 when not matched then insert values('this','should','not','be there')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidvb
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@srcpart_acidvb
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: query: explain vectorization only detail
 merge into srcpart_acidvb t using (select distinct ds, hr, key, value from srcpart_acidvb) s
 on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value
@@ -2401,6 +2557,20 @@ when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set
 when matched and s.ds='2008-04-08' and s.hr=='12' then delete
 when not matched then insert values('this','should','not','be there')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidvb
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

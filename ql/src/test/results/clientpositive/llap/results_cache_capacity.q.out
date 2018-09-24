@@ -11,9 +11,11 @@ test.comment=Q1 should be cached
 PREHOOK: query: explain
 select key, count(*) from src where key = 0 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select key, count(*) from src where key = 0 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -38,9 +40,11 @@ test.comment=Q2 should now be cached
 PREHOOK: query: explain
 select key, count(*) from src where key = 2 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select key, count(*) from src where key = 2 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -56,9 +60,11 @@ test.comment=Q1 should still be cached
 PREHOOK: query: explain
 select key, count(*) from src where key = 0 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select key, count(*) from src where key = 0 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -83,9 +89,11 @@ test.comment=Q3 should now be cached
 PREHOOK: query: explain
 select key, count(*) from src where key = 4 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select key, count(*) from src where key = 4 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -101,9 +109,11 @@ test.comment=Q1 should still be cached
 PREHOOK: query: explain
 select key, count(*) from src where key = 0 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select key, count(*) from src where key = 0 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -119,9 +129,13 @@ test.comment=Q2 should no longer be in the cache
 PREHOOK: query: explain
 select key, count(*) from src where key = 2 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(*) from src where key = 2 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -197,9 +211,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select key, count(*) from src where key < 10 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(*) from src where key < 10 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

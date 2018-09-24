@@ -20,6 +20,11 @@ select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  order by am_pm_ratio
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@time_dim
+PREHOOK: Input: default@web_page
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  from ( select count(*) amc
@@ -41,6 +46,11 @@ select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  order by am_pm_ratio
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Input: default@web_page
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3, Stage-4

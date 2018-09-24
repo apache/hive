@@ -46,12 +46,20 @@ FROM test_1_n2 t1
 LEFT JOIN test_2_n2 t2 ON t1.id = t2.id
 INNER JOIN test_3_n0 t3 ON t1.id = t3.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n2
+PREHOOK: Input: default@test_2_n2
+PREHOOK: Input: default@test_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT t1.id, t2.id, t3.id
 FROM test_1_n2 t1
 LEFT JOIN test_2_n2 t2 ON t1.id = t2.id
 INNER JOIN test_3_n0 t3 ON t1.id = t3.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n2
+POSTHOOK: Input: default@test_2_n2
+POSTHOOK: Input: default@test_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5

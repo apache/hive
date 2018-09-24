@@ -35,9 +35,13 @@ POSTHOOK: Output: default@acid_dot
 PREHOOK: query: explain vectorization detail
 select count(*) from acid_dot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_dot
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from acid_dot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_dot
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

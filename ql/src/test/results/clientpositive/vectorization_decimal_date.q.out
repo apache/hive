@@ -14,8 +14,12 @@ POSTHOOK: Lineage: date_decimal_test.cdouble SIMPLE [(alltypesorc)alltypesorc.Fi
 POSTHOOK: Lineage: date_decimal_test.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdate, cint, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_decimal_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdate, cint, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_decimal_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

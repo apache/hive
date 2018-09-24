@@ -32,8 +32,12 @@ POSTHOOK: Lineage: src_orc.key1 SIMPLE [(src)src.FieldSchema(name:value, type:st
 POSTHOOK: Lineage: src_orc.key2 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain SELECT IF ( ( (CASE WHEN bool0 THEN 1 WHEN NOT bool0 THEN 0 END) = (CASE WHEN TRUE THEN 1 WHEN NOT TRUE THEN 0 END) ), key0, IF ( ( (CASE WHEN bool0 THEN 1 WHEN NOT bool0 THEN 0 END) = (CASE WHEN FALSE THEN 1 WHEN NOT FALSE THEN 0 END) ), key1, key2 ) ) FROM src_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT IF ( ( (CASE WHEN bool0 THEN 1 WHEN NOT bool0 THEN 0 END) = (CASE WHEN TRUE THEN 1 WHEN NOT TRUE THEN 0 END) ), key0, IF ( ( (CASE WHEN bool0 THEN 1 WHEN NOT bool0 THEN 0 END) = (CASE WHEN FALSE THEN 1 WHEN NOT FALSE THEN 0 END) ), key1, key2 ) ) FROM src_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

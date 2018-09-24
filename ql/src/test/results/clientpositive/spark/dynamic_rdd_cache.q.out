@@ -9,6 +9,8 @@ JOIN
 ON (X.key = Z.key)
 SELECT sum(hash(Y.key,Y.value)) GROUP BY Y.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 FROM
 (SELECT src.* FROM src sort by key) X
@@ -20,6 +22,8 @@ JOIN
 ON (X.key = Z.key)
 SELECT sum(hash(Y.key,Y.value)) GROUP BY Y.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -150,11 +154,17 @@ FROM src
 INSERT OVERWRITE TABLE dest1_n90 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
 INSERT OVERWRITE TABLE dest2_n24 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n90
+PREHOOK: Output: default@dest2_n24
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n90 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
 INSERT OVERWRITE TABLE dest2_n24 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n90
+POSTHOOK: Output: default@dest2_n24
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -310,6 +320,8 @@ INSERT OVERWRITE TABLE tmptable_n8
                                         UNION ALL
                                             SELECT 'tst3' AS key, count(1) AS value FROM src s3) unionsrc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable_n8
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE tmptable_n8
   SELECT unionsrc.key, unionsrc.value FROM (SELECT 'tst1' AS key, count(1) AS value FROM src s1
@@ -318,6 +330,8 @@ INSERT OVERWRITE TABLE tmptable_n8
                                         UNION ALL
                                             SELECT 'tst3' AS key, count(1) AS value FROM src s3) unionsrc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmptable_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -459,6 +473,8 @@ JOIN
       SELECT s4.key AS key, s4.value AS value FROM src s4 WHERE s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
 FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
@@ -470,6 +486,8 @@ JOIN
       SELECT s4.key AS key, s4.value AS value FROM src s4 WHERE s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -666,6 +684,11 @@ WHERE inv1.i_item_sk = inv2.i_item_sk
 ORDER BY inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
         ,inv2.d_moy,inv2.mean, inv2.cov
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 WITH inv AS
 (SELECT w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
@@ -692,6 +715,11 @@ WHERE inv1.i_item_sk = inv2.i_item_sk
 ORDER BY inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
         ,inv2.d_moy,inv2.mean, inv2.cov
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1079,6 +1107,8 @@ WITH test AS
  SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM inventory)
 SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM test SORT BY inv_quantity_on_hand
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 WITH test AS
 (SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM inventory
@@ -1086,6 +1116,8 @@ WITH test AS
  SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM inventory)
 SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM test SORT BY inv_quantity_on_hand
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

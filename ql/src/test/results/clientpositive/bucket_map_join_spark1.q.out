@@ -110,12 +110,22 @@ select a.key, a.value, b.value
 from srcbucket_mapjoin_part_n19 a join srcbucket_mapjoin_part_2_n16 b
 on a.key=b.key and b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n16
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n16@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_n19
+PREHOOK: Input: default@srcbucket_mapjoin_part_n19@ds=2008-04-08
+PREHOOK: Output: default@bucketmapjoin_tmp_result_n9
 POSTHOOK: query: explain extended
 insert overwrite table bucketmapjoin_tmp_result_n9
 select a.key, a.value, b.value
 from srcbucket_mapjoin_part_n19 a join srcbucket_mapjoin_part_2_n16 b
 on a.key=b.key and b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n16
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n16@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n19
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n19@ds=2008-04-08
+POSTHOOK: Output: default@bucketmapjoin_tmp_result_n9
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_n19`
@@ -561,12 +571,22 @@ select a.key, a.value, b.value
 from srcbucket_mapjoin_part_n19 a join srcbucket_mapjoin_part_2_n16 b
 on a.key=b.key and b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n16
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n16@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_n19
+PREHOOK: Input: default@srcbucket_mapjoin_part_n19@ds=2008-04-08
+PREHOOK: Output: default@bucketmapjoin_tmp_result_n9
 POSTHOOK: query: explain extended
 insert overwrite table bucketmapjoin_tmp_result_n9
 select a.key, a.value, b.value
 from srcbucket_mapjoin_part_n19 a join srcbucket_mapjoin_part_2_n16 b
 on a.key=b.key and b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n16
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n16@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n19
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n19@ds=2008-04-08
+POSTHOOK: Output: default@bucketmapjoin_tmp_result_n9
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_n19`

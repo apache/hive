@@ -323,6 +323,13 @@ and a.vpart1 = 'US'
 and a.vpart2 = 'DEF'
 and a.vpart3 = '200'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testa
+PREHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
+PREHOOK: Input: default@testb
+PREHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
+PREHOOK: Input: default@viewdeterministicudfa
+PREHOOK: Input: default@viewdeterministicudfb
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select vcol1, vcol2, vcol3, vcola, vcolb
 from viewDeterministicUDFA a inner join viewDeterministicUDFB b
@@ -333,6 +340,13 @@ and a.vpart1 = 'US'
 and a.vpart2 = 'DEF'
 and a.vpart3 = '200'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testa
+POSTHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
+POSTHOOK: Input: default@testb
+POSTHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
+POSTHOOK: Input: default@viewdeterministicudfa
+POSTHOOK: Input: default@viewdeterministicudfb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -442,6 +456,13 @@ and a.part1 = 'US'
 and a.part2 = 'DEF'
 and a.part3 = '200'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testa
+PREHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
+PREHOOK: Input: default@testb
+PREHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
+PREHOOK: Input: default@viewnoudfa
+PREHOOK: Input: default@viewnoudfb
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select vcol1, vcol2, vcol3, vcola, vcolb
 from viewNoUDFA a inner join viewNoUDFB b
@@ -452,6 +473,13 @@ and a.part1 = 'US'
 and a.part2 = 'DEF'
 and a.part3 = '200'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testa
+POSTHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
+POSTHOOK: Input: default@testb
+POSTHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
+POSTHOOK: Input: default@viewnoudfa
+POSTHOOK: Input: default@viewnoudfb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

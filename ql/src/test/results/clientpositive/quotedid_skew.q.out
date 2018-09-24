@@ -37,9 +37,15 @@ POSTHOOK: Output: default@t2_n28
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n46 a JOIN T2_n28 b ON a. `!@#$%^&*()_q`  = b. `!@#$%^&*()_q`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n46
+PREHOOK: Input: default@t2_n28
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n46 a JOIN T2_n28 b ON a. `!@#$%^&*()_q`  = b. `!@#$%^&*()_q`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n46
+POSTHOOK: Input: default@t2_n28
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4

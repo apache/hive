@@ -8,8 +8,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable_n7
 PREHOOK: query: explain insert overwrite table tmptable_n7 partition (part) select key, value from src where key = 'no_such_value'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable_n7
 POSTHOOK: query: explain insert overwrite table tmptable_n7 partition (part) select key, value from src where key = 'no_such_value'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

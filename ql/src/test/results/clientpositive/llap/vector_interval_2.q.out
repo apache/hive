@@ -74,6 +74,8 @@ select
   interval '1-2' year to month != interval_year_month(str2)
 from vector_interval_2 order by str1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   str1,
@@ -106,6 +108,8 @@ select
   interval '1-2' year to month != interval_year_month(str2)
 from vector_interval_2 order by str1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -286,6 +290,8 @@ select
   interval '1-2' year to month != interval_year_month(str1)
 from vector_interval_2 order by str1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   str1,
@@ -312,6 +318,8 @@ select
   interval '1-2' year to month != interval_year_month(str1)
 from vector_interval_2 order by str1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -486,6 +494,8 @@ select
   interval '1 2:3:4' day to second != interval_day_time(str4)
 from vector_interval_2 order by str3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   str3,
@@ -518,6 +528,8 @@ select
   interval '1 2:3:4' day to second != interval_day_time(str4)
 from vector_interval_2 order by str3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -698,6 +710,8 @@ select
   interval '1 2:3:4' day to second != interval_day_time(str3)
 from vector_interval_2 order by str3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   str3,
@@ -724,6 +738,8 @@ select
   interval '1 2:3:4' day to second != interval_day_time(str3)
 from vector_interval_2 order by str3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -891,6 +907,8 @@ where
   and interval '1-3' year to month > interval_year_month(str1)
 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
@@ -916,6 +934,8 @@ where
   and interval '1-3' year to month > interval_year_month(str1)
 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1086,6 +1106,8 @@ where
   and interval '1 2:3:5' day to second > interval_day_time(str3)
 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
@@ -1111,6 +1133,8 @@ where
   and interval '1 2:3:5' day to second > interval_day_time(str3)
 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1276,6 +1300,8 @@ where
   and dt != dt + interval '1-2' year to month
 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
@@ -1296,6 +1322,8 @@ where
   and dt != dt + interval '1-2' year to month
 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1456,6 +1484,8 @@ where
   and ts > ts - interval '1' year
 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
@@ -1481,6 +1511,8 @@ where
   and ts > ts - interval '1' year
 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1651,6 +1683,8 @@ where
   and ts > dt - interval '0 1:2:4' day to second
 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
@@ -1676,6 +1710,8 @@ where
   and ts > dt - interval '0 1:2:4' day to second
 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1846,6 +1882,8 @@ where
   and ts > ts - interval '1' day
 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
@@ -1871,6 +1909,8 @@ where
   and ts > ts - interval '1' day
 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

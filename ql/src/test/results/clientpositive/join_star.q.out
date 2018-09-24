@@ -128,8 +128,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@dim7
 PREHOOK: query: explain select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
 POSTHOOK: query: explain select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -225,8 +231,16 @@ POSTHOOK: Input: default@fact
 91	92	3
 PREHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@dim2
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@dim2
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-5 depends on stages: Stage-7
@@ -351,8 +365,16 @@ POSTHOOK: Input: default@fact
 91	92	3	4
 PREHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@dim2
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@dim2
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-5 depends on stages: Stage-7
@@ -477,8 +499,16 @@ POSTHOOK: Input: default@fact
 91	92	3	3
 PREHOOK: query: explain select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@dim2
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@dim2
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-5 depends on stages: Stage-7
@@ -599,6 +629,15 @@ PREHOOK: query: explain Select m1, m2, f2, f4, f6, f8, f10, f12, f14
  Left outer Join dim6 on  dim3.f6= dim6.f11
  Left outer Join dim7 on  dim6.f12 = dim7.f13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@dim2
+PREHOOK: Input: default@dim3
+PREHOOK: Input: default@dim4
+PREHOOK: Input: default@dim5
+PREHOOK: Input: default@dim6
+PREHOOK: Input: default@dim7
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
 POSTHOOK: query: explain Select m1, m2, f2, f4, f6, f8, f10, f12, f14
  from fact 
  Left outer join dim1 on  fact.d1= dim1.f1
@@ -609,6 +648,15 @@ POSTHOOK: query: explain Select m1, m2, f2, f4, f6, f8, f10, f12, f14
  Left outer Join dim6 on  dim3.f6= dim6.f11
  Left outer Join dim7 on  dim6.f12 = dim7.f13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@dim2
+POSTHOOK: Input: default@dim3
+POSTHOOK: Input: default@dim4
+POSTHOOK: Input: default@dim5
+POSTHOOK: Input: default@dim6
+POSTHOOK: Input: default@dim7
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-22 is a root stage
   Stage-15 depends on stages: Stage-22

@@ -14,6 +14,10 @@ insert overwrite table tmptable_n10
                                         UNION ALL
                                             select 'tst3' as key, count(1) as value from srcbucket s3) unionsrc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@tmptable_n10
 POSTHOOK: query: explain 
 insert overwrite table tmptable_n10
   select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
@@ -22,6 +26,10 @@ insert overwrite table tmptable_n10
                                         UNION ALL
                                             select 'tst3' as key, count(1) as value from srcbucket s3) unionsrc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@tmptable_n10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

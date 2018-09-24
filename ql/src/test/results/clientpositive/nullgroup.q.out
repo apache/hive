@@ -1,9 +1,13 @@
 PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -62,9 +66,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -123,9 +131,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -201,9 +213,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

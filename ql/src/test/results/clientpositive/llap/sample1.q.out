@@ -11,11 +11,17 @@ INSERT OVERWRITE TABLE dest1_n89 SELECT s.*
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON rand()) s
 WHERE s.ds='2008-04-08' and s.hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest1_n89
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1_n89 SELECT s.*
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON rand()) s
 WHERE s.ds='2008-04-08' and s.hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest1_n89
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

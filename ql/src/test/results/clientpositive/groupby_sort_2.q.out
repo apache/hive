@@ -38,10 +38,14 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n10
 SELECT val, count(1) FROM T1_n51 GROUP BY val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n51
+PREHOOK: Output: default@outputtbl1_n10
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n10
 SELECT val, count(1) FROM T1_n51 GROUP BY val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n51
+POSTHOOK: Output: default@outputtbl1_n10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

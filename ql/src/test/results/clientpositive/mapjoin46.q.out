@@ -45,11 +45,17 @@ SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -139,6 +145,9 @@ ON (test1_n4.value=test2_n2.value
   AND test1_n4.key between 100 and 102
   AND test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
@@ -146,6 +155,9 @@ ON (test1_n4.value=test2_n2.value
   AND test1_n4.key between 100 and 102
   AND test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -247,12 +259,18 @@ FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.key between 100 and 102
   AND test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.key between 100 and 102
   AND test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -351,11 +369,17 @@ SELECT *
 FROM test1_n4 RIGHT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value AND true)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 RIGHT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value AND true)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -442,11 +466,17 @@ SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -548,6 +578,9 @@ ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102
   OR test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
@@ -555,6 +588,9 @@ ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102
   OR test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -655,12 +691,18 @@ FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -759,12 +801,18 @@ FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -858,6 +906,9 @@ ON (test1_n4.value=test2_n2.value
   AND (test1_n4.key between 100 and 102
     OR test2_n2.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 LEFT OUTER JOIN test2_n2
@@ -865,6 +916,9 @@ ON (test1_n4.value=test2_n2.value
   AND (test1_n4.key between 100 and 102
     OR test2_n2.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -959,6 +1013,9 @@ ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102
   OR test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 RIGHT OUTER JOIN test2_n2
@@ -966,6 +1023,9 @@ ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102
   OR test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -1066,12 +1126,18 @@ FROM test1_n4 RIGHT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 RIGHT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -1167,12 +1233,18 @@ FROM test1_n4 RIGHT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 RIGHT OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -1268,6 +1340,9 @@ ON (test1_n4.value=test2_n2.value
   AND (test1_n4.key between 100 and 102
     OR test2_n2.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 RIGHT OUTER JOIN test2_n2
@@ -1275,6 +1350,9 @@ ON (test1_n4.value=test2_n2.value
   AND (test1_n4.key between 100 and 102
     OR test2_n2.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -1367,6 +1445,9 @@ ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102
   OR test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 FULL OUTER JOIN test2_n2
@@ -1374,6 +1455,9 @@ ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102
   OR test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1468,6 +1552,9 @@ ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102
   OR test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 FULL OUTER JOIN test2_n2
@@ -1475,6 +1562,9 @@ ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102
   OR test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1568,12 +1658,18 @@ FROM test1_n4 FULL OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 FULL OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1665,12 +1761,18 @@ FROM test1_n4 FULL OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 FULL OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test1_n4.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1762,12 +1864,18 @@ FROM test1_n4 FULL OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 FULL OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1856,12 +1964,18 @@ FROM test1_n4 FULL OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test2_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 FULL OUTER JOIN test2_n2
 ON (test1_n4.value=test2_n2.value
   OR test2_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1950,6 +2064,9 @@ ON (test1_n4.value=test2_n2.value
   AND (test1_n4.key between 100 and 102
     OR test2_n2.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 FULL OUTER JOIN test2_n2
@@ -1957,6 +2074,9 @@ ON (test1_n4.value=test2_n2.value
   AND (test1_n4.key between 100 and 102
     OR test2_n2.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2049,6 +2169,9 @@ ON (test1_n4.value=test2_n2.value
   AND (test1_n4.key between 100 and 102
     OR test2_n2.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n4 FULL OUTER JOIN test2_n2
@@ -2056,6 +2179,9 @@ ON (test1_n4.value=test2_n2.value
   AND (test1_n4.key between 100 and 102
     OR test2_n2.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2162,6 +2288,9 @@ FULL OUTER JOIN (
   ) sq2
 ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM (
@@ -2182,6 +2311,9 @@ FULL OUTER JOIN (
   ) sq2
 ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
   Stage-2 depends on stages: Stage-8
@@ -2378,6 +2510,9 @@ FULL OUTER JOIN (
   ) sq2
 ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n4
+PREHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM (
@@ -2398,6 +2533,9 @@ FULL OUTER JOIN (
   ) sq2
 ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n4
+POSTHOOK: Input: default@test2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
   Stage-2 depends on stages: Stage-8

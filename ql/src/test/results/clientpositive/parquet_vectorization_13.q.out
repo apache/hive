@@ -31,6 +31,8 @@ GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
 LIMIT 40
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cboolean1,
          ctinyint,
@@ -64,6 +66,8 @@ GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
 LIMIT 40
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -349,6 +353,8 @@ GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
 LIMIT 40
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cboolean1,
          ctinyint,
@@ -382,6 +388,8 @@ GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
 LIMIT 40
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

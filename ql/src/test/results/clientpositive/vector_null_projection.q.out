@@ -35,9 +35,13 @@ POSTHOOK: Lineage: b_n4.s SCRIPT []
 PREHOOK: query: explain vectorization detail
 select NULL from a_n6
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select NULL from a_n6
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n6
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -110,9 +114,15 @@ NULL
 PREHOOK: query: explain vectorization expression
 select NULL as x from a_n6 union distinct select NULL as x from b_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n6
+PREHOOK: Input: default@b_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select NULL as x from a_n6 union distinct select NULL as x from b_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n6
+POSTHOOK: Input: default@b_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

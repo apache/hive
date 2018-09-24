@@ -26,6 +26,11 @@ select
  order by s_store_name, i_item_desc
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
 	s_store_name,
@@ -54,6 +59,11 @@ select
  order by s_store_name, i_item_desc
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

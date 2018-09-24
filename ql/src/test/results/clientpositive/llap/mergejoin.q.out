@@ -1,9 +1,15 @@
 PREHOOK: query: explain vectorization detail
 select * from src a join src1 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from src a join src1 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -383,10 +389,20 @@ PREHOOK: query: explain vectorization detail
 select count(*)
 from tab_n9 a join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*)
 from tab_n9 a join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1485,10 +1501,20 @@ PREHOOK: query: explain vectorization detail
 select count(*)
 from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*)
 from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1608,10 +1634,20 @@ PREHOOK: query: explain vectorization detail
 select count (*)
 from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count (*)
 from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1731,10 +1767,20 @@ PREHOOK: query: explain vectorization detail
 select count(*)
 from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*)
 from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1927,9 +1973,21 @@ POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 PREHOOK: query: explain vectorization detail
 select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2331,9 +2389,19 @@ POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 PREHOOK: query: explain vectorization detail
 select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2543,12 +2611,22 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab_n9 s2
 ) a join tab_part_n10 b on (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
 select s2.key as key, s2.value as value from tab_n9 s2
 ) a join tab_part_n10 b on (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2786,9 +2864,19 @@ STAGE PLANS:
 PREHOOK: query: explain vectorization detail
 select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2995,9 +3083,21 @@ POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 PREHOOK: query: explain vectorization detail
 select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3402,12 +3502,22 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab_n9 s2
 ) a join tab_part_n10 b on (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
 select s2.key as key, s2.value as value from tab_n9 s2
 ) a join tab_part_n10 b on (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3651,6 +3761,11 @@ join
 (select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain  vectorization detail
 select count(*) from
 (select rt1.id from
@@ -3660,6 +3775,11 @@ join
 (select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

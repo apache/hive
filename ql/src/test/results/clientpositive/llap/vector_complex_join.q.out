@@ -20,9 +20,15 @@ _c0	_c1
 PREHOOK: query: explain vectorization expression
 select * from alltypesorc join test_n8 where alltypesorc.cint=test_n8.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@test_n8
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from alltypesorc join test_n8 where alltypesorc.cint=test_n8.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@test_n8
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -202,9 +208,15 @@ col1
 PREHOOK: query: explain vectorization expression
 select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[1]
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2a_n0
+PREHOOK: Input: default@test2b_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[1]
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2a_n0
+POSTHOOK: Input: default@test2b_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -348,9 +360,15 @@ test2b_n0.a	test2a_n0.a	test2a_n0.index
 PREHOOK: query: explain vectorization expression
 select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[test2a_n0.index]
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2a_n0
+PREHOOK: Input: default@test2b_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[test2a_n0.index]
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2a_n0
+POSTHOOK: Input: default@test2b_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

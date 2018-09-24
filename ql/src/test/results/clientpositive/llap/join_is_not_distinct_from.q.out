@@ -16,8 +16,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@myinput1_n10
 PREHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -107,8 +111,12 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key=c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key=c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -215,8 +223,12 @@ POSTHOOK: Input: default@myinput1_n10
 100	100	100	100	100	100
 PREHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key is not distinct from c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value join myinput1_n10 c on a.key is not distinct from c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -339,8 +351,12 @@ NULL	NULL	NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value=b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value=c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value=b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value=c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -445,8 +461,12 @@ POSTHOOK: Input: default@myinput1_n10
 NULL	10	10	NULL	NULL	10
 PREHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value is not distinct from b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value is not distinct from c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value is not distinct from b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value is not distinct from c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1584,8 +1604,12 @@ NULL	NULL	12	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.key is NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.key is NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

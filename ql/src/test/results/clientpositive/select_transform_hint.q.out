@@ -4,12 +4,18 @@ TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+MAPJOIN(a)*/ 
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -1127,12 +1133,18 @@ TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+STREAMTABLE(a)*/ 
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

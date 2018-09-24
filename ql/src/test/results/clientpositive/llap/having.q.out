@@ -1,7 +1,11 @@
 PREHOOK: query: EXPLAIN SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -91,8 +95,12 @@ POSTHOOK: Input: default@src
 5
 PREHOOK: query: EXPLAIN SELECT key, max(value) AS c FROM src GROUP BY key HAVING key != 302
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key, max(value) AS c FROM src GROUP BY key HAVING key != 302
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -469,8 +477,12 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: EXPLAIN SELECT key FROM src GROUP BY key HAVING max(value) > "val_255"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM src GROUP BY key HAVING max(value) > "val_255"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -745,8 +757,12 @@ POSTHOOK: Input: default@src
 98
 PREHOOK: query: EXPLAIN SELECT key FROM src where key > 300 GROUP BY key HAVING max(value) > "val_255"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM src where key > 300 GROUP BY key HAVING max(value) > "val_255"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -947,8 +963,12 @@ POSTHOOK: Input: default@src
 498
 PREHOOK: query: EXPLAIN SELECT key, max(value) FROM src GROUP BY key HAVING max(value) > "val_255"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key, max(value) FROM src GROUP BY key HAVING max(value) > "val_255"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1219,8 +1239,12 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: EXPLAIN SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

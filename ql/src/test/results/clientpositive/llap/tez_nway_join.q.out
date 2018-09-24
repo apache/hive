@@ -34,8 +34,14 @@ POSTHOOK: Output: default@bar
 POSTHOOK: Lineage: bar.key SCRIPT []
 PREHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -149,8 +155,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -293,8 +305,14 @@ POSTHOOK: Input: default@foo
 1
 PREHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -401,8 +419,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -195,9 +195,55 @@ POSTHOOK: Input: default@orc_b
 PREHOOK: query: explain
 select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_a
+PREHOOK: Input: default@orc_a@y=2000/q=0
+PREHOOK: Input: default@orc_a@y=2000/q=1
+PREHOOK: Input: default@orc_a@y=2000/q=2
+PREHOOK: Input: default@orc_a@y=2000/q=3
+PREHOOK: Input: default@orc_a@y=2000/q=4
+PREHOOK: Input: default@orc_a@y=2000/q=5
+PREHOOK: Input: default@orc_a@y=2000/q=6
+PREHOOK: Input: default@orc_a@y=2000/q=7
+PREHOOK: Input: default@orc_a@y=2000/q=8
+PREHOOK: Input: default@orc_a@y=2000/q=9
+PREHOOK: Input: default@orc_a@y=2001/q=0
+PREHOOK: Input: default@orc_a@y=2001/q=1
+PREHOOK: Input: default@orc_a@y=2001/q=2
+PREHOOK: Input: default@orc_a@y=2001/q=3
+PREHOOK: Input: default@orc_a@y=2001/q=4
+PREHOOK: Input: default@orc_a@y=2001/q=5
+PREHOOK: Input: default@orc_a@y=2001/q=6
+PREHOOK: Input: default@orc_a@y=2001/q=7
+PREHOOK: Input: default@orc_a@y=2001/q=8
+PREHOOK: Input: default@orc_a@y=2001/q=9
+PREHOOK: Input: default@orc_b
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_a
+POSTHOOK: Input: default@orc_a@y=2000/q=0
+POSTHOOK: Input: default@orc_a@y=2000/q=1
+POSTHOOK: Input: default@orc_a@y=2000/q=2
+POSTHOOK: Input: default@orc_a@y=2000/q=3
+POSTHOOK: Input: default@orc_a@y=2000/q=4
+POSTHOOK: Input: default@orc_a@y=2000/q=5
+POSTHOOK: Input: default@orc_a@y=2000/q=6
+POSTHOOK: Input: default@orc_a@y=2000/q=7
+POSTHOOK: Input: default@orc_a@y=2000/q=8
+POSTHOOK: Input: default@orc_a@y=2000/q=9
+POSTHOOK: Input: default@orc_a@y=2001/q=0
+POSTHOOK: Input: default@orc_a@y=2001/q=1
+POSTHOOK: Input: default@orc_a@y=2001/q=2
+POSTHOOK: Input: default@orc_a@y=2001/q=3
+POSTHOOK: Input: default@orc_a@y=2001/q=4
+POSTHOOK: Input: default@orc_a@y=2001/q=5
+POSTHOOK: Input: default@orc_a@y=2001/q=6
+POSTHOOK: Input: default@orc_a@y=2001/q=7
+POSTHOOK: Input: default@orc_a@y=2001/q=8
+POSTHOOK: Input: default@orc_a@y=2001/q=9
+POSTHOOK: Input: default@orc_b
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

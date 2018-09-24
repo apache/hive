@@ -35,6 +35,8 @@ select * FROM (
 ) a
 )b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n15
+PREHOOK: Output: default@outputtbl1_n22
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n22
 SELECT * FROM
@@ -48,6 +50,8 @@ select * FROM (
 ) a
 )b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n15
+POSTHOOK: Output: default@outputtbl1_n22
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4

@@ -12,8 +12,14 @@ POSTHOOK: Lineage: masking_test_n1.key EXPRESSION [(src)src.FieldSchema(name:key
 POSTHOOK: Lineage: masking_test_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select * from masking_test_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from masking_test_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -68,8 +74,14 @@ POSTHOOK: Input: default@src
 2	2_lav
 PREHOOK: query: explain select * from masking_test_n1 where key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from masking_test_n1 where key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -121,8 +133,14 @@ POSTHOOK: Input: default@src
 2	2_lav
 PREHOOK: query: explain select * from src a join masking_test_n1 b on a.key = b.value where b.key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src a join masking_test_n1 b on a.key = b.value where b.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -192,8 +210,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select a.*, b.key from masking_test_n1 a join masking_test_n1 b on a.key = b.value where b.key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.*, b.key from masking_test_n1 a join masking_test_n1 b on a.key = b.value where b.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -265,8 +289,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from masking_test_n1 a union select b.* from masking_test_n1 b where b.key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from masking_test_n1 a union select b.* from masking_test_n1 b where b.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -114,12 +114,16 @@ SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.te
 (SUM(customer_balance) <= 4074689.000000041)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.testv1_staples s1 GROUP BY customer_name HAVING (
 (COUNT(s1.discount) <= 822) AND
 (SUM(customer_balance) <= 4074689.000000041)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -182,12 +186,16 @@ SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.te
 AND (COUNT(s1.discount) <= 822)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.testv1_staples s1 GROUP BY customer_name HAVING (
 (SUM(customer_balance) <= 4074689.000000041)
 AND (COUNT(s1.discount) <= 822)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -253,6 +261,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT s1.customer_name FROM default.testv1_staples s1 join default.src s2 on s1.customer_name = s2.key
 GROUP BY s1.customer_name
@@ -262,6 +273,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -375,6 +389,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT s1.customer_name FROM default.testv1_staples s1 join default.src s2 on s1.customer_name = s2.key
 GROUP BY s1.customer_name, s1.customer_name
@@ -384,6 +401,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -501,6 +521,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT distinct s1.customer_name as x, s1.customer_name as y
 FROM default.testv1_staples s1 join default.src s2 on s1.customer_name = s2.key
@@ -510,6 +533,9 @@ AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@testv1_staples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

@@ -1,9 +1,17 @@
 PREHOOK: query: explain
 select key,value,'hello' as ds, 'world' as hr from srcpart where hr=11 order by 1 limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key,value,'hello' as ds, 'world' as hr from srcpart where hr=11 order by 1 limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -77,9 +85,16 @@ POSTHOOK: Output: default@testpartbucket
 PREHOOK: query: explain
 insert overwrite table testpartbucket partition(ds,hr) select key,value,'hello' as ds, 'world' as hr from srcpart where hr=11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Output: default@testpartbucket
 POSTHOOK: query: explain
 insert overwrite table testpartbucket partition(ds,hr) select key,value,'hello' as ds, 'world' as hr from srcpart where hr=11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

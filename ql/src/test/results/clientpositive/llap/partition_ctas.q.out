@@ -2,10 +2,17 @@ PREHOOK: query: EXPLAIN
 CREATE TABLE partition_ctas_1 PARTITIONED BY (key) AS
 SELECT value, key FROM src where key > 200 and key < 300
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_ctas_1
+PREHOOK: Output: default@partition_ctas_1
 POSTHOOK: query: EXPLAIN
 CREATE TABLE partition_ctas_1 PARTITIONED BY (key) AS
 SELECT value, key FROM src where key > 200 and key < 300
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_ctas_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -250,9 +257,15 @@ Storage Desc Params:
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_1 where key = 238
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_1
+PREHOOK: Input: default@partition_ctas_1@key=238
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_1 where key = 238
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_1
+POSTHOOK: Input: default@partition_ctas_1@key=238
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -421,9 +434,15 @@ POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_298).key SIMPLE [(src)sr
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_2 where value = 'val_238'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_2
+PREHOOK: Input: default@partition_ctas_2@value=val_238
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_2 where value = 'val_238'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_2
+POSTHOOK: Input: default@partition_ctas_2@value=val_238
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -455,9 +474,137 @@ POSTHOOK: Input: default@partition_ctas_2@value=val_238
 PREHOOK: query: EXPLAIN
 SELECT value FROM partition_ctas_2 where key = 238
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_2
+PREHOOK: Input: default@partition_ctas_2@value=val_201
+PREHOOK: Input: default@partition_ctas_2@value=val_202
+PREHOOK: Input: default@partition_ctas_2@value=val_203
+PREHOOK: Input: default@partition_ctas_2@value=val_205
+PREHOOK: Input: default@partition_ctas_2@value=val_207
+PREHOOK: Input: default@partition_ctas_2@value=val_208
+PREHOOK: Input: default@partition_ctas_2@value=val_209
+PREHOOK: Input: default@partition_ctas_2@value=val_213
+PREHOOK: Input: default@partition_ctas_2@value=val_214
+PREHOOK: Input: default@partition_ctas_2@value=val_216
+PREHOOK: Input: default@partition_ctas_2@value=val_217
+PREHOOK: Input: default@partition_ctas_2@value=val_218
+PREHOOK: Input: default@partition_ctas_2@value=val_219
+PREHOOK: Input: default@partition_ctas_2@value=val_221
+PREHOOK: Input: default@partition_ctas_2@value=val_222
+PREHOOK: Input: default@partition_ctas_2@value=val_223
+PREHOOK: Input: default@partition_ctas_2@value=val_224
+PREHOOK: Input: default@partition_ctas_2@value=val_226
+PREHOOK: Input: default@partition_ctas_2@value=val_228
+PREHOOK: Input: default@partition_ctas_2@value=val_229
+PREHOOK: Input: default@partition_ctas_2@value=val_230
+PREHOOK: Input: default@partition_ctas_2@value=val_233
+PREHOOK: Input: default@partition_ctas_2@value=val_235
+PREHOOK: Input: default@partition_ctas_2@value=val_237
+PREHOOK: Input: default@partition_ctas_2@value=val_238
+PREHOOK: Input: default@partition_ctas_2@value=val_239
+PREHOOK: Input: default@partition_ctas_2@value=val_241
+PREHOOK: Input: default@partition_ctas_2@value=val_242
+PREHOOK: Input: default@partition_ctas_2@value=val_244
+PREHOOK: Input: default@partition_ctas_2@value=val_247
+PREHOOK: Input: default@partition_ctas_2@value=val_248
+PREHOOK: Input: default@partition_ctas_2@value=val_249
+PREHOOK: Input: default@partition_ctas_2@value=val_252
+PREHOOK: Input: default@partition_ctas_2@value=val_255
+PREHOOK: Input: default@partition_ctas_2@value=val_256
+PREHOOK: Input: default@partition_ctas_2@value=val_257
+PREHOOK: Input: default@partition_ctas_2@value=val_258
+PREHOOK: Input: default@partition_ctas_2@value=val_260
+PREHOOK: Input: default@partition_ctas_2@value=val_262
+PREHOOK: Input: default@partition_ctas_2@value=val_263
+PREHOOK: Input: default@partition_ctas_2@value=val_265
+PREHOOK: Input: default@partition_ctas_2@value=val_266
+PREHOOK: Input: default@partition_ctas_2@value=val_272
+PREHOOK: Input: default@partition_ctas_2@value=val_273
+PREHOOK: Input: default@partition_ctas_2@value=val_274
+PREHOOK: Input: default@partition_ctas_2@value=val_275
+PREHOOK: Input: default@partition_ctas_2@value=val_277
+PREHOOK: Input: default@partition_ctas_2@value=val_278
+PREHOOK: Input: default@partition_ctas_2@value=val_280
+PREHOOK: Input: default@partition_ctas_2@value=val_281
+PREHOOK: Input: default@partition_ctas_2@value=val_282
+PREHOOK: Input: default@partition_ctas_2@value=val_283
+PREHOOK: Input: default@partition_ctas_2@value=val_284
+PREHOOK: Input: default@partition_ctas_2@value=val_285
+PREHOOK: Input: default@partition_ctas_2@value=val_286
+PREHOOK: Input: default@partition_ctas_2@value=val_287
+PREHOOK: Input: default@partition_ctas_2@value=val_288
+PREHOOK: Input: default@partition_ctas_2@value=val_289
+PREHOOK: Input: default@partition_ctas_2@value=val_291
+PREHOOK: Input: default@partition_ctas_2@value=val_292
+PREHOOK: Input: default@partition_ctas_2@value=val_296
+PREHOOK: Input: default@partition_ctas_2@value=val_298
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT value FROM partition_ctas_2 where key = 238
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_2
+POSTHOOK: Input: default@partition_ctas_2@value=val_201
+POSTHOOK: Input: default@partition_ctas_2@value=val_202
+POSTHOOK: Input: default@partition_ctas_2@value=val_203
+POSTHOOK: Input: default@partition_ctas_2@value=val_205
+POSTHOOK: Input: default@partition_ctas_2@value=val_207
+POSTHOOK: Input: default@partition_ctas_2@value=val_208
+POSTHOOK: Input: default@partition_ctas_2@value=val_209
+POSTHOOK: Input: default@partition_ctas_2@value=val_213
+POSTHOOK: Input: default@partition_ctas_2@value=val_214
+POSTHOOK: Input: default@partition_ctas_2@value=val_216
+POSTHOOK: Input: default@partition_ctas_2@value=val_217
+POSTHOOK: Input: default@partition_ctas_2@value=val_218
+POSTHOOK: Input: default@partition_ctas_2@value=val_219
+POSTHOOK: Input: default@partition_ctas_2@value=val_221
+POSTHOOK: Input: default@partition_ctas_2@value=val_222
+POSTHOOK: Input: default@partition_ctas_2@value=val_223
+POSTHOOK: Input: default@partition_ctas_2@value=val_224
+POSTHOOK: Input: default@partition_ctas_2@value=val_226
+POSTHOOK: Input: default@partition_ctas_2@value=val_228
+POSTHOOK: Input: default@partition_ctas_2@value=val_229
+POSTHOOK: Input: default@partition_ctas_2@value=val_230
+POSTHOOK: Input: default@partition_ctas_2@value=val_233
+POSTHOOK: Input: default@partition_ctas_2@value=val_235
+POSTHOOK: Input: default@partition_ctas_2@value=val_237
+POSTHOOK: Input: default@partition_ctas_2@value=val_238
+POSTHOOK: Input: default@partition_ctas_2@value=val_239
+POSTHOOK: Input: default@partition_ctas_2@value=val_241
+POSTHOOK: Input: default@partition_ctas_2@value=val_242
+POSTHOOK: Input: default@partition_ctas_2@value=val_244
+POSTHOOK: Input: default@partition_ctas_2@value=val_247
+POSTHOOK: Input: default@partition_ctas_2@value=val_248
+POSTHOOK: Input: default@partition_ctas_2@value=val_249
+POSTHOOK: Input: default@partition_ctas_2@value=val_252
+POSTHOOK: Input: default@partition_ctas_2@value=val_255
+POSTHOOK: Input: default@partition_ctas_2@value=val_256
+POSTHOOK: Input: default@partition_ctas_2@value=val_257
+POSTHOOK: Input: default@partition_ctas_2@value=val_258
+POSTHOOK: Input: default@partition_ctas_2@value=val_260
+POSTHOOK: Input: default@partition_ctas_2@value=val_262
+POSTHOOK: Input: default@partition_ctas_2@value=val_263
+POSTHOOK: Input: default@partition_ctas_2@value=val_265
+POSTHOOK: Input: default@partition_ctas_2@value=val_266
+POSTHOOK: Input: default@partition_ctas_2@value=val_272
+POSTHOOK: Input: default@partition_ctas_2@value=val_273
+POSTHOOK: Input: default@partition_ctas_2@value=val_274
+POSTHOOK: Input: default@partition_ctas_2@value=val_275
+POSTHOOK: Input: default@partition_ctas_2@value=val_277
+POSTHOOK: Input: default@partition_ctas_2@value=val_278
+POSTHOOK: Input: default@partition_ctas_2@value=val_280
+POSTHOOK: Input: default@partition_ctas_2@value=val_281
+POSTHOOK: Input: default@partition_ctas_2@value=val_282
+POSTHOOK: Input: default@partition_ctas_2@value=val_283
+POSTHOOK: Input: default@partition_ctas_2@value=val_284
+POSTHOOK: Input: default@partition_ctas_2@value=val_285
+POSTHOOK: Input: default@partition_ctas_2@value=val_286
+POSTHOOK: Input: default@partition_ctas_2@value=val_287
+POSTHOOK: Input: default@partition_ctas_2@value=val_288
+POSTHOOK: Input: default@partition_ctas_2@value=val_289
+POSTHOOK: Input: default@partition_ctas_2@value=val_291
+POSTHOOK: Input: default@partition_ctas_2@value=val_292
+POSTHOOK: Input: default@partition_ctas_2@value=val_296
+POSTHOOK: Input: default@partition_ctas_2@value=val_298
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -750,9 +897,15 @@ POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_298).key SIMPLE
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_diff_order where value = 'val_238'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_diff_order
+PREHOOK: Input: default@partition_ctas_diff_order@value=val_238
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_diff_order where value = 'val_238'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_diff_order
+POSTHOOK: Input: default@partition_ctas_diff_order@value=val_238
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -913,9 +1066,15 @@ POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_239_0,c4=val_23
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_complex_order where c0 = 'val_238_0'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_ctas_complex_order
+PREHOOK: Input: default@partition_ctas_complex_order@c0=val_238_0/c4=val_238_4/c1=val_238_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_complex_order where c0 = 'val_238_0'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_ctas_complex_order
+POSTHOOK: Input: default@partition_ctas_complex_order@c0=val_238_0/c4=val_238_4/c1=val_238_1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

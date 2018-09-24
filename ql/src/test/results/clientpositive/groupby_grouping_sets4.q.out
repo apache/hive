@@ -21,6 +21,8 @@ join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n143
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq1
@@ -28,6 +30,8 @@ join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n143
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -170,6 +174,8 @@ join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by cube(a, b) ) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n143
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by cube(a, b) ) subq1
@@ -177,6 +183,8 @@ join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by cube(a, b) ) subq2
 on subq1.a = subq2.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n143
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -348,6 +356,8 @@ join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n143
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq1
@@ -355,6 +365,8 @@ join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n143
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

@@ -335,9 +335,41 @@ POSTHOOK: Lineage: partition_mv_4 PARTITION(key=226).value SIMPLE [(src_txn_2)sr
 PREHOOK: query: EXPLAIN
 SELECT * FROM src_txn_2 where key > 210 and key < 230
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_mv_1
+PREHOOK: Input: default@partition_mv_1@key=213
+PREHOOK: Input: default@partition_mv_1@key=214
+PREHOOK: Input: default@partition_mv_1@key=216
+PREHOOK: Input: default@partition_mv_1@key=217
+PREHOOK: Input: default@partition_mv_1@key=218
+PREHOOK: Input: default@partition_mv_1@key=219
+PREHOOK: Input: default@partition_mv_1@key=221
+PREHOOK: Input: default@partition_mv_1@key=222
+PREHOOK: Input: default@partition_mv_1@key=223
+PREHOOK: Input: default@partition_mv_1@key=224
+PREHOOK: Input: default@partition_mv_1@key=226
+PREHOOK: Input: default@partition_mv_1@key=228
+PREHOOK: Input: default@partition_mv_1@key=229
+PREHOOK: Input: default@src_txn_2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM src_txn_2 where key > 210 and key < 230
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_mv_1
+POSTHOOK: Input: default@partition_mv_1@key=213
+POSTHOOK: Input: default@partition_mv_1@key=214
+POSTHOOK: Input: default@partition_mv_1@key=216
+POSTHOOK: Input: default@partition_mv_1@key=217
+POSTHOOK: Input: default@partition_mv_1@key=218
+POSTHOOK: Input: default@partition_mv_1@key=219
+POSTHOOK: Input: default@partition_mv_1@key=221
+POSTHOOK: Input: default@partition_mv_1@key=222
+POSTHOOK: Input: default@partition_mv_1@key=223
+POSTHOOK: Input: default@partition_mv_1@key=224
+POSTHOOK: Input: default@partition_mv_1@key=226
+POSTHOOK: Input: default@partition_mv_1@key=228
+POSTHOOK: Input: default@partition_mv_1@key=229
+POSTHOOK: Input: default@src_txn_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -416,9 +448,29 @@ POSTHOOK: Input: default@src_txn_2
 PREHOOK: query: EXPLAIN
 SELECT * FROM src_txn_2 where value > 'val_220' and value < 'val_230'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_mv_2
+PREHOOK: Input: default@partition_mv_2@value=val_221
+PREHOOK: Input: default@partition_mv_2@value=val_222
+PREHOOK: Input: default@partition_mv_2@value=val_223
+PREHOOK: Input: default@partition_mv_2@value=val_224
+PREHOOK: Input: default@partition_mv_2@value=val_226
+PREHOOK: Input: default@partition_mv_2@value=val_228
+PREHOOK: Input: default@partition_mv_2@value=val_229
+PREHOOK: Input: default@src_txn_2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM src_txn_2 where value > 'val_220' and value < 'val_230'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_mv_2
+POSTHOOK: Input: default@partition_mv_2@value=val_221
+POSTHOOK: Input: default@partition_mv_2@value=val_222
+POSTHOOK: Input: default@partition_mv_2@value=val_223
+POSTHOOK: Input: default@partition_mv_2@value=val_224
+POSTHOOK: Input: default@partition_mv_2@value=val_226
+POSTHOOK: Input: default@partition_mv_2@value=val_228
+POSTHOOK: Input: default@partition_mv_2@value=val_229
+POSTHOOK: Input: default@src_txn_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -473,9 +525,15 @@ POSTHOOK: Input: default@src_txn_2
 PREHOOK: query: EXPLAIN
 SELECT * FROM src_txn_2 where key > 224 and key < 226
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_mv_4
+PREHOOK: Input: default@src_txn_2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM src_txn_2 where key > 224 and key < 226
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_mv_4
+POSTHOOK: Input: default@src_txn_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

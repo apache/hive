@@ -25,9 +25,13 @@ POSTHOOK: Output: default@nullscript
 PREHOOK: query: explain
 select transform(key) using 'cat' as key1 from nullscript
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nullscript
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select transform(key) using 'cat' as key1 from nullscript
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nullscript
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

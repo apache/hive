@@ -47,9 +47,13 @@ POSTHOOK: Output: default@over10k_n0
 PREHOOK: query: explain vectorization detail
 select s, rank() over (partition by f order by t) from over10k_n0 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, rank() over (partition by f order by t) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -306,9 +310,13 @@ yuri white	1
 PREHOOK: query: explain vectorization detail
 select s, dense_rank() over (partition by ts order by i,s desc) from over10k_n0 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, dense_rank() over (partition by ts order by i,s desc) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -563,9 +571,13 @@ ulysses carson	24
 PREHOOK: query: explain vectorization detail
 select s, cume_dist() over (partition by bo order by b,s) from over10k_n0 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, cume_dist() over (partition by bo order by b,s) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -785,9 +797,13 @@ gabriella steinbeck	0.02011263073209976
 PREHOOK: query: explain vectorization detail
 select s, percent_rank() over (partition by `dec` order by f) from over10k_n0 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, percent_rank() over (partition by `dec` order by f) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1019,6 +1035,8 @@ from
   ) ranked
 where rnk =  1 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select ts, `dec`, rnk
 from
@@ -1032,6 +1050,8 @@ from
   ) ranked
 where rnk =  1 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1322,6 +1342,8 @@ from
   ) ranked
 where `dec` = 89.5 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select ts, `dec`, rnk
 from
@@ -1335,6 +1357,8 @@ from
   ) ranked
 where `dec` = 89.5 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1626,6 +1650,8 @@ from
   ) ranked
 where rnk = 1 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select ts, `dec`, rnk
 from
@@ -1640,6 +1666,8 @@ from
   ) ranked
 where rnk = 1 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

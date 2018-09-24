@@ -100,11 +100,15 @@ SELECT sum(hash(*)) k
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
 order by k
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT sum(hash(*)) k
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
 order by k
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -305,12 +309,16 @@ FROM hundredorc
 GROUP BY bin
 order by bin
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(*), bin
 FROM hundredorc
 GROUP BY bin
 order by bin
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -487,10 +495,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.i, t1.bin, t2.bin
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.i = t2.i
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.i, t1.bin, t2.bin
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.i = t2.i
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -5,6 +5,8 @@ SELECT a, b FROM (
 ) src1
 ORDER BY a LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIn
 SELECT a, b FROM (
   SELECT key a, value b
@@ -12,6 +14,8 @@ SELECT a, b FROM (
 ) src1
 ORDER BY a LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -51,8 +51,14 @@ POSTHOOK: Input: default@test_tab_n3
 POSTHOOK: Output: default@test_tab_n3@part=1
 PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '484'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab_n3
+PREHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '484'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab_n3
+POSTHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `part`
 FROM `default`.`test_tab_n3`
 WHERE `part` = '1' AND `key` = '484'
@@ -172,8 +178,14 @@ POSTHOOK: Input: default@test_tab_n3@part=1
 484	NULL	1
 PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab_n3
+PREHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab_n3
+POSTHOOK: Input: default@test_tab_n3@part=1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('0' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `part`
 FROM `default`.`test_tab_n3`
 WHERE `part` = '1' AND `key` = '0'

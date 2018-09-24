@@ -62,6 +62,9 @@ select case when (select count(*)
 from reason
 where r_reason_sk = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@reason
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select case when (select count(*) 
                   from store_sales 
@@ -111,6 +114,9 @@ select case when (select count(*)
 from reason
 where r_reason_sk = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@reason
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

@@ -46,9 +46,13 @@ POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select cast(t as boolean) from decimal_1 order by t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cast(t as boolean) from decimal_1 order by t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -137,9 +141,13 @@ NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as tinyint) from decimal_1 order by t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cast(t as tinyint) from decimal_1 order by t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -228,9 +236,13 @@ NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as smallint) from decimal_1 order by t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cast(t as smallint) from decimal_1 order by t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -319,9 +331,13 @@ NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as int) from decimal_1 order by t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cast(t as int) from decimal_1 order by t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -410,9 +426,13 @@ NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as bigint) from decimal_1 order by t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cast(t as bigint) from decimal_1 order by t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -501,9 +521,13 @@ NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as float) from decimal_1 order by t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cast(t as float) from decimal_1 order by t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -592,9 +616,13 @@ NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as double) from decimal_1 order by t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cast(t as double) from decimal_1 order by t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -683,9 +711,13 @@ NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as string) from decimal_1 order by t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cast(t as string) from decimal_1 order by t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -774,9 +806,13 @@ NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as timestamp) from decimal_1 order by t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cast(t as timestamp) from decimal_1 order by t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

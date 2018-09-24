@@ -46,12 +46,20 @@ from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value, ds1, ds2
 from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, `ds2`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds1` = '2000-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `key` = 2
@@ -230,12 +238,18 @@ from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value, ds1, ds2
 from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
 FROM (SELECT `key`, `value`, `ds1`
 FROM `default`.`pcr_t1_n1`
@@ -365,12 +379,18 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds1` AS `ds11`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
@@ -602,12 +622,20 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t4`.`ds21`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds2` AS `ds21`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
@@ -890,12 +918,22 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`, `ds1`, `ds2`
 FROM `default`.`pcr_t1_n1`
@@ -1444,12 +1482,20 @@ from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value, ds1, ds2
 from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1624,12 +1670,18 @@ from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value, ds1, ds2
 from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1754,12 +1806,18 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds1` AS `ds11`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
@@ -1991,12 +2049,20 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t4`.`ds21`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds2` AS `ds21`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
@@ -2279,12 +2345,22 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

@@ -31,9 +31,13 @@ t1_text_n8.a	t1_text_n8.b	t1_text_n8.c
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n110 group by a, b with cube order by a, b LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n110 group by a, b with cube order by a, b LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -241,9 +245,13 @@ a	b	_c2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) order by a, b LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) order by a, b LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -451,9 +459,13 @@ a	b	_c2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b GROUPING SETS (a, (a, b)) order by a, b LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b GROUPING SETS (a, (a, b)) order by a, b LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -661,9 +673,13 @@ a	b	_c2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a FROM T1_n110 GROUP BY a, b, c GROUPING SETS (a, b, c) order by a LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a FROM T1_n110 GROUP BY a, b, c GROUPING SETS (a, b, c) order by a LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -863,9 +879,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a FROM T1_n110 GROUP BY a GROUPING SETS ((a), (a)) order by a LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a FROM T1_n110 GROUP BY a GROUPING SETS ((a), (a)) order by a LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1051,9 +1071,13 @@ a
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a + b ab, count(*) FROM T1_n110 GROUP BY a + b GROUPING SETS (a+b) order by ab LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a + b ab, count(*) FROM T1_n110 GROUP BY a + b GROUPING SETS (a+b) order by ab LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n110
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

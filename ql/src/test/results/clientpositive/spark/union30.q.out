@@ -26,6 +26,8 @@ union all
 select key, value from src
 ) aa
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@union_subq_union_n2
 POSTHOOK: query: explain
 insert overwrite table union_subq_union_n2 
 select * from (
@@ -46,6 +48,8 @@ union all
 select key, value from src
 ) aa
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@union_subq_union_n2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

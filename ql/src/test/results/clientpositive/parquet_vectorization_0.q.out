@@ -6,6 +6,8 @@ SELECT MIN(ctinyint) as c1,
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
@@ -14,6 +16,8 @@ SELECT MIN(ctinyint) as c1,
 FROM   alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -161,11 +165,15 @@ SELECT SUM(ctinyint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(ctinyint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -314,6 +322,8 @@ SELECT
 FROM alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT
   avg(ctinyint) as c1,
@@ -327,6 +337,8 @@ SELECT
 FROM alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -466,6 +478,8 @@ SELECT MIN(cbigint) as c1,
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(cbigint) as c1,
        MAX(cbigint),
@@ -474,6 +488,8 @@ SELECT MIN(cbigint) as c1,
 FROM   alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -621,11 +637,15 @@ SELECT SUM(cbigint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cbigint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -774,6 +794,8 @@ SELECT
 FROM alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT
   avg(cbigint) as c1,
@@ -787,6 +809,8 @@ SELECT
 FROM alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -926,6 +950,8 @@ SELECT MIN(cfloat) as c1,
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(cfloat) as c1,
        MAX(cfloat),
@@ -934,6 +960,8 @@ SELECT MIN(cfloat) as c1,
 FROM   alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1081,11 +1109,15 @@ SELECT SUM(cfloat) as c1
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cfloat) as c1
 FROM   alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1234,6 +1266,8 @@ SELECT
 FROM alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT
   avg(cfloat) as c1,
@@ -1247,6 +1281,8 @@ SELECT
 FROM alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1406,6 +1442,8 @@ WHERE  (((cstring2 LIKE '%b%')
             AND ((cboolean2 = 1)
                  AND (3569 = ctinyint))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT AVG(cbigint),
        (-(AVG(cbigint))),
@@ -1433,6 +1471,8 @@ WHERE  (((cstring2 LIKE '%b%')
             AND ((cboolean2 = 1)
                  AND (3569 = ctinyint))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1589,11 +1629,15 @@ select count(*) from alltypesparquet
                      where (((cstring1 LIKE 'a%') or ((cstring1 like 'b%') or (cstring1 like 'c%'))) or
                            ((length(cstring1) < 50 ) and ((cstring1 like '%n') and (length(cstring1) > 0))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN extended
 select count(*) from alltypesparquet
                      where (((cstring1 LIKE 'a%') or ((cstring1 like 'b%') or (cstring1 like 'c%'))) or
                            ((length(cstring1) < 50 ) and ((cstring1 like '%n') and (length(cstring1) > 0))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM `default`.`alltypesparquet`
 WHERE `cstring1` LIKE 'a%' OR `cstring1` LIKE 'b%' OR `cstring1` LIKE 'c%' OR CHARACTER_LENGTH(`cstring1`) < 50 AND `cstring1` LIKE '%n' AND CHARACTER_LENGTH(`cstring1`) > 0
@@ -30398,11 +30442,15 @@ PREHOOK: query: explain extended select * from alltypesparquet where
                      (cint=47  and  cfloat=2.09) or
                      (cint=45  and  cfloat=3.02)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from alltypesparquet where
                      (cint=49 and  cfloat=3.5) or
                      (cint=47  and  cfloat=2.09) or
                      (cint=45  and  cfloat=3.02)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint`, `csmallint`, `cint`, `cbigint`, `cfloat`, `cdouble`, `cstring1`, `cstring2`, `ctimestamp1`, `ctimestamp2`, `cboolean1`, `cboolean2`
 FROM `default`.`alltypesparquet`
 WHERE `cint` = 49 AND `cfloat` = 3.5 OR `cint` = 47 AND `cfloat` = 2.09 OR `cint` = 45 AND `cfloat` = 3.02
@@ -30515,11 +30563,15 @@ PREHOOK: query: explain extended select * from alltypesparquet where
                                 (cint=47  and  cfloat=2.09) or
                                 (cint=45  and  cfloat=3.02)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from alltypesparquet where
                                 (cint=49 and  cfloat=3.5) or
                                 (cint=47  and  cfloat=2.09) or
                                 (cint=45  and  cfloat=3.02)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30628,11 +30680,15 @@ PREHOOK: query: explain extended select * from alltypesparquet where
                      (cint=47 or  cfloat=2.09) and
                      (cint=45 or  cfloat=3.02)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from alltypesparquet where
                      (cint=49 or  cfloat=3.5) and
                      (cint=47 or  cfloat=2.09) and
                      (cint=45 or  cfloat=3.02)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint`, `csmallint`, `cint`, `cbigint`, `cfloat`, `cdouble`, `cstring1`, `cstring2`, `ctimestamp1`, `ctimestamp2`, `cboolean1`, `cboolean2`
 FROM `default`.`alltypesparquet`
 WHERE (`cint` = 49 OR `cfloat` = 3.5) AND (`cint` = 47 OR `cfloat` = 2.09) AND (`cint` = 45 OR `cfloat` = 3.02)
@@ -30744,10 +30800,14 @@ PREHOOK: query: explain extended select count(*),cstring1 from alltypesparquet w
                                                     or cstring1='history'
                                                     or cstring1='topology' group by cstring1 order by cstring1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*),cstring1 from alltypesparquet where cstring1='biology'
                                                     or cstring1='history'
                                                     or cstring1='topology' group by cstring1 order by cstring1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

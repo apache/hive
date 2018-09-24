@@ -46,9 +46,13 @@ t1_n30.a	t1_n30.b	t1_n30.c
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n30 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n30 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -208,9 +212,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n30 group by cube(a, b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n30 group by cube(a, b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -370,9 +378,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -532,9 +544,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b GROUPING SETS (a, (a, b))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b GROUPING SETS (a, (a, b))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -690,9 +706,13 @@ a	b	_c2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a FROM T1_n30 GROUP BY a, b, c GROUPING SETS (a, b, c)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a FROM T1_n30 GROUP BY a, b, c GROUPING SETS (a, b, c)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -845,9 +865,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a FROM T1_n30 GROUP BY a GROUPING SETS ((a), (a))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a FROM T1_n30 GROUP BY a GROUPING SETS ((a), (a))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -982,9 +1006,13 @@ a
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a + b, count(*) FROM T1_n30 GROUP BY a + b GROUPING SETS (a+b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a + b, count(*) FROM T1_n30 GROUP BY a + b GROUPING SETS (a+b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n30
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

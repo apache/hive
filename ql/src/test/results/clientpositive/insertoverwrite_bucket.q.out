@@ -100,8 +100,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp1
 PREHOOK: query: explain insert overwrite table temp1 select data, data from bucketinput
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketinput
+PREHOOK: Output: default@temp1
 POSTHOOK: query: explain insert overwrite table temp1 select data, data from bucketinput
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketinput
+POSTHOOK: Output: default@temp1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -220,11 +224,15 @@ INSERT OVERWRITE TABLE temp2
 SELECT change, change,num
 FROM temp1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@temp1
+PREHOOK: Output: default@temp2
 POSTHOOK: query: explain
 INSERT OVERWRITE TABLE temp2
 SELECT change, change,num
 FROM temp1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp1
+POSTHOOK: Output: default@temp2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

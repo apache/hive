@@ -287,8 +287,12 @@ POSTHOOK: Input: default@ext_simple_derby_table1
 -44	53
 PREHOOK: query: explain select bkey from ext_simple_derby_table1 where 100 < ext_simple_derby_table1.ikey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_simple_derby_table1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select bkey from ext_simple_derby_table1 where 100 < ext_simple_derby_table1.ikey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_simple_derby_table1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -357,9 +361,15 @@ POSTHOOK: Input: default@ext_simple_derby_table1
 PREHOOK: query: explain select ext_simple_derby_table1.fkey, ext_simple_derby_table2.dkey from ext_simple_derby_table1 join ext_simple_derby_table2 on
 (ext_simple_derby_table1.ikey = ext_simple_derby_table2.ikey)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_simple_derby_table1
+PREHOOK: Input: default@ext_simple_derby_table2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select ext_simple_derby_table1.fkey, ext_simple_derby_table2.dkey from ext_simple_derby_table1 join ext_simple_derby_table2 on
 (ext_simple_derby_table1.ikey = ext_simple_derby_table2.ikey)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_simple_derby_table1
+POSTHOOK: Input: default@ext_simple_derby_table2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -407,9 +417,15 @@ POSTHOOK: Input: default@ext_simple_derby_table2
 PREHOOK: query: explain select simple_hive_table1.fkey, ext_simple_derby_table2.dkey from simple_hive_table1 join ext_simple_derby_table2 on
 (simple_hive_table1.ikey = ext_simple_derby_table2.ikey)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_simple_derby_table2
+PREHOOK: Input: default@simple_hive_table1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select simple_hive_table1.fkey, ext_simple_derby_table2.dkey from simple_hive_table1 join ext_simple_derby_table2 on
 (simple_hive_table1.ikey = ext_simple_derby_table2.ikey)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_simple_derby_table2
+POSTHOOK: Input: default@simple_hive_table1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

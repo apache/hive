@@ -20,11 +20,17 @@ select table1.id, table1.val, table1.val1
 from table1 inner join table3
 on table1.dimid = table3.id and table3.id = 1 where table1.dimid <> 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select table1.id, table1.val, table1.val1
 from table1 inner join table3
 on table1.dimid = table3.id and table3.id = 1 where table1.dimid <> 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

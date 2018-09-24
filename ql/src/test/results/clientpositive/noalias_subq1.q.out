@@ -1,9 +1,13 @@
 PREHOOK: query: EXPLAIN
 SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

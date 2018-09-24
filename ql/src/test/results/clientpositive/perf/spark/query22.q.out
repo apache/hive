@@ -19,6 +19,11 @@ select  i_product_name
 order by qoh, i_product_name, i_brand, i_class, i_category
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  i_product_name
              ,i_brand
@@ -40,6 +45,11 @@ select  i_product_name
 order by qoh, i_product_name, i_brand, i_class, i_category
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

@@ -5,6 +5,9 @@ PREHOOK: query: explain
                                         UNION  ALL  
                                             select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION  ALL  
@@ -12,6 +15,9 @@ POSTHOOK: query: explain
                                         UNION  ALL  
                                             select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

@@ -38,10 +38,14 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n31
 SELECT key, count(1) FROM T1_n133 GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n133
+PREHOOK: Output: default@outputtbl1_n31
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n31
 SELECT key, count(1) FROM T1_n133 GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n133
+POSTHOOK: Output: default@outputtbl1_n31
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -186,10 +190,14 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl2_n8
 SELECT key, val, count(1) FROM T1_n133 GROUP BY key, val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n133
+PREHOOK: Output: default@outputtbl2_n8
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl2_n8
 SELECT key, val, count(1) FROM T1_n133 GROUP BY key, val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n133
+POSTHOOK: Output: default@outputtbl2_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -6,6 +6,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from
 (select c.ctinyint
@@ -14,6 +16,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -188,6 +192,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from
 (select c.ctinyint
@@ -196,6 +202,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

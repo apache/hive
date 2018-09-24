@@ -205,11 +205,19 @@ select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
 group by empid, depts_n0.deptno
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n0
+PREHOOK: Input: default@emps_n0
+PREHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
 group by empid, depts_n0.deptno
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n0
+POSTHOOK: Input: default@emps_n0
+POSTHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -285,11 +293,19 @@ select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
 group by empid, depts_n0.deptno
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n0
+PREHOOK: Input: default@emps_n0
+PREHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
 group by empid, depts_n0.deptno
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n0
+POSTHOOK: Input: default@emps_n0
+POSTHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -365,11 +381,19 @@ select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
 group by empid, depts_n0.deptno
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n0
+PREHOOK: Input: default@emps_n0
+PREHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
 group by empid, depts_n0.deptno
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n0
+POSTHOOK: Input: default@emps_n0
+POSTHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -445,11 +469,19 @@ select depts_n0.deptno from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 15
 group by depts_n0.deptno, emps_n0.empid
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n0
+PREHOOK: Input: default@emps_n0
+PREHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select depts_n0.deptno from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 15
 group by depts_n0.deptno, emps_n0.empid
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n0
+POSTHOOK: Input: default@emps_n0
+POSTHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -530,11 +562,19 @@ select depts_n0.deptno from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 15
 group by depts_n0.deptno
 PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_n0
+PREHOOK: Input: default@emps_n0
+PREHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select depts_n0.deptno from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 15
 group by depts_n0.deptno
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_n0
+POSTHOOK: Input: default@emps_n0
+POSTHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -694,6 +734,11 @@ join emps_n0 on (emps_n0.deptno = depts_n0.deptno)
 where depts_n0.deptno > 10
 group by dependents_n0.empid
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents_n0
+PREHOOK: Input: default@depts_n0
+PREHOOK: Input: default@emps_n0
+PREHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select dependents_n0.empid
 from depts_n0
@@ -702,6 +747,11 @@ join emps_n0 on (emps_n0.deptno = depts_n0.deptno)
 where depts_n0.deptno > 10
 group by dependents_n0.empid
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents_n0
+POSTHOOK: Input: default@depts_n0
+POSTHOOK: Input: default@emps_n0
+POSTHOOK: Input: default@mv1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

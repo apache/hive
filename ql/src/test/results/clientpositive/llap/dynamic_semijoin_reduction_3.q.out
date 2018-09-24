@@ -19,11 +19,23 @@ WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtbl
+PREHOOK: Input: default@nonacidorctbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: explain merge into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a 
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtbl
+POSTHOOK: Input: default@nonacidorctbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@merge_tmp_table
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-5 depends on stages: Stage-4
@@ -366,9 +378,15 @@ STAGE PLANS:
 PREHOOK: query: explain merge into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtbl
+PREHOOK: Input: default@nonacidorctbl
+PREHOOK: Output: default@acidtbl
 POSTHOOK: query: explain merge into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtbl
+POSTHOOK: Input: default@nonacidorctbl
+POSTHOOK: Output: default@acidtbl
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -539,6 +557,12 @@ WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtbl
+PREHOOK: Input: default@nonacidorctbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: explain merge into acidTbl as t using (
   select * from nonAcidOrcTbl where a > 0
   union all
@@ -548,6 +572,12 @@ WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtbl
+POSTHOOK: Input: default@nonacidorctbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@merge_tmp_table
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-5 depends on stages: Stage-4

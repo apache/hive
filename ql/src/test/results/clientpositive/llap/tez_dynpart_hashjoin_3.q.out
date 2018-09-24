@@ -4,12 +4,18 @@ from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int) and (a.cint < 100)
 limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int) and (a.cint < 100)
 limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -111,12 +117,18 @@ from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int) and (a.cint < 100)
 limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int) and (a.cint < 100)
 limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -222,12 +234,18 @@ from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int)
 limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int)
 limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

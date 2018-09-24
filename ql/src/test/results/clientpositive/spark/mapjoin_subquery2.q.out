@@ -71,6 +71,10 @@ FROM
  FROM y JOIN x ON (x.id = y.id)) subq
  JOIN z ON (subq.key1 = z.id)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@x
+PREHOOK: Input: default@y
+PREHOOK: Input: default@z
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT subq.key1, subq.value1, subq.key2, subq.value2, z.id, z.name
 FROM
@@ -78,6 +82,10 @@ FROM
  FROM y JOIN x ON (x.id = y.id)) subq
  JOIN z ON (subq.key1 = z.id)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x
+POSTHOOK: Input: default@y
+POSTHOOK: Input: default@z
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

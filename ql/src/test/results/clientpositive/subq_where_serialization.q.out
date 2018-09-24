@@ -1,7 +1,11 @@
 PREHOOK: query: explain select src.key from src where src.key in ( select distinct key from src)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src.key from src where src.key in ( select distinct key from src)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4

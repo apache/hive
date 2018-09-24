@@ -25,6 +25,8 @@ WHERE  ((ctinyint != 0)
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1,
        cbigint,
@@ -52,6 +54,8 @@ WHERE  ((ctinyint != 0)
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -258,6 +262,8 @@ WHERE  ((ctinyint != 0)
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1,
        cbigint,
@@ -285,6 +291,8 @@ WHERE  ((ctinyint != 0)
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

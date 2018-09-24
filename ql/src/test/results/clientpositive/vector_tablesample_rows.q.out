@@ -1,9 +1,13 @@
 PREHOOK: query: explain vectorization detail
 select 'key1', 'value1' from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select 'key1', 'value1' from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -88,10 +92,14 @@ PREHOOK: query: explain vectorization detail
 insert overwrite table decimal_2_n0
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@decimal_2_n0
 POSTHOOK: query: explain vectorization detail
 insert overwrite table decimal_2_n0
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@decimal_2_n0
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -231,9 +239,13 @@ POSTHOOK: Output: default@decimal_2_n0
 PREHOOK: query: explain vectorization detail
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -304,9 +316,15 @@ _c0
 PREHOOK: query: explain vectorization detail
 create temporary table dual as select 1
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dual
 POSTHOOK: query: explain vectorization detail
 create temporary table dual as select 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dual
 Explain
 PLAN VECTORIZATION:
   enabled: true

@@ -30,8 +30,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: explain select * from newdb.masking_test_n12
 PREHOOK: type: QUERY
+PREHOOK: Input: newdb@masking_test_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from newdb.masking_test_n12
 POSTHOOK: type: QUERY
+POSTHOOK: Input: newdb@masking_test_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -82,8 +86,12 @@ POSTHOOK: Input: newdb@masking_test_n12
 2	2_lav
 PREHOOK: query: explain select * from newdb.masking_test_n12 where key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: newdb@masking_test_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from newdb.masking_test_n12 where key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: newdb@masking_test_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

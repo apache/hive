@@ -1,7 +1,11 @@
 PREHOOK: query: explain select key from ((select key from src) union (select key from src))subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from ((select key from src) union (select key from src))subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -70,8 +74,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key from ((select key from src) intersect (select key from src))subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from ((select key from src) intersect (select key from src))subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -216,8 +224,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key from ((select key from src) intersect select key from src)subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from ((select key from src) intersect select key from src)subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -362,8 +374,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key from (select key from src intersect (select key from src))subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from (select key from src intersect (select key from src))subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -509,9 +525,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select a.key, b.value from ( (select key from src)a join (select value from src)b on a.key=b.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, b.value from ( (select key from src)a join (select value from src)b on a.key=b.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

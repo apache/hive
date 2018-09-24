@@ -54,8 +54,18 @@ POSTHOOK: Lineage: src_union_view.key EXPRESSION [(src_union_1)src_union_1.Field
 POSTHOOK: Lineage: src_union_view.value EXPRESSION [(src_union_1)src_union_1.FieldSchema(name:value, type:string, comment:null), (src_union_2)src_union_2.FieldSchema(name:value, type:string, comment:null), (src_union_3)src_union_3.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_union_1
+PREHOOK: Input: default@src_union_2
+PREHOOK: Input: default@src_union_3
+PREHOOK: Input: default@src_union_view
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_union_1
+POSTHOOK: Input: default@src_union_2
+POSTHOOK: Input: default@src_union_3
+POSTHOOK: Input: default@src_union_view
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -151,8 +161,18 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_union_1
+PREHOOK: Input: default@src_union_2
+PREHOOK: Input: default@src_union_3
+PREHOOK: Input: default@src_union_view
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_union_1
+POSTHOOK: Input: default@src_union_2
+POSTHOOK: Input: default@src_union_3
+POSTHOOK: Input: default@src_union_view
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -17,9 +17,13 @@ POSTHOOK: Output: default@hive_test_src_n3
 PREHOOK: query: explain extended
 load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src_n3
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@hive_test_src_n3
 POSTHOOK: query: explain extended
 load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src_n3
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@hive_test_src_n3
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

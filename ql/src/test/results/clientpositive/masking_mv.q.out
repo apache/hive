@@ -16,10 +16,16 @@ PREHOOK: query: explain
 create materialized view `masking_test_view_n_mv` as
 select key from `masking_test_n_mv`
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view_n_mv
 POSTHOOK: query: explain
 create materialized view `masking_test_view_n_mv` as
 select key from `masking_test_n_mv`
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view_n_mv
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -157,9 +163,15 @@ Outdated for Rewriting:	No
 PREHOOK: query: explain
 select key from `masking_test_n_mv`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key from `masking_test_n_mv`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -225,9 +237,15 @@ POSTHOOK: Output: default@masking_test_view_n_mv_3
 PREHOOK: query: explain
 select key from `masking_test_n_mv` group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key from `masking_test_n_mv` group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -291,9 +309,15 @@ POSTHOOK: Input: default@masking_test_view_n_mv
 PREHOOK: query: explain
 select value from `masking_test_n_mv` group by value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv_3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select value from `masking_test_n_mv` group by value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv_3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -361,9 +385,15 @@ POSTHOOK: Input: default@masking_test_view_n_mv_3
 PREHOOK: query: explain
 select value, sum(key) from `masking_test_n_mv` group by value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv_3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, sum(key) from `masking_test_n_mv` group by value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv_3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -446,9 +476,17 @@ POSTHOOK: Output: default@masking_test_view_n_mv_4
 PREHOOK: query: explain
 select value from `masking_test_n_mv` group by value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv_3
+PREHOOK: Input: default@masking_test_view_n_mv_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select value from `masking_test_n_mv` group by value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv_3
+POSTHOOK: Input: default@masking_test_view_n_mv_4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -518,9 +556,17 @@ POSTHOOK: Input: default@masking_test_view_n_mv_4
 PREHOOK: query: explain
 select value, sum(key) from `masking_test_n_mv` group by value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Input: default@masking_test_view_n_mv_3
+PREHOOK: Input: default@masking_test_view_n_mv_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, sum(key) from `masking_test_n_mv` group by value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Input: default@masking_test_view_n_mv_3
+POSTHOOK: Input: default@masking_test_view_n_mv_4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -608,10 +654,16 @@ PREHOOK: query: explain
 create materialized view `masking_test_view_n_mv_2` as
 select key from `srcTnx`
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@srctnx
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view_n_mv_2
 POSTHOOK: query: explain
 create materialized view `masking_test_view_n_mv_2` as
 select key from `srcTnx`
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@srctnx
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view_n_mv_2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -749,9 +801,13 @@ Outdated for Rewriting:	No
 PREHOOK: query: explain
 select key from `masking_test_view_n_mv_2` order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_view_n_mv_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key from `masking_test_view_n_mv_2` order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_view_n_mv_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -34,10 +34,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n17
+PREHOOK: Input: default@test_table1_n17@ds=1
+PREHOOK: Output: default@test_table2_n16@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n17
+POSTHOOK: Input: default@test_table1_n17@ds=1
+POSTHOOK: Output: default@test_table2_n16@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -107,10 +113,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n17
+PREHOOK: Input: default@test_table1_n17@ds=1
+PREHOOK: Output: default@test_table2_n16@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n17
+POSTHOOK: Input: default@test_table1_n17@ds=1
+POSTHOOK: Output: default@test_table2_n16@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -238,10 +250,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n17
+PREHOOK: Input: default@test_table1_n17@ds=1
+PREHOOK: Output: default@test_table2_n16@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n17
+POSTHOOK: Input: default@test_table1_n17@ds=1
+POSTHOOK: Output: default@test_table2_n16@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -368,10 +386,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n17
+PREHOOK: Input: default@test_table1_n17@ds=1
+PREHOOK: Output: default@test_table2_n16@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n17
+POSTHOOK: Input: default@test_table1_n17@ds=1
+POSTHOOK: Output: default@test_table2_n16@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -499,10 +523,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n17
+PREHOOK: Input: default@test_table1_n17@ds=1
+PREHOOK: Output: default@test_table2_n16@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n17
+POSTHOOK: Input: default@test_table1_n17@ds=1
+POSTHOOK: Output: default@test_table2_n16@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -630,10 +660,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n17
+PREHOOK: Input: default@test_table1_n17@ds=1
+PREHOOK: Output: default@test_table2_n16@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n17
+POSTHOOK: Input: default@test_table1_n17@ds=1
+POSTHOOK: Output: default@test_table2_n16@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -19,11 +19,17 @@ from src
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -232,11 +238,17 @@ from src
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -445,11 +457,17 @@ from src
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -658,11 +676,17 @@ from src
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -871,11 +895,17 @@ from src
 insert overwrite table src_multi1_n5 select * where key < 10 group by key, value
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1_n5 select * where key < 10 group by key, value
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -1094,11 +1124,17 @@ from src
 insert overwrite table src_multi1_n5 select * where key < 10 group by key, value
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1_n5 select * where key < 10 group by key, value
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -1317,11 +1353,17 @@ from src
 insert overwrite table src_multi1_n5 select * where key < 10 group by key, value
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1_n5 select * where key < 10 group by key, value
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -1540,11 +1582,17 @@ from src
 insert overwrite table src_multi1_n5 select * where key < 10 group by key, value
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1_n5 select * where key < 10 group by key, value
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -1763,11 +1811,17 @@ from (select * from src  union all select * from src) s
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from (select * from src  union all select * from src) s
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -2054,11 +2108,17 @@ from (select * from src  union all select * from src) s
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from (select * from src  union all select * from src) s
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -2345,11 +2405,17 @@ from (select * from src  union all select * from src) s
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from (select * from src  union all select * from src) s
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -2636,11 +2702,17 @@ from (select * from src  union all select * from src) s
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1_n5
+PREHOOK: Output: default@src_multi2_n6
 POSTHOOK: query: explain
 from (select * from src  union all select * from src) s
 insert overwrite table src_multi1_n5 select * where key < 10
 insert overwrite table src_multi2_n6 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1_n5
+POSTHOOK: Output: default@src_multi2_n6
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -2927,10 +2999,14 @@ PREHOOK: query: explain
 from src 
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 from src 
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-4 depends on stages: Stage-3
@@ -3030,10 +3106,14 @@ PREHOOK: query: explain
 from src 
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 from src 
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-4 depends on stages: Stage-3
@@ -3133,10 +3213,14 @@ PREHOOK: query: explain
 from src 
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 from src 
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-4 depends on stages: Stage-3
@@ -3236,10 +3320,14 @@ PREHOOK: query: explain
 from src 
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 from src 
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-4 depends on stages: Stage-3

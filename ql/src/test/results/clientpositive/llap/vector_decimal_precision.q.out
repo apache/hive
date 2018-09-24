@@ -551,8 +551,12 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT avg(`dec`), sum(`dec`) FROM DECIMAL_PRECISION
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT avg(`dec`), sum(`dec`) FROM DECIMAL_PRECISION
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1169,8 +1173,12 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT avg(`dec`), sum(`dec`) FROM DECIMAL_PRECISION_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_precision_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT avg(`dec`), sum(`dec`) FROM DECIMAL_PRECISION_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_precision_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

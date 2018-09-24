@@ -58,12 +58,22 @@ SELECT a.key, a.key, concat(a.value, b.value)
 FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n16
+PREHOOK: Input: default@test_table1_n16@ds=1
+PREHOOK: Input: default@test_table2_n15
+PREHOOK: Input: default@test_table2_n15@ds=1
+PREHOOK: Output: default@test_table3_n8@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.key, concat(a.value, b.value) 
 FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n16
+POSTHOOK: Input: default@test_table1_n16@ds=1
+POSTHOOK: Input: default@test_table2_n15
+POSTHOOK: Input: default@test_table2_n15@ds=1
+POSTHOOK: Output: default@test_table3_n8@ds=1
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -256,12 +266,22 @@ SELECT a.key, a.value
 FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n16
+PREHOOK: Input: default@test_table1_n16@ds=1
+PREHOOK: Input: default@test_table2_n15
+PREHOOK: Input: default@test_table2_n15@ds=1
+PREHOOK: Output: default@test_table3_n8@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.value
 FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n16
+POSTHOOK: Input: default@test_table1_n16@ds=1
+POSTHOOK: Input: default@test_table2_n15
+POSTHOOK: Input: default@test_table2_n15@ds=1
+POSTHOOK: Output: default@test_table3_n8@ds=1
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3

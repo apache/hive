@@ -30,9 +30,13 @@ t1_text_n4.key	t1_text_n4.value
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY key, value WITH ROLLUP
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY key, value WITH ROLLUP
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -232,9 +236,13 @@ NULL	NULL	3	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY ROLLUP (key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY ROLLUP (key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -439,6 +447,8 @@ SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY key, value WITH R
 ) t
 GROUP BY GROUPING__ID
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT GROUPING__ID, count(*)
 FROM
@@ -447,6 +457,8 @@ SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY key, value WITH R
 ) t
 GROUP BY GROUPING__ID
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -744,6 +756,8 @@ SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY ROLLUP(key, value
 ) t
 GROUP BY GROUPING__ID
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT GROUPING__ID, count(*)
 FROM
@@ -752,6 +766,8 @@ SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY ROLLUP(key, value
 ) t
 GROUP BY GROUPING__ID
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1047,12 +1063,16 @@ JOIN
 (SELECT GROUPING__ID FROM T1_n73 GROUP BY key, value WITH ROLLUP) t2
 ON t1.GROUPING__ID = t2.GROUPING__ID
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.GROUPING__ID, t2.GROUPING__ID FROM (SELECT GROUPING__ID FROM T1_n73  GROUP BY key,value WITH ROLLUP) t1
 JOIN 
 (SELECT GROUPING__ID FROM T1_n73 GROUP BY key, value WITH ROLLUP) t2
 ON t1.GROUPING__ID = t2.GROUPING__ID
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1373,12 +1393,16 @@ JOIN
 (SELECT GROUPING__ID FROM T1_n73 GROUP BY ROLLUP(key, value)) t2
 ON t1.GROUPING__ID = t2.GROUPING__ID
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.GROUPING__ID, t2.GROUPING__ID FROM (SELECT GROUPING__ID FROM T1_n73  GROUP BY ROLLUP(key,value)) t1
 JOIN
 (SELECT GROUPING__ID FROM T1_n73 GROUP BY ROLLUP(key, value)) t2
 ON t1.GROUPING__ID = t2.GROUPING__ID
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1696,9 +1720,13 @@ t1.grouping__id	t2.grouping__id
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY key, value WITH ROLLUP
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY key, value WITH ROLLUP
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1858,6 +1886,8 @@ SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY key, value WITH R
 ) t 
 GROUP BY GROUPING__ID
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT GROUPING__ID, count(*)
 FROM
@@ -1866,6 +1896,8 @@ SELECT key, value, GROUPING__ID, count(*) from T1_n73 GROUP BY key, value WITH R
 ) t 
 GROUP BY GROUPING__ID
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2076,12 +2108,16 @@ JOIN
 (SELECT GROUPING__ID FROM T1_n73 GROUP BY key, value WITH ROLLUP) t2
 ON t1.GROUPING__ID = t2.GROUPING__ID
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.GROUPING__ID, t2.GROUPING__ID FROM (SELECT GROUPING__ID FROM T1_n73  GROUP BY key,value WITH ROLLUP) t1
 JOIN 
 (SELECT GROUPING__ID FROM T1_n73 GROUP BY key, value WITH ROLLUP) t2
 ON t1.GROUPING__ID = t2.GROUPING__ID
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n73
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

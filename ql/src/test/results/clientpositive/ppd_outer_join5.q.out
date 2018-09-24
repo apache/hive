@@ -34,8 +34,16 @@ Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'S
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select * from t1_n98 full outer join t2_n61 on t1_n98.id=t2_n61.id join t3_n23 on t2_n61.id=t3_n23.id where t3_n23.id=20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n98
+PREHOOK: Input: default@t2_n61
+PREHOOK: Input: default@t3_n23
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n98 full outer join t2_n61 on t1_n98.id=t2_n61.id join t3_n23 on t2_n61.id=t3_n23.id where t3_n23.id=20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n98
+POSTHOOK: Input: default@t2_n61
+POSTHOOK: Input: default@t3_n23
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -148,8 +156,16 @@ Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'S
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select * from t1_n98 join t2_n61 on (t1_n98.id=t2_n61.id) left outer join t3_n23 on (t2_n61.id=t3_n23.id) where t2_n61.id=20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n98
+PREHOOK: Input: default@t2_n61
+PREHOOK: Input: default@t3_n23
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n98 join t2_n61 on (t1_n98.id=t2_n61.id) left outer join t3_n23 on (t2_n61.id=t3_n23.id) where t2_n61.id=20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n98
+POSTHOOK: Input: default@t2_n61
+POSTHOOK: Input: default@t3_n23
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -259,8 +275,16 @@ Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'S
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select * from t1_n98 join t2_n61 on (t1_n98.id=t2_n61.id) left outer join t3_n23 on (t1_n98.id=t3_n23.id) where t2_n61.id=20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n98
+PREHOOK: Input: default@t2_n61
+PREHOOK: Input: default@t3_n23
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n98 join t2_n61 on (t1_n98.id=t2_n61.id) left outer join t3_n23 on (t1_n98.id=t3_n23.id) where t2_n61.id=20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n98
+POSTHOOK: Input: default@t2_n61
+POSTHOOK: Input: default@t3_n23
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

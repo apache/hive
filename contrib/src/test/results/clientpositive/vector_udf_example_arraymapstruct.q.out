@@ -20,10 +20,14 @@ PREHOOK: query: EXPLAIN
 SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
 FROM src_thrift
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
 FROM src_thrift
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

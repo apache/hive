@@ -18,10 +18,17 @@ PREHOOK: query: explain extended
 insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@list_bucketing_dynamic_part@ds=2008-04-08
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 OPTIMIZED SQL: SELECT `key`, `value`, IF(MOD(CAST(`key` AS DOUBLE), CAST(100 AS DOUBLE)) = 0, 'a1', 'b1') AS `_o__c2`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08'
@@ -386,10 +393,17 @@ PREHOOK: query: explain extended
 insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@list_bucketing_dynamic_part@ds=2008-04-08
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 OPTIMIZED SQL: SELECT `key`, `value`, IF(MOD(CAST(`key` AS DOUBLE), CAST(100 AS DOUBLE)) = 0, 'a1', 'b1') AS `_o__c2`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08'
@@ -897,9 +911,17 @@ POSTHOOK: Input: default@list_bucketing_dynamic_part
 PREHOOK: query: explain extended
 select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_dynamic_part
+PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=a1
+PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=b1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_dynamic_part
+POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=a1
+POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=b1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, CAST('val_484' AS STRING) AS `value`, `ds`, `hr`
 FROM `default`.`list_bucketing_dynamic_part`
 WHERE `key` = '484' AND `value` = 'val_484'

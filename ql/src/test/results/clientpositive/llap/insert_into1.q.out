@@ -12,8 +12,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 SELECT * from src ORDER BY key LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into1
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 SELECT * from src ORDER BY key LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -143,9 +147,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain 
 select count(*) from insert_into1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain 
 select count(*) from insert_into1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -167,8 +175,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 100
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into1
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -298,9 +310,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT COUNT(*) FROM insert_into1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -322,8 +338,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 200
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -453,9 +473,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT COUNT(*) FROM insert_into1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -477,8 +501,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: explain insert overwrite table insert_into1 select 1, 'a'
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_into1
 POSTHOOK: query: explain insert overwrite table insert_into1 select 1, 'a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_into1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -575,8 +603,12 @@ POSTHOOK: Lineage: insert_into1.key SIMPLE []
 POSTHOOK: Lineage: insert_into1.value SIMPLE []
 PREHOOK: query: explain insert into insert_into1 select 2, 'b'
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_into1
 POSTHOOK: query: explain insert into insert_into1 select 2, 'b'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_into1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -684,9 +716,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 insert into table insert_into1 values(1, 'abc')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_into1
 POSTHOOK: query: explain
 insert into table insert_into1 values(1, 'abc')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_into1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -751,9 +787,13 @@ POSTHOOK: Lineage: insert_into1.value SCRIPT []
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT COUNT(*) FROM insert_into1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -3,11 +3,15 @@ SELECT f.key, g.key, count(g.key)
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.key, count(g.key)
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -146,11 +150,15 @@ SELECT f.key, g.key
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.key
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -276,10 +284,14 @@ PREHOOK: query: EXPLAIN
 SELECT DISTINCT f.value, g.value
 FROM src f JOIN src g ON(f.value = g.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT DISTINCT f.value, g.value
 FROM src f JOIN src g ON(f.value = g.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -406,11 +418,15 @@ SELECT f.key, g.key, COUNT(*)
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.key, COUNT(*)
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -549,11 +565,15 @@ SELECT  f.ctinyint, g.ctinyint, SUM(f.cbigint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.cint = g.cint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT  f.ctinyint, g.ctinyint, SUM(f.cbigint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.cint = g.cint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -656,11 +676,15 @@ SELECT  f.cbigint, g.cbigint, MAX(f.cint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.cbigint = g.cbigint)
 GROUP BY f.cbigint, g.cbigint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT  f.cbigint, g.cbigint, MAX(f.cint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.cbigint = g.cbigint)
 GROUP BY f.cbigint, g.cbigint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -795,11 +819,15 @@ SELECT  f.ctinyint, g.ctinyint, MIN(f.ctinyint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT  f.ctinyint, g.ctinyint, MIN(f.ctinyint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -934,11 +962,15 @@ SELECT   MIN(f.cint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT   MIN(f.cint)     
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1073,11 +1105,15 @@ SELECT   count(f.ctinyint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT   count(f.ctinyint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1216,11 +1252,15 @@ SELECT   count(f.cint), f.ctinyint
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT   count(f.cint), f.ctinyint              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1359,11 +1399,15 @@ SELECT   sum(f.cint), f.ctinyint
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT   sum(f.cint), f.ctinyint            
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1506,11 +1550,15 @@ SELECT sum(f.cint), f.ctinyint
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT sum(f.cint), f.ctinyint            
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1616,11 +1664,15 @@ SELECT sum(f.cint), f.ctinyint
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT sum(f.cint), f.ctinyint            
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

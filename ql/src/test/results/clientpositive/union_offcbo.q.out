@@ -146,6 +146,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -234,6 +237,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -487,6 +493,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -575,6 +584,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -834,6 +846,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -922,6 +937,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -1189,6 +1207,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -1277,6 +1298,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -1540,6 +1564,9 @@ PREHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ttest1
+PREHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
   A2.id1, A2.sts,A2.at1,
     CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
@@ -1628,6 +1655,9 @@ POSTHOOK: query: explain SELECT
    ) A2
    where a2.flag <> 'RET'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ttest1
+POSTHOOK: Input: default@ttest2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
