@@ -1445,7 +1445,7 @@ public class Driver implements IDriver {
     ValidTxnList txnList = txnMgr.getValidTxns();
     String txnStr = txnList.toString();
     conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
-    LOG.debug("Encoding valid txns info " + txnStr + " txnid:" + txnMgr.getCurrentTxnId());
+    LOG.info("Encoding valid txns info " + txnStr + " txnid:" + txnMgr.getCurrentTxnId());
   }
 
   // Write the current set of valid write ids for the operated acid tables into the conf file so
