@@ -70,6 +70,7 @@ public class IncrementalLoadTasksBuilder {
   private final HiveConf conf;
   private final ReplLogger replLogger;
   private static long numIteration;
+  private String loadPath;
 
   public IncrementalLoadTasksBuilder(String dbName, String tableName, String loadPath,
                                      IncrementalLoadEventsIterator iterator, HiveConf conf) {
@@ -83,6 +84,7 @@ public class IncrementalLoadTasksBuilder {
     replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents());
     numIteration = 0;
     replLogger.startLog();
+    this.loadPath = loadPath;
   }
 
   public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log,
@@ -94,6 +96,21 @@ public class IncrementalLoadTasksBuilder {
     numIteration++;
     this.log.debug("Iteration num " + numIteration);
     TaskTracker tracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
+
+    // if no events are there to replay, then update the last repl id of the database/ table to last event id.
+    if (!iterator.hasNext()) {
+      DumpMetaData eventDmd = new DumpMetaData(new Path(loadPath), conf);
+      if (StringUtils.isEmpty(tableName)) {
+        taskChainTail = dbUpdateReplStateTask(dbName, eventDmd.getEventTo().toString(), taskChainTail);
+        this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " +
+                eventDmd.getEventTo().toString());
+      } else {
+        taskChainTail = tableUpdateReplStateTask(dbName, tableName, null,
+                eventDmd.getEventTo().toString(), taskChainTail);
+        this.log.debug("no events to replay, set last repl id of table " + dbName + "." + tableName + " to " +
+                eventDmd.getEventTo().toString());
+      }
+    }
 
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       FileStatus dir = iterator.next();

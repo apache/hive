@@ -369,7 +369,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(fs, loadPath);
       if (srcs == null || (srcs.length == 0)) {
         LOG.warn("Nothing to load at {}", loadPath.toUri().toString());
-        return;
       }
 
       ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
