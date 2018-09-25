@@ -1006,7 +1006,7 @@ public class MetaStoreUtils {
 
   public static boolean isArchived(Partition part) {
     Map<String, String> params = part.getParameters();
-    return "TRUE".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_ARCHIVED));
+    return (params != null && "TRUE".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_ARCHIVED)));
   }
 
   public static Path getOriginalLocation(Partition part) {
