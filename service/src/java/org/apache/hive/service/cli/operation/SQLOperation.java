@@ -306,7 +306,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       PrivilegedExceptionAction<Object> doAsAction = new PrivilegedExceptionAction<Object>() {
         @Override
         public Object run() throws HiveSQLException {
-          Hive.set(parentHive);
+          Hive.set(parentHive, false);
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(parentPerfLogger);
