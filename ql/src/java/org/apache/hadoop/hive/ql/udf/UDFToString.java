@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
@@ -176,6 +178,22 @@ public class UDFToString extends UDF {
       return null;
     }
     t.set(bw.getBytes(),0,bw.getLength());
+    return t;
+  }
+
+  public Text evaluate(HiveIntervalDayTimeWritable hiw) {
+    if (null == hiw) {
+      return null;
+    }
+    t.set(hiw.toString());
+    return t;
+  }
+
+  public Text evaluate(HiveIntervalYearMonthWritable hiw) {
+    if (null == hiw) {
+      return null;
+    }
+    t.set(hiw.toString());
     return t;
   }
 }
