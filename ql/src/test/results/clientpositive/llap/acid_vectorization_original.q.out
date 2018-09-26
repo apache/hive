@@ -97,7 +97,6 @@ POSTHOOK: query: select distinct si, si%4 from over10k_n2 order by si
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_n2
 #### A masked pattern was here ####
-NULL	NULL
 256	0
 257	1
 258	2
@@ -350,6 +349,7 @@ NULL	NULL
 509	1
 510	2
 511	3
+NULL	NULL
 PREHOOK: query: insert into over10k_orc_bucketed select * from over10k_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_n2

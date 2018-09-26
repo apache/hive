@@ -367,8 +367,10 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI) {
-      return new BasePartitionEvaluator.SumPartitionHiveDecimalEvaluator(this, winFrame, partition, parameters, outputOI);
+        ObjectInspector outputOI,
+        boolean nullsLast) {
+      return new BasePartitionEvaluator.SumPartitionHiveDecimalEvaluator(this, winFrame,
+          partition, parameters, outputOI, nullsLast);
     }
   }
 
@@ -498,8 +500,10 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI) {
-      return new BasePartitionEvaluator.SumPartitionDoubleEvaluator(this, winFrame, partition, parameters, outputOI);
+        ObjectInspector outputOI,
+        boolean nullsLast) {
+      return new BasePartitionEvaluator.SumPartitionDoubleEvaluator(this, winFrame, partition,
+          parameters, outputOI, nullsLast);
     }
   }
 
@@ -624,8 +628,10 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI) {
-      return new BasePartitionEvaluator.SumPartitionLongEvaluator(this, winFrame, partition, parameters, outputOI);
+        ObjectInspector outputOI,
+        boolean nullsLast) {
+      return new BasePartitionEvaluator.SumPartitionLongEvaluator(this, winFrame, partition,
+          parameters, outputOI, nullsLast);
     }
   }
 }
