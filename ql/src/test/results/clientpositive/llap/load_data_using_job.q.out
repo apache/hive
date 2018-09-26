@@ -3028,8 +3028,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
+PREHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
