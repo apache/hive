@@ -31,15 +31,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.apache.hadoop.hive.kafka.KafkaStreamingUtils.*;
 
 /**
  * Test for Utility class.
  */
-public class KafkaStreamingUtilsTest {
-  public KafkaStreamingUtilsTest() {
+public class KafkaUtilsTest {
+  public KafkaUtilsTest() {
   }
 
   @Test public void testConsumerProperties() {
@@ -47,7 +44,7 @@ public class KafkaStreamingUtilsTest {
     configuration.set("kafka.bootstrap.servers", "localhost:9090");
     configuration.set("kafka.consumer.fetch.max.wait.ms", "40");
     configuration.set("kafka.consumer.my.new.wait.ms", "400");
-    Properties properties = consumerProperties(configuration);
+    Properties properties = KafkaUtils.consumerProperties(configuration);
     Assert.assertEquals("localhost:9090", properties.getProperty("bootstrap.servers"));
     Assert.assertEquals("40", properties.getProperty("fetch.max.wait.ms"));
     Assert.assertEquals("400", properties.getProperty("my.new.wait.ms"));
@@ -57,14 +54,14 @@ public class KafkaStreamingUtilsTest {
     Configuration configuration = new Configuration();
     configuration.set("kafka.bootstrap.servers", "localhost:9090");
     configuration.set("kafka.consumer." + ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
-    consumerProperties(configuration);
+    KafkaUtils.consumerProperties(configuration);
   }
 
   @Test(expected = IllegalArgumentException.class) public void canNotSetForbiddenProp2() {
     Configuration configuration = new Configuration();
     configuration.set("kafka.bootstrap.servers", "localhost:9090");
     configuration.set("kafka.consumer." + ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "value");
-    consumerProperties(configuration);
+    KafkaUtils.consumerProperties(configuration);
   }
 
   @Test public void testMetadataEnumLookupMapper() {
@@ -84,25 +81,44 @@ public class KafkaStreamingUtilsTest {
             new LongWritable(ts),
             new LongWritable(startOffset),
             new LongWritable(endOffset));
-    KafkaRecordWritable KRWritable = new KafkaRecordWritable(partition, offset, ts, value, startOffset, endOffset, key);
+    KafkaWritable kafkaWritable = new KafkaWritable(partition, offset, ts, value, startOffset, endOffset, key);
 
     List<Writable>
         actual =
-        KAFKA_METADATA_COLUMN_NAMES.stream()
-            .map(recordWritableFnMap::get)
-            .map(fn -> fn.apply(KRWritable))
+        MetadataColumn.KAFKA_METADATA_COLUMN_NAMES.stream()
+            .map(MetadataColumn::forName)
+            .map(kafkaWritable::getHiveWritable)
             .collect(Collectors.toList());
 
     Assert.assertEquals(expectedWritables, actual);
   }
 
-  @Test
-  public void testEnsureThatAllTheColumnAreListed() {
-    Assert.assertEquals(MetadataColumn.values().length, KafkaStreamingUtils.KAFKA_METADATA_COLUMN_NAMES.size());
-    Assert.assertEquals(MetadataColumn.values().length, KafkaStreamingUtils.KAFKA_METADATA_INSPECTORS.size());
+  @Test public void testEnsureThatAllTheColumnAreListed() {
+    Assert.assertEquals(MetadataColumn.values().length, MetadataColumn.KAFKA_METADATA_COLUMN_NAMES.size());
+    Assert.assertEquals(MetadataColumn.values().length, MetadataColumn.KAFKA_METADATA_INSPECTORS.size());
     Assert.assertFalse(Arrays.stream(MetadataColumn.values())
         .map(MetadataColumn::getName)
-        .anyMatch(name -> !KAFKA_METADATA_COLUMN_NAMES.contains(name)));
-    Arrays.stream(MetadataColumn.values()).forEach(element -> Assert.assertNotNull(KafkaStreamingUtils.recordWritableFnMap.get(element.getName())));
+        .anyMatch(name -> !MetadataColumn.KAFKA_METADATA_COLUMN_NAMES.contains(name)));
+    Arrays.stream(MetadataColumn.values())
+        .forEach(element -> Assert.assertNotNull(MetadataColumn.forName(element.getName())));
+  }
+
+  @Test public void testGetTaskId() {
+    String[]
+        ids =
+        {"attempt_200707121733_0003_m_000005_0", "attempt_local_0001_m_000005_0", "task_200709221812_0001_m_000005_0",
+            "task_local_0001_r_000005_0", "task_local_0001_r_000005_2"};
+
+    String[]
+        expectedIds =
+        {"attempt_200707121733_0003_m_000005", "attempt_local_0001_m_000005", "task_200709221812_0001_m_000005",
+            "task_local_0001_r_000005", "task_local_0001_r_000005"};
+
+    Object[] actualIds = Arrays.stream(ids).map(id -> {
+      Configuration configuration = new Configuration();
+      configuration.set("mapred.task.id", id);
+      return configuration;
+    }).map(KafkaUtils::getTaskId).toArray();
+    Assert.assertArrayEquals(expectedIds, actualIds);
   }
 }

@@ -43,7 +43,7 @@
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
-    <kafka.version>1.0.1</kafka.version>
+    <kafka.version>2.0.0</kafka.version>
   </properties>
       <dependencies>
         <dependency>
@@ -206,6 +206,11 @@
           <groupId>org.apache.kafka</groupId>
           <artifactId>kafka_2.11</artifactId>
           <version>${kafka.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+          <version>1.7.25</version>
         </dependency>
       </dependencies>
   <build>

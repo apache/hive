@@ -244,3 +244,55 @@ select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp
 `__partition`, `__start_offset`,`__end_offset`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
 `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090;
 
+
+CREATE EXTERNAL TABLE kafka_table_insert
+(c_name string, c_int int, c_float float)
+STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+WITH SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd\'T\'HH:mm:ss\'Z\'")
+TBLPROPERTIES
+("kafka.topic" = "test-topic-write-json",
+"kafka.bootstrap.servers"="localhost:9092",
+"kafka.serde.class"="org.apache.hadoop.hive.serde2.JsonSerDe")
+;
+
+insert into table kafka_table_insert (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
+values ('test1',5, 4.999,'key',null ,-1,1536449552290,-1,null );
+
+insert into table kafka_table_insert (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
+values ('test2',15, 14.9996666, null ,null ,-1,1536449552285,-1,-1 );
+
+select * from kafka_table_insert;
+
+
+insert into table wiki_kafka_avro_table select
+isrobot as isrobot, channel as channel,`timestamp` as `timestamp`,  flags as flags,  isunpatrolled as isunpatrolled, page as page,
+diffurl as diffurl, added as added, comment as comment, commentlength as commentlength, isnew as isnew, isminor as isminor,
+delta as delta, isanonymous as isanonymous, `user` as `user`,  deltabucket as detlabucket, deleted as deleted, namespace as namespace,
+`__key`, `__partition`, -1 as `__offset`,`__timestamp`, -1 as `__start_offset`, -1 as `__end_offset`
+from wiki_kafka_avro_table;
+
+select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table;
+
+select `__key`, count(1)  FROM wiki_kafka_avro_table group by `__key` order by `__key`;
+
+select `__timestamp`, count(1) from wiki_kafka_avro_table group by `__timestamp` order by `__timestamp`;
+
+
+CREATE EXTERNAL TABLE kafka_table_csv
+(c_name string, c_int int, c_float float)
+STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+TBLPROPERTIES
+("kafka.topic" = "test-topic-write-csv",
+"kafka.bootstrap.servers"="localhost:9092",
+"kafka.serde.class"="org.apache.hadoop.hive.serde2.OpenCSVSerde");
+
+ALTER TABLE kafka_table_csv SET TBLPROPERTIES ("hive.kafka.optimistic.commit"="false", "kafka.write.semantic"="EXACTLY_ONCE");
+insert into table kafka_table_csv select c_name, c_int, c_float, `__key`, `__partition`, -1 as `__offset`, `__timestamp`, -1, -1 from kafka_table_insert;
+
+insert into table kafka_table_csv (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
+values ('test4',-5, -4.999,'key-2',null ,-1,1536449552291,-1,null );
+
+insert into table kafka_table_csv (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
+values ('test5',-15, -14.9996666, 'key-3' ,null ,-1,1536449552284,-1,-1 );
+
+select * from kafka_table_csv;
