@@ -59,30 +59,30 @@ public class KafkaScanTrimmerTest {
   private final ExprNodeDesc seventyFiveLong = ConstantExprBuilder.build(75L);
   private final ExprNodeDesc fortyLong = ConstantExprBuilder.build(40L);
 
-  private ExprNodeDesc
+  private final ExprNodeDesc
       partitionColumn =
       new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo,
-          KafkaStreamingUtils.MetadataColumn.PARTITION.getName(),
+          MetadataColumn.PARTITION.getName(),
           null,
           false);
-  private ExprNodeDesc
+  private final ExprNodeDesc
       offsetColumn =
       new ExprNodeColumnDesc(TypeInfoFactory.longTypeInfo,
-          KafkaStreamingUtils.MetadataColumn.OFFSET.getName(),
+          MetadataColumn.OFFSET.getName(),
           null,
           false);
 
-  private String topic = "my_topic";
-  private Map<TopicPartition, KafkaPullerInputSplit>
+  private final String topic = "my_topic";
+  private final Map<TopicPartition, KafkaInputSplit>
       fullHouse =
       ImmutableMap.of(new TopicPartition(topic, 0),
-          new KafkaPullerInputSplit(topic, 0, 0, 45, PATH),
+          new KafkaInputSplit(topic, 0, 0, 45, PATH),
           new TopicPartition(topic, 1),
-          new KafkaPullerInputSplit(topic, 1, 5, 1005, PATH),
+          new KafkaInputSplit(topic, 1, 5, 1005, PATH),
           new TopicPartition(topic, 2),
-          new KafkaPullerInputSplit(topic, 2, 9, 100, PATH),
+          new KafkaInputSplit(topic, 2, 9, 100, PATH),
           new TopicPartition(topic, 3),
-          new KafkaPullerInputSplit(topic, 3, 0, 100, PATH));
+          new KafkaInputSplit(topic, 3, 0, 100, PATH));
 
   @Test public void computeOptimizedScanPartitionBinaryOpFilter() {
     KafkaScanTrimmer kafkaScanTrimmer = new KafkaScanTrimmer(fullHouse, null);
@@ -192,8 +192,8 @@ public class KafkaScanTrimmerTest {
             .deserializeExpression(SerializationUtilities.serializeExpression(orExpression)));
     TopicPartition tpZero = new TopicPartition(topic, 0);
     TopicPartition toThree = new TopicPartition(topic, 3);
-    KafkaPullerInputSplit split1 = new KafkaPullerInputSplit(topic, 0, 30, 41, PATH);
-    KafkaPullerInputSplit split2 = new KafkaPullerInputSplit(topic, 3, 35, 75, PATH);
+    KafkaInputSplit split1 = new KafkaInputSplit(topic, 0, 30, 41, PATH);
+    KafkaInputSplit split2 = new KafkaInputSplit(topic, 3, 35, 75, PATH);
 
     Map expected = ImmutableMap.of(tpZero, split1, toThree, split2);
     Assert.assertEquals(expected, actual);
@@ -354,7 +354,7 @@ public class KafkaScanTrimmerTest {
     Map
         expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 constantOffset,
                 constantOffset + 1,
@@ -367,7 +367,7 @@ public class KafkaScanTrimmerTest {
         KafkaScanTrimmer.buildScanFromOffsetPredicate(fullHouse, PredicateLeaf.Operator.EQUALS, 3000000L, false, false);
     expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 entry.getEndOffset(),
                 entry.getEndOffset(),
@@ -379,7 +379,7 @@ public class KafkaScanTrimmerTest {
 
     expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 entry.getStartOffset() > 0 ? entry.getEndOffset() : 0,
                 entry.getStartOffset() > 0 ? entry.getEndOffset() : 1,
@@ -402,7 +402,7 @@ public class KafkaScanTrimmerTest {
     Map
         expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 entry.getStartOffset(),
                 Math.min(constantOffset, entry.getEndOffset()),
@@ -419,7 +419,7 @@ public class KafkaScanTrimmerTest {
 
     expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 Math.min(entry.getEndOffset(), Math.max(entry.getStartOffset(), constantOffset + 1)),
                 entry.getEndOffset(),
@@ -436,7 +436,7 @@ public class KafkaScanTrimmerTest {
 
     expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 Math.min(entry.getEndOffset(), Math.max(entry.getStartOffset(), constantOffset)),
                 entry.getEndOffset(),
@@ -453,7 +453,7 @@ public class KafkaScanTrimmerTest {
 
     expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 entry.getStartOffset(),
                 Math.min(constantOffset + 1, entry.getEndOffset()),
@@ -476,7 +476,7 @@ public class KafkaScanTrimmerTest {
     Map
         expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 entry.getStartOffset(),
                 Math.min(constantOffset + 1, entry.getEndOffset()),
@@ -493,7 +493,7 @@ public class KafkaScanTrimmerTest {
 
     expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 Math.min(entry.getEndOffset(), Math.max(entry.getStartOffset(), constantOffset)),
                 entry.getEndOffset(),
@@ -510,7 +510,7 @@ public class KafkaScanTrimmerTest {
 
     expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 Math.min(entry.getEndOffset(), Math.max(entry.getStartOffset(), constantOffset + 1)),
                 entry.getEndOffset(),
@@ -527,7 +527,7 @@ public class KafkaScanTrimmerTest {
 
     expected =
         Maps.transformValues(fullHouse,
-            entry -> new KafkaPullerInputSplit(Objects.requireNonNull(entry).getTopic(),
+            entry -> new KafkaInputSplit(Objects.requireNonNull(entry).getTopic(),
                 entry.getPartition(),
                 entry.getStartOffset(),
                 Math.min(constantOffset, entry.getEndOffset()),

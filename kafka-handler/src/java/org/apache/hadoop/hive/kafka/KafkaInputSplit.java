@@ -34,18 +34,18 @@ import java.util.List;
 /**
  * Kafka Hadoop Input Split Class.
  */
-@SuppressWarnings("WeakerAccess") public class KafkaPullerInputSplit extends FileSplit
+@SuppressWarnings("WeakerAccess") public class KafkaInputSplit extends FileSplit
     implements org.apache.hadoop.mapred.InputSplit {
   private String topic;
   private long startOffset;
   private int partition;
   private long endOffset;
 
-  public KafkaPullerInputSplit() {
+  public KafkaInputSplit() {
     super(null, 0, 0, (String[]) null);
   }
 
-  public KafkaPullerInputSplit(String topic, int partition, long startOffset, long endOffset, Path dummyPath) {
+  public KafkaInputSplit(String topic, int partition, long startOffset, long endOffset, Path dummyPath) {
     super(dummyPath, 0, 0, (String[]) null);
     this.topic = topic;
     this.startOffset = startOffset;
@@ -109,8 +109,8 @@ import java.util.List;
    *
    * @return new split that represents range intersection or null if it is not overlapping
    */
-  @Nullable public static KafkaPullerInputSplit intersectRange(KafkaPullerInputSplit split1,
-      KafkaPullerInputSplit split2) {
+  @Nullable public static KafkaInputSplit intersectRange(KafkaInputSplit split1,
+      KafkaInputSplit split2) {
     assert (split1.topic.equals(split2.topic));
     assert (split1.partition == split2.partition);
     final long startOffset = Math.max(split1.getStartOffset(), split2.getStartOffset());
@@ -119,7 +119,7 @@ import java.util.List;
       // there is no overlapping
       return null;
     }
-    return new KafkaPullerInputSplit(split1.topic, split1.partition, startOffset, endOffset, split1.getPath());
+    return new KafkaInputSplit(split1.topic, split1.partition, startOffset, endOffset, split1.getPath());
   }
 
   /**
@@ -130,22 +130,22 @@ import java.util.List;
    *
    * @return new split with a range including both splits.
    */
-  public static KafkaPullerInputSplit unionRange(KafkaPullerInputSplit split1, KafkaPullerInputSplit split2) {
+  public static KafkaInputSplit unionRange(KafkaInputSplit split1, KafkaInputSplit split2) {
     assert (split1.topic.equals(split2.topic));
     assert (split1.partition == split2.partition);
     final long startOffset = Math.min(split1.getStartOffset(), split2.getStartOffset());
     final long endOffset = Math.max(split1.getEndOffset(), split2.getEndOffset());
-    return new KafkaPullerInputSplit(split1.topic, split1.partition, startOffset, endOffset, split1.getPath());
+    return new KafkaInputSplit(split1.topic, split1.partition, startOffset, endOffset, split1.getPath());
   }
 
   @Override public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof KafkaPullerInputSplit)) {
+    if (!(o instanceof KafkaInputSplit)) {
       return false;
     }
-    KafkaPullerInputSplit that = (KafkaPullerInputSplit) o;
+    KafkaInputSplit that = (KafkaInputSplit) o;
     return Objects.equal(getTopic(), that.getTopic())
         && Objects.equal(getStartOffset(), that.getStartOffset())
         && Objects.equal(getPartition(), that.getPartition())
@@ -157,7 +157,7 @@ import java.util.List;
   }
 
   @Override public String toString() {
-    return "KafkaPullerInputSplit{"
+    return "KafkaInputSplit{"
         + "topic='"
         + topic
         + '\''
@@ -172,24 +172,20 @@ import java.util.List;
         + '}';
   }
 
-  public static KafkaPullerInputSplit copyOf(KafkaPullerInputSplit other) {
-    return new KafkaPullerInputSplit(other.getTopic(),
+  public static KafkaInputSplit copyOf(KafkaInputSplit other) {
+    return new KafkaInputSplit(other.getTopic(),
         other.getPartition(),
         other.getStartOffset(),
         other.getEndOffset(),
         other.getPath());
   }
 
-  @SuppressWarnings("MethodDoesntCallSuperMethod") public KafkaPullerInputSplit clone() {
-    return copyOf(this);
-  }
-
-  public static List<KafkaPullerInputSplit> slice(long sliceSize, final KafkaPullerInputSplit split) {
+  public static List<KafkaInputSplit> slice(long sliceSize, final KafkaInputSplit split) {
     if (split.getEndOffset() - split.getStartOffset() > sliceSize) {
-      ImmutableList.Builder<KafkaPullerInputSplit> builder = ImmutableList.builder();
+      ImmutableList.Builder<KafkaInputSplit> builder = ImmutableList.builder();
       long start = split.getStartOffset();
       while (start < split.getEndOffset() - sliceSize) {
-        builder.add(new KafkaPullerInputSplit(split.topic,
+        builder.add(new KafkaInputSplit(split.topic,
             split.partition,
             start,
             start + sliceSize + 1,
@@ -198,7 +194,7 @@ import java.util.List;
       }
       // last split
       if (start < split.getEndOffset()) {
-        builder.add(new KafkaPullerInputSplit(split.topic,
+        builder.add(new KafkaInputSplit(split.topic,
             split.partition,
             start,
             split.getEndOffset(),

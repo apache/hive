@@ -63,14 +63,14 @@ import java.util.function.Predicate;
  */
 class KafkaScanTrimmer {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaScanTrimmer.class);
-  private final Map<TopicPartition, KafkaPullerInputSplit> fullHouse;
+  private final Map<TopicPartition, KafkaInputSplit> fullHouse;
   private final KafkaConsumer kafkaConsumer;
 
   /**
    * @param fullHouse     initial full scan to be pruned, this is a map of Topic partition to input split.
    * @param kafkaConsumer kafka consumer used to pull offsets for time filter if needed
    */
-  KafkaScanTrimmer(Map<TopicPartition, KafkaPullerInputSplit> fullHouse, KafkaConsumer kafkaConsumer) {
+  KafkaScanTrimmer(Map<TopicPartition, KafkaInputSplit> fullHouse, KafkaConsumer kafkaConsumer) {
     this.fullHouse = fullHouse;
     this.kafkaConsumer = kafkaConsumer;
   }
@@ -83,8 +83,8 @@ class KafkaScanTrimmer {
    *
    * @return tiny house of of the full house based on filter expression
    */
-  Map<TopicPartition, KafkaPullerInputSplit> computeOptimizedScan(ExprNodeGenericFuncDesc filterExpression) {
-    Map<TopicPartition, KafkaPullerInputSplit> optimizedScan = parseAndOptimize(filterExpression);
+  Map<TopicPartition, KafkaInputSplit> computeOptimizedScan(ExprNodeGenericFuncDesc filterExpression) {
+    Map<TopicPartition, KafkaInputSplit> optimizedScan = parseAndOptimize(filterExpression);
 
     if (LOG.isDebugEnabled()) {
       if (optimizedScan != null) {
@@ -113,7 +113,7 @@ class KafkaScanTrimmer {
    *
    * @return Map of optimized kafka range scans or null if it is impossible to optimize.
    */
-  @Nullable private Map<TopicPartition, KafkaPullerInputSplit> parseAndOptimize(ExprNodeDesc expression) {
+  @Nullable private Map<TopicPartition, KafkaInputSplit> parseAndOptimize(ExprNodeDesc expression) {
     if (expression.getClass() != ExprNodeGenericFuncDesc.class) {
       return null;
     }
@@ -154,7 +154,7 @@ class KafkaScanTrimmer {
    *
    * @return leaf scan or null if can not figure out push down
    */
-  @Nullable private Map<TopicPartition, KafkaPullerInputSplit> pushLeaf(ExprNodeGenericFuncDesc expr,
+  @Nullable private Map<TopicPartition, KafkaInputSplit> pushLeaf(ExprNodeGenericFuncDesc expr,
       PredicateLeaf.Operator operator,
       boolean negation) {
     if (expr.getChildren().size() != 2) {
@@ -192,8 +192,7 @@ class KafkaScanTrimmer {
       constantDesc = (ExprNodeConstantDesc) extracted[0];
     }
 
-
-    if (columnDesc.getColumn().equals(KafkaStreamingUtils.MetadataColumn.PARTITION.getName())) {
+    if (columnDesc.getColumn().equals(MetadataColumn.PARTITION.getName())) {
       return buildScanFromPartitionPredicate(fullHouse,
           operator,
           ((Number) constantDesc.getValue()).intValue(),
@@ -201,7 +200,7 @@ class KafkaScanTrimmer {
           negation);
 
     }
-    if (columnDesc.getColumn().equals(KafkaStreamingUtils.MetadataColumn.OFFSET.getName())) {
+    if (columnDesc.getColumn().equals(MetadataColumn.OFFSET.getName())) {
       return buildScanFromOffsetPredicate(fullHouse,
           operator,
           ((Number) constantDesc.getValue()).longValue(),
@@ -209,7 +208,7 @@ class KafkaScanTrimmer {
           negation);
     }
 
-    if (columnDesc.getColumn().equals(KafkaStreamingUtils.MetadataColumn.TIMESTAMP.getName())) {
+    if (columnDesc.getColumn().equals(MetadataColumn.TIMESTAMP.getName())) {
       long timestamp = ((Number) constantDesc.getValue()).longValue();
       //noinspection unchecked
       return buildScanForTimesPredicate(fullHouse, operator, timestamp, flip, negation, kafkaConsumer);
@@ -229,8 +228,8 @@ class KafkaScanTrimmer {
    * @return filtered kafka scan
    */
 
-  @VisibleForTesting static Map<TopicPartition, KafkaPullerInputSplit> buildScanFromPartitionPredicate(
-      Map<TopicPartition, KafkaPullerInputSplit> fullScan,
+  @VisibleForTesting static Map<TopicPartition, KafkaInputSplit> buildScanFromPartitionPredicate(Map<TopicPartition,
+      KafkaInputSplit> fullScan,
       PredicateLeaf.Operator operator,
       int partitionConst,
       boolean flip,
@@ -262,12 +261,12 @@ class KafkaScanTrimmer {
       predicate = topicPartition -> true;
     }
 
-    ImmutableMap.Builder<TopicPartition, KafkaPullerInputSplit> builder = ImmutableMap.builder();
+    ImmutableMap.Builder<TopicPartition, KafkaInputSplit> builder = ImmutableMap.builder();
     // Filter full scan based on predicate
     fullScan.entrySet()
         .stream()
         .filter(entry -> predicate.test(entry.getKey()))
-        .forEach(entry -> builder.put(entry.getKey(), entry.getValue().clone()));
+        .forEach(entry -> builder.put(entry.getKey(), KafkaInputSplit.copyOf(entry.getValue())));
     return builder.build();
   }
 
@@ -280,8 +279,8 @@ class KafkaScanTrimmer {
    *
    * @return optimized kafka scan
    */
-  @VisibleForTesting static Map<TopicPartition, KafkaPullerInputSplit> buildScanFromOffsetPredicate(Map<TopicPartition,
-      KafkaPullerInputSplit> fullScan,
+  @VisibleForTesting static Map<TopicPartition, KafkaInputSplit> buildScanFromOffsetPredicate(Map<TopicPartition,
+      KafkaInputSplit> fullScan,
       PredicateLeaf.Operator operator,
       long offsetConst,
       boolean flip,
@@ -320,54 +319,50 @@ class KafkaScanTrimmer {
       endOffset = -1;
     }
 
-    final Map<TopicPartition, KafkaPullerInputSplit> newScan = new HashMap<>();
+    final Map<TopicPartition, KafkaInputSplit> newScan = new HashMap<>();
 
     fullScan.forEach((tp, existingInputSplit) -> {
-      final KafkaPullerInputSplit newInputSplit;
+      final KafkaInputSplit newInputSplit;
       if (startOffset != -1 && endOffset == -1) {
-        newInputSplit = new KafkaPullerInputSplit(tp.topic(),
+        newInputSplit = new KafkaInputSplit(tp.topic(),
             tp.partition(),
             //if the user ask for start offset > max offset will replace with last offset
             Math.min(startOffset, existingInputSplit.getEndOffset()),
             existingInputSplit.getEndOffset(),
             existingInputSplit.getPath());
       } else if (endOffset != -1 && startOffset == -1) {
-        newInputSplit = new KafkaPullerInputSplit(tp.topic(), tp.partition(), existingInputSplit.getStartOffset(),
+        newInputSplit = new KafkaInputSplit(tp.topic(), tp.partition(), existingInputSplit.getStartOffset(),
             //@TODO check this, if user ask for non existing end offset ignore it and position head on start
             // This can be an issue when doing ingestion from kafka into Hive, what happen if there is some gaps
             // Shall we fail the ingest or carry-on and ignore non existing offsets
             Math.max(endOffset, existingInputSplit.getStartOffset()), existingInputSplit.getPath());
       } else if (endOffset == startOffset + 1) {
         if (startOffset < existingInputSplit.getStartOffset() || startOffset >= existingInputSplit.getEndOffset()) {
-          newInputSplit = new KafkaPullerInputSplit(tp.topic(), tp.partition(),
+          newInputSplit = new KafkaInputSplit(tp.topic(), tp.partition(),
               // non existing offset will be seeking last offset
               existingInputSplit.getEndOffset(), existingInputSplit.getEndOffset(), existingInputSplit.getPath());
         } else {
           newInputSplit =
-              new KafkaPullerInputSplit(tp.topic(),
-                  tp.partition(),
-                  startOffset,
-                  endOffset,
-                  existingInputSplit.getPath());
+              new KafkaInputSplit(tp.topic(), tp.partition(), startOffset, endOffset, existingInputSplit.getPath());
         }
 
       } else {
         newInputSplit =
-            new KafkaPullerInputSplit(tp.topic(),
+            new KafkaInputSplit(tp.topic(),
                 tp.partition(),
                 existingInputSplit.getStartOffset(),
                 existingInputSplit.getEndOffset(),
                 existingInputSplit.getPath());
       }
 
-      newScan.put(tp, KafkaPullerInputSplit.intersectRange(newInputSplit, existingInputSplit));
+      newScan.put(tp, KafkaInputSplit.intersectRange(newInputSplit, existingInputSplit));
     });
 
     return newScan;
   }
 
-  @Nullable private static Map<TopicPartition, KafkaPullerInputSplit> buildScanForTimesPredicate(
-      Map<TopicPartition, KafkaPullerInputSplit> fullHouse,
+  @Nullable private static Map<TopicPartition, KafkaInputSplit> buildScanForTimesPredicate(
+      Map<TopicPartition, KafkaInputSplit> fullHouse,
       PredicateLeaf.Operator operator,
       long timestamp,
       boolean flip,
@@ -385,11 +380,11 @@ class KafkaScanTrimmer {
         // NULL will be returned for that partition If the message format version in a partition is before 0.10.0
         Map<TopicPartition, OffsetAndTimestamp> offsetAndTimestamp = consumer.offsetsForTimes(timePartitionsMap);
         return Maps.toMap(fullHouse.keySet(), tp -> {
-          KafkaPullerInputSplit existing = fullHouse.get(tp);
+          KafkaInputSplit existing = fullHouse.get(tp);
           OffsetAndTimestamp foundOffsetAndTime = offsetAndTimestamp.get(tp);
           //Null in case filter doesn't match or field not existing ie old broker thus return empty scan.
           final long startOffset = foundOffsetAndTime == null ? existing.getEndOffset() : foundOffsetAndTime.offset();
-          return new KafkaPullerInputSplit(Objects.requireNonNull(tp).topic(),
+          return new KafkaInputSplit(Objects.requireNonNull(tp).topic(),
               tp.partition(),
               startOffset,
               existing.getEndOffset(),
@@ -410,21 +405,21 @@ class KafkaScanTrimmer {
    *
    * @return either full scan or an optimized sub scan.
    */
-  private Map<TopicPartition, KafkaPullerInputSplit> pushAndOp(ExprNodeGenericFuncDesc expr) {
-    Map<TopicPartition, KafkaPullerInputSplit> currentScan = new HashMap<>();
+  private Map<TopicPartition, KafkaInputSplit> pushAndOp(ExprNodeGenericFuncDesc expr) {
+    Map<TopicPartition, KafkaInputSplit> currentScan = new HashMap<>();
 
-    fullHouse.forEach((tp, input) -> currentScan.put(tp, KafkaPullerInputSplit.copyOf(input)));
+    fullHouse.forEach((tp, input) -> currentScan.put(tp, KafkaInputSplit.copyOf(input)));
 
     for (ExprNodeDesc child : expr.getChildren()) {
-      Map<TopicPartition, KafkaPullerInputSplit> scan = parseAndOptimize(child);
+      Map<TopicPartition, KafkaInputSplit> scan = parseAndOptimize(child);
       if (scan != null) {
         Set<TopicPartition> currentKeys = ImmutableSet.copyOf(currentScan.keySet());
         currentKeys.forEach(key -> {
-          KafkaPullerInputSplit newSplit = scan.get(key);
-          KafkaPullerInputSplit oldSplit = currentScan.get(key);
+          KafkaInputSplit newSplit = scan.get(key);
+          KafkaInputSplit oldSplit = currentScan.get(key);
           currentScan.remove(key);
           if (newSplit != null) {
-            KafkaPullerInputSplit intersectionSplit = KafkaPullerInputSplit.intersectRange(newSplit, oldSplit);
+            KafkaInputSplit intersectionSplit = KafkaInputSplit.intersectRange(newSplit, oldSplit);
             if (intersectionSplit != null) {
               currentScan.put(key, intersectionSplit);
             }
@@ -436,18 +431,18 @@ class KafkaScanTrimmer {
     return currentScan;
   }
 
-  @Nullable private Map<TopicPartition, KafkaPullerInputSplit> pushOrOp(ExprNodeGenericFuncDesc expr) {
-    final Map<TopicPartition, KafkaPullerInputSplit> currentScan = new HashMap<>();
+  @Nullable private Map<TopicPartition, KafkaInputSplit> pushOrOp(ExprNodeGenericFuncDesc expr) {
+    final Map<TopicPartition, KafkaInputSplit> currentScan = new HashMap<>();
     for (ExprNodeDesc child : expr.getChildren()) {
-      Map<TopicPartition, KafkaPullerInputSplit> scan = parseAndOptimize(child);
+      Map<TopicPartition, KafkaInputSplit> scan = parseAndOptimize(child);
       if (scan == null) {
         // if any of the children is unknown bailout
         return null;
       }
 
       scan.forEach((tp, input) -> {
-        KafkaPullerInputSplit existingSplit = currentScan.get(tp);
-        currentScan.put(tp, KafkaPullerInputSplit.unionRange(input, existingSplit == null ? input : existingSplit));
+        KafkaInputSplit existingSplit = currentScan.get(tp);
+        currentScan.put(tp, KafkaInputSplit.unionRange(input, existingSplit == null ? input : existingSplit));
       });
     }
     return currentScan;

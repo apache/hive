@@ -55,13 +55,13 @@ import java.util.stream.Collectors;
  * The input split will contain the set of topic partition and start/end offsets.
  * Records will be returned as bytes array.
  */
-public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecordWritable>
-    implements org.apache.hadoop.mapred.InputFormat<NullWritable, KafkaRecordWritable> {
+@SuppressWarnings("WeakerAccess") public class KafkaInputFormat extends InputFormat<NullWritable, KafkaWritable>
+    implements org.apache.hadoop.mapred.InputFormat<NullWritable, KafkaWritable> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(KafkaPullerInputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(KafkaInputFormat.class);
 
   @Override public InputSplit[] getSplits(JobConf jobConf, int i) throws IOException {
-    List<KafkaPullerInputSplit> inputSplits;
+    List<KafkaInputSplit> inputSplits;
     try {
       inputSplits = computeSplits(jobConf);
     } catch (InterruptedException e) {
@@ -83,14 +83,19 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
    *
    * @return full scan input split collection based on Kafka metadata APIs
    */
-  private static List<KafkaPullerInputSplit> buildFullScanFromKafka(String topic,
+  private static List<KafkaInputSplit> buildFullScanFromKafka(String topic,
       KafkaConsumer<byte[], byte[]> consumer,
-      Path[] tablePaths) {
+      Path[] tablePaths, int maxTries) {
     final Map<TopicPartition, Long> starOffsetsMap;
     final Map<TopicPartition, Long> endOffsetsMap;
 
     final List<TopicPartition> topicPartitions;
-    topicPartitions = fetchTopicPartitions(topic, consumer);
+    RetryUtils.Task<List<TopicPartition>> fetchTPTask = () -> fetchTopicPartitions(topic, consumer);
+    try {
+      topicPartitions = RetryUtils.retry(fetchTPTask, (error) -> !KafkaUtils.exceptionIsFatal(error), maxTries);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     starOffsetsMap = consumer.beginningOffsets(topicPartitions);
     endOffsetsMap = consumer.endOffsets(topicPartitions);
 
@@ -101,7 +106,7 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
       endOffsetsMap.forEach((tp, end) -> LOG.info("TPartition [{}],End offsets [{}]", tp, end));
     }
     return topicPartitions.stream()
-        .map(topicPartition -> new KafkaPullerInputSplit(topicPartition.topic(),
+        .map(topicPartition -> new KafkaInputSplit(topicPartition.topic(),
             topicPartition.partition(),
             starOffsetsMap.get(topicPartition),
             endOffsetsMap.get(topicPartition),
@@ -109,25 +114,23 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
         .collect(Collectors.toList());
   }
 
-  private List<KafkaPullerInputSplit> computeSplits(Configuration configuration)
+  private List<KafkaInputSplit> computeSplits(Configuration configuration)
       throws IOException, InterruptedException {
-    // this will be used to harness some KAFKA blocking calls
+    // ExecutorService is used to harness some KAFKA blocking calls and interrupt after some duration
     final ExecutorService execService = Executors.newSingleThreadExecutor();
-    try (KafkaConsumer consumer = new KafkaConsumer(KafkaStreamingUtils.consumerProperties(configuration))) {
-      final String topic = configuration.get(KafkaStreamingUtils.HIVE_KAFKA_TOPIC);
-      final long
-          timeoutMs =
-          configuration.getLong(KafkaStreamingUtils.HIVE_KAFKA_POLL_TIMEOUT,
-              KafkaStreamingUtils.DEFAULT_CONSUMER_POLL_TIMEOUT_MS);
+
+    try (KafkaConsumer consumer = new KafkaConsumer(KafkaUtils.consumerProperties(configuration))) {
+      final String topic = configuration.get(KafkaTableProperties.HIVE_KAFKA_TOPIC.getName());
+      final long timeoutMs = configuration.getLong(KafkaTableProperties.KAFKA_FETCH_METADATA_TIMEOUT.getName(), -1);
+      final int maxTries = configuration.getInt(KafkaTableProperties.MAX_RETRIES.getName(), -1);
       // hive depends on FileSplits
       JobConf jobConf = new JobConf(configuration);
       Path[] tablePaths = org.apache.hadoop.mapred.FileInputFormat.getInputPaths(jobConf);
 
+      final Future<List<KafkaInputSplit>> futureFullHouse;
       //noinspection unchecked
-      Future<List<KafkaPullerInputSplit>>
-          futureFullHouse =
-          execService.submit(() -> buildFullScanFromKafka(topic, consumer, tablePaths));
-      List<KafkaPullerInputSplit> fullHouse;
+      futureFullHouse = execService.submit(() -> buildFullScanFromKafka(topic, consumer, tablePaths, maxTries));
+      final List<KafkaInputSplit> fullHouse;
       try {
         fullHouse = futureFullHouse.get(timeoutMs, TimeUnit.MILLISECONDS);
       } catch (TimeoutException | ExecutionException e) {
@@ -137,7 +140,7 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
         throw new IOException(e);
       }
 
-      @SuppressWarnings("unchecked") final ImmutableMap.Builder<TopicPartition, KafkaPullerInputSplit>
+      @SuppressWarnings("unchecked") final ImmutableMap.Builder<TopicPartition, KafkaInputSplit>
           fullHouseMapBuilder =
           new ImmutableMap.Builder();
       fullHouse.forEach(input -> fullHouseMapBuilder.put(new TopicPartition(input.getTopic(), input.getPartition()),
@@ -149,14 +152,14 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
       if (filterExprSerialized != null && !filterExprSerialized.isEmpty()) {
         ExprNodeGenericFuncDesc filterExpr = SerializationUtilities.deserializeExpression(filterExprSerialized);
         LOG.info("Kafka trimmer working on Filter tree {}", filterExpr.getExprString());
-        Callable<List<KafkaPullerInputSplit>>
+        Callable<List<KafkaInputSplit>>
             trimmerWorker = () -> kafkaScanTrimmer.computeOptimizedScan(filterExpr)
                 .entrySet()
                 .stream()
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
 
-        Future<List<KafkaPullerInputSplit>> futureTinyHouse = execService.submit(trimmerWorker);
+        Future<List<KafkaInputSplit>> futureTinyHouse = execService.submit(trimmerWorker);
         try {
           return futureTinyHouse.get(timeoutMs, TimeUnit.MILLISECONDS)
               .stream()
@@ -184,10 +187,10 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
     return partitions.stream().map(p -> new TopicPartition(topic, p.partition())).collect(Collectors.toList());
   }
 
-  @Override public RecordReader<NullWritable, KafkaRecordWritable> getRecordReader(InputSplit inputSplit,
+  @Override public RecordReader<NullWritable, KafkaWritable> getRecordReader(InputSplit inputSplit,
       JobConf jobConf,
       Reporter reporter) {
-    return new KafkaPullerRecordReader((KafkaPullerInputSplit) inputSplit, jobConf);
+    return new KafkaRecordReader((KafkaInputSplit) inputSplit, jobConf);
   }
 
   @Override public List<org.apache.hadoop.mapreduce.InputSplit> getSplits(JobContext jobContext)
@@ -197,9 +200,9 @@ public class KafkaPullerInputFormat extends InputFormat<NullWritable, KafkaRecor
         .collect(Collectors.toList());
   }
 
-  @Override public org.apache.hadoop.mapreduce.RecordReader<NullWritable, KafkaRecordWritable> createRecordReader(
+  @Override public org.apache.hadoop.mapreduce.RecordReader<NullWritable, KafkaWritable> createRecordReader(
       org.apache.hadoop.mapreduce.InputSplit inputSplit,
       TaskAttemptContext taskAttemptContext) {
-    return new KafkaPullerRecordReader();
+    return new KafkaRecordReader();
   }
 }
