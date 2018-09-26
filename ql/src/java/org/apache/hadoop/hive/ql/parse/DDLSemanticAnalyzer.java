@@ -1550,7 +1550,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           inputFormatClass = part.getInputFormatClass();
           isArchived = ArchiveUtils.isArchived(part);
           lbCtx = constructListBucketingCtx(part.getSkewedColNames(), part.getSkewedColValues(),
-              part.getSkewedColValueLocationMaps(), part.isStoredAsSubDirectories(), conf);
+              part.getSkewedColValueLocationMaps(), part.isStoredAsSubDirectories());
           isListBucketed = part.isStoredAsSubDirectories();
           listBucketColNames = part.getSkewedColNames();
         } else {
@@ -1561,7 +1561,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           bucketCols = table.getBucketCols();
           inputFormatClass = table.getInputFormatClass();
           lbCtx = constructListBucketingCtx(table.getSkewedColNames(), table.getSkewedColValues(),
-              table.getSkewedColValueLocationMaps(), table.isStoredAsSubDirectories(), conf);
+              table.getSkewedColValueLocationMaps(), table.isStoredAsSubDirectories());
           isListBucketed = table.isStoredAsSubDirectories();
           listBucketColNames = table.getSkewedColNames();
         }
@@ -2076,7 +2076,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           oldTblPartLoc = partPath;
 
           lbCtx = constructListBucketingCtx(part.getSkewedColNames(), part.getSkewedColValues(),
-              part.getSkewedColValueLocationMaps(), part.isStoredAsSubDirectories(), conf);
+              part.getSkewedColValueLocationMaps(), part.isStoredAsSubDirectories());
         }
       } else {
         inputFormatClass = tblObj.getInputFormatClass();
@@ -2087,7 +2087,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         newTblPartLoc = tblObj.getPath();
 
         lbCtx = constructListBucketingCtx(tblObj.getSkewedColNames(), tblObj.getSkewedColValues(),
-            tblObj.getSkewedColValueLocationMaps(), tblObj.isStoredAsSubDirectories(), conf);
+            tblObj.getSkewedColValueLocationMaps(), tblObj.isStoredAsSubDirectories());
       }
 
       // throw a HiveException for other than rcfile and orcfile.
