@@ -9,6 +9,7 @@ set hive.tez.dynamic.partition.pruning=true;
 set hive.optimize.metadataonly=false;
 set hive.optimize.index.filter=true;
 set hive.vectorized.execution.enabled=true;
+set hive.default.nulls.last=false;
 
 -- SORT_QUERY_RESULTS
 

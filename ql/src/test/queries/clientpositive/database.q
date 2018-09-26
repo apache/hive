@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency = true;
+set hive.default.nulls.last=false;
 
 -- SORT_QUERY_RESULTS
 

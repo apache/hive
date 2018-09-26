@@ -1,5 +1,6 @@
 SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
+set hive.default.nulls.last=false;
 create table clustergroupby(key string, value string) partitioned by(ds string);
 describe extended clustergroupby;
 alter table clustergroupby clustered by (key) into 1 buckets;

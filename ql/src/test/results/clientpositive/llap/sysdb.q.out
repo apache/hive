@@ -3998,11 +3998,11 @@ POSTHOOK: query: select name, slib from serdes order by name, slib limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@serdes
 #### A masked pattern was here ####
-NULL	NULL
-NULL	NULL
-NULL	NULL
-NULL	NULL
-NULL	NULL
+NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
+NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
+NULL	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 PREHOOK: query: select param_key, param_value from serde_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serde_params

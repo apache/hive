@@ -1,3 +1,5 @@
+set hive.default.nulls.last=false;
+
 drop table if exists hlp1;
 drop table if exists btl;
 create table hlp1(c string);

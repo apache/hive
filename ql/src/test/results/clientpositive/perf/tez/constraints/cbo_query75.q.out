@@ -156,7 +156,7 @@ POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(prev_year=[CAST(2001):INTEGER], year=[CAST(2002):INTEGER], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], i_manufact_id=[$3], prev_yr_cnt=[$4], curr_yr_cnt=[$5], sales_cnt_diff=[$6], sales_amt_diff=[$7])
-  HiveSortLimit(sort0=[$6], dir0=[ASC-nulls-first], fetch=[100])
+  HiveSortLimit(sort0=[$6], dir0=[ASC], fetch=[100])
     HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], i_manufact_id=[$3], prev_yr_cnt=[$4], curr_yr_cnt=[$10], sales_cnt_diff=[-($10, $4)], sales_amt_diff=[-($11, $5)])
       HiveJoin(condition=[AND(=($6, $0), =($7, $1), =($8, $2), =($9, $3), <(/(CAST($10):DECIMAL(17, 2), CAST($4):DECIMAL(17, 2)), 0.9:DECIMAL(2, 1)))], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], i_manufact_id=[$3], $f4=[$4], $f5=[$5])

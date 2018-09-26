@@ -10,6 +10,8 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.auto.convert.sortmerge.join=false;
 
+set hive.default.nulls.last=false;
+
 -- This test verifies that the output of a sort merge join on 2 partitions (one on each side of the join) is bucketed
 
 -- Create two bucketed and sorted tables

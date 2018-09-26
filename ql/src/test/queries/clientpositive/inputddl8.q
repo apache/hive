@@ -1,4 +1,4 @@
-
+set hive.default.nulls.last=false;
 CREATE TABLE INPUTDDL8 COMMENT 'This is a thrift based table'
     PARTITIONED BY(ds STRING, country STRING)
     CLUSTERED BY(aint) SORTED BY(lint) INTO 32 BUCKETS

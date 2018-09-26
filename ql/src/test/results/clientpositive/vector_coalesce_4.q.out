@@ -120,5 +120,5 @@ POSTHOOK: query: select coalesce(a, b) from coalesce_test order by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@coalesce_test
 #### A masked pattern was here ####
-NULL
 1
+NULL

@@ -1,6 +1,7 @@
 -- MASK_STATS
 
 set hive.explain.user=false;
+set hive.default.nulls.last=false;
 create table bug_201_input_a (
        userid                                       int
 ) clustered by (userid) sorted by (userid) into 64 BUCKETS ;

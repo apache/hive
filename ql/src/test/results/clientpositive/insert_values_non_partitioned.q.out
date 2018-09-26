@@ -65,6 +65,6 @@ POSTHOOK: query: select * from acid_ivnp order by ti
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_ivnp
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1	257	65537	4294967297	3.14	3.141592654	109.23	2014-08-25 17:21:30	2014-08-25	true	mary had a little lamb	ring around the rosie	red         
 3	25	6553	NULL	0.14	1923.141592654	1.23	2014-08-24 17:21:30	2014-08-26	false	its fleece was white as snow	a pocket full of posies	blue        
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL

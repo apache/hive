@@ -1,4 +1,5 @@
 set hive.explain.user=false;
+set hive.default.nulls.last=false;
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE myinput1_n9(key int, value int);

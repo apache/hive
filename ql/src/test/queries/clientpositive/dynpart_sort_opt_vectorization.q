@@ -8,7 +8,7 @@ set hive.exec.max.dynamic.partitions=1000;
 set hive.exec.max.dynamic.partitions.pernode=1000;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.vectorized.execution.enabled=true;
-
+set hive.default.nulls.last=false;
 
 
 create table over1k_n1(

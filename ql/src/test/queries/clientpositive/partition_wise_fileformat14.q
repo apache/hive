@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 1;
+set hive.default.nulls.last=false;
 
 CREATE TABLE tbl1_n8(key int, value string) PARTITIONED by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS rcfile;

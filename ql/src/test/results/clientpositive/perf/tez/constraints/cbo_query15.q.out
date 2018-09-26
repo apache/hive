@@ -47,7 +47,7 @@ POSTHOOK: Input: default@customer_address
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
   HiveProject(ca_zip=[$0], $f1=[$1])
     HiveAggregate(group=[{3}], agg#0=[sum($8)])
       HiveJoin(condition=[AND(=($7, $0), OR($9, $4, $5))], joinType=[inner], algorithm=[none], cost=[not available])

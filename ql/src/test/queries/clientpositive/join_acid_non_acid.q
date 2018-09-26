@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.default.nulls.last=false;
 
 CREATE TABLE orc_update_table (k1 INT, f1 STRING, op_code STRING)
 CLUSTERED BY (k1) INTO 2 BUCKETS

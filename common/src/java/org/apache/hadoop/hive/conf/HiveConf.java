@@ -1772,6 +1772,8 @@ public class HiveConf extends Configuration {
         "If the bucketing/sorting properties of the table exactly match the grouping key, whether to perform \n" +
         "the group by in the mapper by using BucketizedHiveInputFormat. The only downside to this\n" +
         "is that it limits the number of mappers to the number of files."),
+    HIVE_DEFAULT_NULLS_LAST("hive.default.nulls.last", true,
+        "Whether to set NULLS LAST as the default null ordering"),
     HIVE_GROUPBY_POSITION_ALIAS("hive.groupby.position.alias", false,
         "Whether to enable using Column Position Alias in Group By"),
     HIVE_ORDERBY_POSITION_ALIAS("hive.orderby.position.alias", true,

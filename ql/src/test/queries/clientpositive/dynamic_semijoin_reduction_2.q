@@ -10,6 +10,7 @@ set hive.optimize.index.filter=true;
 set hive.tez.bigtable.minsize.semijoin.reduction=1;
 set hive.tez.min.bloom.filter.entries=1;
 set hive.tez.dynamic.semijoin.reduction.threshold=-999999999999;
+set hive.default.nulls.last=false;
 
 CREATE TABLE `table_1_n2`(
   `bigint_col_7` bigint,

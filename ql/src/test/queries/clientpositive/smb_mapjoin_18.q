@@ -1,6 +1,6 @@
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
-
+set hive.default.nulls.last=false;
 
 set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;

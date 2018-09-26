@@ -5,6 +5,7 @@ set hive.exec.reducers.max = 10;
 set hive.map.groupby.sorted=true;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.default.nulls.last=false;
 
 -- SORT_QUERY_RESULTS
 

@@ -6,7 +6,8 @@ set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
-set hive.merge.mapredfiles=false; 
+set hive.merge.mapredfiles=false;
+set hive.default.nulls.last=false;
 
 -- Create bucketed and sorted tables
 CREATE TABLE test_table1_n15 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;

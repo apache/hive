@@ -264,7 +264,7 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=[$3], b_streen_name=[$4], b_city=[$5], b_zip=[$6], c_street_number=[$7], c_street_name=[$8], c_city=[$9], c_zip=[$10], syear=[CAST(2000):INTEGER], cnt=[$11], s1=[$12], s2=[$13], s3=[$14], s11=[$15], s21=[$16], s31=[$17], syear1=[CAST(2001):INTEGER], cnt1=[$18])
-  HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$18], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first])
+  HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$18], dir0=[ASC], dir1=[ASC], dir2=[ASC])
     HiveProject(product_name=[$0], store_name=[$2], store_zip=[$3], b_street_number=[$4], b_streen_name=[$5], b_city=[$6], b_zip=[$7], c_street_number=[$8], c_street_name=[$9], c_city=[$10], c_zip=[$11], cnt=[$12], s1=[$13], s2=[$14], s3=[$15], s11=[$20], s21=[$21], s31=[$22], cnt1=[$19])
       HiveJoin(condition=[AND(=($1, $16), <=($19, $12), =($2, $17), =($3, $18))], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8], $f9=[$9], $f10=[$10], $f11=[$11], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])

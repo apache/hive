@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 1;
+set hive.default.nulls.last=false;
 
 CREATE TABLE tbl1_n14(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 CREATE TABLE tbl2_n13(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;

@@ -143,7 +143,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   private Object evaluateWindowFunction(WindowFunctionDef wFn, int rowToProcess, PTFPartition partition)
       throws HiveException {
     BasePartitionEvaluator partitionEval = wFn.getWFnEval()
-        .getPartitionWindowingEvaluator(wFn.getWindowFrame(), partition, wFn.getArgs(), wFn.getOI());
+        .getPartitionWindowingEvaluator(wFn.getWindowFrame(), partition, wFn.getArgs(), wFn.getOI(), nullsLast);
     return partitionEval.iterate(rowToProcess, ptfDesc.getLlInfo());
   }
 
@@ -151,7 +151,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   private Object evaluateFunctionOnPartition(WindowFunctionDef wFn,
       PTFPartition partition) throws HiveException {
     BasePartitionEvaluator partitionEval = wFn.getWFnEval()
-        .getPartitionWindowingEvaluator(wFn.getWindowFrame(), partition, wFn.getArgs(), wFn.getOI());
+        .getPartitionWindowingEvaluator(wFn.getWindowFrame(), partition, wFn.getArgs(), wFn.getOI(), nullsLast);
     return partitionEval.getPartitionAgg();
   }
 

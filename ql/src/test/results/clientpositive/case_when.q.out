@@ -83,23 +83,23 @@ ORDER BY bool0, bool1, bool2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calcs
 #### A masked pattern was here ####
-NULL	NULL	false	false
-NULL	NULL	false	false
-NULL	false	true	true
-NULL	false	true	true
-NULL	false	true	true
-NULL	true	false	false
-NULL	true	false	false
-false	NULL	false	false
-false	NULL	true	true
 false	false	true	true
 false	true	false	false
 false	true	true	true
-true	NULL	false	NULL
+false	NULL	false	false
+false	NULL	true	true
 true	false	false	false
 true	false	true	false
 true	true	false	true
 true	true	false	true
+true	NULL	false	NULL
+NULL	false	true	true
+NULL	false	true	true
+NULL	false	true	true
+NULL	true	false	false
+NULL	true	false	false
+NULL	NULL	false	false
+NULL	NULL	false	false
 PREHOOK: query: DROP TABLE IF EXISTS `Calcs`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@calcs

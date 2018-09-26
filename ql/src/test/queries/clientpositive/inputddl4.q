@@ -1,5 +1,5 @@
 -- a simple test to test sorted/clustered syntax
-
+set hive.default.nulls.last=false;
 CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
                        page_url STRING, referrer_url STRING, 
                        friends ARRAY<BIGINT>, properties MAP<STRING, STRING>,

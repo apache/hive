@@ -4,6 +4,7 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 ;
 
 set hive.exec.reducers.max = 1;
+set hive.default.nulls.last=false;
 
 -- SORT_QUERY_RESULTS
 

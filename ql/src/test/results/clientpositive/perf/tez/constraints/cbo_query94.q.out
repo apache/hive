@@ -68,7 +68,7 @@ POSTHOOK: Input: default@web_site
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(order count=[$0], total shipping cost=[$1], total net profit=[$2])
-  HiveSortLimit(sort0=[$3], dir0=[ASC-nulls-first], fetch=[100])
+  HiveSortLimit(sort0=[$3], dir0=[ASC], fetch=[100])
     HiveProject(order count=[$0], total shipping cost=[$1], total net profit=[$2], (tok_functiondi count (tok_table_or_col ws_order_number))=[$0])
       HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[sum($6)])
         HiveFilter(condition=[IS NULL($14)])

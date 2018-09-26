@@ -2,6 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 10;
 set hive.map.groupby.sorted=true;
 set hive.groupby.skewindata=true;
+set hive.default.nulls.last=false;
 
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 -- SORT_QUERY_RESULTS

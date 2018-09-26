@@ -138,7 +138,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col7 ASC NULLS FIRST
+                        order by: _col7 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -319,7 +319,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -347,7 +347,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col7 ASC NULLS FIRST
+                        order by: _col7 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -531,7 +531,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col6 ASC NULLS FIRST, _col7 ASC NULLS FIRST, _col1 ASC NULLS FIRST, _col4 DESC NULLS LAST
+                        order by: _col6 ASC NULLS LAST, _col7 ASC NULLS LAST, _col1 ASC NULLS LAST, _col4 DESC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -757,7 +757,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST, _col7 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col7 ASC NULLS LAST
                         partition by: _col1
                         raw input shape:
                         window functions:
@@ -983,7 +983,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST, _col7 ASC NULLS FIRST, _col5 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST, _col7 ASC NULLS LAST, _col5 ASC NULLS LAST
                         partition by: _col3
                         raw input shape:
                         window functions:
@@ -1211,7 +1211,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col3 ASC NULLS FIRST
+                        order by: _col3 ASC NULLS LAST
                         partition by: _col4
                         raw input shape:
                         window functions:
@@ -1422,7 +1422,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: za
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1450,7 +1450,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         partition by: _col2, _col4
                         raw input shape:
                         window functions:
@@ -1509,31 +1509,31 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 p_mfgr	avg_window_0
 Manufacturer#1	1753.76
-Manufacturer#1	1414.42
-Manufacturer#2	1701.6
-Manufacturer#3	1410.39
-Manufacturer#3	1190.27
-Manufacturer#3	1337.29
-Manufacturer#4	1620.67
-Manufacturer#4	1206.26
-Manufacturer#5	1018.1
-Manufacturer#5	1788.73
-Manufacturer#5	1611.66
 Manufacturer#1	1632.66
 Manufacturer#1	1602.59
-Manufacturer#1	1173.15
-Manufacturer#1	1173.15
+Manufacturer#1	1414.42
 Manufacturer#2	1800.7
 Manufacturer#2	1690.68
 Manufacturer#2	2031.98
+Manufacturer#2	1701.6
+Manufacturer#3	1410.39
+Manufacturer#3	1671.68
+Manufacturer#3	1190.27
+Manufacturer#3	1337.29
+Manufacturer#4	1375.42
+Manufacturer#5	1788.73
+Manufacturer#1	1173.15
+Manufacturer#1	1173.15
 Manufacturer#2	1698.66
 Manufacturer#3	1922.98
-Manufacturer#3	1671.68
 Manufacturer#4	1844.92
-Manufacturer#4	1375.42
+Manufacturer#4	1620.67
+Manufacturer#4	1206.26
 Manufacturer#4	1290.35
+Manufacturer#5	1018.1
 Manufacturer#5	1464.48
 Manufacturer#5	1789.69
+Manufacturer#5	1611.66
 PREHOOK: query: explain vectorization detail
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part
 PREHOOK: type: QUERY
@@ -1604,7 +1604,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1632,7 +1632,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col4 ASC NULLS FIRST, _col2 ASC NULLS FIRST
+                        order by: _col4 ASC NULLS LAST, _col2 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1808,7 +1808,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1836,7 +1836,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         partition by: _col8
                         raw input shape:
                         window functions:
@@ -2071,7 +2071,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col7 ASC NULLS FIRST
+                        order by: _col7 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2240,31 +2240,31 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 p_mfgr	avg_window_0
 Manufacturer#1	1753.76
-Manufacturer#1	1414.42
-Manufacturer#2	1701.6
-Manufacturer#3	1410.39
-Manufacturer#3	1190.27
-Manufacturer#3	1337.29
-Manufacturer#4	1620.67
-Manufacturer#4	1206.26
-Manufacturer#5	1018.1
-Manufacturer#5	1788.73
-Manufacturer#5	1611.66
 Manufacturer#1	1632.66
 Manufacturer#1	1602.59
-Manufacturer#1	1173.15
-Manufacturer#1	1173.15
+Manufacturer#1	1414.42
 Manufacturer#2	1800.7
 Manufacturer#2	1690.68
 Manufacturer#2	2031.98
+Manufacturer#2	1701.6
+Manufacturer#3	1410.39
+Manufacturer#3	1671.68
+Manufacturer#3	1190.27
+Manufacturer#3	1337.29
+Manufacturer#4	1375.42
+Manufacturer#5	1788.73
+Manufacturer#1	1173.15
+Manufacturer#1	1173.15
 Manufacturer#2	1698.66
 Manufacturer#3	1922.98
-Manufacturer#3	1671.68
 Manufacturer#4	1844.92
-Manufacturer#4	1375.42
+Manufacturer#4	1620.67
+Manufacturer#4	1206.26
 Manufacturer#4	1290.35
+Manufacturer#5	1018.1
 Manufacturer#5	1464.48
 Manufacturer#5	1789.69
+Manufacturer#5	1611.66
 PREHOOK: query: select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part

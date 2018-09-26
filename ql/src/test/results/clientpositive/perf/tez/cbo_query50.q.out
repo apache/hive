@@ -125,7 +125,7 @@ POSTHOOK: Input: default@store_returns
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first], dir3=[ASC-nulls-first], dir4=[ASC-nulls-first], dir5=[ASC-nulls-first], dir6=[ASC-nulls-first], dir7=[ASC-nulls-first], dir8=[ASC-nulls-first], dir9=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
   HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8], $f9=[$9], $f10=[$10], $f11=[$11], $f12=[$12], $f13=[$13], $f14=[$14])
     HiveAggregate(group=[{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}], agg#0=[sum($10)], agg#1=[sum($11)], agg#2=[sum($12)], agg#3=[sum($13)], agg#4=[sum($14)])
       HiveProject($f0=[$14], $f1=[$15], $f2=[$16], $f3=[$17], $f4=[$18], $f5=[$19], $f6=[$20], $f7=[$21], $f8=[$22], $f9=[$23], $f10=[CASE(<=(-($5, $0), 30), 1, 0)], $f11=[CASE(AND(>(-($5, $0), 30), <=(-($5, $0), 60)), 1, 0)], $f12=[CASE(AND(>(-($5, $0), 60), <=(-($5, $0), 90)), 1, 0)], $f13=[CASE(AND(>(-($5, $0), 90), <=(-($5, $0), 120)), 1, 0)], $f14=[CASE(>(-($5, $0), 120), 1, 0)])

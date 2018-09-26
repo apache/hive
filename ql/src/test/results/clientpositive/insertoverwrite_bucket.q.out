@@ -1,13 +1,13 @@
-PREHOOK: query: CREATE TABLE IF NOT EXISTS bucketinput( 
+PREHOOK: query: CREATE TABLE IF NOT EXISTS bucketinput(
 data string 
-) 
+)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucketinput
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS bucketinput( 
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS bucketinput(
 data string 
-) 
+)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

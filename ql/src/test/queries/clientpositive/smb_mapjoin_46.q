@@ -7,7 +7,8 @@ set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 set hive.join.emit.interval=2;
 set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
-set hive.merge.mapredfiles=false; 
+set hive.merge.mapredfiles=false;
+set hive.default.nulls.last=false;
 
 CREATE TABLE aux1 (key INT, value INT, col_1 STRING);
 INSERT INTO aux1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),

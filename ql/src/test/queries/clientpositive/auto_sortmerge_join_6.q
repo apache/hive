@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 ;
+set hive.default.nulls.last=false;
 
 set hive.exec.reducers.max = 1;
 set hive.explain.user=false;

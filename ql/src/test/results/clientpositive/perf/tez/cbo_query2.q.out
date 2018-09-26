@@ -125,7 +125,7 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first])
+HiveSortLimit(sort0=[$0], dir0=[ASC])
   HiveProject(d_week_seq1=[$0], _o__c1=[round(/($1, $11), 2)], _o__c2=[round(/($2, $12), 2)], _o__c3=[round(/($3, $13), 2)], _o__c4=[round(/($4, $14), 2)], _o__c5=[round(/($5, $15), 2)], _o__c6=[round(/($6, $16), 2)], _o__c7=[round(/($7, $17), 2)])
     HiveJoin(condition=[=($0, -($10, 53))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($8, $0)], joinType=[inner], algorithm=[none], cost=[not available])

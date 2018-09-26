@@ -1503,13 +1503,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return Optimized SQL text (or null, if failed)
    */
   public String getOptimizedSql(RelNode optimizedOptiqPlan) {
+    boolean nullsLast = HiveConf.getBoolVar(conf, ConfVars.HIVE_DEFAULT_NULLS_LAST);
+    NullCollation nullCollation = nullsLast ? NullCollation.LAST : NullCollation.LOW;
     SqlDialect dialect = new HiveSqlDialect(SqlDialect.EMPTY_CONTEXT
         .withDatabaseProduct(SqlDialect.DatabaseProduct.HIVE)
         .withDatabaseMajorVersion(4) // TODO: should not be hardcoded
         .withDatabaseMinorVersion(0)
         .withIdentifierQuoteString("`")
         .withDataTypeSystem(new HiveTypeSystemImpl())
-        .withNullCollation(NullCollation.LOW)) {
+        .withNullCollation(nullCollation)) {
       @Override
       protected boolean allowsAs() {
         return true;

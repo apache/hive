@@ -72,15 +72,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc_part
-            Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 200 Data size: 40674 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (cdouble + 2.0D) (type: double)
               outputColumnNames: _col0
-              Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 200 Data size: 40674 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: double)
                 sort order: +
-                Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 200 Data size: 40674 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Map Vectorization:
@@ -100,13 +100,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: double)
           outputColumnNames: _col0
-          Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 200 Data size: 40674 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 10 Data size: 2720 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 10 Data size: 2720 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -130,13 +130,13 @@ POSTHOOK: Input: default@alltypesorc_part
 POSTHOOK: Input: default@alltypesorc_part@ds=2011
 POSTHOOK: Input: default@alltypesorc_part@ds=2012
 #### A masked pattern was here ####
-NULL
-NULL
--15863.0
--15863.0
--14988.0
--14988.0
--14646.0
--14646.0
--14236.0
--14236.0
+-15990.0
+-15990.0
+-15918.0
+-15918.0
+-15890.0
+-15890.0
+-14305.0
+-14305.0
+-12514.0
+-12514.0

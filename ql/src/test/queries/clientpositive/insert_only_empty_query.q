@@ -3,6 +3,7 @@ set hive.fetch.task.conversion=none;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.default.nulls.last=false;
 
 create table src_emptybucket_partitioned_1 (name string, age int, gpa decimal(3,2))
                                partitioned by(year int)

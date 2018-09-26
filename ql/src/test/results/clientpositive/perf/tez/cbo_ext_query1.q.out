@@ -57,7 +57,7 @@ POSTHOOK: Input: default@store
 POSTHOOK: Input: default@store_returns
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
   HiveProject(c_customer_id=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
     HiveJoin(condition=[AND(=($5, $8), >($6, $7))], joinType=[inner], algorithm=[none], cost=[not available]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
       HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
@@ -150,7 +150,7 @@ POSTHOOK: Input: default@store
 POSTHOOK: Input: default@store_returns
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
   HiveProject(c_customer_id=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
     HiveJoin(condition=[AND(=($5, $8), >($6, $7))], joinType=[inner], algorithm=[none], cost=[{374952.69636986067 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
       HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[{8.000928883962971E7 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###

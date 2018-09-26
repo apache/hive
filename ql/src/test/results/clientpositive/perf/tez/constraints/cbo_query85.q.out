@@ -182,7 +182,7 @@ POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(_o__c0=[$0], _o__c1=[$1], _o__c2=[$2], _o__c3=[$3])
-  HiveSortLimit(sort0=[$7], sort1=[$4], sort2=[$5], sort3=[$6], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first], dir3=[ASC-nulls-first], fetch=[100])
+  HiveSortLimit(sort0=[$7], sort1=[$4], sort2=[$5], sort3=[$6], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
     HiveProject(_o__c0=[substr($0, 1, 20)], _o__c1=[/(CAST($1):DOUBLE, $2)], _o__c2=[/($3, $4)], _o__c3=[/($5, $6)], (tok_function avg (tok_table_or_col ws_quantity))=[/(CAST($1):DOUBLE, $2)], (tok_function avg (tok_table_or_col wr_refunded_cash))=[/($3, $4)], (tok_function avg (tok_table_or_col wr_fee))=[/($5, $6)], (tok_function substr (tok_table_or_col r_reason_desc) 1 20)=[substr($0, 1, 20)])
       HiveAggregate(group=[{1}], agg#0=[sum($30)], agg#1=[count($30)], agg#2=[sum($26)], agg#3=[count($26)], agg#4=[sum($25)], agg#5=[count($25)])
         HiveJoin(condition=[=($0, $23)], joinType=[inner], algorithm=[none], cost=[not available])

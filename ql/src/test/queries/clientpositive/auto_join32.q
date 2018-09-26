@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=true;
+set hive.default.nulls.last=false;
 
 -- empty tables
 create table studenttab10k (name string, age int, gpa double);

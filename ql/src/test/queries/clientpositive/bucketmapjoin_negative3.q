@@ -1,4 +1,5 @@
 set hive.strict.checks.bucketing=false;
+set hive.default.nulls.last=false;
 
 drop table test1_n11;
 drop table test2_n7;

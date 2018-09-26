@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.default.nulls.last=false;
 -- query from auto_sortmerge_join_9.q
 
 CREATE TABLE tbl1_n9(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
@@ -11,6 +12,7 @@ set hive.auto.convert.sortmerge.join=true;
 set hive.auto.convert.sortmerge.join.to.mapjoin=false;
 
 set hive.explain.dependency.append.tasktype=true;
+
 
 -- default behavior
 

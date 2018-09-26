@@ -238,7 +238,7 @@ public class TestBoundaryCache {
     OrderExpressionDef orderDef = mock(OrderExpressionDef.class);
     when(orderDef.getOrder()).thenReturn(order);
 
-    ValueBoundaryScanner scan = new LongValueBoundaryScanner(start, end, orderDef);
+    ValueBoundaryScanner scan = new LongValueBoundaryScanner(start, end, orderDef, order == ASC);
     ValueBoundaryScanner scannerSpy = spy(scan);
     doAnswer(invocationOnMock -> {
       readCounter.incrementAndGet();

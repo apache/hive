@@ -1,4 +1,5 @@
 set hive.strict.checks.bucketing=false;
+set hive.default.nulls.last=false;
 
 set hive.mapred.mode=nonstrict;
 -- small 1 part, 4 bucket & big 2 part, 2 bucket

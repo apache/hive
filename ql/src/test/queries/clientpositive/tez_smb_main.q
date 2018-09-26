@@ -4,6 +4,7 @@ set hive.strict.checks.bucketing=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.join.emit.interval=2;
+set hive.default.nulls.last=false;
 explain
 select * from src a join src1 b on a.key = b.key;
 

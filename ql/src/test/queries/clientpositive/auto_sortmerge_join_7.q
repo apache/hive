@@ -1,6 +1,7 @@
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
+set hive.default.nulls.last=false;
 -- small 2 part, 4 bucket & big 2 part, 2 bucket
 CREATE TABLE bucket_small_n6 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 TBLPROPERTIES('bucketing_version'='1');
@@ -31,6 +32,7 @@ set hive.auto.convert.sortmerge.join.bigtable.selection.policy = org.apache.hado
 -- disable hash joins
 set hive.auto.convert.join.noconditionaltask.size=10;
 
+set hive.default.nulls.last=false;
 -- Since size is being used to find the big table, the order of the tables in the join does not matter
 explain extended select count(*) FROM bucket_small_n6 a JOIN bucket_big_n6 b ON a.key = b.key;
 select count(*) FROM bucket_small_n6 a JOIN bucket_big_n6 b ON a.key = b.key;

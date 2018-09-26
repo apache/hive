@@ -2,6 +2,8 @@ set hive.explain.user=false;
 
 set hive.exec.reducers.max = 1;
 
+set hive.default.nulls.last=false;
+
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE tbl1_n2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;

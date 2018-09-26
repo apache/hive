@@ -1,4 +1,4 @@
-
+set hive.default.nulls.last=false;
 
 
 create table srcpart2 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets stored as RCFILE;

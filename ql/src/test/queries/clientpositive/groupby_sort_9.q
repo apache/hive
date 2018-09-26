@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 10;
 set hive.map.groupby.sorted=true;
+set hive.default.nulls.last=false;
 
 CREATE TABLE T1_n96(key STRING, val STRING) PARTITIONED BY (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;

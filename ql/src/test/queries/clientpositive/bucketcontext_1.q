@@ -1,6 +1,7 @@
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
+set hive.default.nulls.last=false;
 -- small 1 part, 2 bucket & big 2 part, 4 bucket
 CREATE TABLE bucket_small_n14 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 TBLPROPERTIES('bucketing_version'='1');

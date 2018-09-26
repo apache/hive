@@ -1514,7 +1514,7 @@ FROM "DATE_DIM"
 WHERE "d_year" = 2001 AND "d_moy" = 2 AND "d_date_sk" IS NOT NULL) AS "t18" ON "t14"."inv_date_sk" = "t18"."d_date_sk"
 GROUP BY "t12"."w_warehouse_sk", "t12"."w_warehouse_name", "t16"."i_item_sk") AS "t20"
 WHERE CASE WHEN CAST("t20"."$f3" AS DOUBLE) / "t20"."$f4" = 0 THEN FALSE ELSE CAST("t20"."$f3" AS DOUBLE) / (CAST("t20"."$f3" AS DOUBLE) / "t20"."$f4") > 1 END) AS "t22" ON "t10"."i_item_sk" = "t22"."i_item_sk" AND "t10"."w_warehouse_sk" = "t22"."w_warehouse_sk"
-ORDER BY "t10"."w_warehouse_sk" NULLS FIRST, "t10"."i_item_sk" NULLS FIRST, "t10"."mean" NULLS FIRST, "t10"."cov" NULLS FIRST, "t22"."mean" NULLS FIRST, "t22"."cov" NULLS FIRST) AS "t23"
+ORDER BY "t10"."w_warehouse_sk", "t10"."i_item_sk", "t10"."mean", "t10"."cov", "t22"."mean", "t22"."cov") AS "t23"
             hive.sql.query.fieldNames w_warehouse_sk,i_item_sk,d_moy,mean,cov,w_warehouse_sk1,i_item_sk1,d_moy1,mean1,cov1
             hive.sql.query.fieldTypes int,int,int,double,double,int,int,int,double,double
             hive.sql.query.split false

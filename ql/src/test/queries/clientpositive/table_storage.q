@@ -1,3 +1,4 @@
+set hive.default.nulls.last=false;
 CREATE TABLE t (key STRING, val STRING);
 SHOW CREATE TABLE t;
 

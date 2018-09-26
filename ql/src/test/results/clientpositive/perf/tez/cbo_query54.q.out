@@ -131,7 +131,7 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(segment=[$0], num_customers=[$1], segment_base=[*($0, 50)])
     HiveAggregate(group=[{0}], agg#0=[count()])
       HiveProject(segment=[CAST(/($1, 50:DECIMAL(10, 0))):INTEGER])

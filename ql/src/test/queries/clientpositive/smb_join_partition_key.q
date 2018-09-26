@@ -7,6 +7,7 @@ SET hive.optimize.bucketmapjoin = true;
 SET hive.optimize.bucketmapjoin.sortedmerge = true; 
 SET hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 SET hive.exec.dynamic.partition.mode=nonstrict;
+set hive.default.nulls.last=false;
 
 CREATE TABLE data_table (key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'; 
 

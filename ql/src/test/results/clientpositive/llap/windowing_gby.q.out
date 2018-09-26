@@ -32,7 +32,7 @@ Stage-0
         Select Operator [SEL_46] (rows=2 width=4)
           Output:["_col0"]
           PTF Operator [PTF_45] (rows=2 width=16)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"(UDFToDouble(_col1) / UDFToDouble(_col2)) ASC NULLS FIRST","partition by:":"0"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"(UDFToDouble(_col1) / UDFToDouble(_col2)) ASC NULLS LAST","partition by:":"0"}]
             Select Operator [SEL_44] (rows=2 width=16)
               Output:["_col1","_col2"]
             <-Reducer 3 [SIMPLE_EDGE] vectorized, llap

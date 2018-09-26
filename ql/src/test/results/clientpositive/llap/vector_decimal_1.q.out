@@ -117,7 +117,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -161,8 +161,8 @@ POSTHOOK: query: select cast(t as boolean) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-NULL
 true
+NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as tinyint) from decimal_1 order by t
 PREHOOK: type: QUERY
@@ -237,7 +237,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -281,8 +281,8 @@ POSTHOOK: query: select cast(t as tinyint) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-NULL
 17
+NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as smallint) from decimal_1 order by t
 PREHOOK: type: QUERY
@@ -357,7 +357,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -401,8 +401,8 @@ POSTHOOK: query: select cast(t as smallint) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-NULL
 17
+NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as int) from decimal_1 order by t
 PREHOOK: type: QUERY
@@ -477,7 +477,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -521,8 +521,8 @@ POSTHOOK: query: select cast(t as int) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-NULL
 17
+NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as bigint) from decimal_1 order by t
 PREHOOK: type: QUERY
@@ -597,7 +597,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -641,8 +641,8 @@ POSTHOOK: query: select cast(t as bigint) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-NULL
 17
+NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as float) from decimal_1 order by t
 PREHOOK: type: QUERY
@@ -717,7 +717,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -761,8 +761,8 @@ POSTHOOK: query: select cast(t as float) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-NULL
 17.29
+NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as double) from decimal_1 order by t
 PREHOOK: type: QUERY
@@ -837,7 +837,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -881,8 +881,8 @@ POSTHOOK: query: select cast(t as double) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-NULL
 17.29
+NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as string) from decimal_1 order by t
 PREHOOK: type: QUERY
@@ -957,7 +957,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1001,8 +1001,8 @@ POSTHOOK: query: select cast(t as string) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-NULL
 17.29
+NULL
 PREHOOK: query: explain vectorization detail
 select cast(t as timestamp) from decimal_1 order by t
 PREHOOK: type: QUERY
@@ -1077,7 +1077,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1121,8 +1121,8 @@ POSTHOOK: query: select cast(t as timestamp) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
-NULL
 1970-01-01 00:00:17.29
+NULL
 PREHOOK: query: drop table decimal_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_1

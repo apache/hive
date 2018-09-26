@@ -1,5 +1,6 @@
 
 set hive.support.quoted.identifiers=column;
+set hive.default.nulls.last=false;
 
 
 ;  

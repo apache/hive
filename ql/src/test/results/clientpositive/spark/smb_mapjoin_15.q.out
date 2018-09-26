@@ -91,7 +91,7 @@ STAGE PLANS:
                         BucketMapJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                           tag: -1
@@ -327,7 +327,7 @@ STAGE PLANS:
                         BucketMapJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                           tag: -1
@@ -511,7 +511,7 @@ STAGE PLANS:
                         BucketMapJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                           tag: -1
@@ -846,7 +846,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   tag: -1

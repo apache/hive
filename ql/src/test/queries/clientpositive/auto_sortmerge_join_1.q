@@ -1,6 +1,7 @@
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
+set hive.default.nulls.last=false;
 -- small 1 part, 2 bucket & big 2 part, 4 bucket
 
 CREATE TABLE bucket_small_n1 (key string, value string) partitioned by (ds string) 

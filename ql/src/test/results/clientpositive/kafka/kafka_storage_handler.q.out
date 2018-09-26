@@ -1063,10 +1063,10 @@ POSTHOOK: query: select distinct `__key`, c_name from kafka_table_csv order by `
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table_csv
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	test2
 key	test1
 key-2	test4
 key-3	test5
+NULL	test2
 PREHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table

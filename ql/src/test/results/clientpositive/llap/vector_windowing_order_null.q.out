@@ -120,7 +120,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aza
+                reduceColumnNullOrder: azz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -148,7 +148,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col7 ASC NULLS LAST, _col3 ASC NULLS FIRST
+                        order by: _col7 ASC NULLS LAST, _col3 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -290,7 +290,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: aza
                 reduceColumnSortOrder: ++-
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -318,7 +318,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col7 ASC NULLS FIRST, _col4 DESC NULLS FIRST
+                        order by: _col7 ASC NULLS LAST, _col4 DESC NULLS FIRST
                         partition by: _col5
                         raw input shape:
                         window functions:
@@ -384,13 +384,13 @@ POSTHOOK: Input: default@over10k_n21
 d	s	f	sum_window_0
 NULL	alice ichabod	NULL	NULL
 NULL	calvin miller	NULL	NULL
-0.01	NULL	NULL	NULL
-0.01	NULL	NULL	NULL
 0.01	calvin miller	8.39	8.390000343322754
-0.02	NULL	NULL	NULL
+0.01	NULL	NULL	8.390000343322754
+0.01	NULL	NULL	8.390000343322754
 0.02	holly polk	5.29	5.289999961853027
 0.02	wendy quirinius	25.5	30.789999961853027
 0.02	yuri laertes	37.59	68.38000011444092
+0.02	NULL	NULL	68.38000011444092
 0.03	nick steinbeck	79.24	79.23999786376953
 PREHOOK: query: explain vectorization detail
 select ts, s, f, sum(f) over (partition by ts order by f asc nulls first range between current row and unbounded following) from over10k_n21 limit 10
@@ -613,7 +613,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col7 ASC NULLS FIRST, _col5 DESC NULLS FIRST
+                        order by: _col7 ASC NULLS LAST, _col5 DESC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:

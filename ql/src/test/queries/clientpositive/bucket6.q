@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.default.nulls.last=false;
 CREATE TABLE src_bucket(key STRING, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
 

@@ -8,6 +8,7 @@ set hive.exec.max.dynamic.partitions.pernode=1000000;
 set hive.exec.max.dynamic.partitions=1000000;
 set hive.exec.max.created.files=1000000;
 set hive.map.aggr=true;
+set hive.default.nulls.last=false;
 
 create table smb_bucket_1_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE; 
 create table smb_bucket_2_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE; 

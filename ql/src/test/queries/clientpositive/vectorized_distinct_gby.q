@@ -5,6 +5,7 @@ SET hive.vectorized.execution.reduce.enabled=true;
 set hive.fetch.task.conversion=none;
 
 SET hive.map.groupby.sorted=true;
+set hive.default.nulls.last=false;
 
 create table dtest(a int, b int) clustered by (a) sorted by (a) into 1 buckets stored as orc;
 insert into table dtest select c,b from (select array(300,300,300,300,300) as a, 1 as b from src order by a limit 1) y lateral view  explode(a) t1 as c;

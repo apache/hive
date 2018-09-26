@@ -1,5 +1,6 @@
 
 set hive.support.quoted.identifiers=column;
+set hive.default.nulls.last=false;
 
 create table src_b3(`x+1` string, `!@#$%^&*()_q` string) ;
 

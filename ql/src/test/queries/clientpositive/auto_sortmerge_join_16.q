@@ -10,6 +10,7 @@ set hive.auto.convert.sortmerge.join=false;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 
+set hive.default.nulls.last=false;
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE stage_bucket_big_n17

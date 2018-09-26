@@ -3,6 +3,7 @@ set hive.explain.user=false;
 ;
 
 set hive.exec.reducers.max = 1;
+set hive.default.nulls.last=false;
 
 -- SORT_QUERY_RESULTS
 

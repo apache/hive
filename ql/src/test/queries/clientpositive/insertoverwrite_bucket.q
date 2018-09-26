@@ -1,6 +1,7 @@
-CREATE TABLE IF NOT EXISTS bucketinput( 
+set hive.default.nulls.last=false;
+CREATE TABLE IF NOT EXISTS bucketinput(
 data string 
-) 
+)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
 CREATE TABLE IF NOT EXISTS bucketoutput1( 
 data string 

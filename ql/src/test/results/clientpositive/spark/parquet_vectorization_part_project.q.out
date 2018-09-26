@@ -139,13 +139,13 @@ POSTHOOK: Input: default@alltypesparquet_part_n0
 POSTHOOK: Input: default@alltypesparquet_part_n0@ds=2011
 POSTHOOK: Input: default@alltypesparquet_part_n0@ds=2012
 #### A masked pattern was here ####
-NULL
-NULL
--15863.0
--15863.0
--14988.0
--14988.0
--14646.0
--14646.0
--14236.0
--14236.0
+-15990.0
+-15990.0
+-15918.0
+-15918.0
+-15890.0
+-15890.0
+-14305.0
+-14305.0
+-12514.0
+-12514.0

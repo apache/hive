@@ -2,6 +2,7 @@ set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.exec.submitviachild=false;
 set hive.exec.submit.local.task.via.child=false;
+set hive.default.nulls.last=false;
 
 CREATE TABLE orc_create_people_staging_n0 (
   id int,

@@ -3,6 +3,7 @@ set hive.map.aggr=false;
 
 set hive.strict.checks.bucketing=false;
 set hive.explain.user=true;
+set hive.default.nulls.last=false;
 
 explain analyze
 SELECT x.key, z.value, y.value

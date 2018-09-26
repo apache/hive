@@ -185,7 +185,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -288,7 +288,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamps
 #### A masked pattern was here ####
 ctimestamp1	ctimestamp2	ctimestamp2_description	ctimestamp2_description_2	ctimestamp2_description_3	field1	field_2	field_3	field_4	field_5
-NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
 0004-09-22 18:26:29.519542222	0004-09-21 16:23:25.519542222	1800s or Earlier	Old	Old	4	0004-09-22 18:26:29.519542222	26	NULL	0005-09-22
 0528-10-27 08:15:18.941718273	0528-10-26 06:12:14.941718273	1800s or Earlier	Old	Old	528	2018-03-08 23:04:59	15	NULL	0529-10-27
 1319-02-02 16:31:57.778	1319-02-01 14:28:53.778	1800s or Earlier	Old	Old	1319	1319-02-02 16:31:57.778	31	NULL	1320-02-02
@@ -339,6 +338,7 @@ NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
 9075-06-13 16:20:09.218517797	9075-06-12 14:17:05.218517797	Unknown	NULL	NULL	9075	2018-03-08 23:04:59	20	NULL	9075-06-14
 9209-11-11 04:08:58.223768453	9209-11-10 02:05:54.223768453	Unknown	NULL	NULL	9209	2018-03-08 23:04:59	8	NULL	9209-11-12
 9403-01-09 18:12:33.547	9403-01-08 16:09:29.547	Unknown	NULL	NULL	9403	2018-03-08 23:04:59	12	NULL	9404-01-09
+NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
    ctimestamp1,
@@ -474,7 +474,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -577,7 +577,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamps
 #### A masked pattern was here ####
 ctimestamp1	ctimestamp2	ctimestamp2_description	ctimestamp2_description_2	ctimestamp2_description_3	field1	field_2	field_3	field_4	field_5
-NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
 0004-09-22 18:26:29.519542222	0004-09-21 16:23:25.519542222	1800s or Earlier	Old	Old	4	0004-09-22 18:26:29.519542222	26	NULL	0005-09-22
 0528-10-27 08:15:18.941718273	0528-10-26 06:12:14.941718273	1800s or Earlier	Old	Old	528	2018-03-08 23:04:59	15	NULL	0529-10-27
 1319-02-02 16:31:57.778	1319-02-01 14:28:53.778	1800s or Earlier	Old	Old	1319	1319-02-02 16:31:57.778	31	NULL	1320-02-02
@@ -628,6 +627,7 @@ NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
 9075-06-13 16:20:09.218517797	9075-06-12 14:17:05.218517797	Unknown	NULL	NULL	9075	2018-03-08 23:04:59	20	NULL	9075-06-14
 9209-11-11 04:08:58.223768453	9209-11-10 02:05:54.223768453	Unknown	NULL	NULL	9209	2018-03-08 23:04:59	8	NULL	9209-11-12
 9403-01-09 18:12:33.547	9403-01-08 16:09:29.547	Unknown	NULL	NULL	9403	2018-03-08 23:04:59	12	NULL	9404-01-09
+NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
    ctimestamp1,
@@ -763,7 +763,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: zzz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -866,7 +866,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamps
 #### A masked pattern was here ####
 ctimestamp1	ctimestamp2	ctimestamp2_description	ctimestamp2_description_2	ctimestamp2_description_3	field1	field_2	field_3	field_4	field_5
-NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
 0004-09-22 18:26:29.519542222	0004-09-21 16:23:25.519542222	1800s or Earlier	Old	Old	4	0004-09-22 18:26:29.519542222	26	NULL	0005-09-22
 0528-10-27 08:15:18.941718273	0528-10-26 06:12:14.941718273	1800s or Earlier	Old	Old	528	2018-03-08 23:04:59	15	NULL	0529-10-27
 1319-02-02 16:31:57.778	1319-02-01 14:28:53.778	1800s or Earlier	Old	Old	1319	1319-02-02 16:31:57.778	31	NULL	1320-02-02
@@ -917,6 +916,7 @@ NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
 9075-06-13 16:20:09.218517797	9075-06-12 14:17:05.218517797	Unknown	NULL	NULL	9075	2018-03-08 23:04:59	20	NULL	9075-06-14
 9209-11-11 04:08:58.223768453	9209-11-10 02:05:54.223768453	Unknown	NULL	NULL	9209	2018-03-08 23:04:59	8	NULL	9209-11-12
 9403-01-09 18:12:33.547	9403-01-08 16:09:29.547	Unknown	NULL	NULL	9403	2018-03-08 23:04:59	12	NULL	9404-01-09
+NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
 PREHOOK: query: create temporary table foo(q548284 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1015,7 +1015,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1149,7 +1149,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1283,7 +1283,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1417,7 +1417,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false

@@ -3,6 +3,7 @@ SET hive.vectorized.execution.reduce.enabled=true;
 set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 10;
 set hive.map.groupby.sorted=true;
+set hive.default.nulls.last=false;
 
 -- SORT_QUERY_RESULTS
 

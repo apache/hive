@@ -114,14 +114,9 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-<<<<<<< HEAD
                   alias: store_sales
+                  filterExpr: (ss_item_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
-=======
-                  alias: date_dim
-                  filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
-                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (ss_item_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
@@ -159,14 +154,9 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-<<<<<<< HEAD
                   alias: date_dim
+                  filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-=======
-                  alias: store_sales
-                  filterExpr: (ss_item_sk is not null and ss_sold_date_sk is not null) (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
->>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
@@ -218,7 +208,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -279,7 +269,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -332,7 +322,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: CASE WHEN (_col4 is not null) THEN (_col4) ELSE (_col1) END ASC NULLS FIRST
+                        order by: CASE WHEN (_col4 is not null) THEN (_col4) ELSE (_col1) END ASC NULLS LAST
                         partition by: CASE WHEN (_col3 is not null) THEN (_col3) ELSE (_col0) END
                         raw input shape:
                         window functions:

@@ -9,6 +9,7 @@ set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.join.inner.residual=true;
+set hive.default.nulls.last=false;
 
 CREATE TABLE aux1_n0 (key INT, value INT, col_1 STRING);
 INSERT INTO aux1_n0 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),

@@ -1,5 +1,5 @@
 set hive.strict.checks.bucketing=false;
-
+set hive.default.nulls.last=false;
 
 
 

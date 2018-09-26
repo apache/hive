@@ -1,5 +1,6 @@
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
+set hive.default.nulls.last=false;
 
 create table vsmb_bucket_1(key int, value string) 
   CLUSTERED BY (key) 

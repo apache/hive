@@ -57,7 +57,7 @@ POSTHOOK: Input: default@store
 POSTHOOK: Input: default@store_returns
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
   HiveProject(c_customer_id=[$1])
     HiveJoin(condition=[AND(=($5, $8), >($6, $7))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])

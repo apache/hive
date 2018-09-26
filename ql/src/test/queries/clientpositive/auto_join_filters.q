@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join = true;
+set hive.default.nulls.last=false;
 
 CREATE TABLE myinput1_n5(key int, value int);
 LOAD DATA LOCAL INPATH '../../data/files/in3.txt' INTO TABLE myinput1_n5;

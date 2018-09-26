@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.default.nulls.last=false;
 -- SORT_AND_HASH_QUERY_RESULTS
 
 CREATE TABLE myinput1_n8(key int, value int);
