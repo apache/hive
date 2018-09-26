@@ -92,3 +92,19 @@ INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe';
 select * from srcbucket_mapjoin_n8;
 drop table srcbucket_mapjoin_n8;
+
+-- Load into ACID table using ORC files
+set hive.mapred.mode=nonstrict;
+set hive.optimize.ppd=true;
+set hive.optimize.index.filter=true;
+set hive.tez.bucket.pruning=true;
+set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+
+CREATE TABLE orc_test_txn (`id` integer, name string, dept string) PARTITIONED BY (year integer) STORED AS ORC TBLPROPERTIES('transactional'='true');
+explain load data local inpath '../../data/files/load_data_job_acid' into table orc_test_txn;
+load data local inpath '../../data/files/load_data_job_acid' into table orc_test_txn;
+
+select * from orc_test_txn;
