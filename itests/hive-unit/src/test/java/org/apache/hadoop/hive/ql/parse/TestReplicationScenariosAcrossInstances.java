@@ -1522,18 +1522,16 @@ public class TestReplicationScenariosAcrossInstances {
     return validator.hasTask(rootTask);
   }
 
-  private void checkTaskCreation(String replicadb, boolean hasMoveTask, boolean hasPartitionTask, boolean isIncDump,
+  private Task getReplLoadRootTask(String replicadb, boolean isIncrementalDump,
                                  WarehouseInstance.Tuple tuple) throws Throwable {
     HiveConf confTemp = new HiveConf(conf);
     confTemp.set("hive.repl.enable.move.optimization", "true");
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, tuple.dumpLocation, replicadb,
-            null, null, isIncDump);
+            null, null, isIncrementalDump);
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
     replLoadTask.initialize(null, null, new DriverContext(new Context(confTemp)), null);
     replLoadTask.executeTask(null);
-    Task rootTask = replLoadWork.getRootTask();
-    assertEquals(hasMoveTask, hasMoveTask(rootTask));
-    assertEquals(hasPartitionTask, hasPartitionTask(rootTask));
+    return replLoadWork.getRootTask();
   }
 
   @Test
@@ -1545,7 +1543,9 @@ public class TestReplicationScenariosAcrossInstances {
             .dump(primaryDbName, null);
 
     //bootstrap load should not have move task
-    checkTaskCreation(replicatedDbName, false, true, false, tuple);
+    Task task = getReplLoadRootTask(replicatedDbName, false, tuple);
+    assertEquals(false, hasMoveTask(task));
+    assertEquals(true, hasPartitionTask(task));
 
     replica.load(replicatedDbName, tuple.dumpLocation);
 
@@ -1554,7 +1554,9 @@ public class TestReplicationScenariosAcrossInstances {
             .dump(primaryDbName, tuple.lastReplicationId);
 
     //no partition task should be added as the operation is inserting into an existing partition
-    checkTaskCreation(replicatedDbName, true, false, true, tuple);
+    task = getReplLoadRootTask(replicatedDbName, true, tuple);
+    assertEquals(true, hasMoveTask(task));
+    assertEquals(false, hasPartitionTask(task));
 
     replica.load(replicatedDbName, tuple.dumpLocation);
 
@@ -1563,7 +1565,9 @@ public class TestReplicationScenariosAcrossInstances {
             .dump(primaryDbName, tuple.lastReplicationId);
 
     //no move task should be added as the operation is adding a dynamic partition
-    checkTaskCreation(replicatedDbName, false, true, true, tuple);
+    task = getReplLoadRootTask(replicatedDbName, true, tuple);
+    assertEquals(false, hasMoveTask(task));
+    assertEquals(true, hasPartitionTask(task));
   }
 
   @Test
