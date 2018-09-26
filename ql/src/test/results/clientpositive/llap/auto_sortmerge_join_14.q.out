@@ -81,7 +81,7 @@ STAGE PLANS:
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
-                      Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 35 Data size: 280 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -182,7 +182,7 @@ STAGE PLANS:
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
-                      Statistics: Num rows: 189 Data size: 1512 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 221 Data size: 1768 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
