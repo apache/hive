@@ -64,13 +64,13 @@ import java.util.HashSet;
 public class IncrementalLoadTasksBuilder {
   private final String dbName, tableName;
   private final IncrementalLoadEventsIterator iterator;
-  private HashSet<ReadEntity> inputs;
-  private HashSet<WriteEntity> outputs;
+  private final HashSet<ReadEntity> inputs;
+  private final HashSet<WriteEntity> outputs;
   private Logger log;
   private final HiveConf conf;
   private final ReplLogger replLogger;
   private static long numIteration;
-  private Long eventTo;
+  private final Long eventTo;
 
   public IncrementalLoadTasksBuilder(String dbName, String tableName, String loadPath,
                                      IncrementalLoadEventsIterator iterator, HiveConf conf, Long eventTo) {
@@ -96,19 +96,6 @@ public class IncrementalLoadTasksBuilder {
     numIteration++;
     this.log.debug("Iteration num " + numIteration);
     TaskTracker tracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
-
-    // if no events are there to replay, then update the last repl id of the database/ table to last event id.
-    if (!iterator.hasNext()) {
-      String lastEventid = eventTo.toString();
-      if (StringUtils.isEmpty(tableName)) {
-        taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
-        this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
-      } else {
-        taskChainTail = tableUpdateReplStateTask(dbName, tableName, null, lastEventid, taskChainTail);
-        this.log.debug("no events to replay, set last repl id of table " + dbName + "." + tableName + " to " +
-                lastEventid);
-      }
-    }
 
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       FileStatus dir = iterator.next();
@@ -166,6 +153,18 @@ public class IncrementalLoadTasksBuilder {
       // add load task to start the next iteration
       taskChainTail.addDependentTask(TaskFactory.get(loadWork, conf));
     } else {
+      // if no events were replayed, then add a task to update the last repl id of the database/table to last event id.
+      if (taskChainTail == evTaskRoot) {
+        String lastEventid = eventTo.toString();
+        if (StringUtils.isEmpty(tableName)) {
+          taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
+          this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
+        } else {
+          taskChainTail = tableUpdateReplStateTask(dbName, tableName, null, lastEventid, taskChainTail);
+          this.log.debug("no events to replay, set last repl id of table " + dbName + "." + tableName + " to " +
+                  lastEventid);
+        }
+      }
       Map<String, String> dbProps = new HashMap<>();
       dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(lastReplayedEvent));
       ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);
