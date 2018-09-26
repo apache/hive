@@ -81,6 +81,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.metastore.utils.LogUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
@@ -478,6 +479,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
                   trustStorePath, trustStorePassword );
               LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
+              if (LOG.isTraceEnabled()) {
+                LOG.trace("", new LogUtils.StackTraceLogger("METASTORE SSL CONNECTION TRACE - open - " +
+                        System.identityHashCode(this)));
+              }
             } catch(IOException e) {
               throw new IllegalArgumentException(e);
             } catch(TTransportException e) {
@@ -538,6 +543,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             if (!transport.isOpen()) {
               transport.open();
               LOG.info("Opened a connection to metastore, current connections: " + connCount.incrementAndGet());
+              if (LOG.isTraceEnabled()) {
+                LOG.trace("", new LogUtils.StackTraceLogger("METASTORE CONNECTION TRACE - open - " +
+                        System.identityHashCode(this)));
+              }
             }
             isConnected = true;
           } catch (TTransportException e) {
@@ -621,6 +630,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if ((transport != null) && transport.isOpen()) {
       transport.close();
       LOG.info("Closed a connection to metastore, current connections: " + connCount.decrementAndGet());
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("", new LogUtils.StackTraceLogger("METASTORE CONNECTION TRACE - close - " +
+                System.identityHashCode(this)));
+      }
     }
   }
 
