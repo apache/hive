@@ -78,15 +78,14 @@ import java.util.stream.Collectors;
  * Basic JsonSerDe to make use of such storage handler smooth and easy and testing basic primitive Json.
  * For production please use Hive native JsonSerde.
  */
-public class KafkaJsonSerDe extends AbstractSerDe {
+@SuppressWarnings("unused") class KafkaJsonSerDe extends AbstractSerDe {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaJsonSerDe.class);
   private static final ThreadLocal<DateTimeFormatter>
       TS_PARSER =
       ThreadLocal.withInitial(KafkaJsonSerDe::createAutoParser);
-  private static final Function<TypeInfo, ObjectInspector>
-      typeInfoToObjectInspector =
-      typeInfo -> PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory.getPrimitiveTypeInfo(
-          typeInfo.getTypeName()));
+  private static final Function<TypeInfo, ObjectInspector> TYPEINFO_TO_OI =
+      typeInfo -> PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          TypeInfoFactory.getPrimitiveTypeInfo(typeInfo.getTypeName()));
   private List<String> columnNames;
   private List<TypeInfo> columnTypes;
   private ObjectInspector inspector;
@@ -118,7 +117,7 @@ public class KafkaJsonSerDe extends AbstractSerDe {
       LOG.debug("types: {}, {} ", columnTypeProperty, columnTypes);
     }
 
-    inspectors = columnTypes.stream().map(typeInfoToObjectInspector).collect(Collectors.toList());
+    inspectors = columnTypes.stream().map(TYPEINFO_TO_OI).collect(Collectors.toList());
     inspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
   }
 
@@ -236,8 +235,8 @@ public class KafkaJsonSerDe extends AbstractSerDe {
     DateTimeParser
         timeOrOffset =
         new DateTimeFormatterBuilder().append(null,
-            new DateTimeParser[] { new DateTimeFormatterBuilder().appendLiteral('T').toParser(),
-                new DateTimeFormatterBuilder().appendLiteral(' ').toParser() })
+            new DateTimeParser[] {new DateTimeFormatterBuilder().appendLiteral('T').toParser(),
+                new DateTimeFormatterBuilder().appendLiteral(' ').toParser()})
             .appendOptional(ISODateTimeFormat.timeElementParser().getParser())
             .appendOptional(offsetElement.getParser())
             .toParser();
