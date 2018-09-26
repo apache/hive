@@ -25,6 +25,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.exec.MoveTask;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
@@ -50,6 +57,7 @@ import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuild
 import org.junit.Assert;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -1470,82 +1478,92 @@ public class TestReplicationScenariosAcrossInstances {
             .run(" drop database if exists " + replicatedDbName_CM + " cascade");
   }
 
-  private void injectableForTaskCreation(String primarydb, String replicadb, String tbl, String eventType,
-                                             String eventTypeExpect, WarehouseInstance.Tuple tuple) throws Throwable {
-    List<String> withConfigs = Arrays.asList("'hive.repl.move.optimized.scheme'= ' hDfs , '");
-
-    // fail add notification for given event type.
-    BehaviourInjection<NotificationEvent, Boolean> callerVerifier
-            = new BehaviourInjection<NotificationEvent, Boolean>() {
-      @Nullable
-      @Override
-      public Boolean apply(@Nullable NotificationEvent entry) {
-        if (entry.getEventType().equalsIgnoreCase(eventType) && entry.getTableName().equalsIgnoreCase(tbl)) {
-          injectionPathCalled = true;
-          LOG.warn("Verifier - DB: " + String.valueOf(entry.getDbName())
-                  + " Table: " + String.valueOf(entry.getTableName())
-                  + " Event: " + String.valueOf(entry.getEventType()));
-          return false;
-        }
-        if (entry.getEventType().equalsIgnoreCase(eventTypeExpect) && entry.getTableName().equalsIgnoreCase(tbl)) {
-          nonInjectedPathCalled = true;
-        }
+  private abstract class checkTaskPresent {
+    public boolean hasTask(Task rootTask) {
+      if (validate(rootTask)) {
         return true;
       }
-    };
-
-    InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
-    try {
-      replica.load(replicadb, tuple.dumpLocation, withConfigs);
-    } finally {
-      InjectableBehaviourObjectStore.resetAddNotificationModifier();
+      List<Task<? extends Serializable>> childTasks = rootTask.getChildTasks();
+      if (childTasks == null) {
+        return false;
+      }
+      for (Task<? extends Serializable> childTask : childTasks) {
+        if (hasTask(childTask)) {
+          return true;
+        }
+      }
+      return false;
     }
 
-    callerVerifier.assertInjectionsPerformed(false, true);
+    public abstract boolean validate(Task task);
+  }
+
+  private boolean hasMoveTask(Task rootTask) {
+    checkTaskPresent validator =  new checkTaskPresent() {
+      public boolean validate(Task task) {
+        return  (task instanceof MoveTask);
+      }
+    };
+    return validator.hasTask(rootTask);
+  }
+
+  private boolean hasPartitionTask(Task rootTask) {
+    checkTaskPresent validator =  new checkTaskPresent() {
+      public boolean validate(Task task) {
+        if (task instanceof DDLTask) {
+          DDLTask ddlTask = (DDLTask)task;
+          if (ddlTask.getWork().getAddPartitionDesc() != null) {
+            return true;
+          }
+        }
+        return false;
+      }
+    };
+    return validator.hasTask(rootTask);
+  }
+
+  private void checkTaskCreation(String replicadb, boolean hasMoveTask, boolean hasPartitionTask, boolean isIncDump,
+                                 WarehouseInstance.Tuple tuple) throws Throwable {
+    HiveConf confTemp = new HiveConf(conf);
+    confTemp.set("hive.repl.enable.move.optimization", "true");
+    ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, tuple.dumpLocation, replicadb,
+            null, null, isIncDump);
+    Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
+    replLoadTask.initialize(null, null, new DriverContext(new Context(confTemp)), null);
+    replLoadTask.executeTask(null);
+    Task rootTask = replLoadWork.getRootTask();
+    assertEquals(hasMoveTask, hasMoveTask(rootTask));
+    assertEquals(hasPartitionTask, hasPartitionTask(rootTask));
   }
 
   @Test
   public void testTaskCreationOptimization() throws Throwable {
-
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create table t2 (place string) partitioned by (country string)")
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .dump(primaryDbName, null);
 
-    //no insert event should be added
-    injectableForTaskCreation(primaryDbName, replicatedDbName, "t2",
-            "INSERT", "ADD_PARTITION", tuple);
+    //bootstrap load should not have move task
+    checkTaskCreation(replicatedDbName, false, true, false, tuple);
 
-    replica.run("use " + replicatedDbName)
-            .run("select country from t2 where country == 'india'")
-            .verifyResults(Arrays.asList("india"));
+    replica.load(replicatedDbName, tuple.dumpLocation);
 
     tuple = primary.run("use " + primaryDbName)
             .run("insert into table t2 partition(country='india') values ('delhi')")
             .dump(primaryDbName, tuple.lastReplicationId);
 
-    //no ADD_PARTITION event should be added
-    injectableForTaskCreation(primaryDbName, replicatedDbName, "t2","ADD_PARTITION",
-            "INSERT", tuple);
+    //no partition task should be added as the operation is inserting into an existing partition
+    checkTaskCreation(replicatedDbName, true, false, true, tuple);
 
-    replica.run("use " + replicatedDbName)
-            .run("select place from t2 where country == 'india'")
-            .verifyResults(Arrays.asList("bangalore", "delhi"));
+    replica.load(replicatedDbName, tuple.dumpLocation);
 
     tuple = primary.run("use " + primaryDbName)
             .run("insert into table t2 partition(country='us') values ('sf')")
             .dump(primaryDbName, tuple.lastReplicationId);
 
-    //no insert event should be added
-    injectableForTaskCreation(primaryDbName, replicatedDbName, "t2","INSERT",
-            "ADD_PARTITION", tuple);
-
-    replica.run("use " + replicatedDbName)
-            .run("select place from t2 where country == 'india'")
-            .verifyResults(Arrays.asList("bangalore", "delhi"))
-            .run("select place from t2 where country == 'us'")
-            .verifyResults(Arrays.asList("sf"));
+    //no move task should be added as the operation is adding a dynamic partition
+    checkTaskCreation(replicatedDbName, false, true, true, tuple);
   }
 
   @Test
