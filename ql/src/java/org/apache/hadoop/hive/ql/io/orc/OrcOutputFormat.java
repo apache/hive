@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.TypeDescription;
 import org.slf4j.Logger;
@@ -288,9 +289,11 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     if (!options.isWritingBase()) {
       opts.bufferSize(OrcRecordUpdater.DELTA_BUFFER_SIZE)
           .stripeSize(OrcRecordUpdater.DELTA_STRIPE_SIZE)
-          .blockPadding(false)
-          .compress(CompressionKind.NONE)
-          .rowIndexStride(0);
+          .blockPadding(false);
+      if(!MetastoreConf.getBoolVar(options.getConfiguration(),
+          MetastoreConf.ConfVars.COMPACTOR_MINOR_STATS_COMPRESSION)) {
+        opts.compress(CompressionKind.NONE).rowIndexStride(0);
+      }
     }
     final OrcRecordUpdater.KeyIndexBuilder watcher =
         new OrcRecordUpdater.KeyIndexBuilder("compactor");
