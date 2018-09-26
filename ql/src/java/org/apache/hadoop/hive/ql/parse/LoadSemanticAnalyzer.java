@@ -26,11 +26,13 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.HashSet;
+
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
@@ -473,6 +475,9 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     tempTableObj.setFields(table.getAllCols());
     // wipe out partition columns
     tempTableObj.setPartCols(new ArrayList<>());
+
+    // Reset table params
+    tempTableObj.setParameters(new HashMap<>());
 
     // Set data location and input format, it must be text
     tempTableObj.setDataLocation(new Path(fromURI));
