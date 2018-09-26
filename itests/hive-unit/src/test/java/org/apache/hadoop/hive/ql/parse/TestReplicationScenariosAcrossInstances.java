@@ -901,8 +901,6 @@ public class TestReplicationScenariosAcrossInstances {
     replica.load(replicatedDbName, tuple.dumpLocation)
             .status(replicatedDbName)
             .verifyResult(tuple.lastReplicationId);
-    Database replicaDb = replica.getDatabase(replicatedDbName);
-    assertTrue(replicaDb.getParameters().get("repl.last.id").equalsIgnoreCase(tuple.lastReplicationId));
 
     // Incremental load to non existing db should return database not exist error.
     tuple = primary.dump("someJunkDB", tuple.lastReplicationId);
@@ -917,7 +915,6 @@ public class TestReplicationScenariosAcrossInstances {
             " no data to load in path");
 
     primary.run(" drop database if exists " + testDbName + " cascade");
-    replica.run(" drop database if exists " + testDbName + " cascade");
   }
 
   @Test

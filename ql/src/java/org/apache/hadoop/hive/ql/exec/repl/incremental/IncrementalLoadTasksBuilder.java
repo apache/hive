@@ -70,10 +70,10 @@ public class IncrementalLoadTasksBuilder {
   private final HiveConf conf;
   private final ReplLogger replLogger;
   private static long numIteration;
-  private String loadPath;
+  private Long eventTo;
 
   public IncrementalLoadTasksBuilder(String dbName, String tableName, String loadPath,
-                                     IncrementalLoadEventsIterator iterator, HiveConf conf) {
+                                     IncrementalLoadEventsIterator iterator, HiveConf conf, Long eventTo) {
     this.dbName = dbName;
     this.tableName = tableName;
     this.iterator = iterator;
@@ -84,7 +84,7 @@ public class IncrementalLoadTasksBuilder {
     replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents());
     numIteration = 0;
     replLogger.startLog();
-    this.loadPath = loadPath;
+    this.eventTo = eventTo;
   }
 
   public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log,
@@ -99,16 +99,14 @@ public class IncrementalLoadTasksBuilder {
 
     // if no events are there to replay, then update the last repl id of the database/ table to last event id.
     if (!iterator.hasNext()) {
-      DumpMetaData eventDmd = new DumpMetaData(new Path(loadPath), conf);
+      String lastEventid = eventTo.toString();
       if (StringUtils.isEmpty(tableName)) {
-        taskChainTail = dbUpdateReplStateTask(dbName, eventDmd.getEventTo().toString(), taskChainTail);
-        this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " +
-                eventDmd.getEventTo().toString());
+        taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
+        this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
       } else {
-        taskChainTail = tableUpdateReplStateTask(dbName, tableName, null,
-                eventDmd.getEventTo().toString(), taskChainTail);
+        taskChainTail = tableUpdateReplStateTask(dbName, tableName, null, lastEventid, taskChainTail);
         this.log.debug("no events to replay, set last repl id of table " + dbName + "." + tableName + " to " +
-                eventDmd.getEventTo().toString());
+                lastEventid);
       }
     }
 
