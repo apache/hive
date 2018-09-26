@@ -23,10 +23,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.codec.DecoderException;
@@ -40,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -473,6 +476,9 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     tempTableObj.setFields(table.getAllCols());
     // wipe out partition columns
     tempTableObj.setPartCols(new ArrayList<>());
+
+    // Reset table params
+    tempTableObj.setParameters(new HashMap<>());
 
     // Set data location and input format, it must be text
     tempTableObj.setDataLocation(new Path(fromURI));
