@@ -434,6 +434,10 @@ public class Hive {
     hiveDB.remove();
   }
 
+  public static Hive getThreadLocal() {
+    return hiveDB.get();
+  }
+
   /**
    * Hive
    *
