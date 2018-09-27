@@ -6,7 +6,6 @@ set hive.merge.sparkfiles=true;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
 set hive.merge.smallfiles.avgsize=1;
-set mapred.input.dir.recursive=true;
 
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
