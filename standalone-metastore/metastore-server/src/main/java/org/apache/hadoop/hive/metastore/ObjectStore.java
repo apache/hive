@@ -1334,8 +1334,6 @@ public class ObjectStore implements RawStore, Configurable {
   private boolean dropCreationMetadata(String catName, String dbName, String tableName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean success = false;
-    dbName = normalizeIdentifier(dbName);
-    tableName = normalizeIdentifier(tableName);
     try {
       openTransaction();
       MCreationMetadata mcm = getCreationMetadata(catName, dbName, tableName);
@@ -1818,6 +1816,9 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     MCreationMetadata mcm = null;
     Query query = null;
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
     try {
       openTransaction();
       query = pm.newQuery(
@@ -2214,7 +2215,8 @@ public class ObjectStore implements RawStore, Configurable {
       String[] names =  fullyQualifiedName.split("\\.");
       tablesUsed.add(getMTable(m.getCatName(), names[0], names[1], false).mtbl);
     }
-    return new MCreationMetadata(m.getCatName(), m.getDbName(), m.getTblName(),
+    return new MCreationMetadata(normalizeIdentifier(m.getCatName()),
+            normalizeIdentifier(m.getDbName()), normalizeIdentifier(m.getTblName()),
         tablesUsed, m.getValidTxnList(), System.currentTimeMillis());
   }
 

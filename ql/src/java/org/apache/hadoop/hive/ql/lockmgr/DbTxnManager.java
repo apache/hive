@@ -242,7 +242,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       tableWriteIds.clear();
       isExplicitTransaction = false;
       startTransactionCount = 0;
-      LOG.debug("Opened " + JavaUtils.txnIdToString(txnId));
+      LOG.info("Opened " + JavaUtils.txnIdToString(txnId));
       ctx.setHeartbeater(startHeartbeat(delay));
       return txnId;
     } catch (TException e) {
