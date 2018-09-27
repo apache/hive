@@ -17,10 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.util.List;
 
@@ -40,6 +36,8 @@ import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader.ColumnizedDeleteEventRegistry;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader.SortMergedDeleteEventRegistry;
+
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.LongWritable;
@@ -48,6 +46,8 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.TypeDescription;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * This class tests the VectorizedOrcAcidRowBatchReader by creating an actual split and a set
@@ -62,6 +62,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
   private JobConf conf;
   private FileSystem fs;
   private Path root;
+  private ObjectInspector inspector;
 
   public static class DummyRow {
     LongWritable field;
@@ -90,7 +91,6 @@ public class TestVectorizedOrcAcidRowBatchReader {
   @Before
   public void setup() throws Exception {
     conf = new JobConf();
-    conf.set("bucket_count", "1");
     conf.set(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
     conf.setBoolean(HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname, true);
     conf.set(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "default");
@@ -107,11 +107,273 @@ public class TestVectorizedOrcAcidRowBatchReader {
     fs = root.getFileSystem(conf);
     root = fs.makeQualified(root);
     fs.delete(root, true);
-    ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = ObjectInspectorFactory.getReflectionObjectInspector
           (DummyRow.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
+  }
+  @Test
+  public void testDeleteEventFilteringOff() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, false);
+    testDeleteEventFiltering();
+  }
+  @Test
+  public void testDeleteEventFilteringOn() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
+    testDeleteEventFiltering();
+  }
+
+  /**
+   * Tests that we can figure out min/max ROW__ID for each split and then use
+   * that to only load delete events between min/max.
+   * This test doesn't actually check what is read - that is done more E2E
+   * unit tests.
+   * @throws Exception
+   */
+  private void testDeleteEventFiltering() throws Exception {
+    boolean filterOn =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS);
+    int bucket = 0;
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
+        .filesystem(fs)
+        .bucket(bucket)
+        .writingBase(false)
+        .minimumWriteId(1)
+        .maximumWriteId(1)
+        .inspector(inspector)
+        .reporter(Reporter.NULL)
+        .recordIdColumn(1)
+        .finalDestination(root);
+
+    int bucketProperty = BucketCodec.V1.encode(options);
+
+    //create 3 insert deltas so that we have 3 splits
+    RecordUpdater updater = new OrcRecordUpdater(root, options);
+    updater.insert(options.getMinimumWriteId(),
+        new DummyRow(1, 0, options.getMinimumWriteId(), bucket));
+    updater.insert(options.getMinimumWriteId(),
+        new DummyRow(2, 1, options.getMinimumWriteId(), bucket));
+    updater.insert(options.getMinimumWriteId(),
+        new DummyRow(3, 2, options.getMinimumWriteId(), bucket));
+    updater.close(false);
+
+    options.minimumWriteId(2)
+        .maximumWriteId(2);
+    updater = new OrcRecordUpdater(root, options);
+    updater.insert(options.getMinimumWriteId(),
+        new DummyRow(4, 0, options.getMinimumWriteId(), bucket));
+    updater.insert(options.getMinimumWriteId(),
+        new DummyRow(5, 1, options.getMinimumWriteId(), bucket));
+    updater.insert(options.getMinimumWriteId(),
+        new DummyRow(6, 2, options.getMinimumWriteId(), bucket));
+    updater.close(false);
+
+    options.minimumWriteId(3)
+        .maximumWriteId(3);
+    updater = new OrcRecordUpdater(root, options);
+    updater.insert(options.getMinimumWriteId(),
+        new DummyRow(7, 0, options.getMinimumWriteId(), bucket));
+    updater.insert(options.getMinimumWriteId(),
+        new DummyRow(8, 1, options.getMinimumWriteId(), bucket));
+    updater.insert(options.getMinimumWriteId(),
+        new DummyRow(9, 2, options.getMinimumWriteId(), bucket));
+    updater.close(false);
+
+    //delete 1 row from each of the insert deltas
+    options.minimumWriteId(4)
+        .maximumWriteId(4);
+    updater = new OrcRecordUpdater(root, options);
+    updater.delete(options.getMinimumWriteId(),
+        new DummyRow(-1, 0, 1, bucket));
+    updater.delete(options.getMinimumWriteId(),
+        new DummyRow(-1, 1, 2, bucket));
+    updater.delete(options.getMinimumWriteId(),
+        new DummyRow(-1, 2, 3, bucket));
+    updater.close(false);
+
+    //HWM is not important - just make sure deltas created above are read as
+    // if committed
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY,
+        "tbl:5:" + Long.MAX_VALUE + "::");
+
+    //now we have 3 delete events total, but for each split we should only
+    // load 1 into DeleteRegistry (if filtering is on)
+    List<OrcInputFormat.SplitStrategy<?>> splitStrategies = getSplitStrategies();
+    assertEquals(1, splitStrategies.size());
+    List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy)splitStrategies.get(0)).getSplits();
+
+    assertEquals(3, splits.size());
+    assertEquals(root.toUri().toString() + File.separator +
+            "delta_0000001_0000001_0000/bucket_00000",
+        splits.get(0).getPath().toUri().toString());
+    assertFalse(splits.get(0).isOriginal());
+
+    assertEquals(root.toUri().toString() + File.separator +
+            "delta_0000002_0000002_0000/bucket_00000",
+        splits.get(1).getPath().toUri().toString());
+    assertFalse(splits.get(1).isOriginal());
+
+    assertEquals(root.toUri().toString() + File.separator +
+            "delta_0000003_0000003_0000/bucket_00000",
+        splits.get(2).getPath().toUri().toString());
+    assertFalse(splits.get(2).isOriginal());
+
+    VectorizedOrcAcidRowBatchReader vectorizedReader =
+        new VectorizedOrcAcidRowBatchReader(splits.get(0), conf, Reporter.NULL,
+            new VectorizedRowBatchCtx());
+    ColumnizedDeleteEventRegistry deleteEventRegistry =
+        (ColumnizedDeleteEventRegistry) vectorizedReader
+            .getDeleteEventRegistry();
+    assertEquals("number of delete events for stripe 1", filterOn ? 1 : 3,
+        deleteEventRegistry.size());
+    OrcRawRecordMerger.KeyInterval keyInterval =
+        vectorizedReader.getKeyInterval();
+    if(filterOn) {
+      assertEquals(new OrcRawRecordMerger.KeyInterval(
+          new RecordIdentifier(1, bucketProperty, 0),
+          new RecordIdentifier(1, bucketProperty, 2)),
+          keyInterval);
+    }
+    else {
+      assertEquals(new OrcRawRecordMerger.KeyInterval(null, null), keyInterval);
+    }
+
+    vectorizedReader = new VectorizedOrcAcidRowBatchReader(splits.get(1), conf,
+        Reporter.NULL, new VectorizedRowBatchCtx());
+    deleteEventRegistry = (ColumnizedDeleteEventRegistry) vectorizedReader
+        .getDeleteEventRegistry();
+    assertEquals("number of delete events for stripe 2", filterOn ? 1 : 3,
+        deleteEventRegistry.size());
+    keyInterval = vectorizedReader.getKeyInterval();
+    if(filterOn) {
+      assertEquals(new OrcRawRecordMerger.KeyInterval(
+          new RecordIdentifier(2, bucketProperty, 0),
+          new RecordIdentifier(2, bucketProperty, 2)),
+          keyInterval);
+    }
+    else {
+      assertEquals(new OrcRawRecordMerger.KeyInterval(null, null), keyInterval);
+    }
+
+    vectorizedReader = new VectorizedOrcAcidRowBatchReader(splits.get(2), conf,
+        Reporter.NULL, new VectorizedRowBatchCtx());
+    deleteEventRegistry = (ColumnizedDeleteEventRegistry) vectorizedReader
+        .getDeleteEventRegistry();
+    assertEquals("number of delete events for stripe 3", filterOn ? 1 : 3,
+        deleteEventRegistry.size());
+    keyInterval = vectorizedReader.getKeyInterval();
+    if(filterOn) {
+      assertEquals(new OrcRawRecordMerger.KeyInterval(
+          new RecordIdentifier(3, bucketProperty, 0),
+          new RecordIdentifier(3, bucketProperty, 2)), keyInterval);
+    }
+    else {
+      assertEquals(new OrcRawRecordMerger.KeyInterval(null, null), keyInterval);
+    }
+  }
+
+  @Test
+  public void testDeleteEventFilteringOff2() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, false);
+    testDeleteEventFiltering2();
+  }
+  @Test
+  public void testDeleteEventFilteringOn2() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
+    testDeleteEventFiltering2();
+  }
+
+  private void testDeleteEventFiltering2() throws Exception {
+    boolean filterOn =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS);
+    int bucket = 1;
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
+        .filesystem(fs)
+        .bucket(bucket)
+        .writingBase(true)
+        .minimumWriteId(10000002)
+        .maximumWriteId(10000002)
+        .inspector(inspector)
+        .reporter(Reporter.NULL)
+        .recordIdColumn(1)
+        .finalDestination(root);
+
+    int bucketProperty = BucketCodec.V1.encode(options);
+
+    //create data that looks like a compacted base that includes some data
+    //from 'original' files and some from native Acid write
+    RecordUpdater updater = new OrcRecordUpdater(root, options);
+    updater.insert(0, new DummyRow(1, 0, 0, bucket));
+    updater.insert(0, new DummyRow(1, 1, 0, bucket));
+    updater.insert(0, new DummyRow(2, 2, 0, bucket));
+    updater.insert(10000001, new DummyRow(3, 0, 10000001, bucket));
+    updater.close(false);
+
+    //delete 3rd row
+    options.writingBase(false).minimumWriteId(10000004)
+        .maximumWriteId(10000004);
+    updater = new OrcRecordUpdater(root, options);
+    updater.delete(options.getMinimumWriteId(),
+        new DummyRow(-1, 0, 0, bucket));
+    //hypothetically this matches something in (nonexistent here)
+    // delta_10000003_10000003
+    updater.delete(options.getMinimumWriteId(),
+        new DummyRow(-1, 5, 10000003, bucket));
+    updater.close(false);
+
+    //HWM is not important - just make sure deltas created above are read as
+    // if committed
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY,
+        "tbl:10000005:" + Long.MAX_VALUE + "::");
+
+    List<OrcInputFormat.SplitStrategy<?>> splitStrategies = getSplitStrategies();
+    assertEquals(1, splitStrategies.size());
+    List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy)splitStrategies.get(0)).getSplits();
+
+    assertEquals(1, splits.size());
+    assertEquals(root.toUri().toString() + File.separator +
+            "base_10000002/bucket_00001",
+        splits.get(0).getPath().toUri().toString());
+    assertFalse(splits.get(0).isOriginal());
+
+
+    VectorizedOrcAcidRowBatchReader vectorizedReader =
+        new VectorizedOrcAcidRowBatchReader(splits.get(0), conf, Reporter.NULL,
+            new VectorizedRowBatchCtx());
+    ColumnizedDeleteEventRegistry deleteEventRegistry =
+        (ColumnizedDeleteEventRegistry) vectorizedReader
+            .getDeleteEventRegistry();
+    assertEquals("number of delete events for stripe 1", filterOn ? 1 : 2,
+        deleteEventRegistry.size());
+    OrcRawRecordMerger.KeyInterval keyInterval =
+        vectorizedReader.getKeyInterval();
+    SearchArgument sarg = vectorizedReader.getDeleteEventSarg();
+    if(filterOn) {
+      assertEquals(new OrcRawRecordMerger.KeyInterval(
+              new RecordIdentifier(0, bucketProperty, 0),
+              new RecordIdentifier(10000001, bucketProperty, 0)),
+          keyInterval);
+      //key point is that in leaf-5 is (rowId <= 2) even though maxKey has
+      //rowId 0.  more in VectorizedOrcAcidRowBatchReader.findMinMaxKeys
+      assertEquals( "leaf-0 = (LESS_THAN originalTransaction 0)," +
+          " leaf-1 = (LESS_THAN bucket 536936448)," +
+          " leaf-2 = (LESS_THAN rowId 0)," +
+          " leaf-3 = (LESS_THAN_EQUALS originalTransaction 10000001)," +
+          " leaf-4 = (LESS_THAN_EQUALS bucket 536936448)," +
+          " leaf-5 = (LESS_THAN_EQUALS rowId 2)," +
+          " expr = (and (not leaf-0) (not leaf-1) " +
+          "(not leaf-2) leaf-3 leaf-4 leaf-5)", sarg.toString());
+    }
+    else {
+      assertEquals(new OrcRawRecordMerger.KeyInterval(null, null), keyInterval);
+      assertNull(sarg);
+    }
+
+  }
+    @Test
+  public void testVectorizedOrcAcidRowBatchReader() throws Exception {
+    conf.set("bucket_count", "1");
+
     int bucket = 0;
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .filesystem(fs)
@@ -177,28 +439,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
       }
     }
     updater.close(false);
-  }
 
-  private List<OrcSplit> getSplits() throws Exception {
-    conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
-        AcidUtils.AcidOperationalProperties.getDefault().toInt());
-    OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
-    OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(context, fs, root, false, null);
-    OrcInputFormat.AcidDirInfo adi = gen.call();
-    List<OrcInputFormat.SplitStrategy<?>> splitStrategies = OrcInputFormat.determineSplitStrategies(
-        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
-        null, null, true);
-    assertEquals(1, splitStrategies.size());
-    List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy)splitStrategies.get(0)).getSplits();
-    assertEquals(1, splits.size());
-    assertEquals(root.toUri().toString() + File.separator + "delta_0000001_0000010_0000/bucket_00000",
-        splits.get(0).getPath().toUri().toString());
-    assertFalse(splits.get(0).isOriginal());
-    return splits;
-  }
-
-  @Test
-  public void testVectorizedOrcAcidRowBatchReader() throws Exception {
     testVectorizedOrcAcidRowBatchReader(ColumnizedDeleteEventRegistry.class.getName());
 
     // To test the SortMergedDeleteEventRegistry, we need to explicitly set the
@@ -213,7 +454,16 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
 
   private void testVectorizedOrcAcidRowBatchReader(String deleteEventRegistry) throws Exception {
-    List<OrcSplit> splits = getSplits();
+    List<OrcInputFormat.SplitStrategy<?>> splitStrategies = getSplitStrategies();
+    assertEquals(1, splitStrategies.size());
+    List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy)
+        splitStrategies.get(0)).getSplits();
+    assertEquals(1, splits.size());
+    assertEquals(root.toUri().toString() + File.separator +
+            "delta_0000001_0000010_0000/bucket_00000",
+        splits.get(0).getPath().toUri().toString());
+    assertFalse(splits.get(0).isOriginal());
+
     // Mark one of the transactions as an exception to test that invalid transactions
     // are being handled properly.
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, "tbl:14:1:1:5"); // Exclude transaction 5
@@ -243,5 +493,17 @@ public class TestVectorizedOrcAcidRowBatchReader {
         previousPayload = payload;
       }
     }
+  }
+  private List<OrcInputFormat.SplitStrategy<?>> getSplitStrategies() throws Exception {
+    conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
+        AcidUtils.AcidOperationalProperties.getDefault().toInt());
+    OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
+    OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
+        context, fs, root, false, null);
+    OrcInputFormat.AcidDirInfo adi = gen.call();
+    return OrcInputFormat.determineSplitStrategies(
+        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
+        null, null, true);
+
   }
 }

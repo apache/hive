@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.SchemaEvolution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -168,7 +167,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     @Override
     public String toString() {
       return "{originalWriteId: " + getWriteId() + ", " +
-          bucketToString() + ", row: " + getRowId() + ", currentWriteId " + currentWriteId + "}";
+          bucketToString(getBucketProperty()) + ", row: " + getRowId() +
+          ", currentWriteId " + currentWriteId + "}";
     }
   }
   interface ReaderPair {
@@ -664,20 +664,37 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
   // The key of the next lowest reader.
   private ReaderKey secondaryKey = null;
-
-  private static final class KeyInterval {
+  static final class KeyInterval {
     private final RecordIdentifier minKey;
     private final RecordIdentifier maxKey;
-    private KeyInterval(RecordIdentifier minKey, RecordIdentifier maxKey) {
+    KeyInterval(RecordIdentifier minKey, RecordIdentifier maxKey) {
       this.minKey = minKey;
       this.maxKey = maxKey;
     }
-    private RecordIdentifier getMinKey() {
+    RecordIdentifier getMinKey() {
       return minKey;
     }
-    private RecordIdentifier getMaxKey() {
+    RecordIdentifier getMaxKey() {
       return maxKey;
+    };
+    @Override
+    public String toString() {
+      return "KeyInterval[" + minKey + "," + maxKey + "]";
     }
+    @Override
+    public boolean equals(Object other) {
+      if(!(other instanceof KeyInterval)) {
+        return false;
+      }
+      KeyInterval otherInterval = (KeyInterval)other;
+      return Objects.equals(minKey, otherInterval.getMinKey()) &&
+          Objects.equals(maxKey, otherInterval.getMaxKey());
+    }
+    @Override
+    public int hashCode() {
+      return Objects.hash(minKey, maxKey);
+    }
+
   }
   /**
    * Find the key range for original bucket files.
