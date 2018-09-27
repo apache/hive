@@ -1858,7 +1858,10 @@ public class HiveConf extends Configuration {
         + "into memory to optimize for performance. To prevent out-of-memory errors, this is a rough heuristic\n"
         + "that limits the total number of delete events that can be loaded into memory at once.\n"
         + "Roughly it has been set to 10 million delete events per bucket (~160 MB).\n"),
-
+    FILTER_DELETE_EVENTS("hive.txn.filter.delete.events", true,
+        "If true, VectorizedOrcAcidRowBatchReader will compute min/max " +
+            "ROW__ID for the split and only load delete events in that range.\n"
+    ),
     HIVESAMPLERANDOMNUM("hive.sample.seednumber", 0,
         "A number used to percentage sampling. By changing this number, user will change the subsets of data sampled."),
 

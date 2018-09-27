@@ -2075,9 +2075,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       getMetaData(qb, null);
     } catch (HiveException e) {
-      // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       if (e instanceof SemanticException) {
         throw (SemanticException)e;
       }

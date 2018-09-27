@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -56,6 +57,13 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
   @Override
   protected String getTestDataDir() {
     return TEST_DATA_DIR;
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    setUpInternal();
+    //see TestTxnNoBucketsVectorized for vectorized version
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
   }
 
   private boolean shouldVectorize() {
