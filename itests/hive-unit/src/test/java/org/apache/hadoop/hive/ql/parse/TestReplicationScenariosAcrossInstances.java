@@ -25,13 +25,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
-import org.apache.hadoop.hive.ql.exec.MoveTask;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
@@ -1476,98 +1469,6 @@ public class TestReplicationScenariosAcrossInstances {
             .run("select country from " + tbl + " where country == 'india'")
             .verifyResults(Arrays.asList("india"))
             .run(" drop database if exists " + replicatedDbName_CM + " cascade");
-  }
-
-  private abstract class checkTaskPresent {
-    public boolean hasTask(Task rootTask) {
-      if (validate(rootTask)) {
-        return true;
-      }
-      List<Task<? extends Serializable>> childTasks = rootTask.getChildTasks();
-      if (childTasks == null) {
-        return false;
-      }
-      for (Task<? extends Serializable> childTask : childTasks) {
-        if (hasTask(childTask)) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    public abstract boolean validate(Task task);
-  }
-
-  private boolean hasMoveTask(Task rootTask) {
-    checkTaskPresent validator =  new checkTaskPresent() {
-      public boolean validate(Task task) {
-        return  (task instanceof MoveTask);
-      }
-    };
-    return validator.hasTask(rootTask);
-  }
-
-  private boolean hasPartitionTask(Task rootTask) {
-    checkTaskPresent validator =  new checkTaskPresent() {
-      public boolean validate(Task task) {
-        if (task instanceof DDLTask) {
-          DDLTask ddlTask = (DDLTask)task;
-          if (ddlTask.getWork().getAddPartitionDesc() != null) {
-            return true;
-          }
-        }
-        return false;
-      }
-    };
-    return validator.hasTask(rootTask);
-  }
-
-  private Task getReplLoadRootTask(String replicadb, boolean isIncrementalDump,
-                                 WarehouseInstance.Tuple tuple) throws Throwable {
-    HiveConf confTemp = new HiveConf(conf);
-    confTemp.set("hive.repl.enable.move.optimization", "true");
-    ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, tuple.dumpLocation, replicadb,
-            null, null, isIncrementalDump);
-    Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
-    replLoadTask.initialize(null, null, new DriverContext(new Context(confTemp)), null);
-    replLoadTask.executeTask(null);
-    return replLoadWork.getRootTask();
-  }
-
-  @Test
-  public void testTaskCreationOptimization() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary
-            .run("use " + primaryDbName)
-            .run("create table t2 (place string) partitioned by (country string)")
-            .run("insert into table t2 partition(country='india') values ('bangalore')")
-            .dump(primaryDbName, null);
-
-    //bootstrap load should not have move task
-    Task task = getReplLoadRootTask(replicatedDbName, false, tuple);
-    assertEquals(false, hasMoveTask(task));
-    assertEquals(true, hasPartitionTask(task));
-
-    replica.load(replicatedDbName, tuple.dumpLocation);
-
-    tuple = primary.run("use " + primaryDbName)
-            .run("insert into table t2 partition(country='india') values ('delhi')")
-            .dump(primaryDbName, tuple.lastReplicationId);
-
-    //no partition task should be added as the operation is inserting into an existing partition
-    task = getReplLoadRootTask(replicatedDbName, true, tuple);
-    assertEquals(true, hasMoveTask(task));
-    assertEquals(false, hasPartitionTask(task));
-
-    replica.load(replicatedDbName, tuple.dumpLocation);
-
-    tuple = primary.run("use " + primaryDbName)
-            .run("insert into table t2 partition(country='us') values ('sf')")
-            .dump(primaryDbName, tuple.lastReplicationId);
-
-    //no move task should be added as the operation is adding a dynamic partition
-    task = getReplLoadRootTask(replicatedDbName, true, tuple);
-    assertEquals(false, hasMoveTask(task));
-    assertEquals(true, hasPartitionTask(task));
   }
 
   @Test
