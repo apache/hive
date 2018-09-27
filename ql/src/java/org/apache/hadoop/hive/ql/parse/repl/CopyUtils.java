@@ -212,7 +212,7 @@ public class CopyUtils {
   }
 
   // Check if the source file unmodified even after copy to see if we copied the right file
-  private boolean isSourceFileMismatch(FileSystem sourceFs, ReplChangeManager.FileInfo srcFile) {
+  private boolean isSourceFileMismatch(FileSystem sourceFs, ReplChangeManager.FileInfo srcFile) throws IOException {
     // If source is already CM path, the checksum will be always matching
     if (srcFile.isUseSourcePath()) {
       String sourceChecksumString = srcFile.getCheckSum();
@@ -222,9 +222,13 @@ public class CopyUtils {
           verifySourceChecksumString
                   = ReplChangeManager.checksumFor(srcFile.getSourcePath(), sourceFs);
         } catch (IOException e) {
-          // Retry with CM path
-          LOG.debug("Unable to calculate checksum for source file: " + srcFile.getSourcePath());
-          return true;
+          LOG.info("Unable to calculate checksum for source file: " + srcFile.getSourcePath(), e);
+
+          if (!sourceFs.exists(srcFile.getSourcePath())) {
+            // if source file is missing, then return true, so that cm path will be used for copy.
+            return true;
+          }
+          throw e;
         }
         if (!sourceChecksumString.equals(verifySourceChecksumString)) {
           return true;
