@@ -27,9 +27,13 @@ POSTHOOK: Output: default@map_table_n0
 PREHOOK: query: explain vectorization detail
 select * from map_table_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@map_table_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from map_table_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@map_table_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

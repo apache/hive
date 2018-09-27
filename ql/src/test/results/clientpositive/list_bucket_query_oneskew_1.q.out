@@ -129,9 +129,15 @@ POSTHOOK: Input: default@fact_daily_n4@ds=1
 495	1
 PREHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n4
+PREHOOK: Input: default@fact_daily_n4@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=484
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x`
+POSTHOOK: Input: default@fact_daily_n4
+POSTHOOK: Input: default@fact_daily_n4@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n4`
 WHERE `ds` = '1' AND `x` = 484
 STAGE DEPENDENCIES:
@@ -249,9 +255,15 @@ POSTHOOK: Input: default@fact_daily_n4@ds=1
 484
 PREHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=495
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n4
+PREHOOK: Input: default@fact_daily_n4@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=495
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(495 AS INTEGER) AS `x`
+POSTHOOK: Input: default@fact_daily_n4
+POSTHOOK: Input: default@fact_daily_n4@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(495 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n4`
 WHERE `ds` = '1' AND `x` = 495
 STAGE DEPENDENCIES:
@@ -369,9 +381,15 @@ POSTHOOK: Input: default@fact_daily_n4@ds=1
 495
 PREHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n4
+PREHOOK: Input: default@fact_daily_n4@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=1
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `x`
+POSTHOOK: Input: default@fact_daily_n4
+POSTHOOK: Input: default@fact_daily_n4@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n4`
 WHERE `ds` = '1' AND `x` = 1
 STAGE DEPENDENCIES:

@@ -16,8 +16,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_null
 PREHOOK: query: EXPLAIN SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

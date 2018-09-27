@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Lists;
-import com.metamx.http.client.Request;
+import io.druid.java.util.http.client.Request;
 import io.druid.query.BaseQuery;
 import io.druid.query.LocatedSegmentDescriptor;
 import io.druid.query.Query;
@@ -106,7 +106,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
   }
 
   @SuppressWarnings("deprecation")
-  private HiveDruidSplit[] getInputSplits(Configuration conf) throws IOException {
+  protected HiveDruidSplit[] getInputSplits(Configuration conf) throws IOException {
     String address = HiveConf.getVar(conf,
             HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS
     );
@@ -223,10 +223,13 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     final HiveDruidSplit[] splits = new HiveDruidSplit[segmentDescriptors.size()];
     for (int i = 0; i < numSplits; i++) {
       final LocatedSegmentDescriptor locatedSD = segmentDescriptors.get(i);
-      final String[] hosts = new String[locatedSD.getLocations().size()];
+      final String[] hosts = new String[locatedSD.getLocations().size() + 1];
       for (int j = 0; j < locatedSD.getLocations().size(); j++) {
         hosts[j] = locatedSD.getLocations().get(j).getHost();
       }
+      // Default to broker if all other hosts fail.
+      hosts[locatedSD.getLocations().size()] = address;
+
       // Create partial Select query
       final SegmentDescriptor newSD = new SegmentDescriptor(
           locatedSD.getInterval(), locatedSD.getVersion(), locatedSD.getPartitionNumber());

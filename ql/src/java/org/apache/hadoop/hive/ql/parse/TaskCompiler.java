@@ -359,10 +359,11 @@ public abstract class TaskCompiler {
     }
 
     Interner<TableDesc> interner = Interners.newStrongInterner();
-    for (Task<? extends Serializable> rootTask : rootTasks) {
-      GenMapRedUtils.internTableDesc(rootTask, interner);
-      GenMapRedUtils.deriveFinalExplainAttributes(rootTask, pCtx.getConf());
-    }
+
+    // Perform Final chores on generated Map works
+    //   1.  Intern the table descriptors
+    //   2.  Derive final explain attributes based on previous compilation.
+    GenMapRedUtils.finalMapWorkChores(rootTasks, pCtx.getConf(), interner);
   }
 
   private String extractTableFullName(StatsTask tsk) throws SemanticException {

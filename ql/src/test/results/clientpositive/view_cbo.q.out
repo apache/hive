@@ -3,11 +3,15 @@ select key, value, avg(key + 1) from src
 group by value, key with rollup
 order by key, value limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, avg(key + 1) from src
 group by value, key with rollup
 order by key, value limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -651,8 +655,14 @@ Original Query:     	select * from src except select * from src
 Expanded Query:     	select `src`.`key`, `src`.`value` from `default`.`src` except select `src`.`key`, `src`.`value` from `default`.`src`	 
 PREHOOK: query: explain select * from v_n13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v_n13
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from v_n13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v_n13
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3

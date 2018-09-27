@@ -29,8 +29,14 @@ POSTHOOK: Input: default@non_string_part
 ctinyint=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@non_string_part
+PREHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@non_string_part
+POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -133,8 +139,14 @@ POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 1286921	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@non_string_part
+PREHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@non_string_part
+POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

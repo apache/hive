@@ -70,6 +70,7 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import javax.security.auth.Subject;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import java.io.BufferedReader;
@@ -81,6 +82,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.sql.Array;
@@ -140,6 +143,7 @@ public class HiveConnection implements java.sql.Connection {
   private String initFile = null;
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
+  private Subject loggedInSubject;
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -157,6 +161,79 @@ public class HiveConnection implements java.sql.Connection {
     }
     return ZooKeeperHiveClientHelper.getDirectParamsList(params);
   }
+  
+  public static List<String> getAllUrlStrings(String zookeeperBasedHS2Url) throws Exception {
+    List<String> jdbcUrls = new ArrayList<>();
+    List<JdbcConnectionParams> allConnectionParams = getAllUrls(zookeeperBasedHS2Url);
+    for (JdbcConnectionParams cp : allConnectionParams) {
+      String jdbcUrl = makeDirectJDBCUrlFromConnectionParams(cp);
+      if ((jdbcUrl != null) && (!jdbcUrl.isEmpty())) {
+        jdbcUrls.add(jdbcUrl);
+      }
+    }
+    return jdbcUrls;
+  }
+
+  private static String makeDirectJDBCUrlFromConnectionParams(JdbcConnectionParams cp) {
+    // Direct JDBC Url format: 
+    // jdbc:hive2://<host1>:<port1>/dbName;sess_var_list?hive_conf_list#hive_var_list
+    StringBuilder url = new StringBuilder("");
+    if (cp != null) {
+      if (cp.getHost() != null) {
+        url.append(cp.getHost());
+        url.append(":");
+        url.append(cp.getPort());
+        url.append("/");
+        url.append(cp.getDbName());
+        // Add session vars
+        if ((cp.getSessionVars() != null) && (!cp.getSessionVars().isEmpty())) {
+          for (Entry<String, String> sessVar : cp.getSessionVars().entrySet()) {
+            if ((sessVar.getKey().equalsIgnoreCase(JdbcConnectionParams.SERVICE_DISCOVERY_MODE))
+                || (sessVar.getKey().equalsIgnoreCase(JdbcConnectionParams.ZOOKEEPER_NAMESPACE))) {
+              continue;
+            }
+            url.append(";");
+            url.append(sessVar.getKey());
+            url.append("=");
+            url.append(sessVar.getValue());
+          }
+        }
+        // Add hive confs
+        if ((cp.getHiveConfs() != null) && (!cp.getHiveConfs().isEmpty())) {
+          url.append("?");
+          boolean firstKV = true;
+          for (Entry<String, String> hiveConf : cp.getHiveConfs().entrySet()) {
+            if (!firstKV) {
+              url.append(";");
+            } else {
+              firstKV = false;
+            }
+            url.append(hiveConf.getKey());
+            url.append("=");
+            url.append(hiveConf.getValue());
+          }
+        }
+        // Add hive vars
+        if ((cp.getHiveVars() != null) && (!cp.getHiveVars().isEmpty())) {
+          url.append("#");
+          boolean firstKV = true;
+          for (Entry<String, String> hiveVar : cp.getHiveVars().entrySet()) {
+            if (!firstKV) {
+              url.append(";");
+            } else {
+              firstKV = false;
+            }
+            url.append(hiveVar.getKey());
+            url.append("=");
+            url.append(hiveVar.getValue());
+          }
+        }
+      } else {
+        return url.toString();
+      }
+    }
+    return url.toString();
+  }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
     setupLoginTimeout();
@@ -171,9 +248,13 @@ public class HiveConnection implements java.sql.Connection {
     // sess_var_list -> sessConfMap
     // hive_conf_list -> hiveConfMap
     // hive_var_list -> hiveVarMap
-    host = Utils.getCanonicalHostName(connParams.getHost());
-    port = connParams.getPort();
     sessConfMap = connParams.getSessionVars();
+    if (isKerberosAuthMode()) {
+      host = Utils.getCanonicalHostName(connParams.getHost());
+    } else {
+      host = connParams.getHost();
+    }
+    port = connParams.getPort();
     isEmbeddedMode = connParams.isEmbeddedMode();
 
     if (sessConfMap.containsKey(JdbcConnectionParams.FETCH_SIZE)) {
@@ -241,7 +322,11 @@ public class HiveConnection implements java.sql.Connection {
             }
             // Update with new values
             jdbcUriString = connParams.getJdbcUriString();
-            host = Utils.getCanonicalHostName(connParams.getHost());
+            if (isKerberosAuthMode()) {
+              host = Utils.getCanonicalHostName(connParams.getHost());
+            } else {
+              host = connParams.getHost();
+            }
             port = connParams.getPort();
           } else {
             errMsg = warnMsg;
@@ -397,15 +482,24 @@ public class HiveConnection implements java.sql.Connection {
     }
     // Configure http client for kerberos/password based authentication
     if (isKerberosAuthMode()) {
+      if (assumeSubject) {
+        // With this option, we're assuming that the external application,
+        // using the JDBC driver has done a JAAS kerberos login already
+        AccessControlContext context = AccessController.getContext();
+        loggedInSubject = Subject.getSubject(context);
+        if (loggedInSubject == null) {
+          throw new SQLException("The Subject is not set");
+        }
+      }
       /**
        * Add an interceptor which sets the appropriate header in the request.
        * It does the kerberos authentication and get the final service ticket,
        * for sending to the server before every request.
        * In https mode, the entire information is encrypted
        */
-      requestInterceptor = new HttpKerberosRequestInterceptor(
-          sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host, getServerHttpUrl(useSsl),
-          assumeSubject, cookieStore, cookieName, useSsl, additionalHttpHeaders, customCookies);
+      requestInterceptor = new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
+          host, getServerHttpUrl(useSsl), loggedInSubject, cookieStore, cookieName, useSsl, additionalHttpHeaders,
+          customCookies);
     } else {
       // Check for delegation token, if present add it in the header
       String tokenStr = getClientDelegationToken(sessConfMap);
@@ -1491,6 +1585,9 @@ public class HiveConnection implements java.sql.Connection {
     }
     if (schema == null || schema.isEmpty()) {
       throw new SQLException("Schema name is null or empty");
+    }
+    if (schema.contains(";")) {
+      throw new SQLException("invalid schema name");
     }
     Statement stmt = createStatement();
     stmt.execute("use " + schema);

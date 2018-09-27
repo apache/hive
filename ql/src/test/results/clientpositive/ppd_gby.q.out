@@ -4,12 +4,16 @@ FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1 
 FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -215,12 +219,16 @@ FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1 
 FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

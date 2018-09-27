@@ -78,9 +78,15 @@ POSTHOOK: Input: default@fact_daily
 500
 PREHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (key='484' and value= 'val_484')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
+PREHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (key='484' and value= 'val_484')
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`
+POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:
@@ -201,9 +207,15 @@ POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 484
 PREHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and (key='238' and value= 'val_238')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
+PREHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and (key='238' and value= 'val_238')
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('238' AS STRING) AS `key`, CAST('val_238' AS STRING) AS `value`
+POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST('238' AS STRING) AS `$f0`, CAST('val_238' AS STRING) AS `$f1`
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '238' AND `value` = 'val_238'
 STAGE DEPENDENCIES:
@@ -325,8 +337,14 @@ POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 238	val_238
 PREHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (value = "3")
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
+PREHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (value = "3")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `value` = '3'
@@ -447,8 +465,14 @@ POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 PREHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and key = '495'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
+PREHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and key = '495'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('495' AS STRING) AS `key`, `value`
 FROM `default`.`fact_daily`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '495'

@@ -27,14 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.metamx.common.RetryUtils;
-import com.metamx.common.lifecycle.Lifecycle;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.HttpClientConfig;
-import com.metamx.http.client.HttpClientInit;
-import com.metamx.http.client.Request;
-import com.metamx.http.client.response.FullResponseHandler;
-import com.metamx.http.client.response.FullResponseHolder;
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.DimensionsSpec;
 import io.druid.data.input.impl.InputRowParser;
@@ -42,6 +34,14 @@ import io.druid.data.input.impl.JSONParseSpec;
 import io.druid.data.input.impl.StringInputRowParser;
 import io.druid.data.input.impl.TimestampSpec;
 import io.druid.java.util.common.Pair;
+import io.druid.java.util.common.RetryUtils;
+import io.druid.java.util.common.lifecycle.Lifecycle;
+import io.druid.java.util.http.client.HttpClient;
+import io.druid.java.util.http.client.HttpClientConfig;
+import io.druid.java.util.http.client.HttpClientInit;
+import io.druid.java.util.http.client.Request;
+import io.druid.java.util.http.client.response.FullResponseHandler;
+import io.druid.java.util.http.client.response.FullResponseHolder;
 import io.druid.metadata.MetadataStorageConnectorConfig;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
@@ -832,6 +832,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     } catch (IOException e) {
       throw new MetaException(e.getMessage());
     } catch (CallbackFailedException c) {
+      LOG.error("Error while committing transaction to druid metadata storage", c);
       throw new MetaException(c.getCause().getMessage());
     } finally {
       cleanWorkingDir();

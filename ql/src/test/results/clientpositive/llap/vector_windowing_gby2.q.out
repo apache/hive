@@ -3,11 +3,15 @@ select rank() over (order by sum(ws.c_int)) as return_rank
 from cbo_t3 ws
 group by ws.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select rank() over (order by sum(ws.c_int)) as return_rank
 from cbo_t3 ws
 group by ws.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -62,10 +66,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1]
+                            valueColumns: 1:bigint
                         Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
@@ -129,19 +133,18 @@ STAGE PLANS:
                     Map-reduce partition columns: 0 (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:int, 1:bigint
                         keyExpressions: ConstantVectorExpression(val 0) -> 2:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [3]
-                        valueColumnNums: []
+                        partitionColumns: 3:int
                     Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -169,7 +172,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -233,22 +236,26 @@ POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 return_rank
 1
-2
-2
-2
-5
-5
+1
+1
+4
+4
+6
 7
 PREHOOK: query: explain vectorization detail
 select avg(cast(ws.key as int)) over (partition by min(ws.value) order by sum(ws.c_int)) as return_rank
 from cbo_t3 ws
 group by cast(ws.key as int)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select avg(cast(ws.key as int)) over (partition by min(ws.value) order by sum(ws.c_int)) as return_rank
 from cbo_t3 ws
 group by cast(ws.key as int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -304,10 +311,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1, 2]
+                            valueColumns: 1:string, 2:bigint
                         Statistics: Num rows: 6 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string), _col2 (type: bigint)
             Execution mode: vectorized, llap
@@ -363,11 +370,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col1 (type: string)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [1, 2]
+                      keyColumns: 1:string, 2:bigint
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      partitionColumnNums: [1]
-                      valueColumnNums: [0]
+                      partitionColumns: 1:string
+                      valueColumns: 0:int
                   Statistics: Num rows: 6 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
         Reducer 3 
@@ -375,7 +382,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -403,7 +410,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         partition by: _col1
                         raw input shape:
                         window functions:
@@ -476,6 +483,8 @@ percent_rank () over(partition by max(c_int) order by sum((c_float/c_int) - c_in
 from cbo_t3
 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select rank () over(partition by key order by sum(c_int - c_float) desc) ,
 dense_rank () over(partition by lower(value) order by sum(c_float/c_int) asc),
@@ -483,6 +492,8 @@ percent_rank () over(partition by max(c_int) order by sum((c_float/c_int) - c_in
 from cbo_t3
 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -540,10 +551,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0, 1]
+                            keyColumns: 0:string, 1:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [2, 3, 4, 5]
+                            valueColumns: 2:double, 3:double, 4:int, 5:double
                         Statistics: Num rows: 10 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: double), _col3 (type: double), _col4 (type: int), _col5 (type: double)
             Execution mode: vectorized, llap
@@ -599,11 +610,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0, 2]
+                      keyColumns: 0:string, 2:double
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      partitionColumnNums: [0]
-                      valueColumnNums: [1, 3, 4, 5]
+                      partitionColumns: 0:string
+                      valueColumns: 1:string, 3:double, 4:int, 5:double
                   Statistics: Num rows: 10 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string), _col3 (type: double), _col4 (type: int), _col5 (type: double)
         Reducer 3 
@@ -678,12 +689,12 @@ STAGE PLANS:
                       Map-reduce partition columns: lower(_col1) (type: string)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [7, 3]
+                          keyColumns: 7:string, 3:double
                           keyExpressions: StringLower(col 2:string) -> 7:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          partitionColumnNums: [8]
-                          valueColumnNums: [6, 2, 4, 5]
+                          partitionColumns: 8:string
+                          valueColumns: 6:int, 2:string, 4:int, 5:double
                       Statistics: Num rows: 10 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: rank_window_0 (type: int), _col1 (type: string), _col4 (type: int), _col5 (type: double)
         Reducer 4 
@@ -758,11 +769,11 @@ STAGE PLANS:
                       Map-reduce partition columns: _col5 (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [4, 5]
+                          keyColumns: 4:int, 5:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          partitionColumnNums: [4]
-                          valueColumnNums: [6, 2]
+                          partitionColumns: 4:int
+                          valueColumns: 6:int, 2:int
                       Statistics: Num rows: 10 Data size: 1005 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: dense_rank_window_1 (type: int), _col0 (type: int)
         Reducer 5 
@@ -845,11 +856,17 @@ select rank() over (order by sum(wr.cint)/sum(ws.c_int)) as return_rank
 from cbo_t3 ws join alltypesorc wr on ws.value = wr.cstring1
 group by ws.c_boolean
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select rank() over (order by sum(wr.cint)/sum(ws.c_int)) as return_rank
 from cbo_t3 ws join alltypesorc wr on ws.value = wr.cstring1
 group by ws.c_boolean
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -899,10 +916,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [2, 4]
+                            valueColumns: 2:int, 4:boolean
                         Statistics: Num rows: 18 Data size: 1581 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: boolean)
             Execution mode: vectorized, llap
@@ -952,10 +969,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
-                            keyColumnNums: [6]
+                            keyColumns: 6:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [2]
+                            valueColumns: 2:int
                         Statistics: Num rows: 9174 Data size: 671296 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
@@ -998,6 +1015,9 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: boolean)
                     Statistics: Num rows: 3 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint), _col2 (type: bigint)
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1042,12 +1062,12 @@ STAGE PLANS:
                     Map-reduce partition columns: 0 (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [3, 6]
+                        keyColumns: 3:int, 6:double
                         keyExpressions: ConstantVectorExpression(val 0) -> 3:int, DoubleColDivideDoubleColumn(col 4:double, col 5:double)(children: CastLongToDouble(col 1:bigint) -> 4:double, CastLongToDouble(col 2:bigint) -> 5:double) -> 6:double
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [7]
-                        valueColumnNums: [1, 2]
+                        partitionColumns: 7:int
+                        valueColumns: 1:bigint, 2:bigint
                     Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Reducer 4 
@@ -1055,7 +1075,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1083,7 +1103,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: (UDFToDouble(_col1) / UDFToDouble(_col2)) ASC NULLS FIRST
+                        order by: (UDFToDouble(_col1) / UDFToDouble(_col2)) ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:

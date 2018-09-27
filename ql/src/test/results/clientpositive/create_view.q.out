@@ -158,9 +158,15 @@ VAL_86
 PREHOOK: query: EXPLAIN
 CREATE VIEW view0(valoo) AS SELECT upper(value) FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view0
 POSTHOOK: query: EXPLAIN
 CREATE VIEW view0(valoo) AS SELECT upper(value) FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
 
@@ -176,9 +182,15 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN
 SELECT * from view2 where key=18
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@view2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * from view2 where key=18
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1604,6 +1616,16 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@view18
 #### A masked pattern was here ####
 2
+PREHOOK: query: create view if not exists view18 as select v+1 from (select 1 as v) t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view18
+POSTHOOK: query: create view if not exists view18 as select v+1 from (select 1 as v) t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view18
 PREHOOK: query: DROP VIEW view1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view1

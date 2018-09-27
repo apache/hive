@@ -10,10 +10,14 @@ PREHOOK: query: explain
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1_n41 SELECT src1.*, src2.*
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n41
 POSTHOOK: query: explain
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1_n41 SELECT src1.*, src2.*
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n41
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-5 depends on stages: Stage-6

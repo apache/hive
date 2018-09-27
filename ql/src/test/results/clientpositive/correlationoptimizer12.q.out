@@ -5,6 +5,9 @@ JOIN
 (SELECT y.key as key, count(y.value) OVER (PARTITION BY y.key) AS cnt FROM src1 y) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(x.value) OVER (PARTITION BY x.key) AS cnt FROM src x) xx
@@ -12,6 +15,9 @@ JOIN
 (SELECT y.key as key, count(y.value) OVER (PARTITION BY y.key) AS cnt FROM src1 y) yy
 ON (xx.key=yy.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3

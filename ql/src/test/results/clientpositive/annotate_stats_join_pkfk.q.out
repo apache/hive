@@ -360,8 +360,14 @@ POSTHOOK: Output: default@customer_address
 #### A masked pattern was here ####
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -427,8 +433,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_bigint s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_bigint
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_bigint s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_bigint
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -494,8 +506,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -561,8 +579,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_company_id > 0 and ss.ss_quantity > 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_company_id > 0 and ss.ss_quantity > 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -628,8 +652,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -695,8 +725,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -762,8 +798,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -851,8 +893,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 1000
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 1000
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -940,8 +988,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 1000
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 1000
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1029,8 +1083,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1118,8 +1178,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join customer_address ca on (ca.ca_address_sk = ss.ss_addr_sk)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@store_n0
+PREHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join customer_address ca on (ca.ca_address_sk = ss.ss_addr_sk)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Input: default@store_sales_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

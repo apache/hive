@@ -20,6 +20,11 @@ select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  order by am_pm_ratio
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@time_dim
+PREHOOK: Input: default@web_page
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  from ( select count(*) amc
@@ -41,6 +46,11 @@ select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  order by am_pm_ratio
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Input: default@web_page
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -106,9 +116,9 @@ Stage-0
                               <-Map 15 [SIMPLE_EDGE] vectorized
                                 SHUFFLE [RS_171]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_168] (rows=9600 width=471)
+                                  Select Operator [SEL_168] (rows=86400 width=471)
                                     Output:["_col0"]
-                                    Filter Operator [FIL_166] (rows=9600 width=471)
+                                    Filter Operator [FIL_166] (rows=86400 width=471)
                                       predicate:(t_hour BETWEEN 14 AND 15 and t_time_sk is not null)
                                       TableScan [TS_6] (rows=86400 width=471)
                                         default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour"]
@@ -154,7 +164,7 @@ Stage-0
                                                 SHUFFLE [RS_176]
                                                   Group By Operator [GBY_174] (rows=1 width=12)
                                                     Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                    Select Operator [SEL_172] (rows=9600 width=471)
+                                                    Select Operator [SEL_172] (rows=86400 width=471)
                                                       Output:["_col0"]
                                                        Please refer to the previous Select Operator [SEL_168]
                                           <-Reducer 20 [BROADCAST_EDGE] vectorized
@@ -190,9 +200,9 @@ Stage-0
                               <-Map 15 [SIMPLE_EDGE] vectorized
                                 SHUFFLE [RS_169]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_167] (rows=9600 width=471)
+                                  Select Operator [SEL_167] (rows=86400 width=471)
                                     Output:["_col0"]
-                                    Filter Operator [FIL_165] (rows=9600 width=471)
+                                    Filter Operator [FIL_165] (rows=86400 width=471)
                                       predicate:(t_hour BETWEEN 6 AND 7 and t_time_sk is not null)
                                        Please refer to the previous TableScan [TS_6]
                               <-Reducer 2 [SIMPLE_EDGE]
@@ -221,7 +231,7 @@ Stage-0
                                                 SHUFFLE [RS_175]
                                                   Group By Operator [GBY_173] (rows=1 width=12)
                                                     Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                    Select Operator [SEL_170] (rows=9600 width=471)
+                                                    Select Operator [SEL_170] (rows=86400 width=471)
                                                       Output:["_col0"]
                                                        Please refer to the previous Select Operator [SEL_167]
                                           <-Reducer 19 [BROADCAST_EDGE] vectorized

@@ -8,6 +8,8 @@ having not exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from src b 
@@ -18,6 +20,8 @@ having not exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -189,6 +193,8 @@ having not exists
   where b.value = a.value and a.value > 'val_12'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from src b 
@@ -199,6 +205,8 @@ having not exists
   where b.value = a.value and a.value > 'val_12'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3

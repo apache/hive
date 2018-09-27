@@ -7,6 +7,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -16,6 +19,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -206,6 +212,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -215,6 +224,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -411,6 +423,9 @@ FROM
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -420,6 +435,9 @@ FROM
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -626,6 +644,9 @@ FROM
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -635,6 +656,9 @@ FROM
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -839,6 +863,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -848,6 +875,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1008,6 +1038,9 @@ FROM
 ) subq1
 FULL OUTER JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT subq1.key, subq1.value, x.key, x.value
 FROM 
@@ -1017,6 +1050,9 @@ FROM
 ) subq1
 FULL OUTER JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1102,7 +1138,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 UDFToDouble(_col0) (type: double)
             1 UDFToDouble(_col0) (type: double)

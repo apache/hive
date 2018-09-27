@@ -29,9 +29,13 @@ POSTHOOK: Lineage: t1_n83.val SIMPLE [(t1_text_n5)t1_text_n5.FieldSchema(name:va
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -84,10 +88,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0, 1, 2]
+                            keyColumns: 0:string, 1:string, 2:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [3]
+                            valueColumns: 3:bigint
                         Statistics: Num rows: 18 Data size: 6624 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -186,9 +190,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -283,9 +291,13 @@ NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -339,11 +351,11 @@ STAGE PLANS:
                         Map-reduce partition columns: rand() (type: double)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [0, 1, 2]
+                            keyColumns: 0:string, 1:string, 2:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [4]
-                            valueColumnNums: [3]
+                            partitionColumns: 4:double
+                            valueColumns: 3:bigint
                         Statistics: Num rows: 18 Data size: 6624 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -399,11 +411,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0, 1, 2]
+                      keyColumns: 0:string, 1:string, 2:bigint
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      partitionColumnNums: [0, 1]
-                      valueColumnNums: [3]
+                      partitionColumns: 0:string, 1:string
+                      valueColumns: 3:bigint
                   Statistics: Num rows: 18 Data size: 6624 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: bigint)
         Reducer 3 
@@ -485,9 +497,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -621,11 +637,17 @@ FROM T1_n83
 INSERT OVERWRITE TABLE T2_n52 SELECT key, val, count(1) group by key, val with rollup
 INSERT OVERWRITE TABLE T3_n17 SELECT key, val, sum(1) group by rollup(key, val)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n83
+PREHOOK: Output: default@t2_n52
+PREHOOK: Output: default@t3_n17
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 FROM T1_n83
 INSERT OVERWRITE TABLE T2_n52 SELECT key, val, count(1) group by key, val with rollup
 INSERT OVERWRITE TABLE T3_n17 SELECT key, val, sum(1) group by rollup(key, val)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n83
+POSTHOOK: Output: default@t2_n52
+POSTHOOK: Output: default@t3_n17
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -685,11 +707,11 @@ STAGE PLANS:
                         Map-reduce partition columns: rand() (type: double)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [0, 1, 2]
+                            keyColumns: 0:string, 1:string, 2:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [4]
-                            valueColumnNums: [3]
+                            partitionColumns: 4:double
+                            valueColumns: 3:bigint
                         Statistics: Num rows: 18 Data size: 6624 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
                   Select Operator
@@ -720,11 +742,11 @@ STAGE PLANS:
                         Map-reduce partition columns: rand() (type: double)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [0, 1, 2]
+                            keyColumns: 0:string, 1:string, 2:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [4]
-                            valueColumnNums: [3]
+                            partitionColumns: 4:double
+                            valueColumns: 3:bigint
                         Statistics: Num rows: 18 Data size: 6624 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -780,11 +802,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0, 1, 2]
+                      keyColumns: 0:string, 1:string, 2:bigint
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      partitionColumnNums: [0, 1]
-                      valueColumnNums: [3]
+                      partitionColumns: 0:string, 1:string
+                      valueColumns: 3:bigint
                   Statistics: Num rows: 18 Data size: 6624 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: bigint)
         Reducer 3 
@@ -873,11 +895,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0, 1, 2]
+                      keyColumns: 0:string, 1:string, 2:bigint
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      partitionColumnNums: [0, 1]
-                      valueColumnNums: [3]
+                      partitionColumns: 0:string, 1:string
+                      valueColumns: 3:bigint
                   Statistics: Num rows: 18 Data size: 6624 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: bigint)
         Reducer 5 

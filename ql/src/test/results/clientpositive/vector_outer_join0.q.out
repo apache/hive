@@ -65,9 +65,15 @@ NULL	<NULL2>
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1
+PREHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1
+POSTHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -184,9 +190,15 @@ two	2	2	TWO
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1
+PREHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1
+POSTHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

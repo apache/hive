@@ -3,11 +3,15 @@ PREHOOK: query: explain
 from src 
 where src.key in (select key from src s1 where s1.key > '9')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
  select * 
 from src 
 where src.key in (select key from src s1 where s1.key > '9')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -123,6 +127,8 @@ where b.key in
          where b.value = a.value and a.key > '9'
         )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select * 
 from src b 
@@ -132,6 +138,8 @@ where b.key in
          where b.value = a.value and a.key > '9'
         )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -254,6 +262,8 @@ part where part.p_size in
 	 where r <= 2
 	)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_name, p_size 
 from 
@@ -263,6 +273,8 @@ part where part.p_size in
 	 where r <= 2
 	)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -345,7 +357,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -430,6 +442,8 @@ from part b where b.p_size in
 	 where r <= 2 and b.p_mfgr = a.p_mfgr
 	)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size
 from part b where b.p_size in
@@ -438,6 +452,8 @@ from part b where b.p_size in
 	 where r <= 2 and b.p_mfgr = a.p_mfgr
 	)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -528,7 +544,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -621,6 +637,8 @@ where b.key in
          where b.value = a.value and a.key > '9'
         )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from src b
@@ -630,6 +648,8 @@ where b.key in
          where b.value = a.value and a.key > '9'
         )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -752,6 +772,8 @@ where b.key in
          where b.value <> a.key and a.key > '9'
         )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from src b
@@ -761,6 +783,8 @@ where b.key in
          where b.value <> a.key and a.key > '9'
         )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -902,8 +926,12 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: explain select * from src b where b.key in (select distinct key from src a where a.value > b.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src b where b.key in (select distinct key from src a where a.value > b.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1034,12 +1062,16 @@ from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li o
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1222,8 +1254,14 @@ POSTHOOK: Input: default@lineitem
 4297	1798
 PREHOOK: query: explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity IN (select avg(l_quantity) from lineitem where l_partkey = p_partkey)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity IN (select avg(l_quantity) from lineitem where l_partkey = p_partkey)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1401,8 +1439,12 @@ POSTHOOK: Input: default@part
 NULL
 PREHOOK: query: explain select * from part where p_brand <> 'Brand#14' AND p_size IN (select (p_size) from part p where p.p_type = part.p_type group by p_size) AND p_size <> 340
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_brand <> 'Brand#14' AND p_size IN (select (p_size) from part p where p.p_type = part.p_type group by p_size) AND p_size <> 340
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1535,8 +1577,12 @@ POSTHOOK: Input: default@part
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part  where (p_size-1) IN (select min(p_size) from part group by p_type)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where (p_size-1) IN (select min(p_size) from part group by p_type)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1679,8 +1725,12 @@ POSTHOOK: Input: default@part
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 PREHOOK: query: explain select * from part where (p_partkey*p_size) IN (select min(p_partkey) from part group by p_type)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where (p_partkey*p_size) IN (select min(p_partkey) from part group by p_type)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1814,8 +1864,12 @@ POSTHOOK: Input: default@part
 40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
 PREHOOK: query: explain select count(*) as c from part as e where p_size + 100 IN (select p_partkey from part where p_name = e.p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) as c from part as e where p_size + 100 IN (select p_partkey from part where p_name = e.p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1926,8 +1980,12 @@ POSTHOOK: Input: default@part
 0
 PREHOOK: query: explain select * from part  where floor(p_retailprice) IN (select floor(min(p_retailprice)) from part group by p_type)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where floor(p_retailprice) IN (select floor(min(p_retailprice)) from part group by p_type)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2089,8 +2147,12 @@ POSTHOOK: Input: default@part
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part where p_name IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_name IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2243,8 +2305,12 @@ POSTHOOK: Input: default@part
 121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
 PREHOOK: query: explain select * from part where p_name IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_name IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2364,8 +2430,12 @@ POSTHOOK: Input: default@part
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type IN (select p_type from part where part.p_brand = fpart.brand)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type IN (select p_type from part where part.p_brand = fpart.brand)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2485,8 +2555,12 @@ almond azure aquamarine papaya violet
 almond azure blanched chiffon midnight
 PREHOOK: query: explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type IN (select p_type from part where (part.p_size+1) = fpart.size)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type IN (select p_type from part where (part.p_size+1) = fpart.size)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2667,8 +2741,12 @@ almond azure aquamarine papaya violet
 almond azure blanched chiffon midnight
 PREHOOK: query: explain select key, count(*) from src where value IN (select value from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, count(*) from src where value IN (select value from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2892,8 +2970,12 @@ POSTHOOK: Input: default@src
 90	3
 PREHOOK: query: explain select key, count(*) from src where value IN (select value from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, count(*) from src where value IN (select value from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3116,8 +3198,12 @@ POSTHOOK: Input: default@src
 90	3
 PREHOOK: query: explain select * from part  where (p_size-1) IN (select min(p_size) from part group by p_type) order by p_brand
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where (p_size-1) IN (select min(p_size) from part group by p_type) order by p_brand
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3273,8 +3359,12 @@ POSTHOOK: Input: default@part
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 PREHOOK: query: explain select * from part  where (p_size-1) IN (select min(p_size) from part group by p_type) order by p_brand limit 4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where (p_size-1) IN (select min(p_size) from part group by p_type) order by p_brand limit 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3428,8 +3518,14 @@ POSTHOOK: Input: default@part
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 PREHOOK: query: explain select * from src where key IN (select p_name from part UNION ALL select p_brand from part)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src where key IN (select p_name from part UNION ALL select p_brand from part)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3555,9 +3651,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain select p_mfgr, b.p_name, p_size from part b where b.p_name in 
   (select p_name from (select p_mfgr, p_name, p_size as r from part) a where r < 10 and b.p_mfgr = a.p_mfgr ) order by p_mfgr,p_size
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select p_mfgr, b.p_name, p_size from part b where b.p_name in 
   (select p_name from (select p_mfgr, p_name, p_size as r from part) a where r < 10 and b.p_mfgr = a.p_mfgr ) order by p_mfgr,p_size
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3678,8 +3778,12 @@ Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond antique sky peru orange	2
 PREHOOK: query: explain select p_partkey from part where p_name in (select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select p_partkey from part where p_name in (select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3843,9 +3947,13 @@ POSTHOOK: Input: default@part
 PREHOOK: query: explain select p_partkey from part where p_name in 
 	(select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size and p.p_size=part.p_size)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select p_partkey from part where p_name in 
 	(select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size and p.p_size=part.p_size)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4011,9 +4119,13 @@ POSTHOOK: Input: default@part
 PREHOOK: query: explain select p_partkey from part where p_name in 
 	(select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size and p.p_type=part.p_type)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select p_partkey from part where p_name in 
 	(select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size and p.p_type=part.p_type)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4143,9 +4255,13 @@ STAGE PLANS:
 PREHOOK: query: explain select p_partkey from 
 	(select p_size, p_partkey from part where p_name in (select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size)) subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select p_partkey from 
 	(select p_size, p_partkey from part where p_name in (select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size)) subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4310,8 +4426,12 @@ POSTHOOK: Input: default@part
 90681
 PREHOOK: query: explain select * from part where p_size IN (select count(*) from part pp where pp.p_type = part.p_type)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_size IN (select count(*) from part pp where pp.p_type = part.p_type)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4485,8 +4605,12 @@ POSTHOOK: Input: default@part
 40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
 PREHOOK: query: explain select * from part where p_size in (select avg(pp.p_size) from part pp where pp.p_partkey = part.p_partkey)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_size in (select avg(pp.p_size) from part pp where pp.p_partkey = part.p_partkey)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4632,8 +4756,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[49][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from part where p_size in (select min(pp.p_size) from part pp where pp.p_partkey > part.p_partkey)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_size in (select min(pp.p_size) from part pp where pp.p_partkey > part.p_partkey)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4807,8 +4935,12 @@ POSTHOOK: Input: default@part
 146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
 PREHOOK: query: explain select * from part where p_size NOT IN (select count(*) from part pp where pp.p_type = part.p_type)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_size NOT IN (select count(*) from part pp where pp.p_type = part.p_type)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5057,8 +5189,12 @@ POSTHOOK: Input: default@part
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part where p_size not in (select avg(pp.p_size) from part pp where pp.p_partkey = part.p_partkey)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_size not in (select avg(pp.p_size) from part pp where pp.p_partkey = part.p_partkey)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5327,8 +5463,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tempty_n2
 PREHOOK: query: explain select * from t_n22 where i IN (select count(*) from tempty_n2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n22
+PREHOOK: Input: default@tempty_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t_n22 where i IN (select count(*) from tempty_n2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n22
+POSTHOOK: Input: default@tempty_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5542,8 +5684,14 @@ POSTHOOK: Lineage: tt_n2.i SCRIPT []
 POSTHOOK: Lineage: tt_n2.j SCRIPT []
 PREHOOK: query: explain select * from t_n22 where i IN (select sum(i) from tt_n2 where tt_n2.j = t_n22.j)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n22
+PREHOOK: Input: default@tt_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t_n22 where i IN (select sum(i) from tt_n2 where tt_n2.j = t_n22.j)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n22
+POSTHOOK: Input: default@tt_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5681,8 +5829,12 @@ POSTHOOK: Output: default@tt_n2
 Warning: Shuffle Join MERGEJOIN[49][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from part where p_size IN (select max(p_size) from part p where p.p_type <> part.p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_size IN (select max(p_size) from part p where p.p_type <> part.p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5855,8 +6007,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[71][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from part where p_size IN (select pp.p_size from part p join part pp on pp.p_type = p.p_type where part.p_type <> p.p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_size IN (select pp.p_size from part p join part pp on pp.p_type = p.p_type where part.p_type <> p.p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

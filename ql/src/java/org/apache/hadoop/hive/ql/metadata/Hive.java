@@ -372,6 +372,10 @@ public class Hive {
     hiveDB.remove();
   }
 
+  public static Hive getThreadLocal() {
+    return hiveDB.get();
+  }
+
   /**
    * Hive
    *
@@ -1310,6 +1314,17 @@ public class Hive {
     return getTableObjects(dbName, ".*", TableType.MATERIALIZED_VIEW);
   }
 
+  /**
+   * Get materialized views for the specified database that match the provided regex pattern.
+   * @param dbName
+   * @param pattern
+   * @return List of materialized view table objects
+   * @throws HiveException
+   */
+  public List<Table> getMaterializedViewObjectsByPattern(String dbName, String pattern) throws HiveException {
+    return getTableObjects(dbName, pattern, TableType.MATERIALIZED_VIEW);
+  }
+
   private List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
     try {
       return Lists.transform(getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, pattern, tableType)),
@@ -1886,7 +1901,8 @@ public class Hive {
       //       to ACID updates. So the are not themselves ACID.
 
       // Note: this assumes both paths are qualified; which they are, currently.
-      if ((isMmTableWrite || isFullAcidTable) && loadPath.equals(newPartPath)) {
+      if (((isMmTableWrite || isFullAcidTable) && loadPath.equals(newPartPath)) ||
+              (loadFileType == LoadFileType.IGNORE)) {
         // MM insert query, move itself is a no-op.
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("not moving " + loadPath + " to " + newPartPath + " (MM)");
@@ -1926,7 +1942,7 @@ public class Hive {
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(), isSrcLocal,
               isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged);
         } else {
-          FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
+          FileSystem fs = destPath.getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
               (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles,
               tbl.getNumBuckets() > 0, isFullAcidTable, isManaged);
@@ -2497,7 +2513,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     // Note: this assumes both paths are qualified; which they are, currently.
-    if ((isMmTable || isFullAcidTable) && loadPath.equals(tbl.getPath())) {
+    if (((isMmTable || isFullAcidTable) && loadPath.equals(tbl.getPath())) || (loadFileType == LoadFileType.IGNORE)) {
       /**
        * some operations on Transactional tables (e.g. Import) write directly to the final location
        * and avoid the 'move' operation.  Since MoveTask does other things, setting 'loadPath' to be
@@ -4446,7 +4462,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
-  private void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
+  public void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
       PathFilter pathFilter, HiveConf conf, boolean purge, boolean isNeedRecycle) throws IOException, HiveException {
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);

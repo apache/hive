@@ -65,6 +65,8 @@ and all_exposed_users.field_2 = interacted.field_2
 group by all_exposed_users.field_1
 order by all_exposed_users.field_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@users_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with all_hits as (
 select * from users_table
@@ -94,6 +96,8 @@ and all_exposed_users.field_2 = interacted.field_2
 group by all_exposed_users.field_1
 order by all_exposed_users.field_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-5

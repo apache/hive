@@ -16,10 +16,16 @@ PREHOOK: query: explain
 create materialized view `masking_test_view_n_mv` as
 select key from `masking_test_n_mv`
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view_n_mv
 POSTHOOK: query: explain
 create materialized view `masking_test_view_n_mv` as
 select key from `masking_test_n_mv`
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view_n_mv
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

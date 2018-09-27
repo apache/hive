@@ -7,6 +7,8 @@ where not exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_2'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from src b 
@@ -16,6 +18,8 @@ where not exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_2'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -260,6 +264,8 @@ where not exists
   where b.value = a.value and a.value > 'val_2'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from src b 
@@ -269,6 +275,8 @@ where not exists
   where b.value = a.value and a.value > 'val_2'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -524,6 +532,8 @@ where not exists
   where b.value <> a.value  and a.key > b.key and a.value > 'val_2'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from src b
@@ -533,6 +543,8 @@ where not exists
   where b.value <> a.value  and a.key > b.key and a.value > 'val_2'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -655,9 +667,13 @@ Warning: Shuffle Join JOIN[14][tables = [$hdt$_3, $hdt$_4]] in Stage 'Stage-6:MA
 PREHOOK: query: explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
                 (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
                 (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-5

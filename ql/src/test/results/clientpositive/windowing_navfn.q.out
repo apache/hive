@@ -46,8 +46,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@over10k_n19
 PREHOOK: query: explain select row_number() over()  from src where key = '238'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select row_number() over()  from src where key = '238'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -731,11 +735,11 @@ POSTHOOK: Input: default@wtest_n0
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
-2	NULL	NULL	NULL	NULL	NULL
-2	NULL	NULL	1	NULL	1
-2	1	NULL	1	NULL	1
-2	2	1	1	NULL	1
-2	3	2	2	NULL	1
+2	1	1	1	1	1
+2	2	1	1	1	1
+2	3	2	2	1	1
+2	NULL	3	3	1	1
+2	NULL	NULL	NULL	1	1
 3	1	1	1	1	1
 3	2	1	1	1	1
 3	3	2	2	1	1
@@ -797,11 +801,11 @@ POSTHOOK: Input: default@wtest_n0
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
-2	NULL	NULL	NULL	NULL	NULL
-2	NULL	1	1	1	1
 2	1	2	2	2	2
 2	2	3	3	3	3
-2	3	3	3	3	3
+2	3	NULL	3	NULL	3
+2	NULL	NULL	3	NULL	3
+2	NULL	NULL	NULL	NULL	3
 3	1	2	2	2	2
 3	2	3	3	3	3
 3	3	4	4	4	4

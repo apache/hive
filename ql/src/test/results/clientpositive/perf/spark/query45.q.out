@@ -18,6 +18,12 @@ select  ca_zip, ca_county, sum(ws_sales_price)
  order by ca_zip, ca_county
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  ca_zip, ca_county, sum(ws_sales_price)
  from web_sales, customer, customer_address, date_dim, item
@@ -37,6 +43,12 @@ select  ca_zip, ca_county, sum(ws_sales_price)
  order by ca_zip, ca_county
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

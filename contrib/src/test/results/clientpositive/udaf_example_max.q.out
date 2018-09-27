@@ -16,11 +16,15 @@ SELECT example_max(substr(value,5)),
        example_max(IF(substr(value,5) > 250, NULL, substr(value,5)))
 FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT example_max(substr(value,5)),
        example_max(IF(substr(value,5) > 250, NULL, substr(value,5)))
 FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

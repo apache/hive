@@ -8,8 +8,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST1_n12
 PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n12
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT MAX(`ds`) AS `$f0`
 FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
@@ -104,8 +108,14 @@ POSTHOOK: Output: default@test1_n12
 POSTHOOK: Output: default@test1_n12@ds=1
 PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT MAX(`ds`) AS `$f0`
 FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
@@ -247,8 +257,14 @@ POSTHOOK: Input: default@test1_n12@ds=1
 NULL
 PREHOOK: query: explain extended select count(distinct ds) from TEST1_n12
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(distinct ds) from TEST1_n12
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(DISTINCT `ds`) AS `$f0`
 FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
@@ -391,8 +407,14 @@ POSTHOOK: Input: default@test1_n12@ds=1
 0
 PREHOOK: query: explain extended select count(ds) from TEST1_n12
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(ds) from TEST1_n12
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(`ds`) AS `$f0`
 FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
@@ -543,9 +565,17 @@ POSTHOOK: Output: default@test1_n12@ds=2
 PREHOOK: query: explain extended 
 select count(*) from TEST1_n12 a2 join (select max(ds) m from TEST1_n12) b on a2.ds=b.m
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
+PREHOOK: Input: default@test1_n12@ds=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended 
 select count(*) from TEST1_n12 a2 join (select max(ds) m from TEST1_n12) b on a2.ds=b.m
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
+POSTHOOK: Input: default@test1_n12@ds=2
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM (SELECT `ds`
 FROM `default`.`test1_n12`
@@ -959,8 +989,18 @@ POSTHOOK: Output: default@test2_n8
 POSTHOOK: Output: default@test2_n8@ds=1/hr=3
 PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2_n8
+PREHOOK: Input: default@test2_n8@ds=1/hr=1
+PREHOOK: Input: default@test2_n8@ds=1/hr=2
+PREHOOK: Input: default@test2_n8@ds=1/hr=3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2_n8
+POSTHOOK: Input: default@test2_n8@ds=1/hr=1
+POSTHOOK: Input: default@test2_n8@ds=1/hr=2
+POSTHOOK: Input: default@test2_n8@ds=1/hr=3
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`, COUNT(DISTINCT `hr`) AS `$f1`
 FROM `default`.`test2_n8`
 GROUP BY `ds`
@@ -1210,8 +1250,18 @@ POSTHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select ds, count(hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2_n8
+PREHOOK: Input: default@test2_n8@ds=1/hr=1
+PREHOOK: Input: default@test2_n8@ds=1/hr=2
+PREHOOK: Input: default@test2_n8@ds=1/hr=3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds, count(hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2_n8
+POSTHOOK: Input: default@test2_n8@ds=1/hr=1
+POSTHOOK: Input: default@test2_n8@ds=1/hr=2
+POSTHOOK: Input: default@test2_n8@ds=1/hr=3
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`, COUNT(`hr`) AS `$f1`
 FROM `default`.`test2_n8`
 GROUP BY `ds`
@@ -1463,8 +1513,16 @@ POSTHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
+PREHOOK: Input: default@test1_n12@ds=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
+POSTHOOK: Input: default@test1_n12@ds=2
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT MAX(`ds`) AS `$f0`
 FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
@@ -1706,8 +1764,22 @@ POSTHOOK: Output: default@test2_n8
 POSTHOOK: Output: default@test2_n8@ds=01%3A10%3A20/hr=02
 PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2_n8
+PREHOOK: Input: default@test2_n8@ds=01%3A10%3A10/hr=01
+PREHOOK: Input: default@test2_n8@ds=01%3A10%3A20/hr=02
+PREHOOK: Input: default@test2_n8@ds=1/hr=1
+PREHOOK: Input: default@test2_n8@ds=1/hr=2
+PREHOOK: Input: default@test2_n8@ds=1/hr=3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2_n8
+POSTHOOK: Input: default@test2_n8@ds=01%3A10%3A10/hr=01
+POSTHOOK: Input: default@test2_n8@ds=01%3A10%3A20/hr=02
+POSTHOOK: Input: default@test2_n8@ds=1/hr=1
+POSTHOOK: Input: default@test2_n8@ds=1/hr=2
+POSTHOOK: Input: default@test2_n8@ds=1/hr=3
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`, COUNT(DISTINCT `hr`) AS `$f1`
 FROM `default`.`test2_n8`
 GROUP BY `ds`

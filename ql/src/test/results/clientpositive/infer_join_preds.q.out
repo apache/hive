@@ -1,9 +1,15 @@
 PREHOOK: query: explain
 select * from src a join src1 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from src a join src1 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -122,12 +128,18 @@ select * from
 join
 (select * from src1)b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from
 (select * from src where 1 = 0)a
 join
 (select * from src1)b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -213,12 +225,18 @@ select * from
 left outer join
 (select * from src1)b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from
 (select * from src where 1 = 0)a
 left outer join
 (select * from src1)b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -301,12 +319,18 @@ select * from
 right outer join
 (select * from src1)b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from
 (select * from src where 1 = 0)a
 right outer join
 (select * from src1)b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -414,12 +438,18 @@ select * from
 full outer join
 (select * from src1)b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from
 (select * from src where 1 = 0)a
 full outer join
 (select * from src1)b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -460,7 +490,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -527,12 +557,18 @@ select * from
 right outer join
 (select * from src1 where 1 = 0)b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from
 (select * from src)a
 right outer join
 (select * from src1 where 1 = 0)b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -612,9 +648,15 @@ POSTHOOK: Input: default@src1
 PREHOOK: query: explain select * from src join src1 on src.key = src1.key and src.value = src1.value
     where 4 between src.key and src.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src join src1 on src.key = src1.key and src.value = src1.value
     where 4 between src.key and src.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -952,6 +994,9 @@ PREHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_i
                                     ELSE d.odf_ss_actuals
                     END )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n8
+PREHOOK: Input: default@table2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_id
     FROM            table1_n8 s
     JOIN
@@ -1114,6 +1159,9 @@ POSTHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_
                                     ELSE d.odf_ss_actuals
                     END )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n8
+POSTHOOK: Input: default@table2_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

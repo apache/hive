@@ -132,9 +132,15 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 495	val_484	1
 PREHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x`
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n5`
 WHERE `ds` = '1' AND `x` = 484
 STAGE DEPENDENCIES:
@@ -252,8 +258,14 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 484
 PREHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x1`, `y` AS `y1`
 FROM `default`.`fact_daily_n5`
 WHERE `ds` = '1' AND `x` = 484
@@ -372,8 +384,14 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 484	val_484
 PREHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `y`, COUNT(*) AS `$f1`
 FROM `default`.`fact_daily_n5`
 WHERE `ds` = '1' AND `x` = 484
@@ -516,8 +534,14 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 val_484	1
 PREHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x`, COUNT(*) AS `c`
 FROM `default`.`fact_daily_n5`
 WHERE `ds` = '1' AND `x` = 484

@@ -58,10 +58,34 @@ default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	cbo_t3			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -70,22 +94,50 @@ default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src1			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_cbo			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_json			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_sequencefile			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-PREHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
-PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
-POSTHOOK: type: DROPDATABASE
-PREHOOK: query: CREATE DATABASE SYS
+default	src_thrift			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_thrift			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:SYS
-POSTHOOK: query: CREATE DATABASE SYS
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:SYS
 PREHOOK: query: USE SYS
@@ -94,7 +146,7 @@ PREHOOK: Input: database:sys
 POSTHOOK: query: USE SYS
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `BUCKETING_COLS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `SD_ID` bigint,
   `BUCKET_COL_NAME` string,
   `INTEGER_IDX` int,
@@ -114,7 +166,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@BUCKETING_COLS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `BUCKETING_COLS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `SD_ID` bigint,
   `BUCKET_COL_NAME` string,
   `INTEGER_IDX` int,
@@ -134,7 +186,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@BUCKETING_COLS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `CDS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `CDS` (
   `CD_ID` bigint,
   CONSTRAINT `SYS_PK_CDS` PRIMARY KEY (`CD_ID`) DISABLE
 )
@@ -150,7 +202,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@CDS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `CDS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `CDS` (
   `CD_ID` bigint,
   CONSTRAINT `SYS_PK_CDS` PRIMARY KEY (`CD_ID`) DISABLE
 )
@@ -166,7 +218,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@CDS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `COLUMNS_V2` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
   `CD_ID` bigint,
   `COMMENT` string,
   `COLUMN_NAME` string,
@@ -190,7 +242,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@COLUMNS_V2
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `COLUMNS_V2` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
   `CD_ID` bigint,
   `COMMENT` string,
   `COLUMN_NAME` string,
@@ -214,7 +266,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@COLUMNS_V2
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `DATABASE_PARAMS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DATABASE_PARAMS` (
   `DB_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -234,7 +286,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@DATABASE_PARAMS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `DATABASE_PARAMS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DATABASE_PARAMS` (
   `DB_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -254,7 +306,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@DATABASE_PARAMS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `DBS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DBS` (
   `DB_ID` bigint,
   `DB_LOCATION_URI` string,
   `NAME` string,
@@ -278,7 +330,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@DBS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `DBS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DBS` (
   `DB_ID` bigint,
   `DB_LOCATION_URI` string,
   `NAME` string,
@@ -302,7 +354,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@DBS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `DB_PRIVS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_PRIVS` (
   `DB_GRANT_ID` bigint,
   `CREATE_TIME` int,
   `DB_ID` bigint,
@@ -312,6 +364,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `DB_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `DB_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -327,14 +380,15 @@ TBLPROPERTIES (
   \"GRANTOR_TYPE\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"DB_PRIV\"
+  \"DB_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"DB_PRIVS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@DB_PRIVS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `DB_PRIVS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_PRIVS` (
   `DB_GRANT_ID` bigint,
   `CREATE_TIME` int,
   `DB_ID` bigint,
@@ -344,6 +398,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `DB_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `DB_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -359,14 +414,15 @@ TBLPROPERTIES (
   \"GRANTOR_TYPE\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"DB_PRIV\"
+  \"DB_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"DB_PRIVS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@DB_PRIVS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
   `USER_GRANT_ID` bigint,
   `CREATE_TIME` int,
   `GRANT_OPTION` string,
@@ -375,6 +431,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `USER_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -389,14 +446,15 @@ TBLPROPERTIES (
   \"GRANTOR_TYPE\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"USER_PRIV\"
+  \"USER_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"GLOBAL_PRIVS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@GLOBAL_PRIVS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
   `USER_GRANT_ID` bigint,
   `CREATE_TIME` int,
   `GRANT_OPTION` string,
@@ -405,6 +463,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `USER_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -419,14 +478,15 @@ TBLPROPERTIES (
   \"GRANTOR_TYPE\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"USER_PRIV\"
+  \"USER_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"GLOBAL_PRIVS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@GLOBAL_PRIVS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITIONS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_ID` bigint,
   `CREATE_TIME` int,
   `LAST_ACCESS_TIME` int,
@@ -452,7 +512,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@PARTITIONS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITIONS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_ID` bigint,
   `CREATE_TIME` int,
   `LAST_ACCESS_TIME` int,
@@ -478,7 +538,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PARTITIONS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_KEYS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEYS` (
   `TBL_ID` bigint,
   `PKEY_COMMENT` string,
   `PKEY_NAME` string,
@@ -502,7 +562,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@PARTITION_KEYS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_KEYS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEYS` (
   `TBL_ID` bigint,
   `PKEY_COMMENT` string,
   `PKEY_NAME` string,
@@ -526,7 +586,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PARTITION_KEYS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
   `PART_ID` bigint,
   `PART_KEY_VAL` string,
   `INTEGER_IDX` int,
@@ -546,7 +606,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@PARTITION_KEY_VALS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
   `PART_ID` bigint,
   `PART_KEY_VAL` string,
   `INTEGER_IDX` int,
@@ -566,7 +626,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PARTITION_KEY_VALS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_PARAMS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_PARAMS` (
   `PART_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -586,7 +646,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@PARTITION_PARAMS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_PARAMS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_PARAMS` (
   `PART_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -606,7 +666,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PARTITION_PARAMS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_PRIVS` (
   `PART_COLUMN_GRANT_ID` bigint,
   `COLUMN_NAME` string,
   `CREATE_TIME` int,
@@ -617,6 +677,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_COL_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -633,14 +694,15 @@ TBLPROPERTIES (
   \"PART_ID\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"PART_COL_PRIV\"
+  \"PART_COL_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"PART_COL_PRIVS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@PART_COL_PRIVS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_PRIVS` (
   `PART_COLUMN_GRANT_ID` bigint,
   `COLUMN_NAME` string,
   `CREATE_TIME` int,
@@ -651,6 +713,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_COL_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -667,14 +730,15 @@ TBLPROPERTIES (
   \"PART_ID\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"PART_COL_PRIV\"
+  \"PART_COL_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"PART_COL_PRIVS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PART_COL_PRIVS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_PRIVS` (
   `PART_GRANT_ID` bigint,
   `CREATE_TIME` int,
   `GRANT_OPTION` int,
@@ -684,6 +748,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -699,14 +764,15 @@ TBLPROPERTIES (
   \"PART_ID\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"PART_PRIV\"
+  \"PART_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"PART_PRIVS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@PART_PRIVS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_PRIVS` (
   `PART_GRANT_ID` bigint,
   `CREATE_TIME` int,
   `GRANT_OPTION` int,
@@ -716,6 +782,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -731,14 +798,15 @@ TBLPROPERTIES (
   \"PART_ID\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"PART_PRIV\"
+  \"PART_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"PART_PRIVS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PART_PRIVS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `ROLES` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `ROLES` (
   `ROLE_ID` bigint,
   `CREATE_TIME` int,
   `OWNER_NAME` string,
@@ -760,7 +828,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@ROLES
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `ROLES` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `ROLES` (
   `ROLE_ID` bigint,
   `CREATE_TIME` int,
   `OWNER_NAME` string,
@@ -782,7 +850,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@ROLES
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `ROLE_MAP` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `ROLE_MAP` (
   `ROLE_GRANT_ID` bigint,
   `ADD_TIME` int,
   `GRANT_OPTION` int,
@@ -812,7 +880,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@ROLE_MAP
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `ROLE_MAP` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `ROLE_MAP` (
   `ROLE_GRANT_ID` bigint,
   `ADD_TIME` int,
   `GRANT_OPTION` int,
@@ -842,7 +910,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@ROLE_MAP
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SDS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SDS` (
   `SD_ID` bigint,
   `CD_ID` bigint,
   `INPUT_FORMAT` string,
@@ -874,7 +942,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SDS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SDS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SDS` (
   `SD_ID` bigint,
   `CD_ID` bigint,
   `INPUT_FORMAT` string,
@@ -906,7 +974,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SDS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SD_PARAMS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SD_PARAMS` (
   `SD_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -926,7 +994,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SD_PARAMS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SD_PARAMS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SD_PARAMS` (
   `SD_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -946,7 +1014,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SD_PARAMS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
   `SEQUENCE_NAME` string,
   `NEXT_VAL` bigint,
   CONSTRAINT `SYS_PK_SEQUENCE_TABLE` PRIMARY KEY (`SEQUENCE_NAME`) DISABLE
@@ -964,7 +1032,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SEQUENCE_TABLE
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
   `SEQUENCE_NAME` string,
   `NEXT_VAL` bigint,
   CONSTRAINT `SYS_PK_SEQUENCE_TABLE` PRIMARY KEY (`SEQUENCE_NAME`) DISABLE
@@ -982,7 +1050,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SEQUENCE_TABLE
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SERDES` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SERDES` (
   `SERDE_ID` bigint,
   `NAME` string,
   `SLIB` string,
@@ -1002,7 +1070,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SERDES
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SERDES` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SERDES` (
   `SERDE_ID` bigint,
   `NAME` string,
   `SLIB` string,
@@ -1022,7 +1090,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SERDES
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SERDE_PARAMS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SERDE_PARAMS` (
   `SERDE_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -1042,7 +1110,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SERDE_PARAMS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SERDE_PARAMS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SERDE_PARAMS` (
   `SERDE_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -1062,7 +1130,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SERDE_PARAMS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
   `SD_ID` bigint,
   `SKEWED_COL_NAME` string,
   `INTEGER_IDX` int,
@@ -1082,7 +1150,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SKEWED_COL_NAMES
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
   `SD_ID` bigint,
   `SKEWED_COL_NAME` string,
   `INTEGER_IDX` int,
@@ -1102,7 +1170,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SKEWED_COL_NAMES
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
   `SD_ID` bigint,
   `STRING_LIST_ID_KID` bigint,
   `LOCATION` string,
@@ -1122,7 +1190,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SKEWED_COL_VALUE_LOC_MAP
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
   `SD_ID` bigint,
   `STRING_LIST_ID_KID` bigint,
   `LOCATION` string,
@@ -1142,7 +1210,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SKEWED_COL_VALUE_LOC_MAP
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
   `STRING_LIST_ID` bigint,
   CONSTRAINT `SYS_PK_SKEWED_STRING_LIST` PRIMARY KEY (`STRING_LIST_ID`) DISABLE
 )
@@ -1158,7 +1226,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SKEWED_STRING_LIST
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
   `STRING_LIST_ID` bigint,
   CONSTRAINT `SYS_PK_SKEWED_STRING_LIST` PRIMARY KEY (`STRING_LIST_ID`) DISABLE
 )
@@ -1174,7 +1242,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SKEWED_STRING_LIST
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST_VALUES` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST_VALUES` (
   `STRING_LIST_ID` bigint,
   `STRING_LIST_VALUE` string,
   `INTEGER_IDX` int,
@@ -1194,7 +1262,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SKEWED_STRING_LIST_VALUES
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST_VALUES` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST_VALUES` (
   `STRING_LIST_ID` bigint,
   `STRING_LIST_VALUE` string,
   `INTEGER_IDX` int,
@@ -1214,7 +1282,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SKEWED_STRING_LIST_VALUES
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_VALUES` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_VALUES` (
   `SD_ID_OID` bigint,
   `STRING_LIST_ID_EID` bigint,
   `INTEGER_IDX` int,
@@ -1234,7 +1302,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SKEWED_VALUES
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_VALUES` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_VALUES` (
   `SD_ID_OID` bigint,
   `STRING_LIST_ID_EID` bigint,
   `INTEGER_IDX` int,
@@ -1254,7 +1322,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SKEWED_VALUES
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `SORT_COLS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SORT_COLS` (
   `SD_ID` bigint,
   `COLUMN_NAME` string,
   `ORDER` int,
@@ -1276,7 +1344,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@SORT_COLS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SORT_COLS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SORT_COLS` (
   `SD_ID` bigint,
   `COLUMN_NAME` string,
   `ORDER` int,
@@ -1298,7 +1366,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@SORT_COLS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `TABLE_PARAMS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TABLE_PARAMS` (
   `TBL_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -1318,7 +1386,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@TABLE_PARAMS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TABLE_PARAMS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TABLE_PARAMS` (
   `TBL_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
@@ -1338,7 +1406,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@TABLE_PARAMS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBLS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBLS` (
   `TBL_ID` bigint,
   `CREATE_TIME` int,
   `DB_ID` bigint,
@@ -1375,7 +1443,7 @@ FROM \"TBLS\""
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@TBLS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TBLS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBLS` (
   `TBL_ID` bigint,
   `CREATE_TIME` int,
   `DB_ID` bigint,
@@ -1412,7 +1480,7 @@ FROM \"TBLS\""
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@TBLS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
   `MV_CREATION_METADATA_ID` bigint,
   `DB_NAME` string,
   `TBL_NAME` string,
@@ -1433,7 +1501,7 @@ FROM \"MV_CREATION_METADATA\""
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@MV_CREATION_METADATA
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
   `MV_CREATION_METADATA_ID` bigint,
   `DB_NAME` string,
   `TBL_NAME` string,
@@ -1454,7 +1522,7 @@ FROM \"MV_CREATION_METADATA\""
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@MV_CREATION_METADATA
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `MV_TABLES_USED` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `MV_TABLES_USED` (
   `MV_CREATION_METADATA_ID` bigint,
   `TBL_ID` bigint
 )
@@ -1470,7 +1538,7 @@ FROM \"MV_TABLES_USED\""
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@MV_TABLES_USED
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `MV_TABLES_USED` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `MV_TABLES_USED` (
   `MV_CREATION_METADATA_ID` bigint,
   `TBL_ID` bigint
 )
@@ -1486,7 +1554,7 @@ FROM \"MV_TABLES_USED\""
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@MV_TABLES_USED
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `TBL_COLUMN_GRANT_ID` bigint,
   `COLUMN_NAME` string,
   `CREATE_TIME` int,
@@ -1497,6 +1565,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_COL_PRIV` string,
   `TBL_ID` bigint,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1513,14 +1582,15 @@ TBLPROPERTIES (
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
   \"TBL_COL_PRIV\",
-  \"TBL_ID\"
+  \"TBL_ID\",
+  \"AUTHORIZER\"
 FROM
   \"TBL_COL_PRIVS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@TBL_COL_PRIVS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `TBL_COLUMN_GRANT_ID` bigint,
   `COLUMN_NAME` string,
   `CREATE_TIME` int,
@@ -1531,6 +1601,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_COL_PRIV` string,
   `TBL_ID` bigint,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1547,14 +1618,15 @@ TBLPROPERTIES (
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
   \"TBL_COL_PRIV\",
-  \"TBL_ID\"
+  \"TBL_ID\",
+  \"AUTHORIZER\"
 FROM
   \"TBL_COL_PRIVS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@TBL_COL_PRIVS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_PRIVS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_PRIVS` (
   `TBL_GRANT_ID` bigint,
   `CREATE_TIME` int,
   `GRANT_OPTION` int,
@@ -1564,6 +1636,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_PRIV` string,
   `TBL_ID` bigint,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1579,14 +1652,15 @@ TBLPROPERTIES (
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
   \"TBL_PRIV\",
-  \"TBL_ID\"
+  \"TBL_ID\",
+  \"AUTHORIZER\"
 FROM
   \"TBL_PRIVS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@TBL_PRIVS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_PRIVS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_PRIVS` (
   `TBL_GRANT_ID` bigint,
   `CREATE_TIME` int,
   `GRANT_OPTION` int,
@@ -1596,6 +1670,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_PRIV` string,
   `TBL_ID` bigint,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1611,14 +1686,15 @@ TBLPROPERTIES (
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
   \"TBL_PRIV\",
-  \"TBL_ID\"
+  \"TBL_ID\",
+  \"AUTHORIZER\"
 FROM
   \"TBL_PRIVS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@TBL_PRIVS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `TAB_COL_STATS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `CS_ID` bigint,
  `DB_NAME` string,
  `TABLE_NAME` string,
@@ -1670,7 +1746,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@TAB_COL_STATS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TAB_COL_STATS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `CS_ID` bigint,
  `DB_NAME` string,
  `TABLE_NAME` string,
@@ -1722,7 +1798,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@TAB_COL_STATS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_STATS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `CS_ID` bigint,
  `DB_NAME` string,
  `TABLE_NAME` string,
@@ -1776,7 +1852,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@PART_COL_STATS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_STATS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `CS_ID` bigint,
  `DB_NAME` string,
  `TABLE_NAME` string,
@@ -1830,36 +1906,22 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PART_COL_STATS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `VERSION` (
-  `VER_ID` BIGINT,
-  `SCHEMA_VERSION` string,
-  `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
-)
-PREHOOK: type: CREATETABLE
+PREHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: SYS@VERSION
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `VERSION` (
-  `VER_ID` BIGINT,
-  `SCHEMA_VERSION` string,
-  `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
-)
-POSTHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: SYS@VERSION
 POSTHOOK: Output: database:sys
-PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: sys@version
-POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: sys@version
-POSTHOOK: Lineage: version.schema_version SCRIPT []
-POSTHOOK: Lineage: version.ver_id SCRIPT []
-POSTHOOK: Lineage: version.version_comment SCRIPT []
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `DB_VERSION` (
+POSTHOOK: Lineage: VERSION.schema_version SIMPLE []
+POSTHOOK: Lineage: VERSION.ver_id SIMPLE []
+POSTHOOK: Lineage: VERSION.version_comment SIMPLE []
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
   `VERSION_COMMENT` string,
@@ -1879,7 +1941,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@DB_VERSION
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `DB_VERSION` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
   `VERSION_COMMENT` string,
@@ -1899,7 +1961,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@DB_VERSION
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `FUNCS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `FUNCS` (
   `FUNC_ID` bigint,
   `CLASS_NAME` string,
   `CREATE_TIME` int,
@@ -1929,7 +1991,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@FUNCS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `FUNCS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `FUNCS` (
   `FUNC_ID` bigint,
   `CLASS_NAME` string,
   `CREATE_TIME` int,
@@ -1959,7 +2021,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@FUNCS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
 (
   `CHILD_CD_ID` bigint,
   `CHILD_INTEGER_IDX` int,
@@ -2000,7 +2062,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@KEY_CONSTRAINTS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
 (
   `CHILD_CD_ID` bigint,
   `CHILD_INTEGER_IDX` int,
@@ -2041,7 +2103,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@KEY_CONSTRAINTS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE VIEW `TABLE_STATS_VIEW` AS
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
 SELECT
   `TBL_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2055,7 +2117,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@table_params
 PREHOOK: Output: SYS@TABLE_STATS_VIEW
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE VIEW `TABLE_STATS_VIEW` AS
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
 SELECT
   `TBL_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2076,7 +2138,7 @@ POSTHOOK: Lineage: TABLE_STATS_VIEW.raw_data_size EXPRESSION [(table_params)tabl
 POSTHOOK: Lineage: TABLE_STATS_VIEW.tbl_id SIMPLE [(table_params)table_params.FieldSchema(name:tbl_id, type:bigint, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_STATS_VIEW.total_size EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_STATS_VIEW.transient_last_ddl_time EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE VIEW `PARTITION_STATS_VIEW` AS
+PREHOOK: query: CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
 SELECT
   `PART_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2090,7 +2152,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@partition_params
 PREHOOK: Output: SYS@PARTITION_STATS_VIEW
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE VIEW `PARTITION_STATS_VIEW` AS
+POSTHOOK: query: CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
 SELECT
   `PART_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2111,7 +2173,7 @@ POSTHOOK: Lineage: PARTITION_STATS_VIEW.part_id SIMPLE [(partition_params)partit
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.raw_data_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.total_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.transient_last_ddl_time EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `NAME` string,
   `STATUS` string,
   `QUERY_PARALLELISM` int,
@@ -2132,7 +2194,7 @@ FROM
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_RESOURCEPLANS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `NAME` string,
   `STATUS` string,
   `QUERY_PARALLELISM` int,
@@ -2153,7 +2215,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_RESOURCEPLANS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_TRIGGERS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
   `RP_NAME` string,
   `NAME` string,
   `TRIGGER_EXPRESSION` string,
@@ -2178,7 +2240,7 @@ ON
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_TRIGGERS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_TRIGGERS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
   `RP_NAME` string,
   `NAME` string,
   `TRIGGER_EXPRESSION` string,
@@ -2203,7 +2265,7 @@ ON
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_TRIGGERS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
   `RP_NAME` string,
   `PATH` string,
   `ALLOC_FRACTION` double,
@@ -2230,7 +2292,7 @@ ON
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_POOLS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
   `RP_NAME` string,
   `PATH` string,
   `ALLOC_FRACTION` double,
@@ -2257,7 +2319,7 @@ ON
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_POOLS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
   `RP_NAME` string,
   `POOL_PATH` string,
   `TRIGGER_NAME` string
@@ -2287,7 +2349,7 @@ WHERE CAST(\"WM_TRIGGER\".\"IS_IN_UNMANAGED\" AS CHAR) IN ('1', 't')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
   `RP_NAME` string,
   `POOL_PATH` string,
   `TRIGGER_NAME` string
@@ -2317,7 +2379,7 @@ WHERE CAST(\"WM_TRIGGER\".\"IS_IN_UNMANAGED\" AS CHAR) IN ('1', 't')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_MAPPINGS` (
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
   `RP_NAME` string,
   `ENTITY_TYPE` string,
   `ENTITY_NAME` string,
@@ -2342,7 +2404,7 @@ LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_I
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_MAPPINGS
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_MAPPINGS` (
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
   `RP_NAME` string,
   `ENTITY_TYPE` string,
   `ENTITY_NAME` string,
@@ -2367,14 +2429,10 @@ LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_I
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
 POSTHOOK: Output: database:sys
-PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
-PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
-POSTHOOK: type: DROPDATABASE
-PREHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
-POSTHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:INFORMATION_SCHEMA
 PREHOOK: query: USE INFORMATION_SCHEMA
@@ -2383,7 +2441,7 @@ PREHOOK: Input: database:information_schema
 POSTHOOK: query: USE INFORMATION_SCHEMA
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:information_schema
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
+PREHOOK: query: CREATE OR REPLACE VIEW `SCHEMATA`
 (
   `CATALOG_NAME`,
   `SCHEMA_NAME`,
@@ -2402,20 +2460,20 @@ SELECT DISTINCT
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D LEFT JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  NOT restrict_information_schema() OR
-  D.`DB_ID` = T.`DB_ID`
-  AND T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND current_authorizer() = P.`AUTHORIZER`
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
+POSTHOOK: query: CREATE OR REPLACE VIEW `SCHEMATA`
 (
   `CATALOG_NAME`,
   `SCHEMA_NAME`,
@@ -2434,13 +2492,13 @@ SELECT DISTINCT
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D LEFT JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  NOT restrict_information_schema() OR
-  D.`DB_ID` = T.`DB_ID`
-  AND T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND current_authorizer() = P.`AUTHORIZER`
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
@@ -2448,13 +2506,13 @@ POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: SCHEMATA.catalog_name SIMPLE []
-POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog EXPRESSION []
-POSTHOOK: Lineage: SCHEMATA.default_character_set_name EXPRESSION []
-POSTHOOK: Lineage: SCHEMATA.default_character_set_schema EXPRESSION []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog SIMPLE []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_name SIMPLE []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_schema SIMPLE []
 POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 #### A masked pattern was here ####
 POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLES`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2483,20 +2541,20 @@ SELECT DISTINCT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+  `sys`.`TBLS` T JOIN `sys`.`DBS` D ON (D.`DB_ID` = T.`DB_ID`)
+                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_PRIV`='SELECT')
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@TABLES
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLES`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2525,32 +2583,32 @@ SELECT DISTINCT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+  `sys`.`TBLS` T JOIN `sys`.`DBS` D ON (D.`DB_ID` = T.`DB_ID`)
+                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_PRIV`='SELECT')
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@TABLES
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: TABLES.commit_action EXPRESSION []
+POSTHOOK: Lineage: TABLES.commit_action SIMPLE []
 POSTHOOK: Lineage: TABLES.is_insertable_into EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.is_typed SIMPLE []
-POSTHOOK: Lineage: TABLES.reference_generation EXPRESSION []
-POSTHOOK: Lineage: TABLES.self_referencing_column_name EXPRESSION []
+POSTHOOK: Lineage: TABLES.reference_generation SIMPLE []
+POSTHOOK: Lineage: TABLES.self_referencing_column_name SIMPLE []
 POSTHOOK: Lineage: TABLES.table_catalog SIMPLE []
 POSTHOOK: Lineage: TABLES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.table_type EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: TABLES.user_defined_type_catalog EXPRESSION []
-POSTHOOK: Lineage: TABLES.user_defined_type_name EXPRESSION []
-POSTHOOK: Lineage: TABLES.user_defined_type_schema EXPRESSION []
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
+POSTHOOK: Lineage: TABLES.user_defined_type_catalog SIMPLE []
+POSTHOOK: Lineage: TABLES.user_defined_type_name SIMPLE []
+POSTHOOK: Lineage: TABLES.user_defined_type_schema SIMPLE []
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -2571,25 +2629,22 @@ SELECT DISTINCT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  `sys`.`TBL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                      JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                      LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  P.`TBL_ID` = T.`TBL_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR
+  (P2.`TBL_ID` IS NOT NULL AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT')
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer())
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@TABLE_PRIVILEGES
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -2610,18 +2665,15 @@ SELECT DISTINCT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  `sys`.`TBL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                      JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                      LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  P.`TBL_ID` = T.`TBL_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR
+  (P2.`TBL_ID` IS NOT NULL AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT')
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer())
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
@@ -2636,7 +2688,7 @@ POSTHOOK: Lineage: TABLE_PRIVILEGES.table_catalog SIMPLE []
 POSTHOOK: Lineage: TABLE_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.with_hierarchy SIMPLE []
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
+PREHOOK: query: CREATE OR REPLACE VIEW `COLUMNS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2775,21 +2827,16 @@ SELECT DISTINCT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  `sys`.`COLUMNS_V2` C,
-  `sys`.`SDS` S,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_COL_PRIVS` P
+  `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
+                       JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
+                       JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND C.`CD_ID` = S.`CD_ID`
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT')
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
@@ -2798,7 +2845,7 @@ PREHOOK: Input: sys@tbl_col_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
+POSTHOOK: query: CREATE OR REPLACE VIEW `COLUMNS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2937,21 +2984,16 @@ SELECT DISTINCT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  `sys`.`COLUMNS_V2` C,
-  `sys`.`SDS` S,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_COL_PRIVS` P
+  `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
+                       JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
+                       JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND C.`CD_ID` = S.`CD_ID`
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT')
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
@@ -2962,13 +3004,13 @@ POSTHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: COLUMNS.character_maximum_length EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.character_octet_length EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.character_set_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.character_set_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.character_set_schema EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.collation_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.collation_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.collation_schema EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.column_default EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.character_set_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.character_set_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.character_set_schema SIMPLE []
+POSTHOOK: Lineage: COLUMNS.collation_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.collation_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.collation_schema SIMPLE []
+POSTHOOK: Lineage: COLUMNS.column_default SIMPLE []
 POSTHOOK: Lineage: COLUMNS.column_name SIMPLE [(columns_v2)c.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.data_type SIMPLE [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.datetime_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
@@ -2976,15 +3018,15 @@ POSTHOOK: Lineage: COLUMNS.declared_data_type SIMPLE [(columns_v2)c.FieldSchema(
 POSTHOOK: Lineage: COLUMNS.declared_numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.declared_numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.dtd_identifier SIMPLE [(columns_v2)c.FieldSchema(name:cd_id, type:bigint, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.generation_expression EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_cycle EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_generation EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_increment EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_maximum EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_minimum EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_start EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.interval_precision EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.interval_type EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.generation_expression SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_cycle SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_generation SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_increment SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_maximum SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_minimum SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_start SIMPLE []
+POSTHOOK: Lineage: COLUMNS.interval_precision SIMPLE []
+POSTHOOK: Lineage: COLUMNS.interval_type SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_generated SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_identity SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_nullable SIMPLE []
@@ -2992,22 +3034,22 @@ POSTHOOK: Lineage: COLUMNS.is_self_referencing SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_system_time_period_end SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_system_time_period_start SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_updatable SIMPLE []
-POSTHOOK: Lineage: COLUMNS.maximum_cardinality EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.maximum_cardinality SIMPLE []
 POSTHOOK: Lineage: COLUMNS.numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_precision_radix EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.ordinal_position SIMPLE [(columns_v2)c.FieldSchema(name:integer_idx, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.scope_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.scope_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.scope_schema EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.system_time_period_timestamp_generation EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.scope_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.scope_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.scope_schema SIMPLE []
+POSTHOOK: Lineage: COLUMNS.system_time_period_timestamp_generation SIMPLE []
 POSTHOOK: Lineage: COLUMNS.table_catalog SIMPLE []
 POSTHOOK: Lineage: COLUMNS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.udt_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.udt_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.udt_schema EXPRESSION []
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
+POSTHOOK: Lineage: COLUMNS.udt_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.udt_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.udt_schema SIMPLE []
+PREHOOK: query: CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -3028,20 +3070,16 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`SDS` S,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                          JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                          JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
+                          LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND P.`TBL_ID` = T.`TBL_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR P2.`TBL_ID` IS NOT NULL
+  AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT')
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
@@ -3050,7 +3088,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
+POSTHOOK: query: CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -3071,20 +3109,16 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`SDS` S,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                          JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                          JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
+                          LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND P.`TBL_ID` = T.`TBL_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR P2.`TBL_ID` IS NOT NULL
+  AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT')
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
@@ -3101,7 +3135,7 @@ POSTHOOK: Lineage: COLUMN_PRIVILEGES.privilege_type SIMPLE [(tbl_col_privs)p.Fie
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_catalog SIMPLE []
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
+PREHOOK: query: CREATE OR REPLACE VIEW `VIEWS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -3126,24 +3160,21 @@ SELECT DISTINCT
   false,
   false
 FROM
-  `sys`.`DBS` D,
-  `sys`.`TBLS` T,
-  `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND length(T.VIEW_ORIGINAL_TEXT) > 0
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_PRIV`='SELECT')
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@VIEWS
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
+POSTHOOK: query: CREATE OR REPLACE VIEW `VIEWS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -3168,24 +3199,21 @@ SELECT DISTINCT
   false,
   false
 FROM
-  `sys`.`DBS` D,
-  `sys`.`TBLS` T,
-  `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND length(T.VIEW_ORIGINAL_TEXT) > 0
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_PRIV`='SELECT')
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@VIEWS
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: VIEWS.check_option EXPRESSION []
+POSTHOOK: Lineage: VIEWS.check_option SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_insertable_into SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_trigger_deletable SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_trigger_insertable_into SIMPLE []
@@ -3210,16 +3238,478 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@bucketing_cols
 #### A masked pattern was here ####
 key	0
+key	0
+key	0
 value	0
-PREHOOK: query: select count(*) from cds
+PREHOOK: query: select t.tbl_name, c.column_name from tbls t join sds s on t.sd_id=s.sd_id join columns_v2 c on s.cd_id=c.cd_id order by t.tbl_name, c.column_name
 PREHOOK: type: QUERY
-PREHOOK: Input: sys@cds
+PREHOOK: Input: sys@columns_v2
+PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from cds
+POSTHOOK: query: select t.tbl_name, c.column_name from tbls t join sds s on t.sd_id=s.sd_id join columns_v2 c on s.cd_id=c.cd_id order by t.tbl_name, c.column_name
 POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@cds
+POSTHOOK: Input: sys@columns_v2
+POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-57
+alltypesorc	cbigint
+alltypesorc	cboolean1
+alltypesorc	cboolean2
+alltypesorc	cdouble
+alltypesorc	cfloat
+alltypesorc	cint
+alltypesorc	csmallint
+alltypesorc	cstring1
+alltypesorc	cstring2
+alltypesorc	ctimestamp1
+alltypesorc	ctimestamp2
+alltypesorc	ctinyint
+alltypesparquet	cbigint
+alltypesparquet	cboolean1
+alltypesparquet	cboolean2
+alltypesparquet	cdouble
+alltypesparquet	cfloat
+alltypesparquet	cint
+alltypesparquet	csmallint
+alltypesparquet	cstring1
+alltypesparquet	cstring2
+alltypesparquet	ctimestamp1
+alltypesparquet	ctimestamp2
+alltypesparquet	ctinyint
+bucketing_cols	bucket_col_name
+bucketing_cols	integer_idx
+bucketing_cols	sd_id
+cbo_t1	c_boolean
+cbo_t1	c_float
+cbo_t1	c_int
+cbo_t1	key
+cbo_t1	value
+cbo_t2	c_boolean
+cbo_t2	c_float
+cbo_t2	c_int
+cbo_t2	key
+cbo_t2	value
+cbo_t3	c_boolean
+cbo_t3	c_float
+cbo_t3	c_int
+cbo_t3	key
+cbo_t3	value
+cds	cd_id
+column_privileges	column_name
+column_privileges	grantee
+column_privileges	grantor
+column_privileges	is_grantable
+column_privileges	privilege_type
+column_privileges	table_catalog
+column_privileges	table_name
+column_privileges	table_schema
+columns	character_maximum_length
+columns	character_octet_length
+columns	character_set_catalog
+columns	character_set_name
+columns	character_set_schema
+columns	collation_catalog
+columns	collation_name
+columns	collation_schema
+columns	column_default
+columns	column_name
+columns	data_type
+columns	datetime_precision
+columns	declared_data_type
+columns	declared_numeric_precision
+columns	declared_numeric_scale
+columns	dtd_identifier
+columns	generation_expression
+columns	identity_cycle
+columns	identity_generation
+columns	identity_increment
+columns	identity_maximum
+columns	identity_minimum
+columns	identity_start
+columns	interval_precision
+columns	interval_type
+columns	is_generated
+columns	is_identity
+columns	is_nullable
+columns	is_self_referencing
+columns	is_system_time_period_end
+columns	is_system_time_period_start
+columns	is_updatable
+columns	maximum_cardinality
+columns	numeric_precision
+columns	numeric_precision_radix
+columns	numeric_scale
+columns	ordinal_position
+columns	scope_catalog
+columns	scope_name
+columns	scope_schema
+columns	system_time_period_timestamp_generation
+columns	table_catalog
+columns	table_name
+columns	table_schema
+columns	udt_catalog
+columns	udt_name
+columns	udt_schema
+columns_v2	cd_id
+columns_v2	column_name
+columns_v2	comment
+columns_v2	integer_idx
+columns_v2	type_name
+database_params	db_id
+database_params	param_key
+database_params	param_value
+db_privs	authorizer
+db_privs	create_time
+db_privs	db_grant_id
+db_privs	db_id
+db_privs	db_priv
+db_privs	grant_option
+db_privs	grantor
+db_privs	grantor_type
+db_privs	principal_name
+db_privs	principal_type
+db_version	schema_version
+db_version	ver_id
+db_version	version_comment
+dbs	db_id
+dbs	db_location_uri
+dbs	name
+#### A masked pattern was here ####
+funcs	class_name
+funcs	create_time
+funcs	db_id
+funcs	func_id
+funcs	func_name
+funcs	func_type
+#### A masked pattern was here ####
+global_privs	authorizer
+global_privs	create_time
+global_privs	grant_option
+global_privs	grantor
+global_privs	grantor_type
+global_privs	principal_name
+global_privs	principal_type
+global_privs	user_grant_id
+global_privs	user_priv
+key_constraints	child_cd_id
+key_constraints	child_integer_idx
+key_constraints	child_tbl_id
+key_constraints	constraint_name
+key_constraints	constraint_type
+key_constraints	default_value
+key_constraints	delete_rule
+key_constraints	enable_validate_rely
+key_constraints	parent_cd_id
+key_constraints	parent_integer_idx
+key_constraints	parent_tbl_id
+key_constraints	position
+key_constraints	update_rule
+lineitem	l_comment
+lineitem	l_commitdate
+lineitem	l_discount
+lineitem	l_extendedprice
+lineitem	l_linenumber
+lineitem	l_linestatus
+lineitem	l_orderkey
+lineitem	l_partkey
+lineitem	l_quantity
+lineitem	l_receiptdate
+lineitem	l_returnflag
+lineitem	l_shipdate
+lineitem	l_shipinstruct
+lineitem	l_shipmode
+lineitem	l_suppkey
+lineitem	l_tax
+moretypes	a
+moretypes	b
+moretypes	c
+moretypes	d
+moretypes	e
+moretypes	f
+moretypes	g
+mv_creation_metadata	db_name
+mv_creation_metadata	mv_creation_metadata_id
+mv_creation_metadata	tbl_name
+mv_creation_metadata	txn_list
+mv_tables_used	mv_creation_metadata_id
+mv_tables_used	tbl_id
+part	p_brand
+part	p_comment
+part	p_container
+part	p_mfgr
+part	p_name
+part	p_partkey
+part	p_retailprice
+part	p_size
+part	p_type
+part_col_privs	authorizer
+part_col_privs	column_name
+part_col_privs	create_time
+part_col_privs	grant_option
+part_col_privs	grantor
+part_col_privs	grantor_type
+part_col_privs	part_col_priv
+part_col_privs	part_column_grant_id
+part_col_privs	part_id
+part_col_privs	principal_name
+part_col_privs	principal_type
+part_col_stats	avg_col_len
+part_col_stats	big_decimal_high_value
+part_col_stats	big_decimal_low_value
+part_col_stats	column_name
+part_col_stats	column_type
+part_col_stats	cs_id
+part_col_stats	db_name
+part_col_stats	double_high_value
+part_col_stats	double_low_value
+part_col_stats	last_analyzed
+part_col_stats	long_high_value
+part_col_stats	long_low_value
+part_col_stats	max_col_len
+part_col_stats	num_distincts
+part_col_stats	num_falses
+part_col_stats	num_nulls
+part_col_stats	num_trues
+part_col_stats	part_id
+part_col_stats	partition_name
+part_col_stats	table_name
+part_privs	authorizer
+part_privs	create_time
+part_privs	grant_option
+part_privs	grantor
+part_privs	grantor_type
+part_privs	part_grant_id
+part_privs	part_id
+part_privs	part_priv
+part_privs	principal_name
+part_privs	principal_type
+partition_key_vals	integer_idx
+partition_key_vals	part_id
+partition_key_vals	part_key_val
+partition_keys	integer_idx
+partition_keys	pkey_comment
+partition_keys	pkey_name
+partition_keys	pkey_type
+partition_keys	tbl_id
+partition_params	param_key
+partition_params	param_value
+partition_params	part_id
+partition_stats_view	column_stats_accurate
+partition_stats_view	num_files
+partition_stats_view	num_rows
+partition_stats_view	part_id
+partition_stats_view	raw_data_size
+partition_stats_view	total_size
+partition_stats_view	transient_last_ddl_time
+partitions	create_time
+partitions	last_access_time
+partitions	part_id
+partitions	part_name
+partitions	sd_id
+partitions	tbl_id
+role_map	add_time
+role_map	grant_option
+role_map	grantor
+role_map	grantor_type
+role_map	principal_name
+role_map	principal_type
+role_map	role_grant_id
+role_map	role_id
+roles	create_time
+#### A masked pattern was here ####
+roles	role_id
+roles	role_name
+schemata	catalog_name
+schemata	default_character_set_catalog
+schemata	default_character_set_name
+schemata	default_character_set_schema
+schemata	schema_name
+#### A masked pattern was here ####
+schemata	sql_path
+scr_txn	key
+scr_txn	value
+sd_params	param_key
+sd_params	param_value
+sd_params	sd_id
+sds	cd_id
+sds	input_format
+sds	is_compressed
+sds	is_storedassubdirectories
+sds	location
+sds	num_buckets
+sds	output_format
+sds	sd_id
+sds	serde_id
+sequence_table	next_val
+sequence_table	sequence_name
+serde_params	param_key
+serde_params	param_value
+serde_params	serde_id
+serdes	name
+serdes	serde_id
+serdes	slib
+skewed_col_names	integer_idx
+skewed_col_names	sd_id
+skewed_col_names	skewed_col_name
+skewed_col_value_loc_map	location
+skewed_col_value_loc_map	sd_id
+skewed_col_value_loc_map	string_list_id_kid
+skewed_string_list	string_list_id
+skewed_string_list_values	integer_idx
+skewed_string_list_values	string_list_id
+skewed_string_list_values	string_list_value
+skewed_values	integer_idx
+skewed_values	sd_id_oid
+skewed_values	string_list_id_eid
+sort_cols	column_name
+sort_cols	integer_idx
+sort_cols	order
+sort_cols	sd_id
+src	key
+src	value
+src1	key
+src1	value
+src_buck	key
+src_buck	value
+src_cbo	key
+src_cbo	value
+src_json	json
+src_sequencefile	key
+src_sequencefile	value
+src_skew	key
+src_thrift	aint
+src_thrift	astring
+src_thrift	attributes
+src_thrift	lint
+src_thrift	lintstring
+src_thrift	lstring
+src_thrift	mstringstring
+src_thrift	unionfield1
+src_thrift	unionfield2
+src_thrift	unionfield3
+srcbucket	key
+srcbucket	value
+srcbucket2	key
+srcbucket2	value
+srcpart	key
+srcpart	value
+tab_col_stats	avg_col_len
+tab_col_stats	big_decimal_high_value
+tab_col_stats	big_decimal_low_value
+tab_col_stats	column_name
+tab_col_stats	column_type
+tab_col_stats	cs_id
+tab_col_stats	db_name
+tab_col_stats	double_high_value
+tab_col_stats	double_low_value
+tab_col_stats	last_analyzed
+tab_col_stats	long_high_value
+tab_col_stats	long_low_value
+tab_col_stats	max_col_len
+tab_col_stats	num_distincts
+tab_col_stats	num_falses
+tab_col_stats	num_nulls
+tab_col_stats	num_trues
+tab_col_stats	table_name
+tab_col_stats	tbl_id
+table_params	param_key
+table_params	param_value
+table_params	tbl_id
+table_privileges	grantee
+table_privileges	grantor
+table_privileges	is_grantable
+table_privileges	privilege_type
+table_privileges	table_catalog
+table_privileges	table_name
+table_privileges	table_schema
+table_privileges	with_hierarchy
+table_stats_view	column_stats_accurate
+table_stats_view	num_files
+table_stats_view	num_rows
+table_stats_view	raw_data_size
+table_stats_view	tbl_id
+table_stats_view	total_size
+table_stats_view	transient_last_ddl_time
+tables	commit_action
+tables	is_insertable_into
+tables	is_typed
+tables	reference_generation
+tables	self_referencing_column_name
+tables	table_catalog
+tables	table_name
+tables	table_schema
+tables	table_type
+tables	user_defined_type_catalog
+tables	user_defined_type_name
+tables	user_defined_type_schema
+tbl_col_privs	authorizer
+tbl_col_privs	column_name
+tbl_col_privs	create_time
+tbl_col_privs	grant_option
+tbl_col_privs	grantor
+tbl_col_privs	grantor_type
+tbl_col_privs	principal_name
+tbl_col_privs	principal_type
+tbl_col_privs	tbl_col_priv
+tbl_col_privs	tbl_column_grant_id
+tbl_col_privs	tbl_id
+tbl_privs	authorizer
+tbl_privs	create_time
+tbl_privs	grant_option
+tbl_privs	grantor
+tbl_privs	grantor_type
+tbl_privs	principal_name
+tbl_privs	principal_type
+tbl_privs	tbl_grant_id
+tbl_privs	tbl_id
+tbl_privs	tbl_priv
+tbls	create_time
+tbls	db_id
+tbls	is_rewrite_enabled
+tbls	last_access_time
+#### A masked pattern was here ####
+tbls	retention
+tbls	sd_id
+tbls	tbl_id
+tbls	tbl_name
+tbls	tbl_type
+tbls	view_expanded_text
+tbls	view_original_text
+version	schema_version
+version	ver_id
+version	version_comment
+views	check_option
+views	is_insertable_into
+views	is_trigger_deletable
+views	is_trigger_insertable_into
+views	is_trigger_updatable
+views	is_updatable
+views	table_catalog
+views	table_name
+views	table_schema
+views	view_definition
+wm_mappings	entity_name
+wm_mappings	entity_type
+wm_mappings	ordering
+wm_mappings	pool_path
+wm_mappings	rp_name
+wm_pools	alloc_fraction
+wm_pools	path
+wm_pools	query_parallelism
+wm_pools	rp_name
+wm_pools	scheduling_policy
+wm_pools_to_triggers	pool_path
+wm_pools_to_triggers	rp_name
+wm_pools_to_triggers	trigger_name
+wm_resourceplans	default_pool_path
+wm_resourceplans	name
+wm_resourceplans	query_parallelism
+wm_resourceplans	status
+wm_triggers	action_expression
+wm_triggers	name
+wm_triggers	rp_name
+wm_triggers	trigger_expression
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3231,8 +3721,8 @@ POSTHOOK: Input: sys@columns_v2
 a	decimal(10,2)	0
 action_expression	string	3
 add_time	int	1
+aint	int	0
 alloc_fraction	double	2
-avg_col_len	double	14
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
@@ -3272,6 +3762,11 @@ POSTHOOK: query: select part_name from partitions order by part_name limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partitions
 #### A masked pattern was here ####
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+ds=2008-04-09/hr=11
+ds=2008-04-09/hr=12
+dt=2014
 PREHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_keys
@@ -3280,6 +3775,10 @@ POSTHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_n
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_keys
 #### A masked pattern was here ####
+ds	string
+dt	string
+dt	string
+hr	string
 PREHOOK: query: select part_key_val, integer_idx from partition_key_vals order by part_key_val, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_key_vals
@@ -3288,6 +3787,11 @@ POSTHOOK: query: select part_key_val, integer_idx from partition_key_vals order 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_key_vals
 #### A masked pattern was here ####
+11	1
+11	1
+12	1
+12	1
+2008-04-08	0
 PREHOOK: query: select param_key, param_value from partition_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3296,6 +3800,11 @@ POSTHOOK: query: select param_key, param_value from partition_params order by pa
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 #### A masked pattern was here ####
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
 PREHOOK: query: select grantor, principal_name from part_col_privs order by grantor, principal_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_privs
@@ -3333,9 +3842,13 @@ POSTHOOK: Input: sys@role_map
 PREHOOK: query: explain vectorization detail
 select count(*) from sds
 PREHOOK: type: QUERY
+PREHOOK: Input: sys@sds
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from sds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@sds
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3357,23 +3870,53 @@ STAGE PLANS:
                 TableScan
                   alias: sds
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:sd_id:bigint, 1:cd_id:bigint, 2:input_format:string, 3:is_compressed:boolean, 4:is_storedassubdirectories:boolean, 5:location:string, 6:num_buckets:int, 7:output_format:string, 8:serde_id:bigint, 9:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCountStar(*) -> bigint
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 0:bigint
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hive.storage.jdbc.JdbcInputFormat IS false, hive.vectorized.use.row.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hive.storage.jdbc.JdbcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 9
+                    includeColumns: []
+                    dataColumns: sd_id:bigint, cd_id:bigint, input_format:string, is_compressed:boolean, is_storedassubdirectories:boolean, location:string, num_buckets:int, output_format:string, serde_id:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -3427,7 +3970,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-57
+77
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -3436,19 +3979,6 @@ POSTHOOK: query: select param_key, param_value from sd_params order by param_key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sd_params
 #### A masked pattern was here ####
-PREHOOK: query: select sequence_name from sequence_table order by sequence_name limit 5
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@sequence_table
-#### A masked pattern was here ####
-POSTHOOK: query: select sequence_name from sequence_table order by sequence_name limit 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@sequence_table
-#### A masked pattern was here ####
-org.apache.hadoop.hive.metastore.model.MCatalog
-org.apache.hadoop.hive.metastore.model.MColumnDescriptor
-org.apache.hadoop.hive.metastore.model.MDatabase
-org.apache.hadoop.hive.metastore.model.MFunction
-org.apache.hadoop.hive.metastore.model.MGlobalPrivilege
 PREHOOK: query: select name, slib from serdes order by name, slib limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serdes
@@ -3457,11 +3987,11 @@ POSTHOOK: query: select name, slib from serdes order by name, slib limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@serdes
 #### A masked pattern was here ####
-NULL	NULL
-NULL	NULL
-NULL	NULL
-NULL	NULL
-NULL	NULL
+NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
+NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
+NULL	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 PREHOOK: query: select param_key, param_value from serde_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serde_params
@@ -3470,11 +4000,11 @@ POSTHOOK: query: select param_key, param_value from serde_params order by param_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@serde_params
 #### A masked pattern was here ####
-serialization.format	1
-serialization.format	1
-serialization.format	1
-serialization.format	1
-serialization.format	1
+field.delim	,
+field.delim	,
+field.delim	,
+field.delim	,
+field.delim	,
 PREHOOK: query: select skewed_col_name from skewed_col_names order by skewed_col_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_col_names
@@ -3540,7 +4070,7 @@ COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"avg_col_len":"true","big_decimal_high_value":"true","big_decimal_low_value":"true","column_name":"true","column_type":"true","cs_id":"true","db_name":"true","double_high_value":"true","double_low_value":"true","last_analyzed":"true","long_high_value":"true","long_low_value":"true","max_col_len":"true","num_distincts":"true","num_falses":"true","num_nulls":"true","num_trues":"true","part_id":"true","partition_name":"true","table_name":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","column_name":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","part_col_priv":"true","part_column_grant_id":"true","part_id":"true","principal_name":"true","principal_type":"true"}}
 PREHOOK: query: select tbl_name from tbls order by tbl_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbls
@@ -3550,10 +4080,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 alltypesorc
+alltypesparquet
 bucketing_cols
-cds
-column_privileges
-columns
+cbo_t1
+cbo_t2
 PREHOOK: query: select column_name, grantor, principal_name from tbl_col_privs order by column_name, principal_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbl_col_privs
@@ -3583,15 +4113,15 @@ POSTHOOK: query: select table_name, column_name, num_nulls, num_distincts from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-alltypesorc	cbigint	3115	6064
-alltypesorc	cboolean1	3114	0
-alltypesorc	cboolean2	3115	0
-alltypesorc	cdouble	3114	5569
+alltypesorc	cbigint	3115	5917
+alltypesorc	cboolean1	3114	NULL
+alltypesorc	cboolean2	3115	NULL
+alltypesorc	cdouble	3114	5527
 alltypesorc	cfloat	3115	131
-alltypesorc	cint	3115	6029
-alltypesorc	csmallint	3114	5594
-alltypesorc	cstring1	3114	6058
-alltypesorc	cstring2	3115	6040
+alltypesorc	cint	3115	6104
+alltypesorc	csmallint	3114	5666
+alltypesorc	cstring1	3114	5979
+alltypesorc	cstring2	3115	6122
 alltypesorc	ctimestamp1	3115	35
 PREHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
 PREHOOK: type: QUERY
@@ -3601,15 +4131,27 @@ POSTHOOK: query: select table_name, partition_name, column_name, num_nulls, num_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@part_col_stats
 #### A masked pattern was here ####
+cbo_t1	dt=2014	c_boolean	2	NULL
+cbo_t1	dt=2014	c_float	2	1
+cbo_t1	dt=2014	c_int	2	1
+cbo_t1	dt=2014	key	2	4
+cbo_t1	dt=2014	value	2	4
+cbo_t2	dt=2014	c_boolean	2	NULL
+cbo_t2	dt=2014	c_float	2	2
+cbo_t2	dt=2014	c_int	2	2
+cbo_t2	dt=2014	key	2	5
+cbo_t2	dt=2014	value	2	5
 PREHOOK: query: select schema_version from version order by schema_version limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: sys@version
 #### A masked pattern was here ####
 POSTHOOK: query: select schema_version from version order by schema_version limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: sys@version
 #### A masked pattern was here ####
-3.0.0
+3.1.0
 PREHOOK: query: select func_name, func_type from funcs order by func_name, func_type limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@funcs
@@ -3632,21 +4174,21 @@ sys_pk_bucketing_cols
 sys_pk_cds
 sys_pk_col_value_loc_map
 sys_pk_col_value_loc_map
-PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by COLUMN_STATS_ACCURATE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@table_params
 PREHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
-POSTHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+POSTHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by COLUMN_STATS_ACCURATE limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
+{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
-#### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"db_id":"true","param_key":"true","param_value":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"param_key":"true","param_value":"true","serde_id":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","column_name":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","part_col_priv":"true","part_column_grant_id":"true","part_id":"true","principal_name":"true","principal_type":"true"}}	0	0	0	0
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3657,6 +4199,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 POSTHOOK: Input: sys@partition_stats_view
 #### A masked pattern was here ####
+{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
+{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
 PREHOOK: query: describe sys.tab_col_stats
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: sys@tab_col_stats
@@ -3684,8 +4231,12 @@ num_falses          	bigint              	from deserializer
 last_analyzed       	bigint              	from deserializer   
 PREHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
 PREHOOK: type: QUERY
+PREHOOK: Input: sys@tab_col_stats
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
 POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tab_col_stats
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3716,7 +4267,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -3748,14 +4299,13 @@ POSTHOOK: query: select max(num_distincts) from sys.tab_col_stats
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-6064
+6122
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
 POSTHOOK: query: use INFORMATION_SCHEMA
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:information_schema
-Warning: Shuffle Join MERGEJOIN[20][tables = [d, t, p]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from SCHEMATA
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@schemata
@@ -3771,7 +4321,6 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 3
-Warning: Shuffle Join MERGEJOIN[38][tables = [t, d, p]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from TABLES order by TABLE_SCHEMA, TABLE_NAME
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@tables
@@ -3787,11 +4336,25 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 default	default	alltypesorc	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	alltypesparquet	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	cbo_t1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	cbo_t2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	cbo_t3	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	lineitem	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	moretypes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	part	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	scr_txn	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_buck	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_cbo	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_json	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_sequencefile	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_skew	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_thrift	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	srcbucket	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	srcbucket2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	srcpart	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	information_schema	column_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	columns	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	schemata	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
@@ -3837,13 +4400,12 @@ default	sys	table_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	tbl_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbl_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbls	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	version	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	wm_mappings	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_pools	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_pools_to_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_resourceplans	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-Warning: Shuffle Join MERGEJOIN[60][tables = [p, t, d, p2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@table_privileges
@@ -3862,14 +4424,13 @@ hive_test_user	hive_test_user	default	default	alltypesorc	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	moretypes	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	moretypes	INSERT	YES	NO
-hive_test_user	hive_test_user	default	default	moretypes	SELECT	YES	NO
-hive_test_user	hive_test_user	default	default	moretypes	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	scr_txn	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	scr_txn	INSERT	YES	NO
-Warning: Shuffle Join MERGEJOIN[82][tables = [c, s, t, d, p]] in Stage 'Reducer 5' is a cross product
-PREHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
+hive_test_user	hive_test_user	default	default	alltypesparquet	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesparquet	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesparquet	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	alltypesparquet	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
+PREHOOK: query: select table_catalog,table_schema,table_name,column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length,character_octet_length,numeric_precision,numeric_precision_radix,numeric_scale,datetime_precision,interval_type,interval_precision,character_set_catalog,character_set_schema,character_set_name,collation_catalog,collation_schema,collation_name,udt_catalog,udt_schema,udt_name,scope_catalog,scope_schema,scope_name,maximum_cardinality,is_self_referencing,is_identity,identity_generation,identity_start,identity_increment,identity_maximum,identity_minimum,identity_cycle,is_generated,generation_expression,is_system_time_period_start,is_system_time_period_end,system_time_period_timestamp_generation,is_updatable,declared_data_type,declared_numeric_precision,declared_numeric_scale from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@columns
 PREHOOK: Input: sys@columns_v2
@@ -3878,7 +4439,7 @@ PREHOOK: Input: sys@sds
 PREHOOK: Input: sys@tbl_col_privs
 PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-POSTHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
+POSTHOOK: query: select table_catalog,table_schema,table_name,column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length,character_octet_length,numeric_precision,numeric_precision_radix,numeric_scale,datetime_precision,interval_type,interval_precision,character_set_catalog,character_set_schema,character_set_name,collation_catalog,collation_schema,collation_name,udt_catalog,udt_schema,udt_name,scope_catalog,scope_schema,scope_name,maximum_cardinality,is_self_referencing,is_identity,identity_generation,identity_start,identity_increment,identity_maximum,identity_minimum,identity_cycle,is_generated,generation_expression,is_system_time_period_start,is_system_time_period_end,system_time_period_timestamp_generation,is_updatable,declared_data_type,declared_numeric_precision,declared_numeric_scale from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 POSTHOOK: type: QUERY
 POSTHOOK: Input: information_schema@columns
 POSTHOOK: Input: sys@columns_v2
@@ -3887,7 +4448,25 @@ POSTHOOK: Input: sys@sds
 POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[82][tables = [p, t, d, s, p2]] in Stage 'Reducer 5' is a cross product
+default	default	alltypesorc	cbigint	3	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
+default	default	alltypesorc	cboolean1	10	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
+default	default	alltypesorc	cboolean2	11	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
+default	default	alltypesorc	cdouble	5	NULL	YES	double	NULL	NULL	53	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	double	53	2
+default	default	alltypesorc	cfloat	4	NULL	YES	float	NULL	NULL	23	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	float	23	2
+default	default	alltypesorc	cint	2	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
+default	default	alltypesorc	csmallint	1	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
+default	default	alltypesorc	cstring1	6	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
+default	default	alltypesorc	cstring2	7	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
+default	default	alltypesorc	ctimestamp1	8	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
+default	default	alltypesorc	ctimestamp2	9	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
+default	default	alltypesorc	ctinyint	0	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
+default	default	moretypes	a	0	NULL	YES	decimal(10,2)	NULL	NULL	10	10	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	decimal(10,2)	10	10
+default	default	moretypes	b	1	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
+default	default	moretypes	c	2	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
+default	default	moretypes	d	3	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
+default	default	moretypes	e	4	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
+default	default	moretypes	f	5	NULL	YES	varchar(10)	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	varchar(10)	NULL	NULL
+default	default	moretypes	g	6	NULL	YES	char(3)	3	3	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	char(3)	NULL	NULL
 PREHOOK: query: select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@column_privileges
@@ -3906,7 +4485,6 @@ POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[38][tables = [d, t, p]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@views
@@ -3929,3 +4507,4 @@ information_schema	tables
 information_schema	views
 sys	partition_stats_view
 sys	table_stats_view
+sys	version

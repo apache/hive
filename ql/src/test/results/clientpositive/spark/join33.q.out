@@ -12,12 +12,22 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j1_n7
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1_n7
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j1_n7
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
@@ -393,88 +403,88 @@ POSTHOOK: query: select * from dest_j1_n7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1_n7
 #### A masked pattern was here ####
-146	val_146	val_146
-146	val_146	val_146
-146	val_146	val_146
-146	val_146	val_146
+146		val_146
+146		val_146
+146		val_146
+146		val_146
 150	val_150	val_150
-213	val_213	val_213
-213	val_213	val_213
-213	val_213	val_213
-213	val_213	val_213
-238	val_238	val_238
-238	val_238	val_238
-238	val_238	val_238
-238	val_238	val_238
-255	val_255	val_255
-255	val_255	val_255
-255	val_255	val_255
-255	val_255	val_255
-273	val_273	val_273
-273	val_273	val_273
-273	val_273	val_273
-273	val_273	val_273
-273	val_273	val_273
-273	val_273	val_273
-273	val_273	val_273
-273	val_273	val_273
-273	val_273	val_273
-278	val_278	val_278
-278	val_278	val_278
-278	val_278	val_278
-278	val_278	val_278
-311	val_311	val_311
-311	val_311	val_311
-311	val_311	val_311
-311	val_311	val_311
-311	val_311	val_311
-311	val_311	val_311
-311	val_311	val_311
-311	val_311	val_311
-311	val_311	val_311
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-401	val_401	val_401
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
-406	val_406	val_406
+213		val_213
+213		val_213
+213		val_213
+213		val_213
+238		val_238
+238		val_238
+238		val_238
+238		val_238
+255		val_255
+255		val_255
+255		val_255
+255		val_255
+273		val_273
+273		val_273
+273		val_273
+273		val_273
+273		val_273
+273		val_273
+273		val_273
+273		val_273
+273		val_273
+278		val_278
+278		val_278
+278		val_278
+278		val_278
+311		val_311
+311		val_311
+311		val_311
+311		val_311
+311		val_311
+311		val_311
+311		val_311
+311		val_311
+311		val_311
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+401		val_401
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
+406		val_406
 66	val_66	val_66
-98	val_98	val_98
-98	val_98	val_98
-98	val_98	val_98
-98	val_98	val_98
+98		val_98
+98		val_98
+98		val_98
+98		val_98

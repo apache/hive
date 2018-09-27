@@ -30,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.ColumnarSplit;
@@ -243,7 +244,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   public boolean canUseLlapIo(Configuration conf) {
     final boolean hasDelta = deltas != null && !deltas.isEmpty();
     final boolean isAcidRead = AcidUtils.isFullAcidScan(conf);
-    final boolean isVectorized = HiveConf.getBoolVar(conf, ConfVars.HIVE_VECTORIZATION_ENABLED);
+    final boolean isVectorized = Utilities.getIsVectorized(conf);
     Boolean isSplitUpdate = null;
     if (isAcidRead) {
       final AcidUtils.AcidOperationalProperties acidOperationalProperties

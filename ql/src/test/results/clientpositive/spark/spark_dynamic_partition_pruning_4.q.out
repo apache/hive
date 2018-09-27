@@ -100,12 +100,36 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=1/q=1
+PREHOOK: Input: default@part1@p=1/q=2
+PREHOOK: Input: default@part1@p=2/q=1
+PREHOOK: Input: default@part1@p=2/q=2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=1/q=1
+POSTHOOK: Input: default@part1@p=1/q=2
+POSTHOOK: Input: default@part1@p=2/q=1
+POSTHOOK: Input: default@part1@p=2/q=2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -332,12 +356,36 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=1/q=1
+PREHOOK: Input: default@part1@p=1/q=2
+PREHOOK: Input: default@part1@p=2/q=1
+PREHOOK: Input: default@part1@p=2/q=2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=1/q=1
+POSTHOOK: Input: default@part1@p=1/q=2
+POSTHOOK: Input: default@part1@p=2/q=1
+POSTHOOK: Input: default@part1@p=2/q=2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -564,12 +612,26 @@ select * from
 union all
   (select part1.key, part1.value from part1 join src on part1.q=src.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=1/q=1
+PREHOOK: Input: default@part1@p=1/q=2
+PREHOOK: Input: default@part1@p=2/q=1
+PREHOOK: Input: default@part1@p=2/q=2
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.q=src.key) a
 union all
   (select part1.key, part1.value from part1 join src on part1.q=src.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=1/q=1
+POSTHOOK: Input: default@part1@p=1/q=2
+POSTHOOK: Input: default@part1@p=2/q=1
+POSTHOOK: Input: default@part1@p=2/q=2
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -728,12 +790,36 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=1/q=1
+PREHOOK: Input: default@part1@p=1/q=2
+PREHOOK: Input: default@part1@p=2/q=1
+PREHOOK: Input: default@part1@p=2/q=2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=1/q=1
+POSTHOOK: Input: default@part1@p=1/q=2
+POSTHOOK: Input: default@part1@p=2/q=1
+POSTHOOK: Input: default@part1@p=2/q=2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -919,12 +1005,36 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=1/q=1
+PREHOOK: Input: default@part1@p=1/q=2
+PREHOOK: Input: default@part1@p=2/q=1
+PREHOOK: Input: default@part1@p=2/q=2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=upper(src.key)) a
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=1/q=1
+POSTHOOK: Input: default@part1@p=1/q=2
+POSTHOOK: Input: default@part1@p=2/q=1
+POSTHOOK: Input: default@part1@p=2/q=2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1112,6 +1222,18 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=1/q=1
+PREHOOK: Input: default@part1@p=1/q=2
+PREHOOK: Input: default@part1@p=2/q=1
+PREHOOK: Input: default@part1@p=2/q=2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 with top as
 (select key from src order by key limit 200)
@@ -1120,6 +1242,18 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=1/q=1
+POSTHOOK: Input: default@part1@p=1/q=2
+POSTHOOK: Input: default@part1@p=2/q=1
+POSTHOOK: Input: default@part1@p=2/q=2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1377,6 +1511,18 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=1/q=1
+PREHOOK: Input: default@part1@p=1/q=2
+PREHOOK: Input: default@part1@p=2/q=1
+PREHOOK: Input: default@part1@p=2/q=2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 with top as
 (select key, value from src order by key, value limit 200)
@@ -1385,6 +1531,18 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=1/q=1
+POSTHOOK: Input: default@part1@p=1/q=2
+POSTHOOK: Input: default@part1@p=2/q=1
+POSTHOOK: Input: default@part1@p=2/q=2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1636,6 +1794,18 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=1/q=1
+PREHOOK: Input: default@part1@p=1/q=2
+PREHOOK: Input: default@part1@p=2/q=1
+PREHOOK: Input: default@part1@p=2/q=2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 with top as
 (select key, value from src order by key, value limit 200)
@@ -1644,6 +1814,18 @@ select * from
 union all
   (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=1/q=1
+POSTHOOK: Input: default@part1@p=1/q=2
+POSTHOOK: Input: default@part1@p=2/q=1
+POSTHOOK: Input: default@part1@p=2/q=2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1884,11 +2066,35 @@ select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
 select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@foo_n2
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=1/q=1
+PREHOOK: Input: default@part1@p=1/q=2
+PREHOOK: Input: default@part1@p=2/q=1
+PREHOOK: Input: default@part1@p=2/q=2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
 select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo_n2
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=1/q=1
+POSTHOOK: Input: default@part1@p=1/q=2
+POSTHOOK: Input: default@part1@p=2/q=1
+POSTHOOK: Input: default@part1@p=2/q=2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

@@ -1173,7 +1173,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   }
 
   private void flushOutput() throws HiveException {
-    forward(outputBatch, null, true);
+    vectorForward(outputBatch);
     outputBatch.reset();
   }
 

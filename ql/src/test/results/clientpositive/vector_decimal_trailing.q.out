@@ -68,9 +68,13 @@ POSTHOOK: Lineage: decimal_trailing.id SIMPLE [(decimal_trailing_txt)decimal_tra
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_TRAILING ORDER BY id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_trailing
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_TRAILING ORDER BY id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_trailing
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

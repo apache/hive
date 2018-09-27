@@ -37,6 +37,9 @@ WHERE (t2.tinyint_col_21) IN (
         ON (tt2.decimal1911_col_16) = (tt1.decimal1309_col_65)
         WHERE (tt1.timestamp_col_66) = (tt2.timestamp_col_19))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_1
+PREHOOK: Input: default@table_18
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT
     COALESCE(498,
@@ -55,6 +58,9 @@ WHERE (t2.tinyint_col_21) IN (
         ON (tt2.decimal1911_col_16) = (tt1.decimal1309_col_65)
         WHERE (tt1.timestamp_col_66) = (tt2.timestamp_col_19))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_1
+POSTHOOK: Input: default@table_18
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-6
@@ -169,7 +175,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (UDFToShort(UDFToByte(-92)) + _col1) ASC NULLS FIRST, floor(_col3) DESC NULLS LAST
+                  order by: (UDFToShort(UDFToByte(-92)) + _col1) ASC NULLS LAST, floor(_col3) DESC NULLS LAST
                   partition by: (UDFToShort(UDFToByte(-92)) + _col1)
                   raw input shape:
                   window functions:

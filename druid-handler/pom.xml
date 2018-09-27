@@ -29,7 +29,6 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <druid.metamx.util.version>1.3.2</druid.metamx.util.version>
     <druid.guava.version>16.0.1</druid.guava.version>
   </properties>
 
@@ -85,26 +84,6 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${druid.guava.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.metamx</groupId>
-      <artifactId>java-util</artifactId>
-      <version>${druid.metamx.util.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>joda-time</groupId>
@@ -316,10 +295,6 @@
                       <shadedPattern>org.apache.hive.druid.io.druid</shadedPattern>
                     </relocation>
                     <relocation>
-                      <pattern>com.metamx</pattern>
-                      <shadedPattern>org.apache.hive.druid.com.metamx</shadedPattern>
-                    </relocation>
-                    <relocation>
                       <pattern>io.netty</pattern>
                       <shadedPattern>org.apache.hive.druid.io.netty</shadedPattern>
                     </relocation>
@@ -348,7 +323,6 @@
                     <includes>
                       <include>io.druid:*</include>
                       <include>io.druid.extensions:*</include>
-                      <include>com.metamx:*</include>
                       <include>io.netty:*</include>
                       <include>org.apache.calcite:*</include>
                       <include>com.fasterxml.jackson.core:*</include>

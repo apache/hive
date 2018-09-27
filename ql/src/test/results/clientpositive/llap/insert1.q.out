@@ -26,8 +26,12 @@ POSTHOOK: Lineage: insert1.key SIMPLE []
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain insert into table insert1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert2
+PREHOOK: Output: default@insert1
 POSTHOOK: query: explain insert into table insert1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert2
+POSTHOOK: Output: default@insert1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -117,8 +121,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert into table INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert2
+PREHOOK: Output: default@insert1
 POSTHOOK: query: explain insert into table INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert2
+POSTHOOK: Output: default@insert1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -222,8 +230,12 @@ POSTHOOK: Output: database:x
 POSTHOOK: Output: x@insert1
 PREHOOK: query: explain insert into table x.INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert2
+PREHOOK: Output: x@insert1
 POSTHOOK: query: explain insert into table x.INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert2
+POSTHOOK: Output: x@insert1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -313,8 +325,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert into table default.INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert2
+PREHOOK: Output: default@insert1
 POSTHOOK: query: explain insert into table default.INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert2
+POSTHOOK: Output: default@insert1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -407,11 +423,17 @@ from insert2
 insert into table insert1 select * where key < 10
 insert overwrite table x.insert1 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert2
+PREHOOK: Output: default@insert1
+PREHOOK: Output: x@insert1
 POSTHOOK: query: explain
 from insert2
 insert into table insert1 select * where key < 10
 insert overwrite table x.insert1 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert2
+POSTHOOK: Output: default@insert1
+POSTHOOK: Output: x@insert1
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2

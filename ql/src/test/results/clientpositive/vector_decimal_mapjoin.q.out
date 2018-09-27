@@ -77,9 +77,15 @@ POSTHOOK: Lineage: t2_n29.value_dec EXPRESSION [(over1k_n2)over1k_n2.FieldSchema
 PREHOOK: query: explain vectorization detail
 select t1_n48.`dec`, t2_n29.`dec` from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n48
+PREHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_n48.`dec`, t2_n29.`dec` from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n48
+POSTHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -320,9 +326,15 @@ POSTHOOK: Input: default@t2_n29
 PREHOOK: query: explain vectorization detail
 select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n48
+PREHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n48
+POSTHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -639,9 +651,15 @@ POSTHOOK: Lineage: t2_small.value_dec EXPRESSION [(over1k_small)over1k_small.Fie
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -882,9 +900,15 @@ POSTHOOK: Input: default@t2_small
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1125,9 +1149,15 @@ POSTHOOK: Input: default@t2_small
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1369,9 +1399,15 @@ POSTHOOK: Input: default@t2_small
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

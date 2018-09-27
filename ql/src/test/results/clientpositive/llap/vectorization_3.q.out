@@ -24,6 +24,8 @@ WHERE  (((cint <= cfloat)
             AND ((79.553 <= csmallint)
                  AND (ctimestamp1 > ctimestamp2))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT STDDEV_SAMP(csmallint),
        (STDDEV_SAMP(csmallint) - 10.175),
@@ -49,6 +51,8 @@ WHERE  (((cint <= cfloat)
             AND ((79.553 <= csmallint)
                  AND (ctimestamp1 > ctimestamp2))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -106,10 +110,9 @@ STAGE PLANS:
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
-                              keyColumnNums: []
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+                              valueColumns: 0:double, 1:double, 2:bigint, 3:double, 4:double, 5:bigint, 6:double, 7:double, 8:bigint, 9:double, 10:bigint, 11:bigint, 12:double, 13:double
                           Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: bigint), _col3 (type: double), _col4 (type: double), _col5 (type: bigint), _col6 (type: double), _col7 (type: double), _col8 (type: bigint), _col9 (type: double), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: double), _col13 (type: double)
             Execution mode: vectorized, llap

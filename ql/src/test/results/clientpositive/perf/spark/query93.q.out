@@ -15,6 +15,10 @@ select  ss_customer_sk
       order by sumsales, ss_customer_sk
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@reason
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  ss_customer_sk
             ,sum(act_sales) sumsales
@@ -32,6 +36,10 @@ select  ss_customer_sk
       order by sumsales, ss_customer_sk
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@reason
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

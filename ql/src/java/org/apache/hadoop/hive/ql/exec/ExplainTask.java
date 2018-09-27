@@ -732,6 +732,73 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outputPlan(work, out, extended, jsonOutput, indent, "");
   }
 
+  private boolean isInvokeVectorization(Vectorization vectorization) {
+
+    boolean invokeFlag = true;   // Assume.
+
+    // The EXPLAIN VECTORIZATION option was specified.
+    final boolean desireOnly = this.work.isVectorizationOnly();
+    final VectorizationDetailLevel desiredVecDetailLevel =
+        this.work.isVectorizationDetailLevel();
+
+    switch (vectorization) {
+    case NON_VECTORIZED:
+      // Display all non-vectorized leaf objects unless ONLY.
+      if (desireOnly) {
+        invokeFlag = false;
+      }
+      break;
+    case SUMMARY:
+    case OPERATOR:
+    case EXPRESSION:
+    case DETAIL:
+      if (vectorization.rank < desiredVecDetailLevel.rank) {
+        // This detail not desired.
+        invokeFlag = false;
+      }
+      break;
+    case SUMMARY_PATH:
+    case OPERATOR_PATH:
+      if (desireOnly) {
+        if (vectorization.rank < desiredVecDetailLevel.rank) {
+          // Suppress headers and all objects below.
+          invokeFlag = false;
+        }
+      }
+      break;
+    default:
+      throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+    }
+
+    return invokeFlag;
+  }
+
+  private boolean isInvokeNonVectorization(Vectorization vectorization) {
+
+    boolean invokeFlag = true;   // Assume.
+
+    // Do not display vectorization objects.
+    switch (vectorization) {
+    case SUMMARY:
+    case OPERATOR:
+    case EXPRESSION:
+    case DETAIL:
+      invokeFlag = false;
+      break;
+    case NON_VECTORIZED:
+      // No action.
+      break;
+    case SUMMARY_PATH:
+    case OPERATOR_PATH:
+      // Always include headers since they contain non-vectorized objects, too.
+      break;
+    default:
+      throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+    }
+
+    return invokeFlag;
+  }
+
   @VisibleForTesting
   JSONObject outputPlan(Object work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
@@ -756,65 +823,17 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         if (extended) {
           invokeFlag = Level.EXTENDED.in(xpl_note.explainLevels());
         } else {
-          invokeFlag = Level.DEFAULT.in(xpl_note.explainLevels());
+          invokeFlag =
+              Level.DEFAULT.in(xpl_note.explainLevels()) ||
+              (this.work != null && this.work.isDebug() && Level.DEBUG.in(xpl_note.explainLevels()));
         }
       }
       if (invokeFlag) {
         Vectorization vectorization = xpl_note.vectorization();
         if (this.work != null && this.work.isVectorization()) {
-
-          // The EXPLAIN VECTORIZATION option was specified.
-          final boolean desireOnly = this.work.isVectorizationOnly();
-          final VectorizationDetailLevel desiredVecDetailLevel =
-              this.work.isVectorizationDetailLevel();
-
-          switch (vectorization) {
-          case NON_VECTORIZED:
-            // Display all non-vectorized leaf objects unless ONLY.
-            if (desireOnly) {
-              invokeFlag = false;
-            }
-            break;
-          case SUMMARY:
-          case OPERATOR:
-          case EXPRESSION:
-          case DETAIL:
-            if (vectorization.rank < desiredVecDetailLevel.rank) {
-              // This detail not desired.
-              invokeFlag = false;
-            }
-            break;
-          case SUMMARY_PATH:
-          case OPERATOR_PATH:
-            if (desireOnly) {
-              if (vectorization.rank < desiredVecDetailLevel.rank) {
-                // Suppress headers and all objects below.
-                invokeFlag = false;
-              }
-            }
-            break;
-          default:
-            throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
-          }
+          invokeFlag = isInvokeVectorization(vectorization);
         } else  {
-          // Do not display vectorization objects.
-          switch (vectorization) {
-          case SUMMARY:
-          case OPERATOR:
-          case EXPRESSION:
-          case DETAIL:
-            invokeFlag = false;
-            break;
-          case NON_VECTORIZED:
-            // No action.
-            break;
-          case SUMMARY_PATH:
-          case OPERATOR_PATH:
-            // Always include headers since they contain non-vectorized objects, too.
-            break;
-          default:
-            throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
-          }
+          invokeFlag = isInvokeNonVectorization(vectorization);
         }
       }
       if (invokeFlag) {
@@ -892,64 +911,18 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           if (extended) {
             invokeFlag = Level.EXTENDED.in(xpl_note.explainLevels());
           } else {
-            invokeFlag = Level.DEFAULT.in(xpl_note.explainLevels());
+            invokeFlag =
+                Level.DEFAULT.in(xpl_note.explainLevels()) ||
+                (this.work != null && this.work.isDebug() && Level.DEBUG.in(xpl_note.explainLevels()));
           }
         }
         if (invokeFlag) {
           Vectorization vectorization = xpl_note.vectorization();
-          if (this.work != null && this.work.isVectorization()) {
-
-            // The EXPLAIN VECTORIZATION option was specified.
-            final boolean desireOnly = this.work.isVectorizationOnly();
-            final VectorizationDetailLevel desiredVecDetailLevel =
-                this.work.isVectorizationDetailLevel();
-
-            switch (vectorization) {
-            case NON_VECTORIZED:
-              // Display all non-vectorized leaf objects unless ONLY.
-              if (desireOnly) {
-                invokeFlag = false;
-              }
-              break;
-            case SUMMARY:
-            case OPERATOR:
-            case EXPRESSION:
-            case DETAIL:
-              if (vectorization.rank < desiredVecDetailLevel.rank) {
-                // This detail not desired.
-                invokeFlag = false;
-              }
-              break;
-            case SUMMARY_PATH:
-            case OPERATOR_PATH:
-              if (desireOnly) {
-                if (vectorization.rank < desiredVecDetailLevel.rank) {
-                  // Suppress headers and all objects below.
-                  invokeFlag = false;
-                }
-              }
-              break;
-            default:
-              throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
-            }
-          } else  {
-            // Do not display vectorization objects.
-            switch (vectorization) {
-            case SUMMARY:
-            case OPERATOR:
-            case EXPRESSION:
-            case DETAIL:
-              invokeFlag = false;
-              break;
-            case NON_VECTORIZED:
-              // No action.
-              break;
-            case SUMMARY_PATH:
-            case OPERATOR_PATH:
-              // Always include headers since they contain non-vectorized objects, too.
-              break;
-            default:
-              throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+          if (invokeFlag) {
+            if (this.work != null && this.work.isVectorization()) {
+              invokeFlag = isInvokeVectorization(vectorization);
+            } else  {
+              invokeFlag = isInvokeNonVectorization(vectorization);
             }
           }
         }

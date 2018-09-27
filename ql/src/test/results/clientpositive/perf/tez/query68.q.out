@@ -39,6 +39,13 @@ select  c_last_name
          ,ss_ticket_number
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select  c_last_name
        ,c_first_name
@@ -80,6 +87,13 @@ select  c_last_name
          ,ss_ticket_number
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -193,9 +207,9 @@ Stage-0
                                           <-Map 14 [SIMPLE_EDGE] vectorized
                                             PARTITION_ONLY_SHUFFLE [RS_158]
                                               PartitionCols:_col0
-                                              Select Operator [SEL_157] (rows=8116 width=1119)
+                                              Select Operator [SEL_157] (rows=73049 width=1119)
                                                 Output:["_col0"]
-                                                Filter Operator [FIL_156] (rows=8116 width=1119)
+                                                Filter Operator [FIL_156] (rows=73049 width=1119)
                                                   predicate:((d_year) IN (1998, 1999, 2000) and d_date_sk is not null and d_dom BETWEEN 1 AND 2)
                                                   TableScan [TS_9] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_dom"]
@@ -216,7 +230,7 @@ Stage-0
                                                         PARTITION_ONLY_SHUFFLE [RS_161]
                                                           Group By Operator [GBY_160] (rows=1 width=12)
                                                             Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                            Select Operator [SEL_159] (rows=8116 width=1119)
+                                                            Select Operator [SEL_159] (rows=73049 width=1119)
                                                               Output:["_col0"]
                                                                Please refer to the previous Select Operator [SEL_157]
                                                   <-Reducer 17 [BROADCAST_EDGE] vectorized

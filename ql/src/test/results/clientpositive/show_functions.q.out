@@ -39,6 +39,7 @@ between
 bin
 bloom_filter
 bround
+bucket_number
 cardinality_violation
 case
 cbrt
@@ -253,6 +254,7 @@ substr
 substring
 substring_index
 sum
+surrogate_key
 tan
 to_date
 to_epoch_milli

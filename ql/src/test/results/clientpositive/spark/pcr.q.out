@@ -50,8 +50,16 @@ POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-10).key EXPRESSION [(src)src.Fiel
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` <= '2000-04-09' AND `key` < 5
@@ -84,7 +92,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 13 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -254,8 +262,18 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 4	val_4	2000-04-09
 PREHOOK: query: explain extended select key, value from pcr_t1 where ds<='2000-04-09' or key<5 order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+PREHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value from pcr_t1 where ds<='2000-04-09' or key<5 order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` <= '2000-04-09' OR `key` < 5
@@ -288,7 +306,7 @@ STAGE PLANS:
                       Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -544,8 +562,16 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 19	val_19
 PREHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 and value != 'val_2' order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 and value != 'val_2' order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` <= '2000-04-09' AND `key` < 5 AND `value` <> 'val_2'
@@ -578,7 +604,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 13 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -748,10 +774,18 @@ PREHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-09' and key < 5) or (ds > '2000-04-09' and value == 'val_5') order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-09' and key < 5) or (ds > '2000-04-09' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` < '2000-04-09' AND `key` < 5 OR `ds` > '2000-04-09' AND `value` = 'val_5'
@@ -784,7 +818,7 @@ STAGE PLANS:
                       Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -956,10 +990,20 @@ PREHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-10' and key < 5) or (ds > '2000-04-08' and value == 'val_5') order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+PREHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-10' and key < 5) or (ds > '2000-04-08' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` < '2000-04-10' AND `key` < 5 OR `ds` > '2000-04-08' AND `value` = 'val_5'
@@ -992,7 +1036,7 @@ STAGE PLANS:
                       Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -1223,10 +1267,20 @@ PREHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-10' or key < 5) and (ds > '2000-04-08' or value == 'val_5') order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+PREHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-10' or key < 5) and (ds > '2000-04-08' or value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
 WHERE (`ds` < '2000-04-10' OR `key` < 5) AND (`ds` > '2000-04-08' OR `value` = 'val_5')
@@ -1259,7 +1313,7 @@ STAGE PLANS:
                       Statistics: Num rows: 33 Data size: 264 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 33 Data size: 264 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -1500,8 +1554,16 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 19	val_19	2000-04-09
 PREHOOK: query: explain extended select key, value from pcr_t1 where (ds='2000-04-08' or ds='2000-04-09') and key=14 order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value from pcr_t1 where (ds='2000-04-08' or ds='2000-04-09') and key=14 order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1530,7 +1592,7 @@ STAGE PLANS:
                       Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -1689,8 +1751,16 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select key, value from pcr_t1 where ds='2000-04-08' or ds='2000-04-09' order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value from pcr_t1 where ds='2000-04-08' or ds='2000-04-09' order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1715,7 +1785,7 @@ STAGE PLANS:
                     Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -1914,8 +1984,18 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 19	val_19
 PREHOOK: query: explain extended select key, value from pcr_t1 where ds>='2000-04-08' or ds<'2000-04-10' order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+PREHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value from pcr_t1 where ds>='2000-04-08' or ds<'2000-04-10' order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` >= '2000-04-08' OR `ds` IS NOT NULL
@@ -1944,7 +2024,7 @@ STAGE PLANS:
                     Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -2214,8 +2294,16 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 19	val_19
 PREHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2244,7 +2332,7 @@ STAGE PLANS:
                       Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -2404,8 +2492,14 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 2	val_2	2000-04-09
 PREHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08' order by t1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08' order by t1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-08' AS STRING) AS `ds1`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
@@ -2600,7 +2694,7 @@ STAGE PLANS:
                   Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -2693,8 +2787,16 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 19	val_19	2000-04-08	19	val_19	2000-04-08
 PREHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09' order by t1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09' order by t1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds1`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
@@ -2889,7 +2991,7 @@ STAGE PLANS:
                   Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -2994,8 +3096,20 @@ POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-11).key EXPRESSION [(src)src.Fiel
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds>='2000-04-08' and ds<='2000-04-11' and key=2) order by key, value, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+PREHOOK: Input: default@pcr_t1@ds=2000-04-10
+PREHOOK: Input: default@pcr_t1@ds=2000-04-11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds>='2000-04-08' and ds<='2000-04-11' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-11
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` > '2000-04-08' AND `ds` < '2000-04-11' OR `ds` >= '2000-04-08' AND `ds` <= '2000-04-11' AND `key` = 2
@@ -3028,7 +3142,7 @@ STAGE PLANS:
                       Statistics: Num rows: 48 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Statistics: Num rows: 48 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -3331,8 +3445,18 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-11
 19	val_19	2000-04-10
 PREHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds<='2000-04-09' and key=2) order by key, value, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=2000-04-09
+PREHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds<='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` > '2000-04-08' AND `ds` < '2000-04-11' OR `ds` <= '2000-04-09' AND `key` = 2
@@ -3365,7 +3489,7 @@ STAGE PLANS:
                       Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -3635,11 +3759,19 @@ from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08'
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Output: default@pcr_t2
+PREHOOK: Output: default@pcr_t3
 POSTHOOK: query: explain extended
 from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08'
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Output: default@pcr_t2
+POSTHOOK: Output: default@pcr_t3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -3880,11 +4012,19 @@ from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08' and key=2
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08' and key=3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Output: default@pcr_t2
+PREHOOK: Output: default@pcr_t3
 POSTHOOK: query: explain extended
 from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08' and key=2
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08' and key=3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Output: default@pcr_t2
+POSTHOOK: Output: default@pcr_t3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -4130,8 +4270,14 @@ POSTHOOK: Lineage: pcr_t3.key SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:key, type:
 POSTHOOK: Lineage: pcr_t3.value SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain extended select key, value from srcpart where ds='2008-04-08' and hr=11 order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value from srcpart where ds='2008-04-08' and hr=11 order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08' AND `hr` = 11
@@ -4161,7 +4307,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -4274,8 +4420,16 @@ POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select key, value, ds, hr from srcpart where ds='2008-04-08' and (hr='11' or hr='12') and key=11 order by key, ds, hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds, hr from srcpart where ds='2008-04-08' and (hr='11' or hr='12') and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4304,7 +4458,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -4468,8 +4622,16 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 11	val_11	2008-04-08	12
 PREHOOK: query: explain extended select key, value, ds, hr from srcpart where hr='11' and key=11 order by key, ds, hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds, hr from srcpart where hr='11' and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`, CAST('11' AS STRING) AS `hr`
 FROM (SELECT `key`, `value`, `ds`
 FROM `default`.`srcpart`
@@ -4503,7 +4665,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -4895,8 +5057,16 @@ POSTHOOK: Input: default@foo_field
 POSTHOOK: Output: default@foo_field
 PREHOOK: query: explain select key,value from srcpart where cast(hr as double)  = cast(11 as double)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key,value from srcpart where cast(hr as double)  = cast(11 as double)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -4915,8 +5085,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key,value from srcpart where hr  = cast(11 as double)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key,value from srcpart where hr  = cast(11 as double)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -4935,8 +5113,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key,value from srcpart where cast(hr as double)  = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key,value from srcpart where cast(hr as double)  = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

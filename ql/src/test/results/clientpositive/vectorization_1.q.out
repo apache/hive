@@ -19,6 +19,8 @@ WHERE  (((cdouble > ctinyint)
             OR ((cint > cbigint)
                 OR (cboolean1 < 0))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT VAR_POP(ctinyint),
        (VAR_POP(ctinyint) / -26.28),
@@ -40,6 +42,8 @@ WHERE  (((cdouble > ctinyint)
             OR ((cint > cbigint)
                 OR (cboolean1 < 0))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

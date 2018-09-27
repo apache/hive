@@ -44,12 +44,16 @@ from src
 group by key
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
  select key, count(*) 
 from src 
 group by key
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -245,6 +249,8 @@ having b.p_mfgr in
     having max(p_size) - min(p_size) < 20
    )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_subq
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, avg(p_size)
 from part_subq b
@@ -256,6 +262,8 @@ having b.p_mfgr in
     having max(p_size) - min(p_size) < 20
    )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_subq
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -374,6 +382,8 @@ having b.p_mfgr in
     having max(p_size) - min(p_size) < 20
    )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_subq
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, avg(p_size)
 from part_subq b
@@ -385,6 +395,8 @@ having b.p_mfgr in
     having max(p_size) - min(p_size) < 20
    )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_subq
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -525,6 +537,8 @@ where b.key in (select key from src where src.key > '8')
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, count(*) 
 from src b
@@ -532,6 +546,8 @@ where b.key in (select key from src where src.key > '8')
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -741,6 +757,8 @@ where b.key in (select key from src where src.key > '8')
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, count(*) 
 from src b
@@ -748,6 +766,8 @@ where b.key in (select key from src where src.key > '8')
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -912,6 +932,8 @@ where b.key in (select key from src where src.value = b.value)
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, count(*)
 from src b
@@ -919,6 +941,8 @@ where b.key in (select key from src where src.value = b.value)
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1406,6 +1430,8 @@ group by p_mfgr, p_name
 having p_name in 
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from part_subq)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_subq
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, avg(p_size) 
 from part_subq 
@@ -1413,6 +1439,8 @@ group by p_mfgr, p_name
 having p_name in 
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from part_subq)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_subq
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1508,7 +1536,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1579,6 +1607,8 @@ where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value
 group by key, value
 having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' and s1.value <> b.value group by s1.key )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, count(*)
 from src_null_n4 b
@@ -1586,6 +1616,8 @@ where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value
 group by key, value
 having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' and s1.value <> b.value group by s1.key )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

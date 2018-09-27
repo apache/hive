@@ -46,9 +46,15 @@ POSTHOOK: Output: db2@destinTable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: db1@sourcetable
+PREHOOK: Input: db1@sourcetable@ds=2011-11-11
+PREHOOK: Output: db2@destintable@ds=2011-11-11
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@sourcetable
+POSTHOOK: Input: db1@sourcetable@ds=2011-11-11
+POSTHOOK: Output: db2@destintable@ds=2011-11-11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -187,9 +193,15 @@ POSTHOOK: Input: db2@destintable@ds=2011-11-11
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: db1@sourcetable
+PREHOOK: Input: db1@sourcetable@ds=2011-11-11
+PREHOOK: Output: db2@destintable@ds=2011-11-11
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@sourcetable
+POSTHOOK: Input: db1@sourcetable@ds=2011-11-11
+POSTHOOK: Output: db2@destintable@ds=2011-11-11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

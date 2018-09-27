@@ -22,10 +22,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 FROM srcorc_n1
 INSERT OVERWRITE TABLE dest1_n154 SELECT substr(srcorc_n1.key,1,1) GROUP BY substr(srcorc_n1.key,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcorc_n1
+PREHOOK: Output: default@dest1_n154
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 FROM srcorc_n1
 INSERT OVERWRITE TABLE dest1_n154 SELECT substr(srcorc_n1.key,1,1) GROUP BY substr(srcorc_n1.key,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcorc_n1
+POSTHOOK: Output: default@dest1_n154
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

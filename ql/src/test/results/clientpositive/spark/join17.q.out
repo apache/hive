@@ -10,10 +10,14 @@ PREHOOK: query: EXPLAIN EXTENDED
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1_n121 SELECT src1.*, src2.*
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n121
 POSTHOOK: query: EXPLAIN EXTENDED
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1_n121 SELECT src1.*, src2.*
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n121
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`src`

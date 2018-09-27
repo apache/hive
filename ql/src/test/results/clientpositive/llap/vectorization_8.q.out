@@ -23,6 +23,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ctimestamp1,
        cdouble,
@@ -48,6 +50,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -94,10 +98,9 @@ STAGE PLANS:
                         sort order: ++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [8, 5, 10, 6, 4, 13, 14, 15, 17, 19, 16, 18, 20, 22]
+                            keyColumns: 8:timestamp, 5:double, 10:boolean, 6:string, 4:float, 13:double, 14:double, 15:double, 17:float, 19:double, 16:double, 18:float, 20:float, 22:double
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 3059 Data size: 557250 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
@@ -122,7 +125,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaaaaaaaaaaaa
+                reduceColumnNullOrder: zzzzzzzzzzzzzz
                 reduceColumnSortOrder: ++++++++++++++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -261,6 +264,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ctimestamp1,
        cdouble,
@@ -286,6 +291,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

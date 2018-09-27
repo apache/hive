@@ -141,10 +141,8 @@ public class TestReplicationScenariosAcidTables {
     primary.run("drop database if exists " + primaryDbName + "_extra cascade");
   }
 
-  @Test
-  public void testAcidTablesBootstrap() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = primary
-            .run("use " + primaryDbName)
+  private WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId) throws Throwable {
+    return primary.run("use " + primaryDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
             .run("insert into t1 values(1)")
@@ -165,14 +163,15 @@ public class TestReplicationScenariosAcidTables {
             .run("insert into t5 values(1111), (2222)")
             .run("alter table t5 set tblproperties (\"transactional\"=\"true\")")
             .run("insert into t5 values(3333)")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName, fromReplId);
+  }
 
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
-            .run("use " + replicatedDbName)
+  private void verifyLoadExecution(String replicatedDbName, String lastReplId) throws Throwable {
+    replica.run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[] {"t1", "t2", "t3", "t4", "t5"})
             .run("repl status " + replicatedDbName)
-            .verifyResult(bootstrapDump.lastReplicationId)
+            .verifyResult(lastReplId)
             .run("select id from t1 order by id")
             .verifyResults(new String[]{"1", "2"})
             .run("select country from t2 order by country")
@@ -183,6 +182,32 @@ public class TestReplicationScenariosAcidTables {
             .verifyResults(new String[] {"111", "222"})
             .run("select id from t5 order by id")
             .verifyResults(new String[] {"1111", "2222", "3333"});
+  }
+
+  @Test
+  public void testAcidTablesBootstrap() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testAcidTablesMoveOptimizationBootStrap() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation,
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testAcidTablesMoveOptimizationIncremental() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation,
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
+    WarehouseInstance.Tuple incrDump = prepareDataAndDump(primaryDbName, bootstrapDump.lastReplicationId);
+    replica.load(replicatedDbName, incrDump.dumpLocation,
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
+    verifyLoadExecution(replicatedDbName, incrDump.lastReplicationId);
   }
 
   @Test

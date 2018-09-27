@@ -34,6 +34,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n112
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1_n112
@@ -41,6 +43,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n112
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -101,11 +105,11 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int), 1L (type: bigint)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
-                              keyColumnNums: [0, 1, 4]
+                              keyColumns: 0:int, 1:int, 4:bigint
                               keyExpressions: ConstantVectorExpression(val 1) -> 4:bigint
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [3]
+                              valueColumns: 3:bigint
                           Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -210,6 +214,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n112
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1_n112
@@ -217,6 +223,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n112
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -270,10 +278,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0, 1, 2]
+                            keyColumns: 0:int, 1:int, 2:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [3]
+                            valueColumns: 3:bigint
                         Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap

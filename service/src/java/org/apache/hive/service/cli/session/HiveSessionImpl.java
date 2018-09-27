@@ -530,6 +530,7 @@ public class HiveSessionImpl implements HiveSession {
   private OperationHandle executeStatementInternal(String statement,
       Map<String, String> confOverlay, boolean runAsync, long queryTimeout) throws HiveSQLException {
     acquire(true, true);
+    LOG.info("executing " +  statement);
 
     ExecuteStatementOperation operation = null;
     OperationHandle opHandle = null;

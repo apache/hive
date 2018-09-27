@@ -148,11 +148,17 @@ SELECT a, c
 FROM cmv_basetable_n2
 WHERE a = 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Input: default@cmv_mat_view2_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT a, c
 FROM cmv_basetable_n2
 WHERE a = 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Input: default@cmv_mat_view2_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -164,12 +170,12 @@ STAGE PLANS:
         TableScan
           alias: cmv_mat_view2_n0
           properties:
-            druid.fieldNames vc,c
+            druid.fieldNames a,c
             druid.fieldTypes int,double
-            druid.query.json {"queryType":"scan","dataSource":"default.cmv_mat_view2_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"3","outputType":"LONG"}],"columns":["vc","c"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.cmv_mat_view2_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"columns":["a","c"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
-            expressions: vc (type: int), c (type: double)
+            expressions: a (type: int), c (type: double)
             outputColumnNames: _col0, _col1
             ListSink
 
@@ -198,6 +204,9 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Input: default@cmv_mat_view2_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
@@ -205,6 +214,9 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Input: default@cmv_mat_view2_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -327,6 +339,8 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
@@ -334,6 +348,8 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -437,9 +453,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Output: default@cmv_mat_view2_n0
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Output: default@cmv_mat_view2_n0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-4 depends on stages: Stage-0, Stage-1, Stage-2
@@ -547,6 +567,9 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Input: default@cmv_mat_view2_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
@@ -554,6 +577,9 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Input: default@cmv_mat_view2_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

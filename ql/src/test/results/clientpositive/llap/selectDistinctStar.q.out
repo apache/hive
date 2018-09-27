@@ -1,7 +1,11 @@
 PREHOOK: query: explain select distinct src.* from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select distinct src.* from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -693,8 +697,12 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: explain select distinct * from src where key < '3'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from src where key < '3'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -914,12 +922,18 @@ select * from src1
 union all
 select * from src )subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT distinct * from (
 select * from src1
 union all
 select * from src )subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1341,8 +1355,14 @@ POSTHOOK: query: drop view if exists sdi
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: explain create view sdi as select distinct * from src order by key limit 2
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sdi
 POSTHOOK: query: explain create view sdi as select distinct * from src order by key limit 2
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sdi
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
 
@@ -2458,8 +2478,12 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: explain select distinct src.* from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select distinct src.* from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3151,8 +3175,12 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: explain select distinct * from src where key < '3'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from src where key < '3'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3372,12 +3400,18 @@ select * from src1
 union all
 select * from src )subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT distinct * from (
 select * from src1
 union all
 select * from src )subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3803,8 +3837,14 @@ POSTHOOK: Input: default@sdi
 POSTHOOK: Output: default@sdi
 PREHOOK: query: explain create view sdi as select distinct * from src order by key limit 2
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sdi
 POSTHOOK: query: explain create view sdi as select distinct * from src order by key limit 2
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sdi
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
 

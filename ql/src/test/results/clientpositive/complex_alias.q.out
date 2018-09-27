@@ -40,6 +40,8 @@ FROM   (SELECT Sum(agg1.col2) AS a1
                        alias.a1) single_use_subq11
          ON ( single_use_subq11.a0 = single_use_subq11.a0 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT single_use_subq11.a1 AS a1,
        single_use_subq11.a2 AS a2
@@ -62,6 +64,8 @@ FROM   (SELECT Sum(agg1.col2) AS a1
                        alias.a1) single_use_subq11
          ON ( single_use_subq11.a0 = single_use_subq11.a0 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3

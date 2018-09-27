@@ -46,10 +46,16 @@ PREHOOK: query: explain select a.`x+1`, a.`!@#$%^&*()_q`, b.`x+1`, b.`!@#$%^&*()
 from src_b a join src_b2 b on a.`!@#$%^&*()_q` = b.`!@#$%^&*()_q`
 where a.`x+1` < '11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_b
+PREHOOK: Input: default@src_b2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.`x+1`, a.`!@#$%^&*()_q`, b.`x+1`, b.`!@#$%^&*()_q`
 from src_b a join src_b2 b on a.`!@#$%^&*()_q` = b.`!@#$%^&*()_q`
 where a.`x+1` < '11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_b
+POSTHOOK: Input: default@src_b2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

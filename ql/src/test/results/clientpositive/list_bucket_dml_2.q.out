@@ -18,10 +18,18 @@ PREHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part_n4 partition (ds = '2008-04-08',  hr = '11')
 select key, value from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@list_bucketing_static_part_n4@ds=2008-04-08/hr=11
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part_n4 partition (ds = '2008-04-08',  hr = '11')
 select key, value from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@list_bucketing_static_part_n4@ds=2008-04-08/hr=11
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08'
@@ -358,10 +366,16 @@ POSTHOOK: Input: default@list_bucketing_static_part_n4
 PREHOOK: query: explain extended
 select * from list_bucketing_static_part_n4 where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part_n4
+PREHOOK: Input: default@list_bucketing_static_part_n4@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from list_bucketing_static_part_n4 where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484'
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, CAST('val_484' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`
+POSTHOOK: Input: default@list_bucketing_static_part_n4
+POSTHOOK: Input: default@list_bucketing_static_part_n4@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`, CAST('val_484' AS STRING) AS `$f1`, CAST('2008-04-08' AS STRING) AS `$f2`, CAST('11' AS STRING) AS `$f3`
 FROM `default`.`list_bucketing_static_part_n4`
 WHERE `ds` = '2008-04-08' AND `hr` = '11' AND `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:

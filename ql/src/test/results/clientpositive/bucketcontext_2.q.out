@@ -83,8 +83,20 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_big_n8@ds=2008-04-09
 PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n8 a JOIN bucket_big_n8 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n8
+PREHOOK: Input: default@bucket_big_n8@ds=2008-04-08
+PREHOOK: Input: default@bucket_big_n8@ds=2008-04-09
+PREHOOK: Input: default@bucket_small_n8
+PREHOOK: Input: default@bucket_small_n8@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n8 a JOIN bucket_big_n8 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n8
+POSTHOOK: Input: default@bucket_big_n8@ds=2008-04-08
+POSTHOOK: Input: default@bucket_big_n8@ds=2008-04-09
+POSTHOOK: Input: default@bucket_small_n8
+POSTHOOK: Input: default@bucket_small_n8@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -367,8 +379,20 @@ POSTHOOK: Input: default@bucket_small_n8@ds=2008-04-08
 928
 PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n8 a JOIN bucket_big_n8 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n8
+PREHOOK: Input: default@bucket_big_n8@ds=2008-04-08
+PREHOOK: Input: default@bucket_big_n8@ds=2008-04-09
+PREHOOK: Input: default@bucket_small_n8
+PREHOOK: Input: default@bucket_small_n8@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n8 a JOIN bucket_big_n8 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n8
+POSTHOOK: Input: default@bucket_big_n8@ds=2008-04-08
+POSTHOOK: Input: default@bucket_big_n8@ds=2008-04-09
+POSTHOOK: Input: default@bucket_small_n8
+POSTHOOK: Input: default@bucket_small_n8@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -1,9 +1,13 @@
 PREHOOK: query: explain
 select key, value from src where key=0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value from src where key=0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -37,9 +41,13 @@ test.comment=Query only requires fetch task - should not use results cache
 PREHOOK: query: explain
 select key, value from src where key=0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value from src where key=0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -77,11 +85,13 @@ select c1, count(*)
 from (select sign(value) c1, value from src where key < 10) q
 group by c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select c1, count(*)
 from (select sign(value) c1, value from src where key < 10) q
 group by c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -112,11 +122,15 @@ select c1, count(*)
 from (select current_timestamp c1, value from src where key < 10) q
 group by c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select c1, count(*)
 from (select current_timestamp c1, value from src where key < 10) q
 group by c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -199,11 +213,15 @@ select c1, count(*)
 from (select sign(value) c1, value from src where key < 10) q
 group by c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 select c1, count(*)
 from (select sign(value) c1, value from src where key < 10) q
 group by c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -221,14 +239,14 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 500/500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500/1 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
-                    Statistics: Num rows: 166/10 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 166/1 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: sign(value) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 166/10 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 166/1 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         keys: _col0 (type: double)

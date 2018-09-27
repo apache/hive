@@ -160,6 +160,13 @@ SELECT count(*)
       ON (alltypesorc_int_n0.cstring = srcpart_small_n2.key1)) b
     ON (srcpart_small_n2.key1 = b.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int_n0
+PREHOOK: Input: default@srcpart_date_n6
+PREHOOK: Input: default@srcpart_date_n6@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n2
+PREHOOK: Input: default@srcpart_small_n2@ds1=2008-04-08
+PREHOOK: Input: default@srcpart_small_n2@ds1=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(*)
   FROM (SELECT * FROM srcpart_date_n6 WHERE ds = "2008-04-09") `srcpart_date_n6`
@@ -172,6 +179,13 @@ SELECT count(*)
       ON (alltypesorc_int_n0.cstring = srcpart_small_n2.key1)) b
     ON (srcpart_small_n2.key1 = b.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int_n0
+POSTHOOK: Input: default@srcpart_date_n6
+POSTHOOK: Input: default@srcpart_date_n6@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n2
+POSTHOOK: Input: default@srcpart_small_n2@ds1=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n2@ds1=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

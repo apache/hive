@@ -24,12 +24,12 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.Request;
-import com.metamx.http.client.response.InputStreamResponseHandler;
 import io.druid.java.util.common.IAE;
 import io.druid.java.util.common.RE;
 import io.druid.java.util.common.guava.CloseQuietly;
+import io.druid.java.util.http.client.HttpClient;
+import io.druid.java.util.http.client.Request;
+import io.druid.java.util.http.client.response.InputStreamResponseHandler;
 import io.druid.query.BaseQuery;
 import io.druid.query.Query;
 import io.druid.query.QueryInterruptedException;
@@ -105,18 +105,53 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
     Preconditions.checkNotNull(query);
     this.resultsType = getResultTypeDef();
     this.httpClient = Preconditions.checkNotNull(httpClient, "need Http Client");
-    // Execute query
-    LOG.debug("Retrieving data from druid using query:\n " + query);
-    final String address = hiveDruidSplit.getLocations()[0];
-    if (Strings.isNullOrEmpty(address)) {
-      throw new IOException("can not fetch results form empty or null host value");
+    final String[] locations = hiveDruidSplit.getLocations();
+    boolean initlialized = false;
+    int currentLocationIndex = 0;
+    Exception ex = null;
+    while (!initlialized && currentLocationIndex < locations.length) {
+      String address = locations[currentLocationIndex++];
+      if(Strings.isNullOrEmpty(address)) {
+        throw new IOException("can not fetch results from empty or null host value");
+      }
+      // Execute query
+      LOG.debug("Retrieving data from druid location[{}] using query:[{}] ", address, query);
+      try {
+        Request request = DruidStorageHandlerUtils.createSmileRequest(address, query);
+        Future<InputStream> inputStreamFuture = this.httpClient
+                .go(request, new InputStreamResponseHandler());
+        queryResultsIterator = new JsonParserIterator(this.smileMapper, resultsType,
+                inputStreamFuture, request.getUrl().toString(), query
+        );
+        queryResultsIterator.init();
+        initlialized = true;
+      } catch (IOException | ExecutionException | InterruptedException e) {
+        if(queryResultsIterator != null) {
+          // We got exception while querying results from this host.
+          queryResultsIterator.close();
+        }
+        LOG.error("Failure getting results for query[{}] from host[{}] because of [{}]",
+                query,
+                address,
+                e.getMessage()
+        );
+        if(ex == null) {
+          ex = e;
+        } else {
+          ex.addSuppressed(e);
+        }
+      }
     }
-    Request request = DruidStorageHandlerUtils.createSmileRequest(address, query);
-    Future<InputStream> inputStreamFuture = this.httpClient
-            .go(request, new InputStreamResponseHandler());
-    queryResultsIterator = new JsonParserIterator(this.smileMapper, resultsType, inputStreamFuture,
-            request.getUrl().toString(), query
-    );
+
+    if(!initlialized) {
+      throw new RE(
+              ex,
+              "Failure getting results for query[%s] from locations[%s] because of [%s]",
+              query,
+              locations,
+              ex.getMessage()
+      );
+    }
   }
 
   public void initialize(InputSplit split, Configuration conf) throws IOException {
@@ -207,8 +242,6 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
     @Override
     public boolean hasNext()
     {
-      init();
-
       if (jp.isClosed()) {
         return false;
       }
@@ -223,8 +256,6 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
     @Override
     public R next()
     {
-      init();
-
       try {
         final R retVal = objectCodec.readValue(jp, typeRef);
         jp.nextToken();
@@ -241,35 +272,23 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
       throw new UnsupportedOperationException();
     }
 
-    private void init()
-    {
-      if (jp == null) {
-        try {
-          InputStream is = future.get();
-          if (is == null) {
-            throw  new IOException(String.format("query[%s] url[%s] timed out", query, url));
-          } else {
-            jp = mapper.getFactory().createParser(is).configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
-          }
-          final JsonToken nextToken = jp.nextToken();
-          if (nextToken == JsonToken.START_OBJECT) {
-            QueryInterruptedException cause = jp.getCodec().readValue(jp, QueryInterruptedException.class);
-            throw new QueryInterruptedException(cause);
-          } else if (nextToken != JsonToken.START_ARRAY) {
-            throw new IAE("Next token wasn't a START_ARRAY, was[%s] from url [%s]", jp.getCurrentToken(), url);
-          } else {
-            jp.nextToken();
-            objectCodec = jp.getCodec();
-          }
+    private void init() throws IOException, ExecutionException, InterruptedException {
+      if(jp == null) {
+        InputStream is = future.get();
+        if(is == null) {
+          throw new IOException(String.format("query[%s] url[%s] timed out", query, url));
+        } else {
+          jp = mapper.getFactory().createParser(is).configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
         }
-        catch (IOException | InterruptedException | ExecutionException e) {
-          throw new RE(
-                  e,
-                  "Failure getting results for query[%s] url[%s] because of [%s]",
-                  query,
-                  url,
-                  e.getMessage()
-          );
+        final JsonToken nextToken = jp.nextToken();
+        if(nextToken == JsonToken.START_OBJECT) {
+          QueryInterruptedException cause = jp.getCodec().readValue(jp, QueryInterruptedException.class);
+          throw new QueryInterruptedException(cause);
+        } else if(nextToken != JsonToken.START_ARRAY) {
+          throw new IAE("Next token wasn't a START_ARRAY, was[%s] from url [%s]", jp.getCurrentToken(), url);
+        } else {
+          jp.nextToken();
+          objectCodec = jp.getCodec();
         }
       }
     }

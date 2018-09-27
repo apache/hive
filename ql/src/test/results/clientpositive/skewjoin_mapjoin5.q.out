@@ -41,6 +41,9 @@ select key, val from T1_n87
 ) subq1
 join T2_n54 b on subq1.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n87
+PREHOOK: Input: default@t2_n54
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 select * from
 (
@@ -50,6 +53,9 @@ select key, val from T1_n87
 ) subq1
 join T2_n54 b on subq1.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n87
+POSTHOOK: Input: default@t2_n54
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-4 depends on stages: Stage-5
@@ -191,6 +197,9 @@ select key, count(1) as cnt from T1_n87 group by key
 ) subq1
 join T2_n54 b on subq1.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n87
+PREHOOK: Input: default@t2_n54
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 select * from
 (
@@ -198,6 +207,9 @@ select key, count(1) as cnt from T1_n87 group by key
 ) subq1
 join T2_n54 b on subq1.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n87
+POSTHOOK: Input: default@t2_n54
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-5 depends on stages: Stage-1

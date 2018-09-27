@@ -743,8 +743,14 @@ POSTHOOK: Input: default@cbo_t2@dt=2014
 400
 PREHOOK: query: EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -782,9 +788,15 @@ STAGE PLANS:
 PREHOOK: query: -- c_int is not null
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (2*cbo_t2.c_int)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 POSTHOOK: query: -- c_int is not null
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (2*cbo_t2.c_int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -822,9 +834,15 @@ STAGE PLANS:
 PREHOOK: query: -- c_int is 0
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) = (cbo_t2.c_int)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 POSTHOOK: query: -- c_int is 0
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) = (cbo_t2.c_int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -862,9 +880,15 @@ STAGE PLANS:
 PREHOOK: query: -- c_int is not null
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 POSTHOOK: query: -- c_int is not null
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -902,9 +926,15 @@ STAGE PLANS:
 PREHOOK: query: -- rewrite to NULL
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 POSTHOOK: query: -- rewrite to NULL
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -942,9 +972,15 @@ STAGE PLANS:
 PREHOOK: query: -- no rewrite
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 0)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 POSTHOOK: query: -- no rewrite
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

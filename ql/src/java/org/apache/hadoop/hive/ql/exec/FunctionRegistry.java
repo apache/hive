@@ -364,6 +364,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("restrict_information_schema", GenericUDFRestrictInformationSchema.class);
     system.registerGenericUDF("current_authorizer", GenericUDFCurrentAuthorizer.class);
 
+    system.registerGenericUDF("surrogate_key", GenericUDFSurrogateKey.class);
+
     system.registerGenericUDF("isnull", GenericUDFOPNull.class);
     system.registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
     system.registerGenericUDF("istrue", GenericUDFOPTrue.class);
@@ -514,6 +516,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("internal_interval", GenericUDFInternalInterval.class);
 
     system.registerGenericUDF("to_epoch_milli", GenericUDFEpochMilli.class);
+    system.registerGenericUDF("bucket_number", GenericUDFBucketNumber.class);
+
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);
     system.registerGenericUDTF("replicate_rows", GenericUDTFReplicateRows.class);

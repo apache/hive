@@ -6,6 +6,8 @@ where not key in
 (select key from src)
 order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select *
 from src
@@ -13,6 +15,8 @@ where not key in
 (select key from src)
 order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -57,6 +61,7 @@ STAGE PLANS:
                           className: VectorMapJoinInnerMultiKeyOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                          hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Reducer 4
@@ -71,6 +76,7 @@ STAGE PLANS:
                             className: VectorMapJoinOuterStringOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col1, _col2, _col3, _col5
                         input vertices:
                           1 Reducer 5

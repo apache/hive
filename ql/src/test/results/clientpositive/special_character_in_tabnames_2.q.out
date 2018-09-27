@@ -65,8 +65,12 @@ POSTHOOK: Input: default@s/c
 98	val_98
 PREHOOK: query: EXPLAIN SELECT key, value FROM `s/c` WHERE key > 80 AND key < 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s/c
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key, value FROM `s/c` WHERE key > 80 AND key < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s/c
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

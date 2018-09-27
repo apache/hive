@@ -100,6 +100,8 @@ count(p_retailprice) over(partition by p_mfgr) as c,
 count(*) over(partition by p_mfgr) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr) as rn,
@@ -111,6 +113,8 @@ count(p_retailprice) over(partition by p_mfgr) as c,
 count(*) over(partition by p_mfgr) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -142,10 +146,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -360,6 +364,8 @@ count(p_retailprice) over(partition by p_mfgr range between unbounded preceding 
 count(*) over(partition by p_mfgr range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr range between unbounded preceding and unbounded following) as rn,
@@ -371,6 +377,8 @@ count(p_retailprice) over(partition by p_mfgr range between unbounded preceding 
 count(*) over(partition by p_mfgr range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -402,10 +410,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -589,6 +597,8 @@ count(p_retailprice) over(partition by p_mfgr rows between unbounded preceding a
 count(*) over(partition by p_mfgr rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr rows between unbounded preceding and unbounded following) as rn,
@@ -600,6 +610,8 @@ count(p_retailprice) over(partition by p_mfgr rows between unbounded preceding a
 count(*) over(partition by p_mfgr rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -631,10 +643,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -818,6 +830,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name) as c,
 count(*) over(partition by p_mfgr order by p_name) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr order by p_name) as rn,
@@ -829,6 +843,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name) as c,
 count(*) over(partition by p_mfgr order by p_name) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -860,11 +876,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -889,7 +905,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -917,7 +933,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -1080,6 +1096,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name range between unbo
 count(*) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr order by p_name range between unbounded preceding and unbounded following) as rn,
@@ -1091,6 +1109,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name range between unbo
 count(*) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1122,11 +1142,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -1167,7 +1187,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -1310,6 +1330,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name rows between unbou
 count(*) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr order by p_name rows between unbounded preceding and unbounded following) as rn,
@@ -1321,6 +1343,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name rows between unbou
 count(*) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1352,11 +1376,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -1397,7 +1421,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -1540,6 +1564,8 @@ count(p_retailprice) over(order by p_name) as c,
 count(*) over(order by p_name) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(order by p_name) as rn,
@@ -1551,6 +1577,8 @@ count(p_retailprice) over(order by p_name) as c,
 count(*) over(order by p_name) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1582,12 +1610,12 @@ STAGE PLANS:
                     Map-reduce partition columns: 0 (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [4, 1]
+                        keyColumns: 4:int, 1:string
                         keyExpressions: ConstantVectorExpression(val 0) -> 4:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [5]
-                        valueColumnNums: [0, 2]
+                        partitionColumns: 5:int
+                        valueColumns: 0:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_mfgr (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -1612,7 +1640,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1640,7 +1668,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -1803,6 +1831,8 @@ count(p_retailprice) over(order by p_name range between unbounded preceding and 
 count(*) over(order by p_name range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(order by p_name range between unbounded preceding and unbounded following) as rn,
@@ -1814,6 +1844,8 @@ count(p_retailprice) over(order by p_name range between unbounded preceding and 
 count(*) over(order by p_name range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1845,12 +1877,12 @@ STAGE PLANS:
                     Map-reduce partition columns: 0 (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [4, 1]
+                        keyColumns: 4:int, 1:string
                         keyExpressions: ConstantVectorExpression(val 0) -> 4:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [5]
-                        valueColumnNums: [0, 2]
+                        partitionColumns: 5:int
+                        valueColumns: 0:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_mfgr (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -1891,7 +1923,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -2034,6 +2066,8 @@ count(p_retailprice) over(order by p_name rows between unbounded preceding and c
 count(*) over(order by p_name rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(order by p_name rows between unbounded preceding and unbounded following) as rn,
@@ -2045,6 +2079,8 @@ count(p_retailprice) over(order by p_name rows between unbounded preceding and c
 count(*) over(order by p_name rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2076,12 +2112,12 @@ STAGE PLANS:
                     Map-reduce partition columns: 0 (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [4, 1]
+                        keyColumns: 4:int, 1:string
                         keyExpressions: ConstantVectorExpression(val 0) -> 4:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [5]
-                        valueColumnNums: [0, 2]
+                        partitionColumns: 5:int
+                        valueColumns: 0:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_mfgr (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -2122,7 +2158,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -2262,6 +2298,8 @@ max(p_retailprice) over(partition by p_mfgr) as ma,
 avg(p_retailprice) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr) as s,
@@ -2270,6 +2308,8 @@ max(p_retailprice) over(partition by p_mfgr) as ma,
 avg(p_retailprice) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2301,10 +2341,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -2490,6 +2530,8 @@ max(p_retailprice) over(partition by p_mfgr range between unbounded preceding an
 avg(p_retailprice) over(partition by p_mfgr range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr range between unbounded preceding and current row) as s,
@@ -2498,6 +2540,8 @@ max(p_retailprice) over(partition by p_mfgr range between unbounded preceding an
 avg(p_retailprice) over(partition by p_mfgr range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2529,10 +2573,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -2718,6 +2762,8 @@ max(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and
 avg(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and current row) as s,
@@ -2726,6 +2772,8 @@ max(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and
 avg(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2757,10 +2805,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -2946,6 +2994,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
 avg(p_retailprice) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name) as s,
@@ -2954,6 +3004,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
 avg(p_retailprice) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2985,11 +3037,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -3014,7 +3066,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3042,7 +3094,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -3176,6 +3228,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name range between unboun
 avg(p_retailprice) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as s,
@@ -3184,6 +3238,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name range between unboun
 avg(p_retailprice) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3215,11 +3271,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -3244,7 +3300,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3272,7 +3328,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -3406,6 +3462,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name rows between unbound
 avg(p_retailprice) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s,
@@ -3414,6 +3472,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name rows between unbound
 avg(p_retailprice) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3445,11 +3505,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -3474,7 +3534,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3502,7 +3562,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -3636,6 +3696,8 @@ max(p_retailprice) over(order by p_name) as ma,
 avg(p_retailprice) over(order by p_name) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(order by p_name) as s,
@@ -3644,6 +3706,8 @@ max(p_retailprice) over(order by p_name) as ma,
 avg(p_retailprice) over(order by p_name) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3675,12 +3739,12 @@ STAGE PLANS:
                     Map-reduce partition columns: 0 (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [4, 1]
+                        keyColumns: 4:int, 1:string
                         keyExpressions: ConstantVectorExpression(val 0) -> 4:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [5]
-                        valueColumnNums: [0, 2]
+                        partitionColumns: 5:int
+                        valueColumns: 0:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_mfgr (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -3705,7 +3769,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3733,7 +3797,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -3867,6 +3931,8 @@ max(p_retailprice) over(order by p_name range between unbounded preceding and cu
 avg(p_retailprice) over(order by p_name range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(order by p_name range between unbounded preceding and current row) as s,
@@ -3875,6 +3941,8 @@ max(p_retailprice) over(order by p_name range between unbounded preceding and cu
 avg(p_retailprice) over(order by p_name range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3906,12 +3974,12 @@ STAGE PLANS:
                     Map-reduce partition columns: 0 (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [4, 1]
+                        keyColumns: 4:int, 1:string
                         keyExpressions: ConstantVectorExpression(val 0) -> 4:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [5]
-                        valueColumnNums: [0, 2]
+                        partitionColumns: 5:int
+                        valueColumns: 0:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_mfgr (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -3936,7 +4004,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3964,7 +4032,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -4098,6 +4166,8 @@ max(p_retailprice) over(order by p_name rows between unbounded preceding and cur
 avg(p_retailprice) over(order by p_name rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(order by p_name rows between unbounded preceding and current row) as s,
@@ -4106,6 +4176,8 @@ max(p_retailprice) over(order by p_name rows between unbounded preceding and cur
 avg(p_retailprice) over(order by p_name rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4137,12 +4209,12 @@ STAGE PLANS:
                     Map-reduce partition columns: 0 (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [4, 1]
+                        keyColumns: 4:int, 1:string
                         keyExpressions: ConstantVectorExpression(val 0) -> 4:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [5]
-                        valueColumnNums: [0, 2]
+                        partitionColumns: 5:int
+                        valueColumns: 0:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_mfgr (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -4167,7 +4239,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -4195,7 +4267,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
@@ -4371,6 +4443,8 @@ max(p_retailprice) over(partition by p_mfgr) as ma,
 avg(p_retailprice) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc_decimal
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc_decimal
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr) as s,
@@ -4379,6 +4453,8 @@ max(p_retailprice) over(partition by p_mfgr) as ma,
 avg(p_retailprice) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc_decimal
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc_decimal
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4410,10 +4486,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:decimal(38,18)
                     Statistics: Num rows: 40 Data size: 12944 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: decimal(38,18))
             Execution mode: vectorized, llap
@@ -4599,6 +4675,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
 avg(p_retailprice) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc_decimal
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc_decimal
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name) as s,
@@ -4607,6 +4685,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
 avg(p_retailprice) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc_decimal
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc_decimal
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4638,11 +4718,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:decimal(38,18)
                     Statistics: Num rows: 40 Data size: 12944 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: decimal(38,18))
             Execution mode: vectorized, llap
@@ -4667,7 +4747,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -4695,7 +4775,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -4849,6 +4929,8 @@ max(p_bigint) over(partition by p_mfgr) as ma,
 avg(p_bigint) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc_long
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc_long
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_bigint,
 sum(p_bigint) over(partition by p_mfgr) as s,
@@ -4857,6 +4939,8 @@ max(p_bigint) over(partition by p_mfgr) as ma,
 avg(p_bigint) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc_long
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc_long
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4888,10 +4972,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:bigint
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_bigint (type: bigint)
             Execution mode: vectorized, llap
@@ -5077,6 +5161,8 @@ max(p_bigint) over(partition by p_mfgr order by p_name) as ma,
 avg(p_bigint) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc_long
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc_long
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_bigint,
 sum(p_bigint) over(partition by p_mfgr order by p_name) as s,
@@ -5085,6 +5171,8 @@ max(p_bigint) over(partition by p_mfgr order by p_name) as ma,
 avg(p_bigint) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc_long
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc_long
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5116,11 +5204,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:bigint
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_bigint (type: bigint)
             Execution mode: vectorized, llap
@@ -5145,7 +5233,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -5173,7 +5261,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -5304,11 +5392,15 @@ select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5340,10 +5432,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [2]
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 4216 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -5503,11 +5595,15 @@ select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5539,11 +5635,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -5568,7 +5664,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -5596,7 +5692,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -5704,11 +5800,15 @@ select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5740,11 +5840,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkMultiKeyOperator
-                        keyColumnNums: [0, 6]
+                        keyColumns: 0:string, 6:timestamp
                         keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 5:timestamp) -> 6:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -5904,11 +6004,15 @@ select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5940,12 +6044,12 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 6, 1]
+                        keyColumns: 0:string, 6:timestamp, 1:string
                         keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 5:timestamp) -> 6:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0, 9]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string, 9:timestamp
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -5970,7 +6074,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: aaz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -5998,7 +6102,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END
                         raw input shape:
                         window functions:
@@ -6236,11 +6340,15 @@ select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6272,10 +6380,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [2]
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 4216 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -6435,11 +6543,15 @@ select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6471,11 +6583,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1]
+                        keyColumns: 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -6500,7 +6612,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -6528,7 +6640,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -6636,11 +6748,15 @@ select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6672,12 +6788,12 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 6, 1]
+                        keyColumns: 0:string, 6:timestamp, 1:string
                         keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 5:timestamp) -> 6:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [0, 9]
-                        valueColumnNums: [2]
+                        partitionColumns: 0:string, 9:timestamp
+                        valueColumns: 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -6702,7 +6818,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: aaz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -6730,7 +6846,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END
                         raw input shape:
                         window functions:
@@ -6838,11 +6954,15 @@ select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6874,11 +6994,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkMultiKeyOperator
-                        keyColumnNums: [0, 6]
+                        keyColumns: 0:string, 6:timestamp
                         keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 5:timestamp) -> 6:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:string, 2:double
                     Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap

@@ -31,6 +31,8 @@ SELECT * FROM
   SELECT CAST(key AS BIGINT) AS key, count(1) as `values` FROM inputTbl1_n20 group by key
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n20
+PREHOOK: Output: default@outputtbl1_n28
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n28
 SELECT * FROM
@@ -40,6 +42,8 @@ SELECT * FROM
   SELECT CAST(key AS BIGINT) AS key, count(1) as `values` FROM inputTbl1_n20 group by key
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n20
+POSTHOOK: Output: default@outputtbl1_n28
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

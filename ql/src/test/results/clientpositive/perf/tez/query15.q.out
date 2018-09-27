@@ -17,6 +17,11 @@ select  ca_zip
  order by ca_zip
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select  ca_zip
        ,sum(cs_sales_price)
@@ -36,6 +41,11 @@ select  ca_zip
  order by ca_zip
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -71,7 +81,7 @@ Stage-0
                       Select Operator [SEL_23] (rows=348467716 width=135)
                         Output:["_col4","_col7"]
                         Filter Operator [FIL_22] (rows=348467716 width=135)
-                          predicate:((_col3 = 'CA') or (_col3 = 'GA') or (_col3 = 'WA') or (_col7 > 500) or (substr(_col4, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792'))
+                          predicate:((_col3) IN ('CA', 'WA', 'GA') or (_col7 > 500) or (substr(_col4, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792'))
                           Merge Join Operator [MERGEJOIN_77] (rows=348467716 width=135)
                             Conds:RS_19._col0=RS_20._col1(Inner),Output:["_col3","_col4","_col7"]
                           <-Reducer 2 [SIMPLE_EDGE]

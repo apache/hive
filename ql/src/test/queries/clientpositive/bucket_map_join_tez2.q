@@ -7,6 +7,7 @@ set hive.explain.user=false;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=30000;
+set hive.llap.memory.oversubscription.max.executors.per.query=3;
 
 CREATE TABLE srcbucket_mapjoin_n18(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 CREATE TABLE tab_part_n11 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
@@ -79,7 +80,7 @@ set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
 
-set hive.auto.convert.join.noconditionaltask.size=2800;
+set hive.auto.convert.join.noconditionaltask.size=2000;
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key;
 set hive.convert.join.bucket.mapjoin.tez = true;
@@ -157,3 +158,5 @@ FROM my_fact JOIN my_dim ON my_fact.join_col = my_dim.join_col
 WHERE my_fact.fiscal_year = '2015'
 AND my_dim.filter_col IN ( 'VAL1', 'VAL2' )
 and my_fact.accounting_period in (10);
+
+reset hive.llap.memory.oversubscription.max.executors.per.query;

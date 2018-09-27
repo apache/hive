@@ -63,6 +63,8 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
+import static org.mockito.Mockito.when;
 
 import junit.framework.TestCase;
 
@@ -392,6 +394,7 @@ public class TestOperators extends TestCase {
       // ensure that both of the partitions are in the complete list.
       String[] dirs = job.get("hive.complete.dir.list").split("\t");
       assertEquals(2, dirs.length);
+      Arrays.sort(dirs);
       assertEquals(true, dirs[0].endsWith("/state=CA"));
       assertEquals(true, dirs[1].endsWith("/state=OR"));
       return super.getSplits(job, splits);
@@ -461,6 +464,7 @@ public class TestOperators extends TestCase {
 
     // default executors is 4, max slots is 3. so 3 * 20% of noconditional task size will be oversubscribed
     hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR.varname, "0.2");
+    hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "3");
     double fraction = hiveConf.getFloatVar(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
     int maxSlots = 3;
     long expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * maxSlots));
@@ -487,5 +491,33 @@ public class TestOperators extends TestCase {
     hiveConf.set(HiveConf.ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR.varname, "0.0f");
     assertFalse(
         convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).doMemoryMonitoring());
+  }
+
+  @Test
+  public void testLlapMemoryOversubscriptionMaxExecutorsPerQueryCalculation() {
+    ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
+    HiveConf hiveConf = new HiveConf();
+
+    LlapClusterStateForCompile llapInfo = Mockito.mock(LlapClusterStateForCompile.class);
+
+    when(llapInfo.getNumExecutorsPerNode()).thenReturn(1);
+    assertEquals(1,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+    assertEquals(3,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, null).getMaxExecutorsOverSubscribeMemory());
+
+    when(llapInfo.getNumExecutorsPerNode()).thenReturn(6);
+    assertEquals(2,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+
+    when(llapInfo.getNumExecutorsPerNode()).thenReturn(30);
+    assertEquals(8,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+
+    hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "5");
+    assertEquals(5,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+    assertEquals(5,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, null).getMaxExecutorsOverSubscribeMemory());
   }
 }

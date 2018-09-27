@@ -118,12 +118,16 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_n17 a join srcbucket_mapjoin_n17 b
 on a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n17
+PREHOOK: Output: default@bucketmapjoin_tmp_result_n8
 POSTHOOK: query: explain extended
 insert overwrite table bucketmapjoin_tmp_result_n8
 select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_n17 a join srcbucket_mapjoin_n17 b
 on a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n17
+POSTHOOK: Output: default@bucketmapjoin_tmp_result_n8
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_n17`
@@ -479,12 +483,16 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_n17 a join srcbucket_mapjoin_n17 b
 on a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n17
+PREHOOK: Output: default@bucketmapjoin_tmp_result_n8
 POSTHOOK: query: explain extended
 insert overwrite table bucketmapjoin_tmp_result_n8
 select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_n17 a join srcbucket_mapjoin_n17 b
 on a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n17
+POSTHOOK: Output: default@bucketmapjoin_tmp_result_n8
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_n17`

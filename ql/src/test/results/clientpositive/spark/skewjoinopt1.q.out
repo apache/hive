@@ -37,9 +37,15 @@ POSTHOOK: Output: default@t2_n64
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n101
+PREHOOK: Input: default@t2_n64
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n101
+POSTHOOK: Input: default@t2_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -186,9 +192,15 @@ POSTHOOK: Input: default@t2_n64
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n101
+PREHOOK: Input: default@t2_n64
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n101
+POSTHOOK: Input: default@t2_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -324,20 +336,26 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n101
 POSTHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
-NULL	NULL	4	14
-NULL	NULL	5	15
 2	12	2	22
 3	13	3	13
 8	18	8	18
 8	18	8	18
 8	28	8	18
 8	28	8	18
+NULL	NULL	4	14
+NULL	NULL	5	15
 PREHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n101
+PREHOOK: Input: default@t2_n64
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n101
+POSTHOOK: Input: default@t2_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -491,9 +509,15 @@ POSTHOOK: Input: default@t2_n64
 PREHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n101
+PREHOOK: Input: default@t2_n64
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n101
+POSTHOOK: Input: default@t2_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

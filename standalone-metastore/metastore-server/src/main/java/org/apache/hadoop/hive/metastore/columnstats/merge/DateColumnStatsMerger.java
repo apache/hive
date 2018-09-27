@@ -19,23 +19,22 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
+import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.dateInspectorFromStats;
+
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
-
-import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.dateInspectorFromStats;
 
 public class DateColumnStatsMerger extends ColumnStatsMerger {
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     DateColumnStatsDataInspector aggregateData = dateInspectorFromStats(aggregateColStats);
     DateColumnStatsDataInspector newData = dateInspectorFromStats(newColStats);
-    Date lowValue = aggregateData.getLowValue().compareTo(newData.getLowValue()) < 0 ? aggregateData
-        .getLowValue() : newData.getLowValue();
+
+    Date lowValue = min(aggregateData.getLowValue(), newData.getLowValue());
     aggregateData.setLowValue(lowValue);
-    Date highValue = aggregateData.getHighValue().compareTo(newData.getHighValue()) >= 0 ? aggregateData
-        .getHighValue() : newData.getHighValue();
+    Date highValue = max(aggregateData.getHighValue(), newData.getHighValue());
     aggregateData.setHighValue(highValue);
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
     if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
@@ -55,5 +54,27 @@ public class DateColumnStatsMerger extends ColumnStatsMerger {
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
     }
+  }
+
+  private Date min(Date v1, Date v2) {
+    if (v1 == null || v2 == null) {
+      if (v1 != null) {
+        return v1;
+      } else {
+        return v2;
+      }
+    }
+    return v1.compareTo(v2) < 0 ? v1 : v2;
+  }
+
+  private Date max(Date v1, Date v2) {
+    if (v1 == null || v2 == null) {
+      if (v1 != null) {
+        return v1;
+      } else {
+        return v2;
+      }
+    }
+    return v1.compareTo(v2) > 0 ? v1 : v2;
   }
 }

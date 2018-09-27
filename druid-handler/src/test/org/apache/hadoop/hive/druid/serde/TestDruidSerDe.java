@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import io.druid.java.util.http.client.HttpClient;
+import io.druid.java.util.http.client.response.HttpResponseHandler;
 import io.druid.query.scan.ScanResultValue;
 import io.druid.query.select.EventHolder;
 import org.apache.hadoop.conf.Configuration;
@@ -81,8 +83,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.SettableFuture;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.response.HttpResponseHandler;
 
 import io.druid.data.input.Row;
 import io.druid.query.Query;

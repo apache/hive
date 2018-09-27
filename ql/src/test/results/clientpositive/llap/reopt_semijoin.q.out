@@ -116,6 +116,9 @@ select   sum(s.ss_item_sk)
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@x1_date_dim
+PREHOOK: Input: default@x1_store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select   sum(s.ss_item_sk)
  from
@@ -126,6 +129,9 @@ select   sum(s.ss_item_sk)
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x1_date_dim
+POSTHOOK: Input: default@x1_store_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -285,6 +291,9 @@ select   sum(s.ss_item_sk)
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@x1_date_dim
+PREHOOK: Input: default@x1_store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain reoptimization
 select   sum(s.ss_item_sk)
  from
@@ -295,6 +304,9 @@ select   sum(s.ss_item_sk)
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x1_date_dim
+POSTHOOK: Input: default@x1_store_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -336,7 +348,7 @@ STAGE PLANS:
                 TableScan
                   alias: d
                   filterExpr: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
-                  Statistics: (RUNTIME) Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: (RUNTIME) Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
                     Statistics: (RUNTIME) Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

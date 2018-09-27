@@ -59,7 +59,8 @@ public abstract class MapJoinMultiKeyBenchBase extends AbstractMapJoin {
 
     setupMapJoin(hiveConf, seed, rowCount,
         vectorMapJoinVariation, mapJoinImplementation,
-        bigTableColumnNames, bigTableTypeInfos, bigTableKeyColumnNums,
+        bigTableColumnNames, bigTableTypeInfos,
+        bigTableKeyColumnNums,
         smallTableValueColumnNames, smallTableValueTypeInfos,
         bigTableRetainColumnNums,
         smallTableRetainKeyColumnNums, smallTableRetainValueColumnNums,

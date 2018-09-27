@@ -7,6 +7,8 @@ where src.key not in
     where s1.key > '2'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from src 
@@ -15,6 +17,8 @@ where src.key not in
     where s1.key > '2'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -300,6 +304,8 @@ where b.p_name not in
   where r <= 2 and b.p_mfgr = a.p_mfgr 
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, b.p_name, p_size 
 from part b 
@@ -309,6 +315,8 @@ where b.p_name not in
   where r <= 2 and b.p_mfgr = a.p_mfgr 
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -421,7 +429,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -483,7 +491,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -585,6 +593,8 @@ part where part.p_size not in
   where r <= 2
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_name, p_size 
 from 
@@ -594,6 +604,8 @@ part where part.p_size not in
   where r <= 2
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -696,7 +708,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -733,7 +745,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -862,6 +874,8 @@ from part b where b.p_size not in
   where r <= 2 and b.p_mfgr = a.p_mfgr
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size
 from part b where b.p_size not in
@@ -870,6 +884,8 @@ from part b where b.p_size not in
   where r <= 2 and b.p_mfgr = a.p_mfgr
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1004,7 +1020,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1042,7 +1058,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1082,7 +1098,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1421,10 +1437,18 @@ PREHOOK: query: explain
 select * 
 from T1_v where T1_v.key not in (select T2_v.key from T2_v)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@t1_v
+PREHOOK: Input: default@t2_v
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from T1_v where T1_v.key not in (select T2_v.key from T2_v)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t1_v
+POSTHOOK: Input: default@t2_v
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1587,8 +1611,12 @@ POSTHOOK: Input: default@t2_v
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select (p_size*p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select (p_size*p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1785,8 +1813,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1993,8 +2025,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part where (p_partkey*p_size) NOT IN (select min(p_partkey) from part group by p_type)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where (p_partkey*p_size) NOT IN (select min(p_partkey) from part group by p_type)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2196,8 +2232,12 @@ POSTHOOK: Input: default@part
 191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
 PREHOOK: query: explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2430,8 +2470,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2617,8 +2661,12 @@ POSTHOOK: Input: default@part
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 PREHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2887,8 +2935,12 @@ POSTHOOK: Input: default@part
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 PREHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3049,8 +3101,12 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 PREHOOK: query: explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type+2 from part where part.p_brand = fpart.brand)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type+2 from part where part.p_brand = fpart.brand)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3219,8 +3275,12 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 PREHOOK: query: explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3522,8 +3582,12 @@ almond antique olive coral navajo
 Warning: Shuffle Join MERGEJOIN[58][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select key, count(*) from src where value NOT IN (select key from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, count(*) from src where value NOT IN (select key from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3796,8 +3860,12 @@ POSTHOOK: Input: default@src
 327	3
 PREHOOK: query: explain select key, count(*) from src where value NOT IN (select concat('v', value) from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, count(*) from src where value NOT IN (select concat('v', value) from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4089,8 +4157,12 @@ POSTHOOK: Input: default@src
 Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4297,8 +4369,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand, p_partkey limit 4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand, p_partkey limit 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4497,8 +4573,14 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from src where key NOT IN (select p_name from part UNION ALL select p_brand from part)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src where key NOT IN (select p_name from part UNION ALL select p_brand from part)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5211,8 +5293,12 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: explain select count(*) as c from part as e where p_size + 100 not in ( select p_type from part where p_brand = e.p_brand)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) as c from part as e where p_size + 100 not in ( select p_type from part where p_brand = e.p_brand)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5480,8 +5566,14 @@ POSTHOOK: Lineage: t2_n0.c1 SCRIPT []
 Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n0
+PREHOOK: Input: default@t2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n0
+POSTHOOK: Input: default@t2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5634,8 +5726,14 @@ POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
 PREHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n0
+PREHOOK: Input: default@t2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n0
+POSTHOOK: Input: default@t2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5909,8 +6007,14 @@ POSTHOOK: Lineage: t2_n0.a SCRIPT []
 POSTHOOK: Lineage: t2_n0.b SCRIPT []
 PREHOOK: query: explain select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n0
+PREHOOK: Input: default@t2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n0
+POSTHOOK: Input: default@t2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6125,8 +6229,14 @@ POSTHOOK: Lineage: fixob.i SCRIPT []
 POSTHOOK: Lineage: fixob.j SCRIPT []
 PREHOOK: query: explain select * from fixOb where j NOT IN (select i from t7 where t7.j=fixOb.j)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fixob
+PREHOOK: Input: default@t7
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from fixOb where j NOT IN (select i from t7 where t7.j=fixOb.j)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fixob
+POSTHOOK: Input: default@t7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6361,8 +6471,12 @@ POSTHOOK: Lineage: t_n0.i SCRIPT []
 POSTHOOK: Lineage: t_n0.j SCRIPT []
 PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6555,8 +6669,12 @@ POSTHOOK: Input: default@t_n0
 4
 PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6711,8 +6829,12 @@ POSTHOOK: Input: default@t_n0
 Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6866,8 +6988,12 @@ POSTHOOK: Input: default@t_n0
 Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -7022,6 +7148,8 @@ where b.key not in
          where b.value > a.value and a.key > '9'
         )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from src b
 where b.key not in
@@ -7030,6 +7158,8 @@ where b.key not in
          where b.value > a.value and a.key > '9'
         )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

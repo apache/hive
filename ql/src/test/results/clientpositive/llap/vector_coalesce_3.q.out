@@ -56,10 +56,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT m.member, (CASE WHEN COALESCE(n.attr, 5)>1 THEN n.attr END) AS attr 
 FROM test_2_n0 m LEFT JOIN test_1_n0 n ON m.member = n.member
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n0
+PREHOOK: Input: default@test_2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT m.member, (CASE WHEN COALESCE(n.attr, 5)>1 THEN n.attr END) AS attr 
 FROM test_2_n0 m LEFT JOIN test_1_n0 n ON m.member = n.member
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n0
+POSTHOOK: Input: default@test_2_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -99,14 +105,15 @@ STAGE PLANS:
                         0 _col0 (type: bigint)
                         1 _col0 (type: bigint)
                       Map Join Vectorization:
-                          bigTableKeyColumnNums: [0]
-                          bigTableRetainedColumnNums: [0]
-                          bigTableValueColumnNums: [0]
+                          bigTableKeyColumns: 0:bigint
+                          bigTableRetainColumnNums: [0]
+                          bigTableValueColumns: 0:bigint
                           className: VectorMapJoinOuterLongOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutputColumnNums: [0, 2]
-                          smallTableMapping: [2]
+                          projectedOutput: 0:bigint, 2:bigint
+                          smallTableValueMapping: 2:bigint
+                          hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col2
                       input vertices:
                         1 Map 2
@@ -169,10 +176,10 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: bigint)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:bigint
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [1]
+                          valueColumns: 1:bigint
                       Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap

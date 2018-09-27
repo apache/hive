@@ -29,6 +29,11 @@ INSERT OVERWRITE TABLE dest2_n16 SELECT src.key, src.value WHERE src.key >= 100 
 INSERT OVERWRITE TABLE dest3_n1 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n77
+PREHOOK: Output: default@dest2_n16
+PREHOOK: Output: default@dest3_n1@ds=2008-04-08/hr=12
+PREHOOK: Output: target/warehouse/dest4.out
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n77 SELECT src.* WHERE src.key < 100
@@ -36,6 +41,11 @@ INSERT OVERWRITE TABLE dest2_n16 SELECT src.key, src.value WHERE src.key >= 100 
 INSERT OVERWRITE TABLE dest3_n1 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n77
+POSTHOOK: Output: default@dest2_n16
+POSTHOOK: Output: default@dest3_n1@ds=2008-04-08/hr=12
+POSTHOOK: Output: target/warehouse/dest4.out
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-10 depends on stages: Stage-4 , consists of Stage-7, Stage-6, Stage-8

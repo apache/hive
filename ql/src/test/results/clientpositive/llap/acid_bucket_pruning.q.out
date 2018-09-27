@@ -27,10 +27,14 @@ POSTHOOK: Lineage: acidtbldefault.a SCRIPT []
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM acidTblDefault WHERE a = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtbldefault
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM acidTblDefault WHERE a = 1
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `a`
+POSTHOOK: Input: default@acidtbldefault
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`
 FROM `default`.`acidtbldefault`
 WHERE `a` = 1
 STAGE DEPENDENCIES:

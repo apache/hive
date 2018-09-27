@@ -107,8 +107,18 @@ POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain update srcpart_acid set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acid
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 POSTHOOK: query: explain update srcpart_acid set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acid
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -423,8 +433,26 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain delete from srcpart_acid where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acid
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 POSTHOOK: query: explain delete from srcpart_acid where key in( '1001', '213', '43')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acid
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -740,8 +768,18 @@ POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain update srcpart_acidb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidb
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 POSTHOOK: query: explain update srcpart_acidb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidb
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -932,8 +970,26 @@ POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain delete from srcpart_acidb where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidb
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 POSTHOOK: query: explain delete from srcpart_acidb where key in( '1001', '213', '43')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidb
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1250,9 +1306,19 @@ POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 PREHOOK: query: explain vectorization only detail
 update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidv
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 POSTHOOK: query: explain vectorization only detail
 update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidv
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1285,11 +1351,11 @@ STAGE PLANS:
                           selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 6:string
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [4]
+                            keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [5]
-                            valueColumnNums: [0, 6, 2]
+                            partitionColumns: 5:int
+                            valueColumns: 0:string, 6:string, 2:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -1314,7 +1380,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1458,9 +1524,27 @@ POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 PREHOOK: query: explain vectorization only detail
 delete from srcpart_acidv where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidv
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: query: explain vectorization only detail
 delete from srcpart_acidv where key in( '1001', '213', '43')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidv
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1492,11 +1576,11 @@ STAGE PLANS:
                           projectedOutputColumnNums: [4, 2, 3]
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [4]
+                            keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [5]
-                            valueColumnNums: [2, 3]
+                            partitionColumns: 5:int
+                            valueColumns: 2:string, 3:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -1521,7 +1605,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1601,6 +1685,21 @@ when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set
 when matched and s.ds='2008-04-08' and s.hr=='12' then delete
 when not matched then insert values('this','should','not','be there')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidv
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@srcpart_acidv
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 POSTHOOK: query: explain vectorization only detail
 merge into srcpart_acidv t using (select distinct ds, hr, key, value from srcpart_acidv) s
 on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value
@@ -1608,6 +1707,20 @@ when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set
 when matched and s.ds='2008-04-08' and s.hr=='12' then delete
 when not matched then insert values('this','should','not','be there')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidv
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1653,11 +1766,10 @@ STAGE PLANS:
                           projectedOutputColumnNums: []
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [0, 1, 2, 3]
+                            keyColumns: 0:string, 1:string, 2:string, 3:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [0, 1, 2, 3]
-                            valueColumnNums: []
+                            partitionColumns: 0:string, 1:string, 2:string, 3:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -1683,11 +1795,11 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 3, 0, 1]
+                        keyColumns: 2:string, 3:string, 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2, 3, 0, 1]
-                        valueColumnNums: [4]
+                        partitionColumns: 2:string, 3:string, 0:string, 1:string
+                        valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -1732,11 +1844,10 @@ STAGE PLANS:
                     projectedOutputColumnNums: []
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0, 1, 2, 3]
+                      keyColumns: 0:string, 1:string, 2:string, 3:string
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      partitionColumnNums: [0, 1, 2, 3]
-                      valueColumnNums: []
+                      partitionColumns: 0:string, 1:string, 2:string, 3:string
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
@@ -1766,12 +1877,15 @@ STAGE PLANS:
                           className: VectorAppMasterEventOperator
                           native: true
         Reducer 3 
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1794,7 +1908,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2042,9 +2156,19 @@ POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 PREHOOK: query: explain vectorization only detail
 update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidvb
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 POSTHOOK: query: explain vectorization only detail
 update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidvb
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2077,11 +2201,11 @@ STAGE PLANS:
                           selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 6:string
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [4]
+                            keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [5]
-                            valueColumnNums: [0, 6, 2]
+                            partitionColumns: 5:int
+                            valueColumns: 0:string, 6:string, 2:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -2106,7 +2230,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2250,9 +2374,27 @@ POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 PREHOOK: query: explain vectorization only detail
 delete from srcpart_acidvb where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidvb
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: query: explain vectorization only detail
 delete from srcpart_acidvb where key in( '1001', '213', '43')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidvb
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2284,11 +2426,11 @@ STAGE PLANS:
                           projectedOutputColumnNums: [4, 2, 3]
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [4]
+                            keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [5]
-                            valueColumnNums: [2, 3]
+                            partitionColumns: 5:int
+                            valueColumns: 2:string, 3:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -2313,7 +2455,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2393,6 +2535,21 @@ when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set
 when matched and s.ds='2008-04-08' and s.hr=='12' then delete
 when not matched then insert values('this','should','not','be there')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_acidvb
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@srcpart_acidvb
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 POSTHOOK: query: explain vectorization only detail
 merge into srcpart_acidvb t using (select distinct ds, hr, key, value from srcpart_acidvb) s
 on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value
@@ -2400,6 +2557,20 @@ when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set
 when matched and s.ds='2008-04-08' and s.hr=='12' then delete
 when not matched then insert values('this','should','not','be there')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_acidvb
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2446,11 +2617,10 @@ STAGE PLANS:
                           projectedOutputColumnNums: []
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [0, 1, 2, 3]
+                            keyColumns: 0:string, 1:string, 2:string, 3:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [0, 1, 2, 3]
-                            valueColumnNums: []
+                            partitionColumns: 0:string, 1:string, 2:string, 3:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -2476,11 +2646,11 @@ STAGE PLANS:
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 3, 0, 1]
+                        keyColumns: 2:string, 3:string, 0:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2, 3, 0, 1]
-                        valueColumnNums: [4]
+                        partitionColumns: 2:string, 3:string, 0:string, 1:string
+                        valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -2525,11 +2695,10 @@ STAGE PLANS:
                     projectedOutputColumnNums: []
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0, 1, 2, 3]
+                      keyColumns: 0:string, 1:string, 2:string, 3:string
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      partitionColumnNums: [0, 1, 2, 3]
-                      valueColumnNums: []
+                      partitionColumns: 0:string, 1:string, 2:string, 3:string
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
@@ -2559,12 +2728,15 @@ STAGE PLANS:
                           className: VectorAppMasterEventOperator
                           native: true
         Reducer 3 
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2587,7 +2759,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false

@@ -22,9 +22,13 @@ POSTHOOK: Lineage: test_n2.ts SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -104,9 +108,13 @@ POSTHOOK: Input: default@test_n2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -155,10 +163,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1]
+                            valueColumns: 0:timestamp, 1:timestamp
                         Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: timestamp), _col1 (type: timestamp)
             Execution mode: vectorized, llap
@@ -244,9 +251,13 @@ POSTHOOK: Input: default@test_n2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -330,9 +341,13 @@ POSTHOOK: Input: default@test_n2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -381,10 +396,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1]
+                            valueColumns: 0:double, 1:bigint
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double), _col1 (type: bigint)
             Execution mode: vectorized, llap
@@ -470,9 +484,13 @@ POSTHOOK: Input: default@test_n2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -522,10 +540,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1, 2]
+                            valueColumns: 0:double, 1:double, 2:bigint
                         Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: bigint)
             Execution mode: vectorized, llap

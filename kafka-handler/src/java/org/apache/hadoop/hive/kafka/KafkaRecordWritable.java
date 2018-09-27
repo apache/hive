@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.kafka;
 import org.apache.hadoop.io.Writable;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
+import javax.annotation.Nullable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -31,7 +32,8 @@ import java.util.Objects;
  * Writable implementation of Kafka ConsumerRecord.
  * Serialized in the form
  * {@code timestamp} long| {@code partition} (int) | {@code offset} (long) |
- * {@code startOffset} (long) | {@code endOffset} (long) | {@code value.size()} (int) | {@code value} (byte [])
+ * {@code startOffset} (long) | {@code endOffset} (long) | {@code value.size()} (int) |
+ * {@code value} (byte []) | {@code recordKey.size()}| {@code recordKey (byte [])}
  */
 public class KafkaRecordWritable implements Writable {
 
@@ -60,25 +62,34 @@ public class KafkaRecordWritable implements Writable {
    */
   private byte[] value;
 
+  /**
+   * Record key content or null
+   */
+  private byte[] recordKey;
+
+
   void set(ConsumerRecord<byte[], byte[]> consumerRecord, long startOffset, long endOffset) {
     this.partition = consumerRecord.partition();
     this.timestamp = consumerRecord.timestamp();
     this.offset = consumerRecord.offset();
     this.value = consumerRecord.value();
+    this.recordKey = consumerRecord.key();
     this.startOffset = startOffset;
     this.endOffset = endOffset;
   }
 
    KafkaRecordWritable(int partition,
-      long offset,
-      long timestamp,
-      byte[] value,
-      long startOffset,
-      long endOffset) {
+       long offset,
+       long timestamp,
+       byte[] value,
+       long startOffset,
+       long endOffset,
+       @Nullable byte[] recordKey) {
     this.partition = partition;
     this.offset = offset;
     this.timestamp = timestamp;
     this.value = value;
+    this.recordKey = recordKey;
     this.startOffset = startOffset;
     this.endOffset = endOffset;
   }
@@ -94,6 +105,12 @@ public class KafkaRecordWritable implements Writable {
     dataOutput.writeLong(endOffset);
     dataOutput.writeInt(value.length);
     dataOutput.write(value);
+    if (recordKey != null) {
+      dataOutput.writeInt(recordKey.length);
+      dataOutput.write(recordKey);
+    } else {
+      dataOutput.writeInt(-1);
+    }
   }
 
   @Override public void readFields(DataInput dataInput) throws IOException {
@@ -102,12 +119,19 @@ public class KafkaRecordWritable implements Writable {
     offset = dataInput.readLong();
     startOffset = dataInput.readLong();
     endOffset = dataInput.readLong();
-    int size = dataInput.readInt();
-    if (size > 0) {
-      value = new byte[size];
+    int dataSize = dataInput.readInt();
+    if (dataSize > 0) {
+      value = new byte[dataSize];
       dataInput.readFully(value);
     } else {
       value = new byte[0];
+    }
+    int keyArraySize = dataInput.readInt();
+    if (keyArraySize > -1) {
+      recordKey = new byte[keyArraySize];
+      dataInput.readFully(recordKey);
+    } else {
+      recordKey = null;
     }
   }
 
@@ -135,6 +159,11 @@ public class KafkaRecordWritable implements Writable {
     return endOffset;
   }
 
+  @Nullable
+  byte[] getRecordKey() {
+    return recordKey;
+  }
+
   @Override public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -148,12 +177,14 @@ public class KafkaRecordWritable implements Writable {
         && startOffset == writable.startOffset
         && endOffset == writable.endOffset
         && timestamp == writable.timestamp
-        && Arrays.equals(value, writable.value);
+        && Arrays.equals(value, writable.value)
+        && Arrays.equals(recordKey, writable.recordKey);
   }
 
   @Override public int hashCode() {
     int result = Objects.hash(partition, offset, startOffset, endOffset, timestamp);
     result = 31 * result + Arrays.hashCode(value);
+    result = 31 * result + Arrays.hashCode(recordKey);
     return result;
   }
 
@@ -171,6 +202,8 @@ public class KafkaRecordWritable implements Writable {
         + timestamp
         + ", value="
         + Arrays.toString(value)
+        + ", recordKey="
+        + Arrays.toString(recordKey)
         + '}';
   }
 }

@@ -24,6 +24,8 @@ SELECT reflect("java.lang.String", "valueOf", 1),
        reflect("java.lang.Integer", "valueOf", key, 16)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT reflect("java.lang.String", "valueOf", 1),
        reflect("java.lang.String", "isEmpty"),
@@ -35,6 +37,8 @@ SELECT reflect("java.lang.String", "valueOf", 1),
        reflect("java.lang.Integer", "valueOf", key, 16)
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

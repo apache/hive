@@ -743,10 +743,9 @@ public class HiveAlterHandler implements AlterHandler {
         }
 
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                                                EventMessage.EventType.ALTER_PARTITION,
-                                                new AlterPartitionEvent(oldPart, newPart, tbl, false,
-                                                        true, newPart.getWriteId(), handler));
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
+              new AlterPartitionEvent(oldPart, newPart, tbl, false, true, newPart.getWriteId(), handler),
+              environmentContext);
         }
       }
 

@@ -11,6 +11,10 @@ select  i_brand_id brand_id, i_brand brand,
  order by ext_price desc, i_brand_id
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  i_brand_id brand_id, i_brand brand,
  	sum(ss_ext_sales_price) ext_price
@@ -24,6 +28,10 @@ select  i_brand_id brand_id, i_brand brand,
  order by ext_price desc, i_brand_id
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

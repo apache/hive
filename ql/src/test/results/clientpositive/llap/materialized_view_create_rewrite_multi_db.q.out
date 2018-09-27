@@ -145,9 +145,15 @@ POSTHOOK: Input: database:db3
 PREHOOK: query: explain
 select a, c from db1.cmv_basetable_n7 where a = 3
 PREHOOK: type: QUERY
+PREHOOK: Input: db1@cmv_basetable_n7
+PREHOOK: Input: db2@cmv_mat_view2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a, c from db1.cmv_basetable_n7 where a = 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@cmv_basetable_n7
+POSTHOOK: Input: db2@cmv_mat_view2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -159,7 +165,7 @@ STAGE PLANS:
         TableScan
           alias: db2.cmv_mat_view2_n2
           Select Operator
-            expressions: 3 (type: int), c (type: decimal(10,2))
+            expressions: a (type: int), c (type: decimal(10,2))
             outputColumnNames: _col0, _col1
             ListSink
 

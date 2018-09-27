@@ -78,6 +78,9 @@ PREHOOK: query: EXPLAIN CREATE EXTERNAL TABLE druid_partitioned_table
           cboolean2
           FROM alltypesorc where ctimestamp1 IS NOT NULL
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@druid_partitioned_table
 POSTHOOK: query: EXPLAIN CREATE EXTERNAL TABLE druid_partitioned_table
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
@@ -99,6 +102,9 @@ POSTHOOK: query: EXPLAIN CREATE EXTERNAL TABLE druid_partitioned_table
           cboolean2
           FROM alltypesorc where ctimestamp1 IS NOT NULL
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@druid_partitioned_table
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -313,6 +319,8 @@ SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
   cboolean2
   FROM alltypesorc where ctimestamp2 IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@druid_partitioned_table
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE druid_partitioned_table
 SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
   cstring1,
@@ -327,6 +335,8 @@ SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
   cboolean2
   FROM alltypesorc where ctimestamp2 IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@druid_partitioned_table
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage
@@ -454,6 +464,8 @@ PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE druid_partitioned_table
     cboolean2
     FROM alltypesorc where ctimestamp1 IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@druid_partitioned_table
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE druid_partitioned_table
   SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
     cstring1,
@@ -468,6 +480,8 @@ POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE druid_partitioned_table
     cboolean2
     FROM alltypesorc where ctimestamp1 IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@druid_partitioned_table
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 is a root stage

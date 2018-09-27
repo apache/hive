@@ -33,11 +33,15 @@ SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1
 ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1+2.34)/cdecimal2) as c3, (cdecimal1 * (cdecimal2/3.4)) as c4, cdecimal1 % 10 as c5, CAST(cdecimal1 AS INT) as c6, CAST(cdecimal2 AS SMALLINT) as c7, CAST(cdecimal2 AS TINYINT) as c8, CAST(cdecimal1 AS BIGINT) as c9, CAST (cdecimal1 AS BOOLEAN) as c10, CAST(cdecimal2 AS DOUBLE) as c11, CAST(cdecimal1 AS FLOAT) as c12, CAST(cdecimal2 AS STRING) as c13, CAST(cdecimal1 AS TIMESTAMP) as c14 FROM decimal_test_n1 WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL
 ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -84,10 +88,9 @@ STAGE PLANS:
                         sort order: ++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [4, 6, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                            keyColumns: 4:decimal(25,14), 6:decimal(26,14), 8:decimal(38,13), 10:decimal(38,17), 11:decimal(12,10), 12:int, 13:smallint, 14:tinyint, 15:bigint, 16:boolean, 17:double, 18:float, 19:string, 20:timestamp
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 455 Data size: 100294 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
@@ -112,7 +115,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaaaaaaaaaaaa
+                reduceColumnNullOrder: zzzzzzzzzzzzzz
                 reduceColumnSortOrder: ++++++++++++++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -207,11 +210,15 @@ SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1
 ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test_small_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1+2.34)/cdecimal2) as c3, (cdecimal1 * (cdecimal2/3.4)) as c4, cdecimal1 % 10 as c5, CAST(cdecimal1 AS INT) as c6, CAST(cdecimal2 AS SMALLINT) as c7, CAST(cdecimal2 AS TINYINT) as c8, CAST(cdecimal1 AS BIGINT) as c9, CAST (cdecimal1 AS BOOLEAN) as c10, CAST(cdecimal2 AS DOUBLE) as c11, CAST(cdecimal1 AS FLOAT) as c12, CAST(cdecimal2 AS STRING) as c13, CAST(cdecimal1 AS TIMESTAMP) as c14 FROM decimal_test_small_n0 WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL
 ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test_small_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -258,10 +265,9 @@ STAGE PLANS:
                         sort order: ++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [6, 8, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+                            keyColumns: 6:decimal(11,3), 8:decimal(11,3), 10:decimal(21,11), 12:decimal(23,9), 13:decimal(5,3), 14:int, 15:smallint, 16:tinyint, 17:bigint, 18:boolean, 19:double, 20:float, 21:string, 22:timestamp
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 455 Data size: 100294 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
@@ -286,7 +292,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaaaaaaaaaaaa
+                reduceColumnNullOrder: zzzzzzzzzzzzzz
                 reduceColumnSortOrder: ++++++++++++++
                 allNative: false
                 usesVectorUDFAdaptor: false

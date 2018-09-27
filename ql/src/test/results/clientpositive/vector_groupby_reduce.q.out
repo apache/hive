@@ -225,6 +225,8 @@ group by ss_ticket_number
 order by ss_ticket_number
 limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select 
   ss_ticket_number
@@ -234,6 +236,8 @@ group by ss_ticket_number
 order by ss_ticket_number
 limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -414,6 +418,8 @@ from
 group by ss_ticket_number
 order by m
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select 
     min(ss_ticket_number) m
@@ -426,6 +432,8 @@ from
 group by ss_ticket_number
 order by m
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -680,6 +688,8 @@ from
 group by ss_ticket_number
 order by ss_ticket_number
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
     ss_ticket_number, sum(ss_item_sk), sum(q), avg(q), sum(np), avg(np), sum(decwc), avg(decwc)
@@ -693,6 +703,8 @@ from
 group by ss_ticket_number
 order by ss_ticket_number
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -887,6 +899,8 @@ from
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
     ss_ticket_number, ss_item_sk, sum(q), avg(q), sum(np), avg(np), sum(decwc), avg(decwc)
@@ -899,6 +913,8 @@ from
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

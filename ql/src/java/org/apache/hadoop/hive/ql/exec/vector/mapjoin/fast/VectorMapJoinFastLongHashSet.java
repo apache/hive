@@ -47,6 +47,14 @@ public class VectorMapJoinFastLongHashSet
     return new VectorMapJoinFastHashSet.HashSetResult();
   }
 
+  @Override
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
+      throws HiveException, IOException {
+
+    // Ignore NULL keys (HashSet not used for FULL OUTER).
+    adaptPutRow(currentKey, currentValue);
+  }
+
   /*
    * A Unit Test convenience method for putting the key into the hash table using the
    * actual type.
@@ -76,11 +84,18 @@ public class VectorMapJoinFastLongHashSet
     optimizedHashSetResult.forget();
 
     long hashCode = HashCodeUtil.calculateLongHashCode(key);
-    long existance = findReadSlot(key, hashCode);
+    int pairIndex = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
-    if (existance == -1) {
+    if (pairIndex == -1) {
       joinResult = JoinUtil.JoinResult.NOMATCH;
     } else {
+      /*
+       * NOTE: Support for trackMatched not needed yet for Set.
+
+      if (matchTracker != null) {
+        matchTracker.trackMatch(pairIndex / 2);
+      }
+      */
       joinResult = JoinUtil.JoinResult.MATCH;
     }
 
@@ -91,9 +106,13 @@ public class VectorMapJoinFastLongHashSet
   }
 
   public VectorMapJoinFastLongHashSet(
-      boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
+      boolean isFullOuter,
+      boolean minMaxEnabled,
+      HashTableKeyType hashTableKeyType,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(minMaxEnabled, isOuterJoin, hashTableKeyType,
+    super(
+        isFullOuter,
+        minMaxEnabled, hashTableKeyType,
         initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
   }
 

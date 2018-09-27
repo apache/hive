@@ -64,8 +64,14 @@ POSTHOOK: Lineage: innerjoinsrc2.b1 SCRIPT []
 POSTHOOK: Lineage: innerjoinsrc2.b2 SCRIPT []
 PREHOOK: query: EXPLAIN SELECT * FROM innerjoinsrc1 c1, innerjoinsrc2 c2 WHERE COALESCE(a1,a2)=COALESCE(b1,b2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@innerjoinsrc1
+PREHOOK: Input: default@innerjoinsrc2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM innerjoinsrc1 c1, innerjoinsrc2 c2 WHERE COALESCE(a1,a2)=COALESCE(b1,b2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@innerjoinsrc1
+POSTHOOK: Input: default@innerjoinsrc2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -145,8 +151,14 @@ POSTHOOK: Input: default@innerjoinsrc2
 2	2	2	2
 PREHOOK: query: EXPLAIN SELECT * FROM innerjoinsrc1 c1 inner join innerjoinsrc2 c2 ON (COALESCE(a1,a2)=COALESCE(b1,b2))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@innerjoinsrc1
+PREHOOK: Input: default@innerjoinsrc2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM innerjoinsrc1 c1 inner join innerjoinsrc2 c2 ON (COALESCE(a1,a2)=COALESCE(b1,b2))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@innerjoinsrc1
+POSTHOOK: Input: default@innerjoinsrc2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -1,8 +1,12 @@
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: explain vectorization SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 7
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 7
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -69,12 +73,16 @@ POSTHOOK: Input: default@alltypesparquet
 -1887561756	10361.0
 -1887561756	1839.0
 -1887561756	9531.0
-PREHOOK: query: explain vectorization detail
+PREHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,cdouble,csmallint from alltypesparquet where ctinyint is not null order by ctinyint,cdouble limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,cdouble,csmallint from alltypesparquet where ctinyint is not null order by ctinyint,cdouble limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -93,7 +101,6 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
@@ -130,12 +137,6 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
-          rowBatchContext:
-              dataColumnCount: 12
-              includeColumns: [0, 1, 5]
-              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-              partitionColumnCount: 0
-              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -190,12 +191,16 @@ POSTHOOK: Input: default@alltypesparquet
 -64	-7196.0	-7196
 -64	-8080.0	-8080
 -64	-9842.0	-9842
-PREHOOK: query: explain vectorization detail
+PREHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,avg(cdouble + 1) from alltypesparquet group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,avg(cdouble + 1) from alltypesparquet group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -213,7 +218,6 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: ctinyint (type: tinyint), (cdouble + 1.0D) (type: double)
               outputColumnNames: _col0, _col1
@@ -259,12 +263,6 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
-          rowBatchContext:
-              dataColumnCount: 12
-              includeColumns: [0, 5]
-              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-              partitionColumnCount: 0
-              scratchColumnTypeNames: [double]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -305,6 +303,7 @@ POSTHOOK: query: select ctinyint,avg(cdouble + 1) from alltypesparquet group by 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
+-45	326.44444444444446
 -46	3033.55
 -47	-574.6428571428571
 -48	1672.909090909091
@@ -324,13 +323,16 @@ POSTHOOK: Input: default@alltypesparquet
 -62	245.69387755102042
 -63	2178.7272727272725
 -64	373.52941176470586
-NULL	9370.0945309795
-PREHOOK: query: explain vectorization detail
+PREHOOK: query: explain VECTORIZATION EXPRESSION
 select distinct(ctinyint) from alltypesparquet limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select distinct(ctinyint) from alltypesparquet limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -348,7 +350,6 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: ctinyint (type: tinyint)
               outputColumnNames: ctinyint
@@ -390,12 +391,6 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
-          rowBatchContext:
-              dataColumnCount: 12
-              includeColumns: [0]
-              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-              partitionColumnCount: 0
-              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -451,12 +446,16 @@ POSTHOOK: Input: default@alltypesparquet
 -63
 -64
 NULL
-PREHOOK: query: explain vectorization detail
+PREHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint, count(distinct(cdouble)) from alltypesparquet group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint, count(distinct(cdouble)) from alltypesparquet group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -530,6 +529,7 @@ POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesparquet 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
+-45	24
 -46	24
 -47	22
 -48	29
@@ -549,13 +549,16 @@ POSTHOOK: Input: default@alltypesparquet
 -62	27
 -63	19
 -64	24
-NULL	2932
-PREHOOK: query: explain vectorization detail
+PREHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,cdouble from alltypesparquet order by ctinyint limit 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,cdouble from alltypesparquet order by ctinyint limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -578,12 +581,16 @@ POSTHOOK: query: select ctinyint,cdouble from alltypesparquet order by ctinyint 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-PREHOOK: query: explain vectorization detail
+PREHOOK: query: explain VECTORIZATION EXPRESSION
 select cdouble, sum(ctinyint) as sum from alltypesparquet where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select cdouble, sum(ctinyint) as sum from alltypesparquet where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -603,7 +610,6 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
@@ -646,12 +652,6 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
-          rowBatchContext:
-              dataColumnCount: 12
-              includeColumns: [0, 5]
-              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-              partitionColumnCount: 0
-              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -676,7 +676,6 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:_col0:double, 1:_col1:bigint]
             Reduce Output Operator
               key expressions: _col1 (type: bigint), _col0 (type: double)
               sort order: ++
@@ -697,12 +696,6 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
-          rowBatchContext:
-              dataColumnCount: 2
-              includeColumns: [0, 1]
-              dataColumns: _col0:double, _col1:bigint
-              partitionColumnCount: 0
-              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

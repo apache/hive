@@ -33,9 +33,13 @@ POSTHOOK: Output: default@T2_n47
 PREHOOK: query: EXPLAIN 
 INSERT OVERWRITE TABLE T2_n47 SELECT * FROM (SELECT * FROM T1_n78 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n78
+PREHOOK: Output: default@t2_n47
 POSTHOOK: query: EXPLAIN 
 INSERT OVERWRITE TABLE T2_n47 SELECT * FROM (SELECT * FROM T1_n78 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n78
+POSTHOOK: Output: default@t2_n47
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

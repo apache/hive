@@ -17,8 +17,14 @@ POSTHOOK: Output: default@smalltable
 Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
 PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-5 depends on stages: Stage-7
@@ -161,8 +167,16 @@ POSTHOOK: Input: default@smalltable
 POSTHOOK: Output: default@smalltable
 PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Input: default@smalltable2
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Input: default@smalltable2
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
   Stage-6 depends on stages: Stage-8

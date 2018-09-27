@@ -157,8 +157,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select sum(sum(c1)) over() from e011_01
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(sum(c1)) over() from e011_01
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -266,11 +270,15 @@ PREHOOK: query: explain select sum(sum(c1)) over(
   from e011_01
   group by e011_01.c1, e011_01.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(sum(c1)) over(
   partition by c2 order by c1)
   from e011_01
   group by e011_01.c1, e011_01.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -339,7 +347,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0 ASC NULLS FIRST
+                  order by: _col0 ASC NULLS LAST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -392,12 +400,18 @@ PREHOOK: query: explain select sum(sum(e011_01.c1)) over(
   join e011_03 on e011_01.c1 = e011_03.c1
   group by e011_01.c1, e011_01.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+PREHOOK: Input: default@e011_03
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(sum(e011_01.c1)) over(
   partition by e011_01.c2 order by e011_01.c1) 
   from e011_01 
   join e011_03 on e011_01.c1 = e011_03.c1
   group by e011_01.c1, e011_01.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+POSTHOOK: Input: default@e011_03
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -513,7 +527,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0 ASC NULLS FIRST
+                  order by: _col0 ASC NULLS LAST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -570,12 +584,18 @@ PREHOOK: query: explain select sum(sum(e011_01.c1)) over(
   join e011_03 on e011_01.c1 = e011_03.c1
   group by e011_03.c1, e011_03.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+PREHOOK: Input: default@e011_03
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(sum(e011_01.c1)) over(
   partition by e011_03.c2 order by e011_03.c1)
   from e011_01 
   join e011_03 on e011_01.c1 = e011_03.c1
   group by e011_03.c1, e011_03.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+POSTHOOK: Input: default@e011_03
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -691,7 +711,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col0 ASC NULLS FIRST
+                  order by: _col0 ASC NULLS LAST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -748,12 +768,18 @@ PREHOOK: query: explain select sum(corr(e011_01.c1, e011_03.c1))
   join e011_03 on e011_01.c1 = e011_03.c1
   group by e011_03.c2, e011_01.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+PREHOOK: Input: default@e011_03
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(corr(e011_01.c1, e011_03.c1))
   over(partition by e011_01.c2 order by e011_03.c2)
   from e011_01
   join e011_03 on e011_01.c1 = e011_03.c1
   group by e011_03.c2, e011_01.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+POSTHOOK: Input: default@e011_03
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -846,7 +872,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1 ASC NULLS FIRST
+                  order by: _col1 ASC NULLS LAST
                   partition by: _col0
                   raw input shape:
                   window functions:

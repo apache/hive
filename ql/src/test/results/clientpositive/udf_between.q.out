@@ -12,8 +12,12 @@ Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween
 Function type:BUILTIN
 PREHOOK: query: explain SELECT * FROM src where key + 100 between (150 + -50) AND (150 + 50) LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT * FROM src where key + 100 between (150 + -50) AND (150 + 50) LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -68,8 +72,12 @@ POSTHOOK: Input: default@src
 83	val_83
 PREHOOK: query: explain SELECT * FROM src where key + 100 not between (150 + -50) AND (150 + 50) LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT * FROM src where key + 100 not between (150 + -50) AND (150 + 50) LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -124,8 +132,12 @@ POSTHOOK: Input: default@src
 374	val_374
 PREHOOK: query: explain SELECT * FROM src where 'b' between 'a' AND 'c' LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT * FROM src where 'b' between 'a' AND 'c' LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -157,8 +169,12 @@ POSTHOOK: Input: default@src
 238	val_238
 PREHOOK: query: explain SELECT * FROM src where 2 between 2 AND '3' LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT * FROM src where 2 between 2 AND '3' LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

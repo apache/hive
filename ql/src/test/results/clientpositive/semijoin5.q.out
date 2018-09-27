@@ -30,6 +30,9 @@ WHERE (t2.smallint_col_19) IN (SELECT
     INNER JOIN table_18_n1 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
     WHERE (t1.timestamp_col_9) = (tt2.timestamp_col_18))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_18_n1
+PREHOOK: Input: default@table_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT
     COALESCE(498, LEAD(COALESCE(-973, -684, 515)) OVER (PARTITION BY (t2.int_col_10 + t1.smallint_col_50) ORDER BY (t2.int_col_10 + t1.smallint_col_50), FLOOR(t1.double_col_16) DESC), 524) AS int_col,
@@ -46,6 +49,9 @@ WHERE (t2.smallint_col_19) IN (SELECT
     INNER JOIN table_18_n1 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
     WHERE (t1.timestamp_col_9) = (tt2.timestamp_col_18))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_18_n1
+POSTHOOK: Input: default@table_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-6
@@ -165,7 +171,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (_col7 + UDFToInteger(_col5)) ASC NULLS FIRST, floor(_col3) DESC NULLS LAST
+                  order by: (_col7 + UDFToInteger(_col5)) ASC NULLS LAST, floor(_col3) DESC NULLS LAST
                   partition by: (_col7 + UDFToInteger(_col5))
                   raw input shape:
                   window functions:

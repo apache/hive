@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.events.EventConsumer;
@@ -790,7 +791,16 @@ public final class QueryResultsCache {
     String dirName = UUID.randomUUID().toString();
     Path cachedResultsPath = new Path(cacheDirPath, dirName);
     FileSystem fs = cachedResultsPath.getFileSystem(conf);
-    fs.rename(queryResultsPath, cachedResultsPath);
+    try {
+      boolean resultsMoved = Hive.moveFile(conf, queryResultsPath, cachedResultsPath, false, false, false);
+      if (!resultsMoved) {
+        throw new IOException("Failed to move " + queryResultsPath + " to " + cachedResultsPath);
+      }
+    } catch (IOException err) {
+      throw err;
+    } catch (Exception err) {
+      throw new IOException("Error moving " + queryResultsPath + " to " + cachedResultsPath, err);
+    }
     return cachedResultsPath;
   }
 

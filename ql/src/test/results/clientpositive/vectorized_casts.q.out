@@ -73,6 +73,8 @@ from alltypesorc
 
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select 
 
@@ -148,6 +150,8 @@ from alltypesorc
 
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -3,11 +3,15 @@ FROM alltypesorc
 WHERE (cdouble IS NULL)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdouble, nvl(cdouble, 100) as n
 FROM alltypesorc
 WHERE (cdouble IS NULL)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -107,10 +111,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cfloat, nvl(cfloat, 1) 
 FROM alltypesorc
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cfloat, nvl(cfloat, 1) as n
 FROM alltypesorc
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -200,10 +208,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT nvl(null, 10) as n
 FROM alltypesorc
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT nvl(null, 10) as n
 FROM alltypesorc
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -293,10 +305,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT nvl(null, null) as n
 FROM alltypesorc
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT nvl(null, null) as n
 FROM alltypesorc
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

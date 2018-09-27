@@ -14,6 +14,8 @@ WHERE
 ((CASE WHEN (1 = l_linenumber) THEN 1 ELSE 1 END) = 1) AND (1 = 1)) 
 GROUP BY l_orderkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT  
 SUM((CASE WHEN 1000000 = 0 THEN NULL ELSE l_partkey / 1000000 END)),
@@ -30,6 +32,8 @@ WHERE
 ((CASE WHEN (1 = l_linenumber) THEN 1 ELSE 1 END) = 1) AND (1 = 1)) 
 GROUP BY l_orderkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -89,8 +93,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -127,8 +135,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key from src where (case key when '238' then 1  when '94' then 1 else 3 end) = cast('1' as int)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from src where (case key when '238' then 1  when '94' then 1 else 3 end) = cast('1' as int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -165,8 +177,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = (case when key != '238' then 1 else 1 end)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = (case when key != '238' then 1 else 1 end)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -203,8 +219,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key from src where (case key when '238' then 1 end) = (case when key != '238' then 1 when key = '23' then 1 end)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key from src where (case key when '238' then 1 end) = (case when key != '238' then 1 when key = '23' then 1 end)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

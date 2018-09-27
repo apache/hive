@@ -72,8 +72,7 @@ Druid Storage Handler Runtime Status for default.druid_kafka_test
 kafkaPartitions=1	 	 
 activeTasks=[]	 	 
 publishingTasks=[]	 	 
-latestOffsets={0=10}	 	 
-minimumLag={0=0}	 	 
+#### A masked pattern was here ####
 aggregateLag=0	 	 
 #### A masked pattern was here ####
 PREHOOK: query: Select count(*) FROM druid_kafka_test
@@ -142,8 +141,7 @@ Druid Storage Handler Runtime Status for default.druid_kafka_test
 kafkaPartitions=1	 	 
 activeTasks=[]	 	 
 publishingTasks=[]	 	 
-latestOffsets={0=10}	 	 
-minimumLag={0=0}	 	 
+#### A masked pattern was here ####
 aggregateLag=0	 	 
 #### A masked pattern was here ####
 PREHOOK: query: Select count(*) FROM druid_kafka_test
@@ -207,6 +205,9 @@ FROM druid_kafka_test) b
   ON a.shortname = b.language
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_kafka_test
+PREHOOK: Input: default@languages
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT a.fullname, b.`user`
 FROM
@@ -219,6 +220,9 @@ FROM druid_kafka_test) b
   ON a.shortname = b.language
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_kafka_test
+POSTHOOK: Input: default@languages
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -255,6 +259,8 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col0 (type: string)
                         auto parallelism: true
+            Execution mode: llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [languages]
             Path -> Partition:
@@ -330,6 +336,8 @@ STAGE PLANS:
                     tag: 1
                     value expressions: user (type: string)
                     auto parallelism: true
+            Execution mode: llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_kafka_test]
             Path -> Partition:
@@ -422,6 +430,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_kafka_test [druid_kafka_test]
         Reducer 2 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Merge Join Operator
@@ -508,6 +517,8 @@ FROM (
   GROUP BY language) subq
 ORDER BY c DESC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_kafka_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT language, -1 * (a + b) AS c
 FROM (
@@ -516,6 +527,8 @@ FROM (
   GROUP BY language) subq
 ORDER BY c DESC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_kafka_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -542,12 +555,16 @@ FROM druid_kafka_test
 WHERE extract (week from `__time`) IN (10,11)
 GROUP BY language, `user`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_kafka_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT language, `user`, sum(added) - sum(deleted) AS a
 FROM druid_kafka_test
 WHERE extract (week from `__time`) IN (10,11)
 GROUP BY language, `user`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_kafka_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -574,12 +591,16 @@ FROM druid_kafka_test
 GROUP BY language
 ORDER BY a DESC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_kafka_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT language, sum(deleted) / count(*) AS a
 FROM druid_kafka_test
 GROUP BY language
 ORDER BY a DESC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_kafka_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -607,6 +628,8 @@ FROM druid_kafka_test
 GROUP BY language
 ORDER BY a DESC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_kafka_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT language, sum(added) / sum(deleted) AS a,
        CASE WHEN sum(deleted)=0 THEN 1.0 ELSE sum(deleted) END AS b
@@ -614,6 +637,8 @@ FROM druid_kafka_test
 GROUP BY language
 ORDER BY a DESC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_kafka_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -642,6 +667,8 @@ FROM (
   GROUP BY language) subq
 ORDER BY a DESC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_kafka_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT language, a, a - b as c
 FROM (
@@ -650,6 +677,8 @@ FROM (
   GROUP BY language) subq
 ORDER BY a DESC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_kafka_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -679,6 +708,8 @@ FROM (
 ORDER BY "A"
 LIMIT 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_kafka_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT language, `user`, "A"
 FROM (
@@ -688,6 +719,8 @@ FROM (
 ORDER BY "A"
 LIMIT 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_kafka_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -717,6 +750,8 @@ FROM (
 ORDER BY `user`, language
 LIMIT 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_kafka_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT language, `user`, "A"
 FROM (
@@ -726,6 +761,8 @@ FROM (
 ORDER BY `user`, language
 LIMIT 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_kafka_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

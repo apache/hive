@@ -31,6 +31,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n1 group by key
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n1
+PREHOOK: Output: default@outputtbl1_n1
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n1
 SELECT a.key, a.`values`
@@ -40,6 +42,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n1 group by key
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n1
+POSTHOOK: Output: default@outputtbl1_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -200,6 +204,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n1 group by key
 ) a where a.key = 7
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n1
+PREHOOK: Output: default@outputtbl1_n1
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n1
 SELECT a.key, a.`values`
@@ -209,6 +215,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n1 group by key
 ) a where a.key = 7
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n1
+POSTHOOK: Output: default@outputtbl1_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -332,6 +340,8 @@ FROM (
 ) a
 ) b where b.key >= 7
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n1
+PREHOOK: Output: default@outputtbl1_n1
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n1
 select key, `values` from
@@ -344,6 +354,8 @@ FROM (
 ) a
 ) b where b.key >= 7
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n1
+POSTHOOK: Output: default@outputtbl1_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

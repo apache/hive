@@ -17,9 +17,13 @@ POSTHOOK: Output: default@t1_n82
 PREHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n82 GROUP BY key, val with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n82 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -76,9 +80,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n82 GROUP BY CUBE(key, val)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n82 GROUP BY CUBE(key, val)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -161,9 +169,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT key, val, GROUPING__ID, count(1) FROM T1_n82 GROUP BY key, val with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, val, GROUPING__ID, count(1) FROM T1_n82 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -245,9 +257,13 @@ NULL	NULL	3	6
 PREHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1_n82 GROUP BY key with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1_n82 GROUP BY key with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -317,9 +333,13 @@ NULL	6
 PREHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n82 GROUP BY key, val with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n82 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -427,9 +447,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1_n82 GROUP BY key with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1_n82 GROUP BY key with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n82
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -542,11 +566,17 @@ FROM T1_n82
 INSERT OVERWRITE TABLE T2_n51 SELECT key, val, count(1) group by key, val with cube
 INSERT OVERWRITE TABLE T3_n16 SELECT key, val, sum(1) group by key, val with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n82
+PREHOOK: Output: default@t2_n51
+PREHOOK: Output: default@t3_n16
 POSTHOOK: query: EXPLAIN
 FROM T1_n82
 INSERT OVERWRITE TABLE T2_n51 SELECT key, val, count(1) group by key, val with cube
 INSERT OVERWRITE TABLE T3_n16 SELECT key, val, sum(1) group by key, val with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n82
+POSTHOOK: Output: default@t2_n51
+POSTHOOK: Output: default@t3_n16
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2

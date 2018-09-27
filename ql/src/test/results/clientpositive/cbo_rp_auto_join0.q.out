@@ -10,6 +10,8 @@ SELECT cbo_t1.key as k1, cbo_t1.value as v1,
   SORT BY k1, v1, k2, v2
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
@@ -21,6 +23,8 @@ SELECT cbo_t1.key as k1, cbo_t1.value as v1,
   SORT BY k1, v1, k2, v2
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -125,6 +129,8 @@ SELECT cbo_t1.key as k1, cbo_t1.value as v1,
   SORT BY k1, v1, k2, v2
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
@@ -136,6 +142,8 @@ SELECT cbo_t1.key as k1, cbo_t1.value as v1,
   SORT BY k1, v1, k2, v2
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5

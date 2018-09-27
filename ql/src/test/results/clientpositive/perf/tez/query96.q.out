@@ -13,6 +13,11 @@ where ss_sold_time_sk = time_dim.t_time_sk
 order by count(*)
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@time_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select  count(*) 
 from store_sales
@@ -28,6 +33,11 @@ where ss_sold_time_sk = time_dim.t_time_sk
 order by count(*)
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

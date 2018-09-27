@@ -7,6 +7,8 @@ JOIN
 ON src1.c1 = src2.c3
 WHERE rand() > 0.5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
@@ -16,6 +18,8 @@ JOIN
 ON src1.c1 = src2.c3
 WHERE rand() > 0.5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -96,6 +100,8 @@ JOIN
 ON src1.c1 = src2.c3
 WHERE rand() > 0.5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
@@ -105,6 +111,8 @@ JOIN
 ON src1.c1 = src2.c3
 WHERE rand() > 0.5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
