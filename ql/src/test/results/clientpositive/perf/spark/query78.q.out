@@ -55,6 +55,14 @@ order by
   round(ss_qty/(coalesce(ws_qty+cs_qty,1)),2)
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_returns
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with ws as
   (select d_year AS ws_sold_year, ws_item_sk,
@@ -112,6 +120,14 @@ order by
   round(ss_qty/(coalesce(ws_qty+cs_qty,1)),2)
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

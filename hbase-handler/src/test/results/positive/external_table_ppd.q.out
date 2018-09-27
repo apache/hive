@@ -125,8 +125,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t_hbase
 PREHOOK: query: explain SELECT * FROM t_hbase where int_col > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT * FROM t_hbase where int_col > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

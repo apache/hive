@@ -36,8 +36,16 @@ POSTHOOK: Lineage: jackson_sev_add_n0.key SIMPLE [(src)src.FieldSchema(name:key,
 POSTHOOK: Lineage: jackson_sev_add_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select b.* from jackson_sev_same_n0 a join (select * from dim_pho_n0 union all select * from jackson_sev_add_n0)b on a.key=b.key and b.key=97
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dim_pho_n0
+PREHOOK: Input: default@jackson_sev_add_n0
+PREHOOK: Input: default@jackson_sev_same_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select b.* from jackson_sev_same_n0 a join (select * from dim_pho_n0 union all select * from jackson_sev_add_n0)b on a.key=b.key and b.key=97
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim_pho_n0
+POSTHOOK: Input: default@jackson_sev_add_n0
+POSTHOOK: Input: default@jackson_sev_same_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -6,6 +6,8 @@ where not key in
 (select key from src)
 order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select *
 from src
@@ -13,6 +15,8 @@ where not key in
 (select key from src)
 order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

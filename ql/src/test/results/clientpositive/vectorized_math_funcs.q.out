@@ -50,6 +50,8 @@ where cbigint % 500 = 0
 
 and sin(cfloat) >= -1.0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
    cdouble
@@ -102,6 +104,8 @@ where cbigint % 500 = 0
 
 and sin(cfloat) >= -1.0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

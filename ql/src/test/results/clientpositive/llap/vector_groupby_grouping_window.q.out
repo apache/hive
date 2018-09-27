@@ -25,6 +25,8 @@ GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n15
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
 FROM t_n15
@@ -32,6 +34,8 @@ GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n15
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

@@ -20,10 +20,14 @@ PREHOOK: query: explain
 select src1.key as k1, src1.value as v1, src2.key, src2.value
 from src0 src1 inner join src0 src2 on src1.key = src2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src0
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select src1.key as k1, src1.value as v1, src2.key, src2.value
 from src0 src1 inner join src0 src2 on src1.key = src2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

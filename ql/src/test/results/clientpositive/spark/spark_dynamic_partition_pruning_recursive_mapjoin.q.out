@@ -302,6 +302,13 @@ PREHOOK: query: explain SELECT *
         WHERE  rt.col = pt1.part1_col
         AND    pt2.part2_col = pt1.part1_col
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table1
+PREHOOK: Input: default@part_table1@part1_col=1
+PREHOOK: Input: default@part_table2
+PREHOOK: Input: default@part_table2@part2_col=1
+PREHOOK: Input: default@part_table2@part2_col=2
+PREHOOK: Input: default@reg_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
                part_table2 pt2,
@@ -309,6 +316,13 @@ POSTHOOK: query: explain SELECT *
         WHERE  rt.col = pt1.part1_col
         AND    pt2.part2_col = pt1.part1_col
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table1
+POSTHOOK: Input: default@part_table1@part1_col=1
+POSTHOOK: Input: default@part_table2
+POSTHOOK: Input: default@part_table2@part2_col=1
+POSTHOOK: Input: default@part_table2@part2_col=2
+POSTHOOK: Input: default@reg_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -439,6 +453,17 @@ PREHOOK: query: explain SELECT *
         AND    pt2.part2_col = pt1.part1_col
         AND    pt3.part3_col = pt1.part1_col
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table1
+PREHOOK: Input: default@part_table1@part1_col=1
+PREHOOK: Input: default@part_table2
+PREHOOK: Input: default@part_table2@part2_col=1
+PREHOOK: Input: default@part_table2@part2_col=2
+PREHOOK: Input: default@part_table3
+PREHOOK: Input: default@part_table3@part3_col=1
+PREHOOK: Input: default@part_table3@part3_col=2
+PREHOOK: Input: default@part_table3@part3_col=3
+PREHOOK: Input: default@reg_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
                part_table2 pt2,
@@ -448,6 +473,17 @@ POSTHOOK: query: explain SELECT *
         AND    pt2.part2_col = pt1.part1_col
         AND    pt3.part3_col = pt1.part1_col
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table1
+POSTHOOK: Input: default@part_table1@part1_col=1
+POSTHOOK: Input: default@part_table2
+POSTHOOK: Input: default@part_table2@part2_col=1
+POSTHOOK: Input: default@part_table2@part2_col=2
+POSTHOOK: Input: default@part_table3
+POSTHOOK: Input: default@part_table3@part3_col=1
+POSTHOOK: Input: default@part_table3@part3_col=2
+POSTHOOK: Input: default@part_table3@part3_col=3
+POSTHOOK: Input: default@reg_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -614,6 +650,22 @@ PREHOOK: query: explain SELECT *
         AND    pt3.part3_col = pt1.part1_col
         AND    pt4.part4_col = pt1.part1_col
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table1
+PREHOOK: Input: default@part_table1@part1_col=1
+PREHOOK: Input: default@part_table2
+PREHOOK: Input: default@part_table2@part2_col=1
+PREHOOK: Input: default@part_table2@part2_col=2
+PREHOOK: Input: default@part_table3
+PREHOOK: Input: default@part_table3@part3_col=1
+PREHOOK: Input: default@part_table3@part3_col=2
+PREHOOK: Input: default@part_table3@part3_col=3
+PREHOOK: Input: default@part_table4
+PREHOOK: Input: default@part_table4@part4_col=1
+PREHOOK: Input: default@part_table4@part4_col=2
+PREHOOK: Input: default@part_table4@part4_col=3
+PREHOOK: Input: default@part_table4@part4_col=4
+PREHOOK: Input: default@reg_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
                part_table2 pt2,
@@ -625,6 +677,22 @@ POSTHOOK: query: explain SELECT *
         AND    pt3.part3_col = pt1.part1_col
         AND    pt4.part4_col = pt1.part1_col
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table1
+POSTHOOK: Input: default@part_table1@part1_col=1
+POSTHOOK: Input: default@part_table2
+POSTHOOK: Input: default@part_table2@part2_col=1
+POSTHOOK: Input: default@part_table2@part2_col=2
+POSTHOOK: Input: default@part_table3
+POSTHOOK: Input: default@part_table3@part3_col=1
+POSTHOOK: Input: default@part_table3@part3_col=2
+POSTHOOK: Input: default@part_table3@part3_col=3
+POSTHOOK: Input: default@part_table4
+POSTHOOK: Input: default@part_table4@part4_col=1
+POSTHOOK: Input: default@part_table4@part4_col=2
+POSTHOOK: Input: default@part_table4@part4_col=3
+POSTHOOK: Input: default@part_table4@part4_col=4
+POSTHOOK: Input: default@reg_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -831,6 +899,28 @@ PREHOOK: query: explain SELECT *
         AND    pt4.part4_col = pt1.part1_col
         AND    pt5.part5_col = pt1.part1_col
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table1
+PREHOOK: Input: default@part_table1@part1_col=1
+PREHOOK: Input: default@part_table2
+PREHOOK: Input: default@part_table2@part2_col=1
+PREHOOK: Input: default@part_table2@part2_col=2
+PREHOOK: Input: default@part_table3
+PREHOOK: Input: default@part_table3@part3_col=1
+PREHOOK: Input: default@part_table3@part3_col=2
+PREHOOK: Input: default@part_table3@part3_col=3
+PREHOOK: Input: default@part_table4
+PREHOOK: Input: default@part_table4@part4_col=1
+PREHOOK: Input: default@part_table4@part4_col=2
+PREHOOK: Input: default@part_table4@part4_col=3
+PREHOOK: Input: default@part_table4@part4_col=4
+PREHOOK: Input: default@part_table5
+PREHOOK: Input: default@part_table5@part5_col=1
+PREHOOK: Input: default@part_table5@part5_col=2
+PREHOOK: Input: default@part_table5@part5_col=3
+PREHOOK: Input: default@part_table5@part5_col=4
+PREHOOK: Input: default@part_table5@part5_col=5
+PREHOOK: Input: default@reg_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
                part_table2 pt2,
@@ -844,6 +934,28 @@ POSTHOOK: query: explain SELECT *
         AND    pt4.part4_col = pt1.part1_col
         AND    pt5.part5_col = pt1.part1_col
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table1
+POSTHOOK: Input: default@part_table1@part1_col=1
+POSTHOOK: Input: default@part_table2
+POSTHOOK: Input: default@part_table2@part2_col=1
+POSTHOOK: Input: default@part_table2@part2_col=2
+POSTHOOK: Input: default@part_table3
+POSTHOOK: Input: default@part_table3@part3_col=1
+POSTHOOK: Input: default@part_table3@part3_col=2
+POSTHOOK: Input: default@part_table3@part3_col=3
+POSTHOOK: Input: default@part_table4
+POSTHOOK: Input: default@part_table4@part4_col=1
+POSTHOOK: Input: default@part_table4@part4_col=2
+POSTHOOK: Input: default@part_table4@part4_col=3
+POSTHOOK: Input: default@part_table4@part4_col=4
+POSTHOOK: Input: default@part_table5
+POSTHOOK: Input: default@part_table5@part5_col=1
+POSTHOOK: Input: default@part_table5@part5_col=2
+POSTHOOK: Input: default@part_table5@part5_col=3
+POSTHOOK: Input: default@part_table5@part5_col=4
+POSTHOOK: Input: default@part_table5@part5_col=5
+POSTHOOK: Input: default@reg_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

@@ -17,6 +17,11 @@ select  ca_zip
  order by ca_zip
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  ca_zip
        ,sum(cs_sales_price)
@@ -36,6 +41,11 @@ select  ca_zip
  order by ca_zip
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -64,10 +64,14 @@ PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -95,11 +99,15 @@ SELECT `__time`
 FROM druid_table_1_n0
 WHERE `__time` < '2012-03-01 00:00:00'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1_n0
 WHERE `__time` < '2012-03-01 00:00:00'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -127,11 +135,15 @@ SELECT `__time`
 FROM druid_table_1_n0
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1_n0
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -160,12 +172,16 @@ FROM druid_table_1_n0
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1_n0
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -193,11 +209,15 @@ SELECT `__time`
 FROM druid_table_1_n0
 WHERE `__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1_n0
 WHERE `__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -226,12 +246,16 @@ FROM druid_table_1_n0
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2012-01-01 00:00:00' AND '2013-01-01 00:00:00')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1_n0
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2012-01-01 00:00:00' AND '2013-01-01 00:00:00')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -260,12 +284,16 @@ FROM druid_table_1_n0
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2010-06-01 00:00:00' AND '2012-01-01 00:00:00')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1_n0
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2010-06-01 00:00:00' AND '2012-01-01 00:00:00')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -293,11 +321,15 @@ SELECT `__time`
 FROM druid_table_1_n0
 WHERE `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1_n0
 WHERE `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -325,11 +357,15 @@ SELECT `__time`, robot
 FROM druid_table_1_n0
 WHERE robot = 'user1' AND `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`, robot
 FROM druid_table_1_n0
 WHERE robot = 'user1' AND `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -357,11 +393,15 @@ SELECT `__time`, robot
 FROM druid_table_1_n0
 WHERE robot = 'user1' OR `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`, robot
 FROM druid_table_1_n0
 WHERE robot = 'user1' OR `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

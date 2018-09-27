@@ -13,6 +13,9 @@ FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
       UNION  ALL  
       SELECT s2.key AS key, s2.value AS value FROM src1 s2) unionsrc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@tmptable_n4
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE tmptable_n4
 SELECT unionsrc.key, unionsrc.value 
@@ -20,6 +23,9 @@ FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
       UNION  ALL  
       SELECT s2.key AS key, s2.value AS value FROM src1 s2) unionsrc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@tmptable_n4
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

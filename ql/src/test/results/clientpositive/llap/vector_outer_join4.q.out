@@ -252,12 +252,15 @@ from small_alltypesorc_b c
 left outer join small_alltypesorc_b cd
   on cd.cint = c.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select * 
 from small_alltypesorc_b c
 left outer join small_alltypesorc_b cd
   on cd.cint = c.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_b
 #### A masked pattern was here ####
 PREHOOK: query: select * 
 from small_alltypesorc_b c
@@ -333,12 +336,15 @@ from small_alltypesorc_b c
 left outer join small_alltypesorc_b hd
   on hd.ctinyint = c.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select c.ctinyint 
 from small_alltypesorc_b c
 left outer join small_alltypesorc_b hd
   on hd.ctinyint = c.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_b
 #### A masked pattern was here ####
 PREHOOK: query: select c.ctinyint 
 from small_alltypesorc_b c
@@ -773,6 +779,8 @@ left outer join small_alltypesorc_b hd
   on hd.ctinyint = c.ctinyint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.ctinyint 
 from small_alltypesorc_b c
@@ -782,6 +790,7 @@ left outer join small_alltypesorc_b hd
   on hd.ctinyint = c.ctinyint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_b
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select c.ctinyint
 from small_alltypesorc_b c

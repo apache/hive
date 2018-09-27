@@ -40,11 +40,15 @@ select age, name, avg(gpa), sum(age) over (partition by name)
 from studentnull100
 group by age, name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studentnull100
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select age, name, avg(gpa), sum(age) over (partition by name)
 from studentnull100
 group by age, name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studentnull100
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

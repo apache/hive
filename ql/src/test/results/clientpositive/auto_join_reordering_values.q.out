@@ -70,6 +70,9 @@ JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`
 JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orderpayment_small
+PREHOOK: Input: default@user_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT
      `dim_pay_date`.`date`
     , `deal`.`dealid`
@@ -80,6 +83,9 @@ JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`
 JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orderpayment_small
+POSTHOOK: Input: default@user_small
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`date`, `t6`.`dealid`
 FROM (SELECT `userid`
 FROM `default`.`user_small`

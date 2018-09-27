@@ -18,6 +18,12 @@ select  i_item_id,
  order by i_item_id
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@promotion
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select  i_item_id, 
         avg(ss_quantity) agg1,
@@ -38,6 +44,12 @@ select  i_item_id,
  order by i_item_id
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@promotion
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

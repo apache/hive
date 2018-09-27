@@ -86,9 +86,15 @@ Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross pro
 PREHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tint
+PREHOOK: Input: default@tsint
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tint
+POSTHOOK: Input: default@tsint
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -240,9 +246,15 @@ Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Stage-3:MAPRED' is a cross pr
 PREHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tint
+PREHOOK: Input: default@tsint
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tint
+POSTHOOK: Input: default@tsint
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

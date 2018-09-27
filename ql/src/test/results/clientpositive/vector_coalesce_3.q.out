@@ -56,10 +56,16 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT m.member, (CASE WHEN COALESCE(n.attr, 5)>1 THEN n.attr END) AS attr 
 FROM test_2_n0 m LEFT JOIN test_1_n0 n ON m.member = n.member
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n0
+PREHOOK: Input: default@test_2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT m.member, (CASE WHEN COALESCE(n.attr, 5)>1 THEN n.attr END) AS attr 
 FROM test_2_n0 m LEFT JOIN test_1_n0 n ON m.member = n.member
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n0
+POSTHOOK: Input: default@test_2_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

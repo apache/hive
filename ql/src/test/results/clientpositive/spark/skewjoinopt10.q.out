@@ -39,9 +39,15 @@ POSTHOOK: Lineage: array_valued_t1_n0.value EXPRESSION [(t1_n88)t1_n88.FieldSche
 PREHOOK: query: explain 
 select * from (select a.key as key, b.value as array_val from T1_n88 a join array_valued_T1_n0 b on a.key=b.key) i lateral view explode (array_val) c as val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued_t1_n0
+PREHOOK: Input: default@t1_n88
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select * from (select a.key as key, b.value as array_val from T1_n88 a join array_valued_T1_n0 b on a.key=b.key) i lateral view explode (array_val) c as val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued_t1_n0
+POSTHOOK: Input: default@t1_n88
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

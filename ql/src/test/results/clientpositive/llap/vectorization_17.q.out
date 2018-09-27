@@ -22,6 +22,8 @@ WHERE    (((cbigint > -23)
                   OR (cfloat = cdouble))))
 ORDER BY cbigint, cfloat
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT   cfloat,
          cstring1,
@@ -46,6 +48,8 @@ WHERE    (((cbigint > -23)
                   OR (cfloat = cdouble))))
 ORDER BY cbigint, cfloat
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

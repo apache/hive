@@ -95,6 +95,8 @@ insert overwrite table insert_a_adaptor
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
 PREHOOK: type: QUERY
+PREHOOK: Input: default@student_10_lines
+PREHOOK: Output: default@insert_a_adaptor
 POSTHOOK: query: explain vectorization detail
 insert overwrite table insert_a_adaptor
     select
@@ -109,6 +111,8 @@ insert overwrite table insert_a_adaptor
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_10_lines
+POSTHOOK: Output: default@insert_a_adaptor
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -251,6 +255,8 @@ insert overwrite table insert_a_good
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
 PREHOOK: type: QUERY
+PREHOOK: Input: default@student_10_lines
+PREHOOK: Output: default@insert_a_good
 POSTHOOK: query: explain vectorization detail
 insert overwrite table insert_a_good
     select
@@ -265,6 +271,8 @@ insert overwrite table insert_a_good
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_10_lines
+POSTHOOK: Output: default@insert_a_good
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -427,6 +435,8 @@ insert overwrite table insert_a_better
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
 PREHOOK: type: QUERY
+PREHOOK: Input: default@student_10_lines
+PREHOOK: Output: default@insert_a_better
 POSTHOOK: query: explain vectorization detail
 insert overwrite table insert_a_better
     select
@@ -441,6 +451,8 @@ insert overwrite table insert_a_better
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_10_lines
+POSTHOOK: Output: default@insert_a_better
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -603,6 +615,8 @@ insert overwrite table insert_b_adaptor
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
 PREHOOK: type: QUERY
+PREHOOK: Input: default@student_10_lines
+PREHOOK: Output: default@insert_b_adaptor
 POSTHOOK: query: explain vectorization detail
 insert overwrite table insert_b_adaptor
     select
@@ -617,6 +631,8 @@ insert overwrite table insert_b_adaptor
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_10_lines
+POSTHOOK: Output: default@insert_b_adaptor
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -759,6 +775,8 @@ insert overwrite table insert_b_good
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
 PREHOOK: type: QUERY
+PREHOOK: Input: default@student_10_lines
+PREHOOK: Output: default@insert_b_good
 POSTHOOK: query: explain vectorization detail
 insert overwrite table insert_b_good
     select
@@ -773,6 +791,8 @@ insert overwrite table insert_b_good
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_10_lines
+POSTHOOK: Output: default@insert_b_good
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -935,6 +955,8 @@ insert overwrite table insert_b_better
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
 PREHOOK: type: QUERY
+PREHOOK: Input: default@student_10_lines
+PREHOOK: Output: default@insert_b_better
 POSTHOOK: query: explain vectorization detail
 insert overwrite table insert_b_better
     select
@@ -949,6 +971,8 @@ insert overwrite table insert_b_better
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_10_lines
+POSTHOOK: Output: default@insert_b_better
 Explain
 PLAN VECTORIZATION:
   enabled: true

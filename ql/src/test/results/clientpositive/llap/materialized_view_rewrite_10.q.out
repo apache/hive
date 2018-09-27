@@ -71,10 +71,16 @@ PREHOOK: query: explain
 select deptno, avg(salary) as a
 from emps_n10 group by deptno
 PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_n10
+PREHOOK: Input: default@mv1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select deptno, avg(salary) as a
 from emps_n10 group by deptno
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_n10
+POSTHOOK: Input: default@mv1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -140,10 +146,16 @@ PREHOOK: query: explain
 select salary, avg(salary) as a
 from emps_n10 group by salary
 PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_n10
+PREHOOK: Input: default@mv1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select salary, avg(salary) as a
 from emps_n10 group by salary
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_n10
+POSTHOOK: Input: default@mv1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -210,10 +222,16 @@ PREHOOK: query: explain
 select salary, avg(salary) as a
 from emps_n10 where salary > 0 group by salary
 PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_n10
+PREHOOK: Input: default@mv1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select salary, avg(salary) as a
 from emps_n10 where salary > 0 group by salary
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_n10
+POSTHOOK: Input: default@mv1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -325,10 +343,16 @@ PREHOOK: query: explain
 select avg(salary)
 from emps_n10_2 where salary > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_n10_2
+PREHOOK: Input: default@mv1_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select avg(salary)
 from emps_n10_2 where salary > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_n10_2
+POSTHOOK: Input: default@mv1_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

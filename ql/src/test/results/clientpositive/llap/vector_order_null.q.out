@@ -75,9 +75,13 @@ col1	col2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a asc, b asc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a asc, b asc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -197,9 +201,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a desc, b asc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a desc, b asc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -319,9 +327,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b asc, a asc nulls last
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b asc, a asc nulls last
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -441,9 +453,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b desc, a asc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b desc, a asc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -563,9 +579,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a asc nulls first, b asc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a asc nulls first, b asc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -685,9 +705,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a desc nulls first, b asc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a desc nulls first, b asc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -807,9 +831,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b asc nulls last, a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b asc nulls last, a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -929,9 +957,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b desc nulls last, a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b desc nulls last, a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1051,9 +1083,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a asc nulls last, b desc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY a asc nulls last, b desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1173,9 +1209,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b desc nulls last, a desc nulls last
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b desc nulls last, a desc nulls last
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1295,9 +1335,13 @@ NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b asc nulls first, a asc nulls last
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT x.* FROM src_null_n3 x ORDER BY b asc nulls first, a asc nulls last
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null_n3
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

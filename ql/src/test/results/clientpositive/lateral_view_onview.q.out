@@ -34,8 +34,14 @@ POSTHOOK: Lineage: lv_view.c3 SIMPLE [(lv_table_n0)lv_table_n0.FieldSchema(name:
 POSTHOOK: Lineage: lv_view.c4 SIMPLE [(lv_table_n0)lv_table_n0.FieldSchema(name:c4, type:char(1), comment:null), ]
 PREHOOK: query: EXPLAIN SELECT * FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY c1 ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table_n0
+PREHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY c1 ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table_n0
+POSTHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -133,8 +139,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT myTable.* FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table_n0
+PREHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT myTable.* FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table_n0
+POSTHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -202,8 +214,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table_n0
+PREHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table_n0
+POSTHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -337,8 +355,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT myTable2.* FROM lv_view LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table_n0
+PREHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT myTable2.* FROM lv_view LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table_n0
+POSTHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -525,9 +549,15 @@ POSTHOOK: Input: default@lv_view
 PREHOOK: query: EXPLAIN
 SELECT SIZE(c2),c3,TRIM(c1),c4,myCol from lv_view LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table_n0
+PREHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SIZE(c2),c3,TRIM(c1),c4,myCol from lv_view LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table_n0
+POSTHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -658,8 +688,14 @@ POSTHOOK: Lineage: lv_table2.c1 SIMPLE []
 POSTHOOK: Lineage: lv_table2.c2 EXPRESSION []
 PREHOOK: query: EXPLAIN WITH lv_view1 AS (SELECT lv_table1_n0.*, c2 FROM lv_table1_n0 JOIN lv_table2 ON lv_table1_n0.c1 = lv_table2.c1), lv_view2 AS (SELECT * FROM lv_view1 LATERAL VIEW explode(c2) myTable AS myCol) SELECT * FROM lv_view2 SORT BY c1 ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table1_n0
+PREHOOK: Input: default@lv_table2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH lv_view1 AS (SELECT lv_table1_n0.*, c2 FROM lv_table1_n0 JOIN lv_table2 ON lv_table1_n0.c1 = lv_table2.c1), lv_view2 AS (SELECT * FROM lv_view1 LATERAL VIEW explode(c2) myTable AS myCol) SELECT * FROM lv_view2 SORT BY c1 ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table1_n0
+POSTHOOK: Input: default@lv_table2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

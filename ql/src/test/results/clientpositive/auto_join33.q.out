@@ -5,6 +5,8 @@ SELECT * FROM
   (SELECT * FROM src WHERE key+2 < 10) b
     ON a.key+1=b.key+2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 SELECT * FROM
   (SELECT * FROM src WHERE key+1 < 10) a
@@ -12,6 +14,8 @@ SELECT * FROM
   (SELECT * FROM src WHERE key+2 < 10) b
     ON a.key+1=b.key+2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4

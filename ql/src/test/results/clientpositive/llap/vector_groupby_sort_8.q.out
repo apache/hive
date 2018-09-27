@@ -32,9 +32,15 @@ POSTHOOK: Lineage: t1_n2 PARTITION(ds=1).val SIMPLE [(t1_n2)t1_n2.FieldSchema(na
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key) from T1_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n2
+PREHOOK: Input: default@t1_n2@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key) from T1_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n2
+POSTHOOK: Input: default@t1_n2@ds=1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

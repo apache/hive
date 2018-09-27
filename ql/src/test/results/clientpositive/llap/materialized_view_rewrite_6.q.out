@@ -216,10 +216,16 @@ PREHOOK: query: explain
 select salary, sum(empid) + 1 as s
 from emps where deptno > 10 group by salary
 PREHOOK: type: QUERY
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select salary, sum(empid) + 1 as s
 from emps where deptno > 10 group by salary
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -334,10 +340,16 @@ PREHOOK: query: explain
 select salary + 1, sum(empid) + 1 as s
 from emps where deptno > 15 group by salary
 PREHOOK: type: QUERY
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select salary + 1, sum(empid) + 1 as s
 from emps where deptno > 15 group by salary
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -458,12 +470,22 @@ from emps
 join depts on (emps.deptno = depts.deptno)
 join dependents on (depts.name = dependents.name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select dependents.empid
 from emps
 join depts on (emps.deptno = depts.deptno)
 join dependents on (depts.name = dependents.name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -607,6 +629,12 @@ join dependents on (depts.name = dependents.name)
 join locations on (locations.name = dependents.name)
 join emps on (emps.deptno = depts.deptno)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@locations
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select dependents.empid
 from depts
@@ -614,6 +642,12 @@ join dependents on (depts.name = dependents.name)
 join locations on (locations.name = dependents.name)
 join emps on (emps.deptno = depts.deptno)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@locations
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -780,6 +814,11 @@ join dependents on (emps.empid = dependents.empid)
 join depts a on (emps.deptno=a.deptno)
 where emps.name = 'Bill'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select emps.empid, dependents.empid, emps.deptno
 from emps
@@ -787,6 +826,11 @@ join dependents on (emps.empid = dependents.empid)
 join depts a on (emps.deptno=a.deptno)
 where emps.name = 'Bill'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

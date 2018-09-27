@@ -8,8 +8,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n8 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n8 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -186,8 +190,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -394,8 +401,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -608,8 +618,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -940,8 +953,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1160,8 +1177,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1384,8 +1404,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1614,8 +1637,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1962,8 +1988,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2546,8 +2575,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2779,10 +2811,13 @@ PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/l
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

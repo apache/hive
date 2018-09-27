@@ -68,9 +68,13 @@ POSTHOOK: Lineage: orc_llap_nonvector.rdm EXPRESSION []
 PREHOOK: query: explain 
 select * from orc_llap_nonvector limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_nonvector
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select * from orc_llap_nonvector limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_nonvector
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -219,9 +223,13 @@ NULL	6544	-316718275	-1887561756	NULL	6544.0	w624FVokyo7m7a220	4hA4KQj2vD3fI6gX8
 PREHOOK: query: explain 
 select cint, cstring1 from orc_llap_nonvector limit 1025
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_nonvector
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select cint, cstring1 from orc_llap_nonvector limit 1025
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_nonvector
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1320,9 +1328,13 @@ POSTHOOK: Lineage: orc_llap_nonvector_2.rdm EXPRESSION []
 PREHOOK: query: explain
 select ROW__ID from orc_llap_nonvector_2 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_nonvector_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select ROW__ID from orc_llap_nonvector_2 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_nonvector_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -1,7 +1,11 @@
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -67,8 +71,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -134,8 +142,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where cast(key as int) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where cast(key as int) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -201,8 +213,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -268,8 +284,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key) as c1 from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key) as c1 from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -335,8 +355,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -402,8 +426,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -469,8 +497,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where cast(key as int) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where cast(key as int) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -536,8 +568,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -603,8 +639,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key, value) as c1  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key, value) as c1  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -670,8 +710,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -785,8 +829,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -900,8 +948,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1015,8 +1067,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1130,8 +1186,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1245,8 +1305,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1360,8 +1424,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1475,8 +1543,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+2 as key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where (cast(key as int) + 1) > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1590,8 +1662,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1705,8 +1781,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1773,8 +1853,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + value) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + value) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1841,8 +1925,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1908,8 +1996,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key + value) as c1 from src)r1 where (key + value) > '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key + value) as c1 from src)r1 where (key + value) > '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1976,8 +2068,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+(cast(value as int)) as key, sum(key) over(partition by key) as c1 from src)r1 where key > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select * from (SELECT (cast(key as int))+(cast(value as int)) as key, sum(key) over(partition by key) as c1 from src)r1 where key > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

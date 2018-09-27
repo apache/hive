@@ -61,9 +61,13 @@ POSTHOOK: Lineage: decimal_udf_n0.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -178,9 +182,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -295,9 +303,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -412,9 +424,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -529,9 +545,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -646,9 +666,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -763,9 +787,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -880,9 +908,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -997,9 +1029,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1114,9 +1150,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1221,9 +1261,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1338,9 +1382,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1455,9 +1503,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1572,9 +1624,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1689,9 +1745,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1808,9 +1868,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1917,9 +1981,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2026,9 +2094,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2143,9 +2215,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2260,9 +2336,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2459,9 +2539,13 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2576,9 +2660,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2647,8 +2735,12 @@ NULL
 NULL
 PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2733,9 +2825,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2850,9 +2946,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2967,9 +3067,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3084,9 +3188,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3201,9 +3309,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3365,9 +3477,13 @@ NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3529,9 +3645,13 @@ NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3613,9 +3733,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3744,9 +3868,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3875,9 +4003,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4038,9 +4170,13 @@ POSTHOOK: Lineage: decimal_udf_txt_small.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4155,9 +4291,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4272,9 +4412,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4389,9 +4533,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4506,9 +4654,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4623,9 +4775,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4740,9 +4896,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4857,9 +5017,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4974,9 +5138,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5091,9 +5259,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_txt_small where key * value > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_txt_small where key * value > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5198,9 +5370,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5315,9 +5491,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5432,9 +5612,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5549,9 +5733,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5666,9 +5854,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_txt_small WHERE key is not null and key <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_txt_small WHERE key is not null and key <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5785,9 +5977,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_txt_small WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_txt_small WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5894,9 +6090,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_txt_small  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_txt_small  WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6003,9 +6203,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6120,9 +6324,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6237,9 +6445,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_txt_small GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_txt_small GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6436,9 +6648,13 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6553,9 +6769,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6624,8 +6844,12 @@ NULL
 NULL
 PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6710,9 +6934,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6827,9 +7055,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6944,9 +7176,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7061,9 +7297,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7178,9 +7418,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7342,9 +7586,13 @@ NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7506,9 +7754,13 @@ NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7590,9 +7842,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7721,9 +7977,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7852,9 +8112,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

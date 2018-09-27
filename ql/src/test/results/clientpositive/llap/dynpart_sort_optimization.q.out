@@ -110,8 +110,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part_buck_sort
 PREHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part@ds=foo
 POSTHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -189,8 +192,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part_limit@ds=foo
 POSTHOOK: query: explain insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -287,8 +293,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part_buck
 POSTHOOK: query: explain insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -365,8 +374,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part_buck_sort
 POSTHOOK: query: explain insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -511,8 +523,11 @@ POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__)
 POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
 PREHOOK: query: explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part@ds=foo
 POSTHOOK: query: explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -590,8 +605,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part_limit@ds=foo
 POSTHOOK: query: explain insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -688,8 +706,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part_buck
 POSTHOOK: query: explain insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -766,8 +787,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part_buck_sort
 POSTHOOK: query: explain insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1298,8 +1322,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part2
 PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part2@ds=foo
 POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1412,8 +1439,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part2@ds=foo
 POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1491,8 +1521,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from (select * from over1k_n3 order by i limit 10) tmp where t is null or t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part2@ds=foo
 POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from (select * from over1k_n3 order by i limit 10) tmp where t is null or t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1591,8 +1624,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 group by si,i,b,f,t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part2@ds=foo
 POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 group by si,i,b,f,t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1711,8 +1747,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 group by si,i,b,f,t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part2@ds=foo
 POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 group by si,i,b,f,t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2099,8 +2138,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part_buck_sort2
 PREHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part_buck_sort2
 POSTHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2213,8 +2255,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part_buck_sort2
 POSTHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2585,8 +2630,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part3
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where s="foo"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part3
 POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where s="foo"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2665,8 +2713,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part3
 POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2745,8 +2796,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part3
 POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2825,8 +2879,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part3
 POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2905,8 +2962,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and s="foo"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part3
 POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and s="foo"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2985,8 +3045,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27 and s="foo"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part3
 POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27 and s="foo"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -3065,8 +3128,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27 and s="foo"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part3
 POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27 and s="foo"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

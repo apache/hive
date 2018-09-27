@@ -126,6 +126,10 @@ order by
 	p_type,
 	p_size
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_hive
+PREHOOK: Input: default@partsupp_hive
+PREHOOK: Input: default@supplier_hive
+#### A masked pattern was here ####
 POSTHOOK: query: explain select
 	p_brand,
 	p_type,
@@ -157,6 +161,10 @@ order by
 	p_type,
 	p_size
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_hive
+POSTHOOK: Input: default@partsupp_hive
+POSTHOOK: Input: default@supplier_hive
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-7

@@ -24,8 +24,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into4b
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into4a SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into4a
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into4a SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into4a
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -153,8 +157,12 @@ POSTHOOK: Input: default@insert_into4a
 -826625916
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into4a SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into4a
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into4a SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into4a
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -282,8 +290,12 @@ POSTHOOK: Input: default@insert_into4a
 -1653251832
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into4b SELECT * FROM insert_into4a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into4a
+PREHOOK: Output: default@insert_into4b
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into4b SELECT * FROM insert_into4a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into4a
+POSTHOOK: Output: default@insert_into4b
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

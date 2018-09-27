@@ -534,8 +534,14 @@ POSTHOOK: Input: default@encrypted_table
 97	val_97
 PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encrypted_table t2 WHERE t1.key = t2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encrypted_table t2 WHERE t1.key = t2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`src`

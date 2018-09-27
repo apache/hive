@@ -14,8 +14,12 @@ POSTHOOK: Lineage: date_decimal_test_parquet.cdouble SIMPLE [(alltypesparquet)al
 POSTHOOK: Lineage: date_decimal_test_parquet.cint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdate, cdecimal from date_decimal_test_parquet where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_decimal_test_parquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdate, cdecimal from date_decimal_test_parquet where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_decimal_test_parquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

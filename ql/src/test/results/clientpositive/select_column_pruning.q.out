@@ -27,8 +27,12 @@ POSTHOOK: Lineage: lv_table1.c8 SIMPLE []
 POSTHOOK: Lineage: lv_table1.c9 SIMPLE []
 PREHOOK: query: EXPLAIN SELECT * FROM lv_table1 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE c3 = 100 SORT BY c1 ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM lv_table1 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE c3 = 100 SORT BY c1 ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

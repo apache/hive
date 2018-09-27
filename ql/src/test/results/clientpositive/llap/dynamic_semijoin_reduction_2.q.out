@@ -50,6 +50,9 @@ FROM table_1_n2 tt1
 INNER JOIN table_18_n2 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
 WHERE (t1.timestamp_col_9) = (tt2.timestamp_col_18))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_18_n2
+PREHOOK: Input: default@table_1_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT
 COUNT(*)
@@ -64,6 +67,9 @@ FROM table_1_n2 tt1
 INNER JOIN table_18_n2 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
 WHERE (t1.timestamp_col_9) = (tt2.timestamp_col_18))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_18_n2
+POSTHOOK: Input: default@table_1_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -508,6 +514,9 @@ select
   on
   a.key = b.key join src1 c on a.value = c.value where c.key < 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab2_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   count(*)
@@ -518,6 +527,9 @@ select
   on
   a.key = b.key join src1 c on a.value = c.value where c.key < 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab2_n6
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -29,9 +29,13 @@ POSTHOOK: Lineage: acid_vectorized_n1.b SCRIPT []
 PREHOOK: query: explain extended
 select sum(a) from acid_vectorized_n1 where false
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_vectorized_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select sum(a) from acid_vectorized_n1 where false
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_vectorized_n1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT SUM(`a`) AS `$f0`
 FROM `default`.`acid_vectorized_n1`
 WHERE FALSE

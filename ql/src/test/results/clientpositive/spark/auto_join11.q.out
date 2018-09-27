@@ -6,6 +6,8 @@ JOIN
 (SELECT src.key as c3, src.value as c4 from src) src2
 ON src1.c1 = src2.c3 AND src1.c1 < 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT sum(hash(src1.c1, src2.c4)) 
 FROM
@@ -14,6 +16,8 @@ JOIN
 (SELECT src.key as c3, src.value as c4 from src) src2
 ON src1.c1 = src2.c3 AND src1.c1 < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

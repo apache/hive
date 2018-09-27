@@ -103,9 +103,13 @@ POSTHOOK: Lineage: orc_llap_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSc
 PREHOOK: query: explain vectorization select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
  group by cdecimal1,cdecimal2 limit 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
  group by cdecimal1,cdecimal2 limit 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -204,9 +208,13 @@ POSTHOOK: Input: default@orc_llap_n0
 PREHOOK: query: explain vectorization select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
  group by cdecimal1,cdecimal2 limit 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
  group by cdecimal1,cdecimal2 limit 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

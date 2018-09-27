@@ -70,8 +70,16 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds='2008-04-08',hr=11) compute statistics
 PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_srcpart_n1
+PREHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-08/hr=11
+PREHOOK: Output: default@analyze_srcpart_n1
+PREHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-08/hr=11
 POSTHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds='2008-04-08',hr=11) compute statistics
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_srcpart_n1
+POSTHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@analyze_srcpart_n1
+POSTHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-08/hr=11
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -217,8 +225,16 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds='2008-04-08',hr=12) compute statistics
 PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_srcpart_n1
+PREHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-08/hr=12
+PREHOOK: Output: default@analyze_srcpart_n1
+PREHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-08/hr=12
 POSTHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds='2008-04-08',hr=12) compute statistics
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_srcpart_n1
+POSTHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@analyze_srcpart_n1
+POSTHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-08/hr=12
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -290,8 +306,16 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds='2008-04-09',hr=11) compute statistics
 PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_srcpart_n1
+PREHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-09/hr=11
+PREHOOK: Output: default@analyze_srcpart_n1
+PREHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-09/hr=11
 POSTHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds='2008-04-09',hr=11) compute statistics
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_srcpart_n1
+POSTHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@analyze_srcpart_n1
+POSTHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-09/hr=11
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -363,8 +387,16 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds='2008-04-09',hr=12) compute statistics
 PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_srcpart_n1
+PREHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-09/hr=12
+PREHOOK: Output: default@analyze_srcpart_n1
+PREHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-09/hr=12
 POSTHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds='2008-04-09',hr=12) compute statistics
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_srcpart_n1
+POSTHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@analyze_srcpart_n1
+POSTHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-09/hr=12
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -436,8 +468,28 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds, hr) compute statistics
 PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_srcpart_n1
+PREHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-08/hr=11
+PREHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-08/hr=12
+PREHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-09/hr=11
+PREHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-09/hr=12
+PREHOOK: Output: default@analyze_srcpart_n1
+PREHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-08/hr=11
+PREHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-08/hr=12
+PREHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-09/hr=11
+PREHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-09/hr=12
 POSTHOOK: query: explain analyze table analyze_srcpart_n1 PARTITION(ds, hr) compute statistics
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_srcpart_n1
+POSTHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@analyze_srcpart_n1@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@analyze_srcpart_n1
+POSTHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@analyze_srcpart_n1@ds=2008-04-09/hr=12
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

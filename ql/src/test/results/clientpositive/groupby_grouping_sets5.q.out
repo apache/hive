@@ -18,10 +18,14 @@ PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n24
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n24
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -107,10 +111,14 @@ PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by cube(a, b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n24
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by cube(a, b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n24
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -221,10 +229,14 @@ PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n24
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n24
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

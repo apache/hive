@@ -146,11 +146,17 @@ SELECT a, c
 FROM cmv_basetable_n2
 WHERE a = 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Input: default@cmv_mat_view2_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT a, c
 FROM cmv_basetable_n2
 WHERE a = 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Input: default@cmv_mat_view2_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -196,6 +202,9 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Input: default@cmv_mat_view2_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
@@ -203,6 +212,9 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Input: default@cmv_mat_view2_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -321,6 +333,8 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
@@ -328,6 +342,8 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -426,9 +442,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Output: default@cmv_mat_view2_n0
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Output: default@cmv_mat_view2_n0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-4 depends on stages: Stage-0, Stage-1, Stage-2
@@ -531,6 +551,9 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Input: default@cmv_mat_view2_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
@@ -538,6 +561,9 @@ SELECT * FROM (
   (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Input: default@cmv_mat_view2_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

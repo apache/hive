@@ -205,6 +205,9 @@ FROM druid_kafka_test) b
   ON a.shortname = b.language
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_kafka_test
+PREHOOK: Input: default@languages
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT a.fullname, b.`user`
 FROM
@@ -217,6 +220,9 @@ FROM druid_kafka_test) b
   ON a.shortname = b.language
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_kafka_test
+POSTHOOK: Input: default@languages
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

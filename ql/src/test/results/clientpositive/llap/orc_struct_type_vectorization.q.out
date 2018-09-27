@@ -74,8 +74,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1023
 PREHOOK: query: explain vectorization expression select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -195,8 +199,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 10	2010
 PREHOOK: query: explain vectorization expression select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

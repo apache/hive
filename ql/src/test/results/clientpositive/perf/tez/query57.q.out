@@ -45,6 +45,11 @@ with v1 as(
  order by sum_sales - avg_monthly_sales, 3
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@call_center
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 with v1 as(
  select i_category, i_brand,
@@ -92,6 +97,11 @@ with v1 as(
  order by sum_sales - avg_monthly_sales, 3
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@call_center
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

@@ -13,9 +13,13 @@ POSTHOOK: Output: default@list_bucketing
 PREHOOK: query: explain extended
 insert overwrite table list_bucketing select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@list_bucketing
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@list_bucketing
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
@@ -286,9 +290,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain extended
 select key, value from list_bucketing where key = "484"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value from list_bucketing where key = "484"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, `value`
 FROM `default`.`list_bucketing`
 WHERE `key` = '484'

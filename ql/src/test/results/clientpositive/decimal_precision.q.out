@@ -524,8 +524,12 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: EXPLAIN SELECT avg(`dec`), sum(`dec`) FROM DECIMAL_PRECISION_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_precision_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT avg(`dec`), sum(`dec`) FROM DECIMAL_PRECISION_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_precision_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

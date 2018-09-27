@@ -45,11 +45,17 @@ SELECT *
 FROM test1_n0 LEFT OUTER JOIN test2
 ON (test1_n0.value=test2.value AND test1_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n0
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n0 LEFT OUTER JOIN test2
 ON (test1_n0.value=test2.value AND test1_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n0
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -144,11 +150,17 @@ SELECT *
 FROM test1_n0 LEFT OUTER JOIN test2
 ON (test1_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n0
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n0 LEFT OUTER JOIN test2
 ON (test1_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n0
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

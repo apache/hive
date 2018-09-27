@@ -6,8 +6,12 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: rot13
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

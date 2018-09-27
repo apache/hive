@@ -109,9 +109,13 @@ POSTHOOK: Output: default@nested_struct_struct_table
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_array_array_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_array_array_table
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_array_array_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_array_array_table
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -157,9 +161,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_array_map_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_array_map_table
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_array_map_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_array_map_table
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -205,9 +213,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_array_map_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_array_map_table
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_array_map_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_array_map_table
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -253,9 +265,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_map_array_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_map_array_table
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_map_array_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_map_array_table
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -301,9 +317,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_map_map_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_map_map_table
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_map_map_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_map_map_table
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -349,9 +369,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_map_struct_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_map_struct_table
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_map_struct_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_map_struct_table
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -397,9 +421,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_struct_array_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_struct_array_table
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_struct_array_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_struct_array_table
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -445,9 +473,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_struct_map_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_struct_map_table
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_struct_map_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_struct_map_table
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -493,9 +525,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_struct_struct_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_struct_struct_table
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM nested_struct_struct_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_struct_struct_table
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

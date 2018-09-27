@@ -22,9 +22,13 @@ POSTHOOK: Lineage: decimal_test.dc SCRIPT []
 PREHOOK: query: explain 
 select * from decimal_test where dc = 4327269606205.029297
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select * from decimal_test where dc = 4327269606205.029297
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

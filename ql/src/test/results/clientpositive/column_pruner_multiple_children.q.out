@@ -21,9 +21,13 @@ POSTHOOK: Lineage: s_n129.value SIMPLE [(src)src.FieldSchema(name:value, type:st
 PREHOOK: query: explain FROM S_n129
 INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n129
+PREHOOK: Output: default@dest1_n52
 POSTHOOK: query: explain FROM S_n129
 INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n129
+POSTHOOK: Output: default@dest1_n52
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
