@@ -38,6 +38,8 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   db  = '-307' AND
   str = 1234
 PREHOOK: type: QUERY
+PREHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '127' AND
   si  = 32767 AND
@@ -47,6 +49,8 @@ POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   db  = '-307' AND
   str = 1234
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -113,6 +117,8 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   fl  = 'float' OR
   db  = 'double'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR
@@ -121,6 +127,8 @@ POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   fl  = 'float' OR
   db  = 'double'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -181,11 +189,15 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   si  = 327.0 OR
   i   = '-100.0'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '127.0' OR
   si  = 327.0 OR
   i   = '-100.0'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -240,11 +252,15 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   i > '100.0' AND
   str = 1.57
 PREHOOK: type: QUERY
+PREHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti < '127.0' AND
   i > '100.0' AND
   str = 1.57
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -24,26 +24,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.rel.RelCollation;
-import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexFieldAccess;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexPermuteInputsShuttle;
 import org.apache.calcite.rex.RexVisitor;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql2rel.CorrelationReferenceFinder;
 import org.apache.calcite.sql2rel.RelFieldTrimmer;
@@ -56,6 +56,7 @@ import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -296,6 +297,75 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     return hp;
   }
 
+  private boolean isRexLiteral(final RexNode rexNode) {
+    if(rexNode instanceof RexLiteral) {
+      return true;
+    }
+    else if(rexNode instanceof RexCall
+        && ((RexCall)rexNode).getOperator().getKind() == SqlKind.CAST){
+      return isRexLiteral(((RexCall)(rexNode)).getOperands().get(0));
+    }
+    else {
+      return false;
+    }
+  }
+  /**
+   * Variant of {@link #trimFields(Aggregate, ImmutableBitSet, Set)} for
+   * {@link org.apache.calcite.rel.logical.LogicalAggregate}.
+   * This method replaces group by 'constant key' with group by true (boolean)
+   * if and only if
+   *  group by doesn't have grouping sets
+   *  all keys in group by are constant
+   *  none of the relnode above aggregate refers to these keys
+   *
+   *  If all of above is true then group by is rewritten and a new project is introduced
+   *  underneath aggregate
+   *
+   *  This is mainly done so that hive is able to push down queries with
+   *  group by 'constant key with type not supported by druid' into druid
+   */
+  public TrimResult trimFields(Aggregate aggregate, ImmutableBitSet fieldsUsed,
+                               Set<RelDataTypeField> extraFields) {
+
+    Aggregate newAggregate = aggregate;
+    if (!(aggregate.getIndicatorCount() > 0)
+        && !(aggregate.getGroupSet().isEmpty())
+        && !fieldsUsed.contains(aggregate.getGroupSet())) {
+      final RelNode input = aggregate.getInput();
+      final RelDataType rowType = input.getRowType();
+      RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
+      final List<RexNode> newProjects = new ArrayList<>();
+
+      final List<RexNode> inputExprs = input.getChildExps();
+      if(inputExprs == null || inputExprs.isEmpty()) {
+        return super.trimFields(newAggregate, fieldsUsed, extraFields);
+      }
+
+      boolean allConstants = true;
+      for(int key : aggregate.getGroupSet()) {
+        // getChildExprs on Join could return less number of expressions than there are coming out of join
+        if(inputExprs.size() <= key || !isRexLiteral(inputExprs.get(key))){
+          allConstants = false;
+          break;
+        }
+      }
+
+      if (allConstants) {
+        for (int i = 0; i < rowType.getFieldCount(); i++) {
+          if (aggregate.getGroupSet().get(i)) {
+            newProjects.add(rexBuilder.makeLiteral(true));
+          } else {
+            newProjects.add(rexBuilder.makeInputRef(input, i));
+          }
+        }
+        relBuilder.push(input);
+        relBuilder.project(newProjects);
+        newAggregate = new HiveAggregate(aggregate.getCluster(), aggregate.getTraitSet(), relBuilder.build(),
+                                         aggregate.getGroupSet(), null, aggregate.getAggCallList());
+      }
+    }
+    return super.trimFields(newAggregate, fieldsUsed, extraFields);
+  }
   /**
    * Variant of {@link #trimFields(RelNode, ImmutableBitSet, Set)} for
    * {@link org.apache.calcite.rel.logical.LogicalProject}.

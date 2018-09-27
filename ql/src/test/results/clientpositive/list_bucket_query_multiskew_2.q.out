@@ -78,8 +78,14 @@ POSTHOOK: Input: default@fact_daily_n2
 500
 PREHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and value= 'val_484'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n2
+PREHOOK: Input: default@fact_daily_n2@ds=1/hr=4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and value= 'val_484'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n2
+POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, CAST('val_484' AS STRING) AS `value`
 FROM `default`.`fact_daily_n2`
 WHERE `ds` = '1' AND `hr` = '4' AND `value` = 'val_484'
@@ -251,9 +257,15 @@ POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 484	val_484
 PREHOOK: query: explain extended SELECT key FROM fact_daily_n2 WHERE ds='1' and hr='4' and key= '406'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n2
+PREHOOK: Input: default@fact_daily_n2@ds=1/hr=4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT key FROM fact_daily_n2 WHERE ds='1' and hr='4' and key= '406'
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT CAST('406' AS STRING) AS `key`
+POSTHOOK: Input: default@fact_daily_n2
+POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST('406' AS STRING) AS `$f0`
 FROM `default`.`fact_daily_n2`
 WHERE `ds` = '1' AND `hr` = '4' AND `key` = '406'
 STAGE DEPENDENCIES:
@@ -377,8 +389,14 @@ POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 406	val_406
 PREHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n2
+PREHOOK: Input: default@fact_daily_n2@ds=1/hr=4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n2
+POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

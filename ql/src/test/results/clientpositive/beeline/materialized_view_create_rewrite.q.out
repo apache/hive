@@ -109,9 +109,15 @@ totalSize	326
 PREHOOK: query: explain
 select a, c from cmv_basetable_n10 where a = 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n10
+PREHOOK: Input: default@cmv_mat_view2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a, c from cmv_basetable_n10 where a = 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n10
+POSTHOOK: Input: default@cmv_mat_view2_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -124,7 +130,7 @@ STAGE PLANS:
           alias: default.cmv_mat_view2_n4
           Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: 3 (type: int), c (type: decimal(10,2))
+            expressions: a (type: int), c (type: decimal(10,2))
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -157,6 +163,8 @@ select * from (
   (select a, c from cmv_basetable_n10 where d = 3) table2
   on table1.a = table2.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (
   (select a, c from cmv_basetable_n10 where a = 3) table1
@@ -164,6 +172,8 @@ select * from (
   (select a, c from cmv_basetable_n10 where d = 3) table2
   on table1.a = table2.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -251,9 +261,13 @@ POSTHOOK: Input: default@cmv_basetable_n10
 PREHOOK: query: explain
 alter materialized view cmv_mat_view2_n4 enable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@cmv_mat_view2_n4
+PREHOOK: Output: default@cmv_mat_view2_n4
 POSTHOOK: query: explain
 alter materialized view cmv_mat_view2_n4 enable rewrite
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@cmv_mat_view2_n4
+POSTHOOK: Output: default@cmv_mat_view2_n4
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -280,6 +294,9 @@ select * from (
   (select a, c from cmv_basetable_n10 where d = 3) table2
   on table1.a = table2.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n10
+PREHOOK: Input: default@cmv_mat_view2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (
   (select a, c from cmv_basetable_n10 where a = 3) table1
@@ -287,6 +304,9 @@ select * from (
   (select a, c from cmv_basetable_n10 where d = 3) table2
   on table1.a = table2.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n10
+POSTHOOK: Input: default@cmv_mat_view2_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -381,6 +401,8 @@ select * from (
   (select a, c from cmv_basetable_n10 where d = 3) table2
   on table1.a = table2.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n10
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (
   (select a, c from cmv_basetable_n10 where a = 3) table1
@@ -388,6 +410,8 @@ select * from (
   (select a, c from cmv_basetable_n10 where d = 3) table2
   on table1.a = table2.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -23,8 +23,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n51
 PREHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1_n51 SELECT octet_length(src1.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest1_n51
 POSTHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1_n51 SELECT octet_length(src1.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest1_n51
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -161,8 +165,12 @@ POSTHOOK: Output: default@dest2_n10
 POSTHOOK: Lineage: dest2_n10.name SIMPLE [(dest1_n51)dest1_n51.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN SELECT octet_length(dest2_n10.name) FROM dest2_n10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2_n10
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT octet_length(dest2_n10.name) FROM dest2_n10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2_n10
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

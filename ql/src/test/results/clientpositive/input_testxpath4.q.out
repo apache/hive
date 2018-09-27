@@ -5,6 +5,8 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       AND lintstring.myint IS NOT NULL
       AND lintstring IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
@@ -12,6 +14,8 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       AND lintstring.myint IS NOT NULL
       AND lintstring IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -77,6 +81,8 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       AND lintstring.myint IS NOT NULL
       AND lintstring IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
@@ -84,6 +90,8 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       AND lintstring.myint IS NOT NULL
       AND lintstring IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

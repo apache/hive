@@ -24,6 +24,8 @@ GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
 FROM t_n33
@@ -31,6 +33,8 @@ GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -103,7 +107,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col3 ASC NULLS FIRST
+                  order by: _col3 ASC NULLS LAST
                   partition by: _col0
                   raw input shape:
                   window functions:

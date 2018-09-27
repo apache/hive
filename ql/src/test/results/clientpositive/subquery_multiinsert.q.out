@@ -43,6 +43,9 @@ INSERT OVERWRITE TABLE src_5
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_4
+PREHOOK: Output: default@src_5
 POSTHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -57,6 +60,9 @@ INSERT OVERWRITE TABLE src_5
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_4
+POSTHOOK: Output: default@src_5
 STAGE DEPENDENCIES:
   Stage-11 is a root stage
   Stage-2 depends on stages: Stage-11
@@ -578,6 +584,9 @@ INSERT OVERWRITE TABLE src_5
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_4
+PREHOOK: Output: default@src_5
 POSTHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -592,6 +601,9 @@ INSERT OVERWRITE TABLE src_5
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_4
+POSTHOOK: Output: default@src_5
 STAGE DEPENDENCIES:
   Stage-11 is a root stage
   Stage-15 depends on stages: Stage-11 , consists of Stage-18, Stage-2

@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.Unsu
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -353,6 +354,8 @@ public class RexNodeConverter {
           childRexNodeLst = rewriteInClauseChildren(calciteOp, childRexNodeLst);
           calciteOp = SqlStdOperatorTable.OR;
         }
+      } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
+        childRexNodeLst = rewriteToDateChildren(childRexNodeLst);
       }
       expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
     } else {
@@ -530,6 +533,22 @@ public class RexNodeConverter {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MINUTE));
     } else if (op == HiveFloorDate.SECOND) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.SECOND));
+    }
+    return newChildRexNodeLst;
+  }
+
+
+  private List<RexNode> rewriteToDateChildren(List<RexNode> childRexNodeLst) {
+    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
+    assert childRexNodeLst.size() == 1;
+    RexNode child = childRexNodeLst.get(0);
+    if (SqlTypeUtil.isDatetime(child.getType()) || SqlTypeUtil.isInterval(
+            child.getType())) {
+      newChildRexNodeLst.add(child);
+    } else {
+      newChildRexNodeLst.add(
+              cluster.getRexBuilder().makeCast(cluster.getTypeFactory().createSqlType(SqlTypeName.TIMESTAMP),
+                      child));
     }
     return newChildRexNodeLst;
   }

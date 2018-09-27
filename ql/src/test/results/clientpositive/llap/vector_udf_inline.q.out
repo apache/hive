@@ -12,6 +12,8 @@ SELECT inline(
   )
 )  as (id, text) FROM SRC limit 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT inline( 
   ARRAY(
@@ -21,6 +23,8 @@ SELECT inline(
   )
 )  as (id, text) FROM SRC limit 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -3,11 +3,15 @@ with q1 as ( select key from src where key = '5')
 select *
 from q1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1 as ( select key from src where key = '5')
 select *
 from q1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
@@ -126,10 +130,14 @@ PREHOOK: query: explain
 with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
@@ -247,11 +255,15 @@ with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')
 select * from (select key from q1) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')
 select * from (select key from q1) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4

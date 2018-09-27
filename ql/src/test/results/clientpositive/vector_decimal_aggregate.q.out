@@ -40,6 +40,8 @@ SELECT cint,
     GROUP BY cint
     HAVING COUNT(*) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_vgby
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cint,
     COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1),
@@ -48,6 +50,8 @@ SELECT cint,
     GROUP BY cint
     HAVING COUNT(*) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_vgby
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -181,6 +185,8 @@ SELECT cint,
     GROUP BY cint
     HAVING COUNT(*) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_vgby
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cint,
     COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1), AVG(cdecimal1), STDDEV_POP(cdecimal1), STDDEV_SAMP(cdecimal1),
@@ -189,6 +195,8 @@ SELECT cint,
     GROUP BY cint
     HAVING COUNT(*) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_vgby
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -357,6 +365,8 @@ SELECT cint,
     GROUP BY cint
     HAVING COUNT(*) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_vgby_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cint,
     COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1),
@@ -365,6 +375,8 @@ SELECT cint,
     GROUP BY cint
     HAVING COUNT(*) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_vgby_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -517,6 +529,8 @@ SELECT cint,
     GROUP BY cint
     HAVING COUNT(*) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_vgby_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cint,
     COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1), AVG(cdecimal1), STDDEV_POP(cdecimal1), STDDEV_SAMP(cdecimal1),
@@ -525,6 +539,8 @@ SELECT cint,
     GROUP BY cint
     HAVING COUNT(*) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_vgby_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

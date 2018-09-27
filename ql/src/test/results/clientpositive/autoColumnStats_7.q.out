@@ -19,9 +19,13 @@ POSTHOOK: Output: default@src_temp
 PREHOOK: query: explain FROM src_temp
 INSERT OVERWRITE TABLE dest_g2_n5 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_temp
+PREHOOK: Output: default@dest_g2_n5
 POSTHOOK: query: explain FROM src_temp
 INSERT OVERWRITE TABLE dest_g2_n5 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_temp
+POSTHOOK: Output: default@dest_g2_n5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

@@ -67,6 +67,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src10_1_n0
+PREHOOK: Input: default@src10_2_n0
+PREHOOK: Input: default@src10_3_n0
+PREHOOK: Input: default@src10_4_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
@@ -74,6 +79,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src10_1_n0
+POSTHOOK: Input: default@src10_2_n0
+POSTHOOK: Input: default@src10_3_n0
+POSTHOOK: Input: default@src10_4_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-2 depends on stages: Stage-7
@@ -235,6 +245,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src10_1_n0
+PREHOOK: Input: default@src10_2_n0
+PREHOOK: Input: default@src10_3_n0
+PREHOOK: Input: default@src10_4_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
@@ -242,6 +257,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src10_1_n0
+POSTHOOK: Input: default@src10_2_n0
+POSTHOOK: Input: default@src10_3_n0
+POSTHOOK: Input: default@src10_4_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

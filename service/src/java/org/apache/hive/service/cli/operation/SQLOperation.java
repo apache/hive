@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -321,6 +322,13 @@ public class SQLOperation extends ExecuteStatementOperation {
             LOG.error("Error running hive query: ", e);
           } finally {
             LogUtils.unregisterLoggingContext();
+            Hive hiveDb = Hive.getThreadLocal();
+            if (hiveDb != null && hiveDb != parentHive) {
+              // If new hive object is created  by the child thread, then we need to close it as it might
+              // have created a hms connection. Call Hive.closeCurrent() that closes the HMS connection, causes
+              // HMS connection leaks otherwise.
+              Hive.closeCurrent();
+            }
           }
           return null;
         }

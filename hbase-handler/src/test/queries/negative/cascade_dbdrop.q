@@ -15,14 +15,8 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
 TBLPROPERTIES ("hbase.table.name" = "hbase_table_0", "external.table.purge" = "true");
 
-dfs -ls target/tmp/hbase/data/default/hbase_table_0;
+dfs -ls ${hiveconf:hbase.rootdir}/data/default/hbase_table_0;
 
 DROP DATABASE IF EXISTS hbaseDB CASCADE;
 
-dfs -ls target/tmp/hbase/data/default/hbase_table_0;
-
-
-
-
-
-
+dfs -ls ${hiveconf:hbase.rootdir}/data/default/hbase_table_0;

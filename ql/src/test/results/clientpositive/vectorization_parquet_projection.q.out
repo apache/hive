@@ -116,8 +116,12 @@ POSTHOOK: Lineage: parquet_project_test.cint EXPRESSION []
 POSTHOOK: Lineage: parquet_project_test.m1 EXPRESSION []
 PREHOOK: query: explain vectorization select * from parquet_project_test
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select * from parquet_project_test
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -189,8 +193,12 @@ POSTHOOK: Input: default@parquet_project_test
 3	{"color":"blue"}
 PREHOOK: query: explain vectorization select count(*) from parquet_project_test
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select count(*) from parquet_project_test
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -263,9 +271,13 @@ POSTHOOK: Input: default@parquet_project_test
 PREHOOK: query: explain vectorization select cint, count(*) from parquet_project_test
 group by cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select cint, count(*) from parquet_project_test
 group by cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -348,9 +360,13 @@ POSTHOOK: Input: default@parquet_project_test
 PREHOOK: query: explain vectorization select m1["color"], count(*) from parquet_project_test
 group by m1["color"]
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select m1["color"], count(*) from parquet_project_test
 group by m1["color"]
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -450,8 +466,14 @@ POSTHOOK: Lineage: parquet_nullsplit PARTITION(len=1).key SCRIPT []
 POSTHOOK: Lineage: parquet_nullsplit PARTITION(len=1).val SCRIPT []
 PREHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_nullsplit
+PREHOOK: Input: default@parquet_nullsplit@len=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_nullsplit
+POSTHOOK: Input: default@parquet_nullsplit@len=1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -526,8 +548,12 @@ POSTHOOK: Input: default@parquet_nullsplit@len=1
 1
 PREHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '99'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_nullsplit
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '99'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_nullsplit
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

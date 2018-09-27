@@ -18,6 +18,8 @@ WHERE  (((cboolean2 IS NOT NULL)
             AND ((ctimestamp2 IS NOT NULL)
                  AND (cstring2 LIKE 'a'))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(csmallint),
        (MAX(csmallint) * -75),
@@ -38,6 +40,8 @@ WHERE  (((cboolean2 IS NOT NULL)
             AND ((ctimestamp2 IS NOT NULL)
                  AND (cstring2 LIKE 'a'))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -94,10 +98,9 @@ STAGE PLANS:
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
-                              keyColumnNums: []
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [0, 1, 2, 3, 4]
+                              valueColumns: 0:smallint, 1:bigint, 2:smallint, 3:bigint, 4:tinyint
                           Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: tinyint)
             Execution mode: vectorized, llap

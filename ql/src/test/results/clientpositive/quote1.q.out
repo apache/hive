@@ -10,10 +10,14 @@ PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n103 PARTITION(`table`='2008-04-08') SELECT src.key as `partition`, src.value as `from` WHERE src.key >= 200 and src.key < 300
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n103@table=2008-04-08
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n103 PARTITION(`table`='2008-04-08') SELECT src.key as `partition`, src.value as `from` WHERE src.key >= 200 and src.key < 300
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n103@table=2008-04-08
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -144,9 +148,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN
 SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1_n103 `int` WHERE `int`.`table` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n103
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1_n103 `int` WHERE `int`.`table` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n103
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

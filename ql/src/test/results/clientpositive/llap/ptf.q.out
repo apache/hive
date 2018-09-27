@@ -8,6 +8,8 @@ from noop(on part
   order by p_name
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -18,6 +20,8 @@ from noop(on part
   order by p_name
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -60,7 +64,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -72,7 +76,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -87,7 +91,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -185,6 +189,8 @@ from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_part
 distribute by j.p_mfgr
 sort by j.p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
@@ -192,6 +198,8 @@ from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_part
 distribute by j.p_mfgr
 sort by j.p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -272,7 +280,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -299,7 +307,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -379,12 +387,16 @@ from noop(on part
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size
 from noop(on part
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -426,7 +438,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -499,6 +511,8 @@ from noop(on part
   order by p_name
   ) abc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -509,6 +523,8 @@ from noop(on part
   order by p_name
   ) abc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -551,7 +567,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -563,7 +579,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -578,7 +594,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -679,6 +695,8 @@ from noop(on part
           order by p_name 
           )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -689,6 +707,8 @@ from noop(on part
           order by p_name 
           )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -731,7 +751,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -758,7 +778,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -861,6 +881,8 @@ from noop(on part
           ) 
 group by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -872,6 +894,8 @@ from noop(on part
           ) 
 group by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -914,7 +938,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -950,7 +974,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -1050,6 +1074,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select abc.* 
 from noop(on part 
@@ -1057,6 +1083,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1115,7 +1143,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
@@ -1205,6 +1233,8 @@ partition by p_mfgr
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select abc.* 
 from part p1 join noop(on part 
@@ -1212,6 +1242,8 @@ partition by p_mfgr
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1292,7 +1324,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
@@ -1364,6 +1396,8 @@ from noopwithmap(on part
 partition by p_mfgr
 order by p_name, p_size desc)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
@@ -1371,6 +1405,8 @@ from noopwithmap(on part
 partition by p_mfgr
 order by p_name, p_size desc)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1398,7 +1434,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: p_name ASC NULLS FIRST, p_size DESC NULLS LAST
+                          order by: p_name ASC NULLS LAST, p_size DESC NULLS LAST
                           output shape: p_name: string, p_mfgr: string, p_size: int
                           partition by: p_mfgr
                           raw input shape:
@@ -1428,7 +1464,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col1 ASC NULLS FIRST, _col5 DESC NULLS LAST
+                        order by: _col1 ASC NULLS LAST, _col5 DESC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -1440,7 +1476,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
@@ -1455,7 +1491,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST, _col5 DESC NULLS LAST
+                        order by: _col1 ASC NULLS LAST, _col5 DESC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1536,6 +1572,8 @@ from noopwithmap(on part
   partition by p_mfgr
   order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -1545,6 +1583,8 @@ from noopwithmap(on part
   partition by p_mfgr
   order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1572,7 +1612,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: p_name ASC NULLS FIRST
+                          order by: p_name ASC NULLS LAST
                           output shape: p_name: string, p_mfgr: string, p_size: int, p_retailprice: double
                           partition by: p_mfgr
                           raw input shape:
@@ -1603,7 +1643,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -1616,7 +1656,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -1631,7 +1671,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1729,6 +1769,8 @@ from noop(on part
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -1738,6 +1780,8 @@ from noop(on part
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1780,7 +1824,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -1792,7 +1836,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -1807,7 +1851,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1906,6 +1950,8 @@ partition by p_mfgr
 order by p_mfgr DESC, p_name
 )))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -1916,6 +1962,8 @@ partition by p_mfgr
 order by p_mfgr DESC, p_name
 )))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1959,7 +2007,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
+                        order by: _col2 DESC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -1973,7 +2021,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
+                          order by: _col2 DESC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int, _col7: double
                           partition by: _col2
                           raw input shape:
@@ -1981,7 +2029,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_2
                           name: noop
-                          order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
+                          order by: _col2 DESC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int, _col7: double
                           partition by: _col2
                           raw input shape:
@@ -2009,7 +2057,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
+                        order by: _col2 DESC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2017,7 +2065,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 DESC NULLS LAST, _col1 ASC NULLS FIRST
+                        order by: _col2 DESC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2029,7 +2077,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -2044,7 +2092,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2148,6 +2196,8 @@ order by p_name)
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
@@ -2161,6 +2211,8 @@ order by p_name)
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2203,7 +2255,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2230,7 +2282,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2331,6 +2383,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
@@ -2343,6 +2397,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2402,7 +2458,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2449,7 +2505,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2565,12 +2621,16 @@ from noop(on part
 partition by p_mfgr 
 order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(on part 
 partition by p_mfgr 
 order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2613,7 +2673,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -2722,6 +2782,9 @@ partition by p_mfgr
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mfgr_price_view_n5
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2)  as s1
@@ -2730,6 +2793,9 @@ partition by p_mfgr
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mfgr_price_view_n5
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2788,7 +2854,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noop
-                          order by: _col0 ASC NULLS FIRST
+                          order by: _col0 ASC NULLS LAST
                           output shape: _col0: string, _col1: string, _col2: double
                           partition by: _col0
                           raw input shape:
@@ -2815,7 +2881,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -2940,6 +3006,9 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Output: default@part_4_n2
+PREHOOK: Output: default@part_5_n2
 POSTHOOK: query: explain
 from noop(on part 
 partition by p_mfgr 
@@ -2956,6 +3025,9 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Output: default@part_4_n2
+POSTHOOK: Output: default@part_5_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -3006,7 +3078,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -3039,7 +3111,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3120,7 +3192,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3157,7 +3229,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col3 ASC NULLS FIRST, _col2 ASC NULLS FIRST
+                        order by: _col3 ASC NULLS LAST, _col2 ASC NULLS LAST
                         partition by: _col3
                         raw input shape:
                         window functions:
@@ -3404,6 +3476,8 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
@@ -3421,6 +3495,8 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3464,14 +3540,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -3485,7 +3561,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -3493,7 +3569,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_2
                           name: noop
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -3521,7 +3597,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -3529,7 +3605,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -3541,7 +3617,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -3678,6 +3754,8 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -3695,6 +3773,8 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3739,14 +3819,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -3773,7 +3853,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -3800,7 +3880,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -3812,7 +3892,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -3827,7 +3907,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3947,6 +4027,8 @@ from noop(on
           partition by p_mfgr 
           order by p_mfgr))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -3962,6 +4044,8 @@ from noop(on
           partition by p_mfgr 
           order by p_mfgr))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4005,14 +4089,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4039,14 +4123,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -4073,7 +4157,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -4191,6 +4275,8 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
@@ -4208,6 +4294,8 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4252,14 +4340,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4286,7 +4374,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -4300,7 +4388,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -4329,7 +4417,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4342,7 +4430,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -4478,6 +4566,8 @@ from noop(on
           order by p_mfgr
           ))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
@@ -4494,6 +4584,8 @@ from noop(on
           order by p_mfgr
           ))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4537,7 +4629,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4551,7 +4643,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2
                           raw input shape:
@@ -4559,7 +4651,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_2
                           name: noop
-                          order by: _col2 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2
                           raw input shape:
@@ -4587,7 +4679,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -4595,7 +4687,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -4607,7 +4699,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -4622,7 +4714,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         partition by: _col2, _col1
                         raw input shape:
                         window functions:
@@ -4739,6 +4831,8 @@ from noopwithmap(on
               order by p_mfgr, p_name) 
           ))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -4753,6 +4847,8 @@ from noopwithmap(on
               order by p_mfgr, p_name) 
           ))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4796,14 +4892,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4817,7 +4913,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -4846,7 +4942,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4874,7 +4970,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:

@@ -27,9 +27,13 @@ POSTHOOK: Lineage: dest1_n54.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT avg(c1), sum(c1), count(c1) FROM dest1_n54
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n54
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT avg(c1), sum(c1), count(c1) FROM dest1_n54
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n54
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

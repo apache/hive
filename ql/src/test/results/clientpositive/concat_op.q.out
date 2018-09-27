@@ -1,7 +1,11 @@
 PREHOOK: query: explain select key || value from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key || value from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -240,8 +244,12 @@ x2
 x3
 PREHOOK: query: explain select concat('a','b','c')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain select concat('a','b','c')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -262,8 +270,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select 'a' || 'b' || 'c'
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain select 'a' || 'b' || 'c'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

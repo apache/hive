@@ -23,8 +23,12 @@ POSTHOOK: Lineage: employee_n1.education_level SCRIPT []
 POSTHOOK: Lineage: employee_n1.gender SCRIPT []
 PREHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -100,9 +104,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

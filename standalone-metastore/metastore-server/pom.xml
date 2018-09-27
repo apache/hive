@@ -457,7 +457,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>${maven.assembly.plugin.version}</version>
         <executions>
           <execution>
             <id>assemble</id>
@@ -466,10 +465,9 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <finalName>apache-hive-metastore-${project.version}</finalName>
+              <finalName>apache-${project.artifactId}-${project.version}</finalName>
               <descriptors>
                 <descriptor>src/assembly/bin.xml</descriptor>
-                <descriptor>src/assembly/src.xml</descriptor>
               </descriptors>
               <tarLongFileMode>gnu</tarLongFileMode>
             </configuration>
@@ -532,13 +530,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven.surefire.version}</version>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <forkCount>${test.forkcount}</forkCount>
           <argLine>-Xmx2048m</argLine>
-          <failIfNoTests>false</failIfNoTests>
           <systemPropertyVariables>
             <build.dir>${project.build.directory}</build.dir>
             <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>

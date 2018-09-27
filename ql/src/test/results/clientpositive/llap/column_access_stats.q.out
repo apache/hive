@@ -77,6 +77,8 @@ Columns:p,val
 
 PREHOOK: query: EXPLAIN SELECT key FROM (SELECT key, val FROM T1_n127) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n127
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -107,6 +109,8 @@ Columns:key
 8
 PREHOOK: query: EXPLAIN SELECT k FROM (SELECT key as k, val as v FROM T1_n127) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n127
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -168,6 +172,8 @@ SELECT key as c FROM T1_n127
 SELECT val as c FROM T1_n127
 ) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n127
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -256,6 +262,8 @@ SELECT key as c FROM T1_n127
 SELECT key as c FROM T1_n127
 ) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n127
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -371,6 +379,9 @@ SELECT T1_n127.key
 FROM T1_n127 JOIN T2_n75
 ON T1_n127.key = T2_n75.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -504,6 +515,9 @@ SELECT *
 FROM T1_n127 JOIN T2_n75
 ON T1_n127.key = T2_n75.key AND T1_n127.val = 3 and T2_n75.val = 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -608,6 +622,9 @@ JOIN
 ) subq2 
 ON subq1.val = subq2.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -723,6 +740,10 @@ FROM
 JOIN T3_n29
 ON T3_n29.key = T4_n16.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
+PREHOOK: Input: default@t3_n29
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

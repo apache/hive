@@ -59,6 +59,25 @@ public class OperatorExplainVectorization {
     return Arrays.toString(outputColumns);
   }
 
+  public List<String> outputColumnsAndTypesToStringList(int[] outputColumns, TypeInfo[] typeInfos) {
+    final int size = outputColumns.length;
+    ArrayList<String> result = new ArrayList<String>(size);
+    for (int i = 0; i < size; i++) {
+      result.add(outputColumns[i] + ":" + typeInfos[i].toString());
+    }
+    return result;
+  }
+
+  public List<String> outputColumnsAndTypesToStringList(VectorColumnMapping vectorColumnMapping) {
+    final int size = vectorColumnMapping.getCount();
+    if (size == 0) {
+      return null;
+    }
+    int[] outputColumns = vectorColumnMapping.getOutputColumns();
+    TypeInfo[] typeInfos = vectorColumnMapping.getTypeInfos();
+    return outputColumnsAndTypesToStringList(outputColumns, typeInfos);
+  }
+
   public List<String> columnMappingToStringList(VectorColumnMapping vectorColumnMapping) {
     final int size = vectorColumnMapping.getCount();
     if (size == 0) {

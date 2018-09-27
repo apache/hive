@@ -3225,6 +3225,93 @@ public class TestReplicationScenarios {
     assertTrue(fileCount == fileCountAfter);
   }
 
+  @Test
+  public void testMoveOptimizationBootstrap() throws IOException {
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+    String tableNameNoPart = dbName + "_no_part";
+    String tableNamePart = dbName + "_part";
+
+    run(" use " + dbName, driver);
+    run("CREATE TABLE " + tableNameNoPart + " (fld int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + tableNamePart + " (fld int) partitioned by (part int) STORED AS TEXTFILE", driver);
+
+    run("insert into " + tableNameNoPart + " values (1) ", driver);
+    run("insert into " + tableNameNoPart + " values (2) ", driver);
+    verifyRun("SELECT fld from " + tableNameNoPart , new String[]{ "1" , "2" }, driver);
+
+    run("insert into " + tableNamePart + " partition (part=10) values (1) ", driver);
+    run("insert into " + tableNamePart + " partition (part=10) values (2) ", driver);
+    run("insert into " + tableNamePart + " partition (part=11) values (3) ", driver);
+    verifyRun("SELECT fld from " + tableNamePart , new String[]{ "1" , "2" , "3"}, driver);
+    verifyRun("SELECT fld from " + tableNamePart + " where part = 10" , new String[]{ "1" , "2"}, driver);
+    verifyRun("SELECT fld from " + tableNamePart + " where part = 11" , new String[]{ "3" }, driver);
+
+    String replDbName = dbName + "_replica";
+    Tuple dump = replDumpDb(dbName, null, null, null);
+    run("REPL LOAD " + replDbName + " FROM '" + dump.dumpLocation +
+            "' with ('hive.repl.enable.move.optimization'='true')", driverMirror);
+    verifyRun("REPL STATUS " + replDbName, dump.lastReplId, driverMirror);
+
+    run(" use " + replDbName, driverMirror);
+    verifyRun("SELECT fld from " + tableNamePart , new String[]{ "1" , "2" , "3"}, driverMirror);
+    verifyRun("SELECT fld from " + tableNamePart + " where part = 10" , new String[]{ "1" , "2"}, driverMirror);
+    verifyRun("SELECT fld from " + tableNamePart + " where part = 11" , new String[]{ "3" }, driverMirror);
+    verifyRun("SELECT fld from " + tableNameNoPart , new String[]{ "1" , "2" }, driverMirror);
+    verifyRun("SELECT count(*) from " + tableNamePart , new String[]{ "3"}, driverMirror);
+    verifyRun("SELECT count(*) from " + tableNamePart + " where part = 10" , new String[]{ "2"}, driverMirror);
+    verifyRun("SELECT count(*) from " + tableNamePart + " where part = 11" , new String[]{ "1" }, driverMirror);
+    verifyRun("SELECT count(*) from " + tableNameNoPart , new String[]{ "2" }, driverMirror);
+  }
+
+  @Test
+  public void testMoveOptimizationIncremental() throws IOException {
+    String testName = "testMoveOptimizationIncremental";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_replica";
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+    String replDumpId = bootstrapDump.lastReplId;
+
+    String[] unptn_data = new String[] { "eleven", "twelve" };
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
+
+    run("CREATE TABLE " + dbName + ".unptned_late AS SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_late ORDER BY a", unptn_data, driver);
+
+    Tuple incrementalDump = replDumpDb(dbName, replDumpId, null, null);
+    run("REPL LOAD " + replDbName + " FROM '" + incrementalDump.dumpLocation +
+            "' with ('hive.repl.enable.move.optimization'='true')", driverMirror);
+    verifyRun("REPL STATUS " + replDbName, incrementalDump.lastReplId, driverMirror);
+    replDumpId = incrementalDump.lastReplId;
+
+    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".unptned_late ORDER BY a", unptn_data, driverMirror);
+    verifyRun("SELECT count(*) from " + replDbName + ".unptned ", "2", driverMirror);
+    verifyRun("SELECT count(*) from " + replDbName + ".unptned_late", "2", driverMirror);
+
+    String[] unptn_data_after_ins = new String[] { "eleven", "thirteen", "twelve" };
+    String[] data_after_ovwrite = new String[] { "hundred" };
+    run("INSERT INTO TABLE " + dbName + ".unptned_late values('" + unptn_data_after_ins[1] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned_late ORDER BY a", unptn_data_after_ins, driver);
+    run("INSERT OVERWRITE TABLE " + dbName + ".unptned values('" + data_after_ovwrite[0] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned", data_after_ovwrite, driver);
+
+    incrementalDump = replDumpDb(dbName, replDumpId, null, null);
+    run("REPL LOAD " + replDbName + " FROM '" + incrementalDump.dumpLocation +
+            "' with ('hive.repl.enable.move.optimization'='true')", driverMirror);
+    verifyRun("REPL STATUS " + replDbName, incrementalDump.lastReplId, driverMirror);
+
+    verifyRun("SELECT a from " + replDbName + ".unptned_late ORDER BY a", unptn_data_after_ins, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".unptned", data_after_ovwrite, driverMirror);
+    verifyRun("SELECT count(*) from " + replDbName + ".unptned", "1", driverMirror);
+    verifyRun("SELECT count(*) from " + replDbName + ".unptned_late ", "3", driverMirror);
+  }
+
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
     run("CREATE DATABASE " + name + " WITH DBPROPERTIES ( '" +

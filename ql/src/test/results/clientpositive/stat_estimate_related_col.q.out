@@ -76,8 +76,12 @@ POSTHOOK: Input: default@t8
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t8 where b in (2,3) group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t8 where b in (2,3) group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -89,16 +93,16 @@ STAGE PLANS:
           TableScan
             alias: t8
             filterExpr: (b) IN (2, 3) (type: boolean)
-            Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 40/1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (b) IN (2, 3) (type: boolean)
-              Statistics: Num rows: 16/16 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 16/1 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: sum(a)
                 keys: b (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2/2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2/1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
@@ -141,8 +145,12 @@ POSTHOOK: Input: default@t8
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t8 where b=2 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t8 where b=2 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -154,14 +162,14 @@ STAGE PLANS:
           TableScan
             alias: t8
             filterExpr: (b = 2) (type: boolean)
-            Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 40/1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (b = 2) (type: boolean)
-              Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8/1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: a
-                Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 8/1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(a)
                   keys: 2 (type: int)
@@ -210,8 +218,12 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t1 where 2=b and b=2 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t1 where 2=b and b=2 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -223,7 +235,7 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: ((2 = b) and (b = 2)) (type: boolean)
-            Statistics: Num rows: 5/5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 5/1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((2 = b) and (b = 2)) (type: boolean)
               Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -279,8 +291,12 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t1 where b in (2,3) and b=2 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t1 where b in (2,3) and b=2 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -292,7 +308,7 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: ((b) IN (2, 3) and (b = 2)) (type: boolean)
-            Statistics: Num rows: 5/5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 5/1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((b = 2) and (b) IN (2, 3)) (type: boolean)
               Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -348,8 +364,12 @@ POSTHOOK: Input: default@t8
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t8 where b in (2,3) and b=2 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t8 where b in (2,3) and b=2 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -361,14 +381,14 @@ STAGE PLANS:
           TableScan
             alias: t8
             filterExpr: ((b) IN (2, 3) and (b = 2)) (type: boolean)
-            Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 40/1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((b = 2) and (b) IN (2, 3)) (type: boolean)
-              Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8/1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: a
-                Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 8/1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(a)
                   keys: 2 (type: int)
@@ -417,8 +437,12 @@ POSTHOOK: Input: default@t8
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select count(*) from t8 ta, t8 tb where ta.a = tb.b and ta.a=3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select count(*) from t8 ta, t8 tb where ta.a = tb.b and ta.a=3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -511,8 +535,12 @@ POSTHOOK: Input: default@t8
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t8 where b in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50) and b=2 and b=2 and 2=b group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t8 where b in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50) and b=2 and b=2 and 2=b group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -524,14 +552,14 @@ STAGE PLANS:
           TableScan
             alias: t8
             filterExpr: ((b) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50) and (b = 2) and (2 = b)) (type: boolean)
-            Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 40/1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((2 = b) and (b = 2) and (b) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50)) (type: boolean)
-              Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8/1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: a
-                Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 8/1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(a)
                   keys: 2 (type: int)
@@ -580,8 +608,12 @@ POSTHOOK: Input: default@t8
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t8 where b=2 and (b = 1 or b=2) group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t8 where b=2 and (b = 1 or b=2) group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -593,14 +625,14 @@ STAGE PLANS:
           TableScan
             alias: t8
             filterExpr: ((b = 2) and ((b = 1) or (b = 2))) (type: boolean)
-            Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 40/1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((b = 1) or (b = 2)) and (b = 2)) (type: boolean)
-              Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8/1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: a
-                Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 8/1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(a)
                   keys: 2 (type: int)
@@ -649,8 +681,12 @@ POSTHOOK: Input: default@t8
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze select sum(a) from t8 where b=2 and (b = 1 or b=2) and (b=1 or b=3) group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t8 where b=2 and (b = 1 or b=2) and (b=1 or b=3) group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -662,7 +698,7 @@ STAGE PLANS:
           TableScan
             alias: t8
             filterExpr: ((b = 2) and ((b = 1) or (b = 2)) and ((b = 1) or (b = 3))) (type: boolean)
-            Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 40/1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((b = 1) or (b = 2)) and ((b = 1) or (b = 3)) and (b = 2)) (type: boolean)
               Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
@@ -730,12 +766,16 @@ and
 	a=3 and (a = 3 or a=4)
 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze select sum(a) from t8 where
 	b=2 and (b = 1 or b=2)
 and
 	a=3 and (a = 3 or a=4)
 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -747,7 +787,7 @@ STAGE PLANS:
           TableScan
             alias: t8
             filterExpr: ((b = 2) and ((b = 1) or (b = 2)) and (a = 3) and ((a = 3) or (a = 4))) (type: boolean)
-            Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 40/1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((a = 3) or (a = 4)) and ((b = 1) or (b = 2)) and (a = 3) and (b = 2)) (type: boolean)
               Statistics: Num rows: 2/0 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE

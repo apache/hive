@@ -59,12 +59,18 @@ SELECT v1, count(distinct v2), count(distinct v3) GROUP BY v1
 INSERT INTO tmp_grouped_by_two_col
 SELECT v1, v2, count(distinct v3) GROUP BY v1, v2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp1
+PREHOOK: Output: default@tmp_grouped_by_one_col
+PREHOOK: Output: default@tmp_grouped_by_two_col
 POSTHOOK: query: explain FROM tmp1
 INSERT INTO tmp_grouped_by_one_col 
 SELECT v1, count(distinct v2), count(distinct v3) GROUP BY v1
 INSERT INTO tmp_grouped_by_two_col
 SELECT v1, v2, count(distinct v3) GROUP BY v1, v2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp1
+POSTHOOK: Output: default@tmp_grouped_by_one_col
+POSTHOOK: Output: default@tmp_grouped_by_two_col
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -224,12 +230,18 @@ SELECT v1, count(distinct v2), count(distinct v3) GROUP BY v1
 INSERT INTO tmp_grouped_by_two_col
 SELECT v1, v2, count(v3) GROUP BY v1, v2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp1
+PREHOOK: Output: default@tmp_grouped_by_one_col
+PREHOOK: Output: default@tmp_grouped_by_two_col
 POSTHOOK: query: explain FROM tmp1
 INSERT INTO tmp_grouped_by_one_col 
 SELECT v1, count(distinct v2), count(distinct v3) GROUP BY v1
 INSERT INTO tmp_grouped_by_two_col
 SELECT v1, v2, count(v3) GROUP BY v1, v2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp1
+POSTHOOK: Output: default@tmp_grouped_by_one_col
+POSTHOOK: Output: default@tmp_grouped_by_two_col
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -384,12 +396,18 @@ SELECT v1, count(distinct v2), count(distinct v3) GROUP BY v1
 INSERT INTO tmp_grouped_by_all_col
 SELECT v1, v2, v3 GROUP BY v1, v2, v3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp1
+PREHOOK: Output: default@tmp_grouped_by_all_col
+PREHOOK: Output: default@tmp_grouped_by_one_col
 POSTHOOK: query: explain FROM tmp1
 INSERT INTO tmp_grouped_by_one_col 
 SELECT v1, count(distinct v2), count(distinct v3) GROUP BY v1
 INSERT INTO tmp_grouped_by_all_col
 SELECT v1, v2, v3 GROUP BY v1, v2, v3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp1
+POSTHOOK: Output: default@tmp_grouped_by_all_col
+POSTHOOK: Output: default@tmp_grouped_by_one_col
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

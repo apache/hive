@@ -44,6 +44,9 @@ join
     select a from test_join_2
 )t3 on t1.a = t3.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_join_1
+PREHOOK: Input: default@test_join_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from
 (
@@ -66,6 +69,9 @@ join
     select a from test_join_2
 )t3 on t1.a = t3.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_join_1
+POSTHOOK: Input: default@test_join_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

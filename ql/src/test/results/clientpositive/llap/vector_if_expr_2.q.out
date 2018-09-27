@@ -23,9 +23,13 @@ POSTHOOK: Lineage: foo.y SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 select x, IF(x > 0,y,0) from foo order by x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 select x, IF(x > 0,y,0) from foo order by x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

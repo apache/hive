@@ -1,9 +1,13 @@
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cstring1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cstring1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -152,9 +156,13 @@ POSTHOOK: Input: default@alltypesorc
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -295,9 +303,13 @@ POSTHOOK: Input: default@alltypesorc
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cfloat
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cfloat
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -446,9 +458,13 @@ POSTHOOK: Input: default@alltypesorc
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where ctimestamp1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where ctimestamp1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

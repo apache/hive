@@ -21,11 +21,27 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN src y ON (y.key = x.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN src y ON (y.key = x.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -155,11 +171,27 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN src y ON (y.key = x.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN src y ON (y.key = x.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -299,12 +331,28 @@ FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -456,12 +504,28 @@ FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -625,6 +689,14 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.value = z.value)
 JOIN src y ON (y.value = x.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
@@ -634,6 +706,14 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.value = z.value)
 JOIN src y ON (y.value = x.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -881,6 +961,14 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.value = z.value)
 JOIN src y ON (y.value = x.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
@@ -890,6 +978,14 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.value = z.value)
 JOIN src y ON (y.value = x.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1147,6 +1243,14 @@ JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x
@@ -1157,6 +1261,14 @@ JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1347,6 +1459,14 @@ JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x
@@ -1357,6 +1477,14 @@ JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

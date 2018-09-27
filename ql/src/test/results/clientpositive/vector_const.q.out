@@ -18,9 +18,13 @@ POSTHOOK: Lineage: varchar_const_1.c1 SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

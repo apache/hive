@@ -36,9 +36,21 @@ POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(s
 PREHOOK: query: explain extended
 select ds, count(1) from srcpartbucket tablesample (bucket 2 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpartbucket
+PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select ds, count(1) from srcpartbucket tablesample (bucket 2 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpartbucket
+POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

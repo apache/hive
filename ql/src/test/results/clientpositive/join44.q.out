@@ -13,6 +13,8 @@ WHERE src1.val1=src2.val1
   AND src1.val2 between 2450816 and 2451500
   AND src2.val2 between 2450816 and 2451500
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mytable_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM mytable_n1 src1, mytable_n1 src2
@@ -20,6 +22,8 @@ WHERE src1.val1=src2.val1
   AND src1.val2 between 2450816 and 2451500
   AND src2.val2 between 2450816 and 2451500
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mytable_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

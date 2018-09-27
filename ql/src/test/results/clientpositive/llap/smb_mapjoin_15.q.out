@@ -35,9 +35,15 @@ POSTHOOK: Lineage: test_table2_n4.value SIMPLE [(src)src.FieldSchema(name:value,
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n4
+PREHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`test_table1_n4`
@@ -155,7 +161,7 @@ STAGE PLANS:
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                           tag: -1
@@ -335,9 +341,15 @@ POSTHOOK: Lineage: test_table2_n4.value SIMPLE [(src)src.FieldSchema(name:value,
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.key2 = b.key2 ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n4
+PREHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.key2 = b.key2 ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `key2`, `value`
 FROM `default`.`test_table1_n4`
@@ -541,7 +553,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
@@ -612,9 +624,15 @@ POSTHOOK: Input: default@test_table2_n4
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key2 = b.key2 and a.key = b.key ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n4
+PREHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key2 = b.key2 and a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `key2`, `value`
 FROM `default`.`test_table1_n4`
@@ -818,7 +836,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
@@ -889,9 +907,15 @@ POSTHOOK: Input: default@test_table2_n4
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.value = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n4
+PREHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.value = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `key2`, `value`
 FROM `default`.`test_table1_n4`
@@ -1095,7 +1119,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1

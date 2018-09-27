@@ -49,9 +49,15 @@ POSTHOOK: Input: default@tx_n2
 PREHOOK: query: explain REOPTIMIZATION 
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@px
+PREHOOK: Input: default@tx_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain REOPTIMIZATION 
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@px
+POSTHOOK: Input: default@tx_n2
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -106,9 +112,15 @@ POSTHOOK: Input: default@tx_n2
 PREHOOK: query: explain analyze
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@px
+PREHOOK: Input: default@tx_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@px
+POSTHOOK: Input: default@tx_n2
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -163,9 +175,15 @@ POSTHOOK: Input: default@tx_n2
 PREHOOK: query: explain analyze
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@px
+PREHOOK: Input: default@tx_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@px
+POSTHOOK: Input: default@tx_n2
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -207,9 +225,15 @@ Stage-0
 PREHOOK: query: explain
 select assert_true_oom(1 > sum(u*p)) from tx_n2 join px on (tx_n2.a=px.a) where u<10 and p>2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@px
+PREHOOK: Input: default@tx_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select assert_true_oom(1 > sum(u*p)) from tx_n2 join px on (tx_n2.a=px.a) where u<10 and p>2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@px
+POSTHOOK: Input: default@tx_n2
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage

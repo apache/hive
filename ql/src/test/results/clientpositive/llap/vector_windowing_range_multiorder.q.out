@@ -47,9 +47,13 @@ POSTHOOK: Output: default@over10k_n5
 PREHOOK: query: explain vectorization detail
 select first_value(t) over ( partition by si order by i, b ) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select first_value(t) over ( partition by si order by i, b ) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -81,11 +85,11 @@ STAGE PLANS:
                     Map-reduce partition columns: si (type: smallint)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [1, 2, 3]
+                        keyColumns: 1:smallint, 2:int, 3:bigint
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [1]
-                        valueColumnNums: [0]
+                        partitionColumns: 1:smallint
+                        valueColumns: 0:tinyint
                     Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                     value expressions: t (type: tinyint)
             Execution mode: vectorized, llap
@@ -110,7 +114,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: azz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -138,7 +142,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST, _col3 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col3 ASC NULLS LAST
                         partition by: _col1
                         raw input shape:
                         window functions:
@@ -305,9 +309,13 @@ first_value_window_0
 PREHOOK: query: explain vectorization detail
 select last_value(i) over (partition by si, bo order by i, f desc range current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select last_value(i) over (partition by si, bo order by i, f desc range current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -339,11 +347,10 @@ STAGE PLANS:
                     Map-reduce partition columns: si (type: smallint), bo (type: boolean)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [1, 6, 2, 4]
+                        keyColumns: 1:smallint, 6:boolean, 2:int, 4:float
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [1, 6]
-                        valueColumnNums: []
+                        partitionColumns: 1:smallint, 6:boolean
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -383,7 +390,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST, _col4 DESC NULLS LAST
+                        order by: _col2 ASC NULLS LAST, _col4 DESC NULLS LAST
                         partition by: _col1, _col6
                         raw input shape:
                         window functions:
@@ -527,9 +534,13 @@ last_value_window_0
 PREHOOK: query: explain vectorization detail
 select row_number() over (partition by si, bo order by i, f desc range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select row_number() over (partition by si, bo order by i, f desc range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -561,11 +572,10 @@ STAGE PLANS:
                     Map-reduce partition columns: si (type: smallint), bo (type: boolean)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [1, 6, 2, 4]
+                        keyColumns: 1:smallint, 6:boolean, 2:int, 4:float
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [1, 6]
-                        valueColumnNums: []
+                        partitionColumns: 1:smallint, 6:boolean
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -605,7 +615,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST, _col4 DESC NULLS LAST
+                        order by: _col2 ASC NULLS LAST, _col4 DESC NULLS LAST
                         partition by: _col1, _col6
                         raw input shape:
                         window functions:
@@ -749,9 +759,13 @@ row_number_window_0
 PREHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s range between unbounded preceding and current row) from over10k_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s range between unbounded preceding and current row) from over10k_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -783,10 +797,10 @@ STAGE PLANS:
                     Map-reduce partition columns: s (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [7]
+                        keyColumns: 7:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 2]
+                        valueColumns: 1:smallint, 2:int
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     value expressions: si (type: smallint), i (type: int)
             Execution mode: vectorized, llap
@@ -10898,9 +10912,13 @@ zach zipper	487	65676	65663.61111111111
 PREHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s order by si, i range between unbounded preceding and current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s order by si, i range between unbounded preceding and current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -10932,11 +10950,10 @@ STAGE PLANS:
                     Map-reduce partition columns: s (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [7, 1, 2]
+                        keyColumns: 7:string, 1:smallint, 2:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [7]
-                        valueColumnNums: []
+                        partitionColumns: 7:string
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -10960,7 +10977,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: azz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -10988,7 +11005,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST, _col2 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST, _col2 ASC NULLS LAST
                         partition by: _col7
                         raw input shape:
                         window functions:
@@ -11155,9 +11172,13 @@ alice hernandez	323	65727	65679.6
 PREHOOK: query: explain vectorization detail
 select s, si, i, min(i) over (partition by s order by si, i range between unbounded preceding and current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, i, min(i) over (partition by s order by si, i range between unbounded preceding and current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11189,11 +11210,10 @@ STAGE PLANS:
                     Map-reduce partition columns: s (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [7, 1, 2]
+                        keyColumns: 7:string, 1:smallint, 2:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [7]
-                        valueColumnNums: []
+                        partitionColumns: 7:string
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -11217,7 +11237,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaa
+                reduceColumnNullOrder: azz
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -11245,7 +11265,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST, _col2 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST, _col2 ASC NULLS LAST
                         partition by: _col7
                         raw input shape:
                         window functions:
@@ -11412,9 +11432,13 @@ alice hernandez	323	65727	65569
 PREHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s order by si, i desc range between unbounded preceding and current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s order by si, i desc range between unbounded preceding and current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11446,11 +11470,10 @@ STAGE PLANS:
                     Map-reduce partition columns: s (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [7, 1, 2]
+                        keyColumns: 7:string, 1:smallint, 2:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [7]
-                        valueColumnNums: []
+                        partitionColumns: 7:string
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -11474,7 +11497,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaz
+                reduceColumnNullOrder: azz
                 reduceColumnSortOrder: ++-
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -11502,7 +11525,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST, _col2 DESC NULLS LAST
+                        order by: _col1 ASC NULLS LAST, _col2 DESC NULLS LAST
                         partition by: _col7
                         raw input shape:
                         window functions:
@@ -11669,9 +11692,13 @@ alice hernandez	323	65727	65679.6
 PREHOOK: query: explain vectorization detail
 select si, bo, i, f, max(i) over (partition by si, bo order by i, f desc range between unbounded preceding and current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select si, bo, i, f, max(i) over (partition by si, bo order by i, f desc range between unbounded preceding and current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11703,11 +11730,10 @@ STAGE PLANS:
                     Map-reduce partition columns: si (type: smallint), bo (type: boolean)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [1, 6, 2, 4]
+                        keyColumns: 1:smallint, 6:boolean, 2:int, 4:float
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [1, 6]
-                        valueColumnNums: []
+                        partitionColumns: 1:smallint, 6:boolean
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -11731,7 +11757,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaz
+                reduceColumnNullOrder: aazz
                 reduceColumnSortOrder: +++-
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -11759,7 +11785,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST, _col4 DESC NULLS LAST
+                        order by: _col2 ASC NULLS LAST, _col4 DESC NULLS LAST
                         partition by: _col1, _col6
                         raw input shape:
                         window functions:
@@ -11926,9 +11952,13 @@ si	bo	i	f	max_window_0
 PREHOOK: query: explain vectorization detail
 select bo, rank() over (partition by i order by bo nulls first, b nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select bo, rank() over (partition by i order by bo nulls first, b nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11960,11 +11990,10 @@ STAGE PLANS:
                     Map-reduce partition columns: i (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 6, 3]
+                        keyColumns: 2:int, 6:boolean, 3:bigint
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: []
+                        partitionColumns: 2:int
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -12149,9 +12178,13 @@ true	20
 PREHOOK: query: explain vectorization detail
 select CAST(s as CHAR(12)), rank() over (partition by i order by CAST(s as CHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select CAST(s as CHAR(12)), rank() over (partition by i order by CAST(s as CHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -12183,12 +12216,12 @@ STAGE PLANS:
                     Map-reduce partition columns: i (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 12]
+                        keyColumns: 2:int, 12:char(12)
                         keyExpressions: CastStringGroupToChar(col 7:string, maxLength 12) -> 12:char(12)
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [7]
+                        partitionColumns: 2:int
+                        valueColumns: 7:string
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     value expressions: s (type: string)
             Execution mode: vectorized, llap
@@ -12374,9 +12407,13 @@ rachel young	20
 PREHOOK: query: explain vectorization detail
 select CAST(s as VARCHAR(12)), rank() over (partition by i order by CAST(s as VARCHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select CAST(s as VARCHAR(12)), rank() over (partition by i order by CAST(s as VARCHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -12408,12 +12445,12 @@ STAGE PLANS:
                     Map-reduce partition columns: i (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 12]
+                        keyColumns: 2:int, 12:varchar(12)
                         keyExpressions: CastStringGroupToVarChar(col 7:string, maxLength 12) -> 12:varchar(12)
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [7]
+                        partitionColumns: 2:int
+                        valueColumns: 7:string
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     value expressions: s (type: string)
             Execution mode: vectorized, llap

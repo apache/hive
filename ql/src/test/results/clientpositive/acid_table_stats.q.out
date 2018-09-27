@@ -123,8 +123,12 @@ POSTHOOK: Input: default@acid@ds=2008-04-08
 1000
 PREHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -257,8 +261,12 @@ POSTHOOK: Input: default@acid@ds=2008-04-08
 1000
 PREHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -387,8 +395,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -424,8 +436,14 @@ POSTHOOK: Output: default@acid@ds=2008-04-08
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(key) from acid where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(key) from acid where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -612,8 +630,12 @@ POSTHOOK: Input: default@acid@ds=2008-04-09
 2000
 PREHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

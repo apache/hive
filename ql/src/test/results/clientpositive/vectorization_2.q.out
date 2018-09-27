@@ -21,6 +21,8 @@ WHERE  (((ctimestamp1 < ctimestamp2)
             AND ((-10669 != ctimestamp2)
                  OR (359 > cint))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(csmallint),
        (AVG(csmallint) % -563),
@@ -44,6 +46,8 @@ WHERE  (((ctimestamp1 < ctimestamp2)
             AND ((-10669 != ctimestamp2)
                  OR (359 > cint))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

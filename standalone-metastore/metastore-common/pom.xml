@@ -446,28 +446,6 @@
       <!-- TODO MS-SPLIT javadoc plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>${maven.assembly.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>assemble</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>apache-hive-metastore-${project.version}</finalName>
-              <descriptors>
-                <descriptor>src/assembly/bin.xml</descriptor>
-                <descriptor>src/assembly/src.xml</descriptor>
-              </descriptors>
-              <tarLongFileMode>gnu</tarLongFileMode>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
@@ -522,13 +500,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven.surefire.version}</version>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <forkCount>${test.forkcount}</forkCount>
           <argLine>-Xmx2048m</argLine>
-          <failIfNoTests>false</failIfNoTests>
           <systemPropertyVariables>
             <build.dir>${project.build.directory}</build.dir>
             <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>
@@ -619,6 +595,20 @@
           <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
           <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         </configuration>
+      </plugin>
+      <plugin>
+        <!-- Suppress source assembly -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>assemble</id>
+            <phase>none</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

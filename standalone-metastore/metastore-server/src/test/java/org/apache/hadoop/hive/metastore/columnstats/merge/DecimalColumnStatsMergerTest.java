@@ -19,8 +19,6 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
-import java.nio.ByteBuffer;
-
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;

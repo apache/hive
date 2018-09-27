@@ -1,9 +1,13 @@
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 on p1.p_name = p2.p_name and p2.p_name = p3.p_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part p2 join part p3 on p1.p_name = p2.p_name and p2.p_name = p3.p_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -104,9 +108,13 @@ STAGE PLANS:
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 on p2.p_name = p1.p_name and p3.p_name = p2.p_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part p2 join part p3 on p2.p_name = p1.p_name and p3.p_name = p2.p_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -208,9 +216,13 @@ Warning: Shuffle Join JOIN[13][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Work 'Re
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 on p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part p2 join part p3 on p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -326,9 +338,13 @@ Warning: Shuffle Join JOIN[13][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Work 'Re
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 on p2.p_partkey = 1 and p3.p_name = p2.p_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part p2 join part p3 on p2.p_partkey = 1 and p3.p_name = p2.p_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

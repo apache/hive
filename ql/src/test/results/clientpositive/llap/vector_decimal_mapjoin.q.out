@@ -77,9 +77,15 @@ POSTHOOK: Lineage: t2_n29.value_dec EXPRESSION [(over1k_n2)over1k_n2.FieldSchema
 PREHOOK: query: explain vectorization detail
 select t1_n48.`dec`, t2_n29.`dec` from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n48
+PREHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_n48.`dec`, t2_n29.`dec` from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n48
+POSTHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -195,10 +201,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(26,2))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:decimal(26,2)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -354,9 +359,15 @@ POSTHOOK: Input: default@t2_n29
 PREHOOK: query: explain vectorization detail
 select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n48
+PREHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n48
+POSTHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -472,10 +483,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(26,2))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:decimal(26,2)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1]
+                            valueColumns: 1:decimal(24,0)
                         Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: decimal(24,0))
             Execution mode: vectorized, llap
@@ -708,9 +719,15 @@ POSTHOOK: Lineage: t2_small.value_dec EXPRESSION [(over1k_small)over1k_small.Fie
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -826,10 +843,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(16,2))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:decimal(16,2)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -985,9 +1001,15 @@ POSTHOOK: Input: default@t2_small
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1103,10 +1125,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(16,2))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:decimal(16,2)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1]
+                            valueColumns: 1:decimal(14,0)
                         Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: decimal(14,0))
             Execution mode: vectorized, llap
@@ -1263,9 +1285,15 @@ POSTHOOK: Input: default@t2_small
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1382,10 +1410,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(16,2))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:decimal(16,2)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -1542,9 +1569,15 @@ POSTHOOK: Input: default@t2_small
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1661,10 +1694,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(16,2))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:decimal(16,2)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1]
+                            valueColumns: 1:decimal(14,0)
                         Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: decimal(14,0))
             Execution mode: vectorized, llap

@@ -672,7 +672,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int createResourcePlan(Hive db, CreateResourcePlanDesc createResourcePlanDesc)
       throws HiveException {
     db.createResourcePlan(createResourcePlanDesc.getResourcePlan(),
-        createResourcePlanDesc.getCopyFromName());
+        createResourcePlanDesc.getCopyFromName(), createResourcePlanDesc.getIfNotExists());
     return 0;
   }
 
@@ -782,7 +782,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int dropResourcePlan(Hive db, DropResourcePlanDesc desc) throws HiveException {
-    db.dropResourcePlan(desc.getRpName());
+    db.dropResourcePlan(desc.getRpName(), desc.getIfExists());
     return 0;
   }
 
@@ -1950,7 +1950,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         try {
           ret = ToolRunner.run(fss, args.toArray(new String[0]));
         } catch (Exception e) {
-          e.printStackTrace();
           throw new HiveException(e);
         }
 
@@ -2800,7 +2799,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tablesOrViews.size());
     } else if (type == TableType.MATERIALIZED_VIEW) {
       materializedViews = new ArrayList<>();
-      materializedViews.addAll(db.getAllMaterializedViewObjects(dbName));
+      materializedViews.addAll(db.getMaterializedViewObjectsByPattern(dbName, pattern));
       LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.", materializedViews.size());
     } else if (type == TableType.VIRTUAL_VIEW) {
       tablesOrViews = db.getTablesByType(dbName, pattern, type);
@@ -4839,7 +4838,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     catch (AlreadyExistsException ex) {
       //it would be better if AlreadyExistsException had an errorCode field....
-      throw new HiveException(ex, ErrorMsg.DATABSAE_ALREADY_EXISTS, crtDb.getName());
+      throw new HiveException(ex, ErrorMsg.DATABASE_ALREADY_EXISTS, crtDb.getName());
     }
     return 0;
   }
@@ -4949,8 +4948,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // create the table
     if (crtTbl.getReplaceMode()) {
+      ReplicationSpec replicationSpec = crtTbl.getReplicationSpec();
+      long writeId = replicationSpec != null && replicationSpec.isInReplicationScope() ? crtTbl.getReplWriteId() : 0L;
       // replace-mode creates are really alters using CreateTableDesc.
-      db.alterTable(tbl, false, null, true);
+      db.alterTable(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), tbl, false, null,
+              true, writeId);
     } else {
       if ((foreignKeys != null && foreignKeys.size() > 0) ||
           (primaryKeys != null && primaryKeys.size() > 0) ||
@@ -5153,7 +5155,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      if (!crtView.isReplace()) {
+      if (!crtView.isReplace() && !crtView.getIfNotExists()) {
         // View already exists, thus we should be replacing
         throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(crtView.getViewName()));
       }
@@ -5226,7 +5228,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String tableName = truncateTableDesc.getTableName();
     Map<String, String> partSpec = truncateTableDesc.getPartSpec();
 
-    if (!allowOperationInReplicationScope(db, tableName, partSpec, truncateTableDesc.getReplicationSpec())) {
+    ReplicationSpec replicationSpec = truncateTableDesc.getReplicationSpec();
+    if (!allowOperationInReplicationScope(db, tableName, partSpec, replicationSpec)) {
       // no truncate, the table is missing either due to drop/rename which follows the truncate.
       // or the existing table is newer than our update.
       if (LOG.isDebugEnabled()) {
@@ -5238,7 +5241,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     try {
-      db.truncateTable(tableName, partSpec);
+      db.truncateTable(tableName, partSpec,
+              replicationSpec != null && replicationSpec.isInReplicationScope() ? truncateTableDesc.getWriteId() : 0L);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }

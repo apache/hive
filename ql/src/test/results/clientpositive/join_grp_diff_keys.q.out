@@ -38,6 +38,11 @@ SELECT foo.id, count(*) as factor from
  WHERE foo.orders != 'blah'  
  group by foo.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+PREHOOK: Input: default@forecast
+PREHOOK: Input: default@split
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 SELECT foo.id, count(*) as factor from 
  foo JOIN bar  ON (foo.id = bar.id and foo.line_id = bar.line_id) 
@@ -46,6 +51,11 @@ SELECT foo.id, count(*) as factor from
  WHERE foo.orders != 'blah'  
  group by foo.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+POSTHOOK: Input: default@forecast
+POSTHOOK: Input: default@split
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

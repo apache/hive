@@ -148,9 +148,29 @@ POSTHOOK: Lineage: view3.value EXPRESSION [(t4)t4.FieldSchema(name:value, type:s
 PREHOOK: query: explain
 select count(0) from view2 v2 join view3 v3 on v2.dt=v3.dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2018
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@dt=2018
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t3@dt=2018
+PREHOOK: Input: default@t4
+PREHOOK: Input: default@view2
+PREHOOK: Input: default@view3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(0) from view2 v2 join view3 v3 on v2.dt=v3.dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2018
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@dt=2018
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t3@dt=2018
+POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@view2
+POSTHOOK: Input: default@view3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

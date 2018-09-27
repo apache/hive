@@ -70,8 +70,14 @@ POSTHOOK: Output: default@ss@country=US/year=2015/month=2/day=1
 #### A masked pattern was here ####
 PREHOOK: query: explain select sum(order_amount) from ss where (country="US" and year=2015 and month=2 and day=1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(order_amount) from ss where (country="US" and year=2015 and month=2 and day=1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -120,8 +126,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select sum(order_amount) from ss where (year*10000+month*100+day) = "2015010" and 1>0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(order_amount) from ss where (year*10000+month*100+day) = "2015010" and 1>0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -173,8 +183,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select sum(order_amount) from ss where (year*100+month*10+day) = "201511" and 1>0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(order_amount) from ss where (year*100+month*10+day) = "201511" and 1>0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -223,8 +239,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select sum(order_amount) from ss where (year*100+month*10+day) > "201511" and 1>0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
+PREHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select sum(order_amount) from ss where (year*100+month*10+day) > "201511" and 1>0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
+POSTHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -276,8 +300,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select '1' from ss where (year*100+month*10+day) > "201511"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
+PREHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select '1' from ss where (year*100+month*10+day) > "201511"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
+POSTHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

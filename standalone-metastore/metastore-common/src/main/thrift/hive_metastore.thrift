@@ -925,7 +925,8 @@ struct ReplTblWriteIdStateRequest {
 // Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
 struct GetValidWriteIdsRequest {
     1: required list<string> fullTableNames, // Full table names of format <db_name>.<table_name>
-    2: required string validTxnList, // Valid txn list string wrt the current txn of the caller
+    2: optional string validTxnList, // Valid txn list string wrt the current txn of the caller
+    3: optional i64 writeId, //write id to be used to get the current txn id
 }
 
 // Valid Write ID list of one table wrt to current txn
@@ -2221,7 +2222,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
-  WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
+  WriteNotificationLogResponse add_write_notification_log(1:WriteNotificationLogRequest rqst)
 
   // Repl Change Management api
   CmRecycleResponse cm_recycle(1:CmRecycleRequest request) throws(1:MetaException o1)
@@ -2289,7 +2290,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // Schema calls
   void create_ischema(1:ISchema schema) throws(1:AlreadyExistsException o1,
-        NoSuchObjectException o2, 3:MetaException o3)
+        2: NoSuchObjectException o2, 3:MetaException o3)
   void alter_ischema(1:AlterISchemaRequest rqst)
         throws(1:NoSuchObjectException o1, 2:MetaException o2)
   ISchema get_ischema(1:ISchemaName name) throws (1:NoSuchObjectException o1, 2:MetaException o2)

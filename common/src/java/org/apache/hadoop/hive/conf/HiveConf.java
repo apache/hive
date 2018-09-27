@@ -489,6 +489,12 @@ public class HiveConf extends Configuration {
           + "used in conjunction with 'hive.repl.dump.metadata.only' set to false. if 'hive.repl.dump.metadata.only' \n"
           + " is set to true then this config parameter has no effect as external table meta data is flushed \n"
           + " always by default."),
+    REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", false,
+          "If its set to true, REPL LOAD copies data files directly to the target table/partition location \n"
+          + "instead of copying to staging directory first and then move to target location. This optimizes \n"
+          + " the REPL LOAD on object data stores such as S3 or WASB where creating a directory and move \n"
+          + " files are costly operations. In file system like HDFS where move operation is atomic, this \n"
+          + " optimization should not be enabled as it may lead to inconsistent data read for non acid tables."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -636,6 +642,9 @@ public class HiveConf extends Configuration {
     HIVE_PROTO_EVENTS_TTL("hive.hook.proto.events.ttl", "7d",
             new TimeValidator(TimeUnit.DAYS),
             "Time-To-Live (TTL) of proto event files before cleanup."),
+    HIVE_PROTO_FILE_PER_EVENT("hive.hook.proto.file.per.event", false,
+      "Whether each proto event has to be written to separate file. " +
+        "(Use this for FS that does not hflush immediately like S3A)"),
 
     // Hadoop Configuration Properties
     // Properties with null values are ignored and exist only for the purpose of giving us
@@ -1619,6 +1628,10 @@ public class HiveConf extends Configuration {
                                                                  + " expressed as multiple of Local FS read cost"),
     HIVE_CBO_SHOW_WARNINGS("hive.cbo.show.warnings", true,
          "Toggle display of CBO warnings like missing column stats"),
+    HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS("hive.cbo.stats.correlated.multi.key.joins", false,
+        "When CBO estimates output rows for a join involving multiple columns, the default behavior assumes" +
+            "the columns are independent. Setting this flag to true will cause the estimator to assume" +
+            "the columns are correlated."),
     AGGR_JOIN_TRANSPOSE("hive.transpose.aggr.join", false, "push aggregates through join"),
     SEMIJOIN_CONVERSION("hive.optimize.semijoin.conversion", true, "convert group by followed by inner equi join into semijoin"),
     HIVE_COLUMN_ALIGNMENT("hive.order.columnalignment", true, "Flag to control whether we want to try to align" +
@@ -1679,7 +1692,15 @@ public class HiveConf extends Configuration {
         "joins unnecessary memory will be allocated and then trimmed."),
     HIVEHYBRIDGRACEHASHJOINBLOOMFILTER("hive.mapjoin.hybridgrace.bloomfilter", true, "Whether to " +
         "use BloomFilter in Hybrid grace hash join to minimize unnecessary spilling."),
-
+    HIVEMAPJOINFULLOUTER("hive.mapjoin.full.outer", true,
+        "Whether to use MapJoin for FULL OUTER JOINs."),
+    HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE(
+        "hive.test.mapjoin.full.outer.override",
+        "none", new StringSet("none", "enable", "disable"),
+        "internal use only, used to override the hive.mapjoin.full.outer\n" +
+        "setting.  Using enable will force it on and disable will force it off.\n" +
+        "The default none is do nothing, of course",
+        true),
     HIVESMBJOINCACHEROWS("hive.smbjoin.cache.rows", 10000,
         "How many rows with the same key value should be cached in memory per smb joined table."),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000,
@@ -1701,6 +1722,8 @@ public class HiveConf extends Configuration {
         "If the bucketing/sorting properties of the table exactly match the grouping key, whether to perform \n" +
         "the group by in the mapper by using BucketizedHiveInputFormat. The only downside to this\n" +
         "is that it limits the number of mappers to the number of files."),
+    HIVE_DEFAULT_NULLS_LAST("hive.default.nulls.last", true,
+        "Whether to set NULLS LAST as the default null ordering"),
     HIVE_GROUPBY_POSITION_ALIAS("hive.groupby.position.alias", false,
         "Whether to enable using Column Position Alias in Group By"),
     HIVE_ORDERBY_POSITION_ALIAS("hive.orderby.position.alias", true,
@@ -2035,7 +2058,7 @@ public class HiveConf extends Configuration {
        "However, if it is on, and the predicted size of the larger input for a given join is greater \n" +
        "than this number, the join will not be converted to a dynamically partitioned hash join. \n" +
        "The value \"-1\" means no limit."),
-    HIVEHASHTABLEKEYCOUNTADJUSTMENT("hive.hashtable.key.count.adjustment", 2.0f,
+    HIVEHASHTABLEKEYCOUNTADJUSTMENT("hive.hashtable.key.count.adjustment", 0.99f,
         "Adjustment to mapjoin hashtable size derived from table and column statistics; the estimate" +
         " of the number of keys is divided by this value. If the value is 0, statistics are not used" +
         "and hive.hashtable.initialCapacity is used instead."),
@@ -2045,13 +2068,21 @@ public class HiveConf extends Configuration {
     HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE("hive.mapjoin.followby.gby.localtask.max.memory.usage", (float) 0.55,
         "This number means how much memory the local task can take to hold the key/value into an in-memory hash table \n" +
         "when this map join is followed by a group by. If the local task's memory usage is more than this number, \n" +
-        "the local task will abort by itself. It means the data of the small table is too large to be held in memory."),
+        "the local task will abort by itself. It means the data of the small table is too large " +
+        "to be held in memory. Does not apply to Hive-on-Spark (replaced by " +
+        "hive.mapjoin.max.gc.time.percentage)"),
     HIVEHASHTABLEMAXMEMORYUSAGE("hive.mapjoin.localtask.max.memory.usage", (float) 0.90,
         "This number means how much memory the local task can take to hold the key/value into an in-memory hash table. \n" +
         "If the local task's memory usage is more than this number, the local task will abort by itself. \n" +
-        "It means the data of the small table is too large to be held in memory."),
+        "It means the data of the small table is too large to be held in memory. Does not apply to " +
+        "Hive-on-Spark (replaced by hive.mapjoin.max.gc.time.percentage)"),
     HIVEHASHTABLESCALE("hive.mapjoin.check.memory.rows", (long)100000,
         "The number means after how many rows processed it needs to check the memory usage"),
+    HIVEHASHTABLEMAXGCTIMEPERCENTAGE("hive.mapjoin.max.gc.time.percentage", (float) 0.60,
+        new RangeValidator(0.0f, 1.0f), "This number means how much time (what percentage, " +
+        "0..1, of wallclock time) the JVM is allowed to spend in garbage collection when running " +
+        "the local task. If GC time percentage exceeds this number, the local task will abort by " +
+        "itself. Applies to Hive-on-Spark only"),
 
     HIVEDEBUGLOCALTASK("hive.debug.localtask",false, ""),
 
@@ -2215,6 +2246,9 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_LIMIT_TRANSPOSE_REDUCTION_TUPLES("hive.optimize.limittranspose.reductiontuples", (long) 0,
         "When hive.optimize.limittranspose is true, this variable specifies the minimal reduction in the\n" +
         "number of tuples of the outer input of the join or the input of the union that you should get in order to apply the rule."),
+
+    HIVE_OPTIMIZE_CONSTRAINTS_JOIN("hive.optimize.constraints.join", true, "Whether to use referential constraints\n" +
+        "to optimize (remove or transform) join operators"),
 
     HIVE_OPTIMIZE_REDUCE_WITH_STATS("hive.optimize.filter.stats.reduction", false, "Whether to simplify comparison\n" +
         "expressions in filter operators using column stats"),
@@ -2793,6 +2827,8 @@ public class HiveConf extends Configuration {
         "hive.test.authz.sstd.hs2.mode", false, "test hs2 mode from .q tests", true),
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false,
         "enable or disable the Hive client authorization"),
+    HIVE_AUTHORIZATION_KERBEROS_USE_SHORTNAME("hive.security.authorization.kerberos.use.shortname", true,
+        "use short name in Kerberos cluster"),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory",
         "The Hive client authorization manager class name. The user defined authorization class should implement \n" +
@@ -3635,9 +3671,9 @@ public class HiveConf extends Configuration {
         "For example, arithmetic expressions which can overflow the output data type can be evaluated using\n" +
         " checked vector expressions so that they produce same result as non-vectorized evaluation."),
     HIVE_VECTORIZED_ADAPTOR_SUPPRESS_EVALUATE_EXCEPTIONS(
-		"hive.vectorized.adaptor.suppress.evaluate.exceptions", false,
+        "hive.vectorized.adaptor.suppress.evaluate.exceptions", false,
         "This flag should be set to true to suppress HiveException from the generic UDF function\n" +
-		"evaluate call and turn them into NULLs. Assume, by default, this is not needed"),
+        "evaluate call and turn them into NULLs. Assume, by default, this is not needed"),
     HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED(
         "hive.vectorized.input.format.supports.enabled",
         "decimal_64",
@@ -4073,7 +4109,8 @@ public class HiveConf extends Configuration {
     LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR("hive.llap.mapjoin.memory.oversubscribe.factor", 0.2f,
       "Fraction of memory from hive.auto.convert.join.noconditionaltask.size that can be over subscribed\n" +
         "by queries running in LLAP mode. This factor has to be from 0.0 to 1.0. Default is 20% over subscription.\n"),
-    LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY("hive.llap.memory.oversubscription.max.executors.per.query", 3,
+    LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY("hive.llap.memory.oversubscription.max.executors.per.query",
+      -1,
       "Used along with hive.llap.mapjoin.memory.oversubscribe.factor to limit the number of executors from\n" +
         "which memory for mapjoin can be borrowed. Default 3 (from 3 other executors\n" +
         "hive.llap.mapjoin.memory.oversubscribe.factor amount of memory can be borrowed based on which mapjoin\n" +
@@ -4311,6 +4348,12 @@ public class HiveConf extends Configuration {
         "specified (default) then the spark-submit shell script is used to launch the Spark " +
         "app. If " + HIVE_SPARK_LAUNCHER_CLIENT + " is specified then Spark's " +
         "InProcessLauncher is used to programmatically launch the app."),
+    SPARK_SESSION_TIMEOUT("hive.spark.session.timeout", "30m", new TimeValidator(TimeUnit.MINUTES,
+            30L, true, null, true), "Amount of time the Spark Remote Driver should wait for " +
+            " a Spark job to be submitted before shutting down. Minimum value is 30 minutes"),
+    SPARK_SESSION_TIMEOUT_PERIOD("hive.spark.session.timeout.period", "60s",
+            new TimeValidator(TimeUnit.SECONDS, 60L, true, null, true),
+            "How frequently to check for idle Spark sessions. Minimum value is 60 seconds."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_MERGE_NWAY_JOINS("hive.merge.nway.joins", true,

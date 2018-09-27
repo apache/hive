@@ -97,9 +97,13 @@ POSTHOOK: Input: default@parquet_map_type
 PREHOOK: query: explain vectorization expression select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456],
 doubleMap[123.123], stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456],
 doubleMap[123.123], stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -182,9 +186,13 @@ POSTHOOK: Input: default@parquet_map_type
 PREHOOK: query: explain vectorization expression select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1']
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1']
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -85,11 +85,11 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   }
 
   public static enum VectorMapJoinVariation {
-    NONE,
-    INNER_BIG_ONLY,
     INNER,
+    INNER_BIG_ONLY,
     LEFT_SEMI,
-    OUTER
+    OUTER,
+    FULL_OUTER
   }
 
   private HashTableImplementationType hashTableImplementationType;
@@ -107,7 +107,7 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     hashTableImplementationType = HashTableImplementationType.NONE;
     hashTableKind = HashTableKind.NONE;
     hashTableKeyType = HashTableKeyType.NONE;
-    vectorMapJoinVariation = VectorMapJoinVariation.NONE;
+    vectorMapJoinVariation = null;
     minMaxEnabled = false;
 
     allBigTableKeyExpressions = null;
@@ -206,6 +206,7 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   private List<String> notSupportedKeyTypes;
   private boolean smallTableExprVectorizes;
   private boolean outerJoinHasNoKeys;
+  boolean isFullOuter;
 
   public void setUseOptimizedTable(boolean useOptimizedTable) {
     this.useOptimizedTable = useOptimizedTable;
@@ -274,5 +275,10 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   public boolean getIsHybridHashJoin() {
     return isHybridHashJoin;
   }
-
+  public void setIsFullOuter(boolean isFullOuter) {
+    this.isFullOuter = isFullOuter;
+  }
+  public boolean getIsFullOuter() {
+    return isFullOuter;
+  }
 }

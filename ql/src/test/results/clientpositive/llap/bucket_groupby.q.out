@@ -42,9 +42,15 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 PREHOOK: query: explain
 select key, count(1) from clustergroupby where ds='100' group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=100
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby where ds='100' group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=100
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -175,9 +181,15 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.Field
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='101'  group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='101'  group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -283,9 +295,15 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 PREHOOK: query: explain
 select length(key), count(1) from clustergroupby  where ds='101'  group by length(key) limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select length(key), count(1) from clustergroupby  where ds='101'  group by length(key) limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -370,9 +388,15 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 PREHOOK: query: explain
 select abs(length(key)), count(1) from clustergroupby  where ds='101'  group by abs(length(key)) limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select abs(length(key)), count(1) from clustergroupby  where ds='101'  group by abs(length(key)) limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -457,9 +481,15 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='101'  group by key,'a' order by key,'a' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='101'  group by key,'a' order by key,'a' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -565,9 +595,15 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 PREHOOK: query: explain
 select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -673,9 +709,17 @@ val_114	1
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=100
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=100
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1058,9 +1102,17 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  group by key, 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=100
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  group by key, 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=100
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1171,9 +1223,15 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.Field
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='102'  group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='102'  group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1280,9 +1338,15 @@ POSTHOOK: Input: default@clustergroupby@ds=102
 PREHOOK: query: explain
 select value, count(1) from clustergroupby  where ds='102'  group by value order by value limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, count(1) from clustergroupby  where ds='102'  group by value order by value limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1388,9 +1452,15 @@ val_114	1
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1489,9 +1559,15 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=103).value SIMPLE [(src)src.Field
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='103'  group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=103
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='103'  group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=103
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1598,9 +1674,15 @@ POSTHOOK: Input: default@clustergroupby@ds=103
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='103'  group by value, key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=103
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='103'  group by value, key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=103
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

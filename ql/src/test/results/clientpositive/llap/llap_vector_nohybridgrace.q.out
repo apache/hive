@@ -6,6 +6,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from
 (select c.ctinyint
@@ -14,6 +16,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -64,6 +68,7 @@ STAGE PLANS:
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Fast Hash Table and No Hybrid Hash Join IS true
+                            hashTableImplementationType: FAST
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 24737 Data size: 197896 Basic stats: COMPLETE Column stats: COMPLETE
@@ -187,6 +192,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from
 (select c.ctinyint
@@ -195,6 +202,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -245,6 +254,7 @@ STAGE PLANS:
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Fast Hash Table and No Hybrid Hash Join IS true
+                            hashTableImplementationType: FAST
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 24737 Data size: 197896 Basic stats: COMPLETE Column stats: COMPLETE

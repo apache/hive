@@ -114,6 +114,8 @@ from noop(on part_orc
   order by p_name
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -124,6 +126,8 @@ from noop(on part_orc
   order by p_name
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -154,11 +158,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5, 7]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int, 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -197,7 +201,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -209,15 +213,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -228,7 +245,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -252,13 +269,34 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
+                      functionInputExpressions: [col 1:string, col 1:string, col 3:double]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, double, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 6]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 4, 5, 7]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2) -> 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -326,6 +364,8 @@ from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p
 distribute by j.p_mfgr
 sort by j.p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
@@ -333,6 +373,8 @@ from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p
 distribute by j.p_mfgr
 sort by j.p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -372,10 +414,10 @@ STAGE PLANS:
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [1, 2, 5]
+                          valueColumns: 1:string, 2:string, 5:int
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
             Execution mode: vectorized
@@ -416,10 +458,9 @@ STAGE PLANS:
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
@@ -478,7 +519,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -509,7 +550,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -589,12 +630,16 @@ from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size
 from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -624,11 +669,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -667,7 +712,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -740,6 +785,8 @@ from noop(on part_orc
   order by p_name
   ) abc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -750,6 +797,8 @@ from noop(on part_orc
   order by p_name
   ) abc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -780,11 +829,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5, 7]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int, 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -823,7 +872,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -835,15 +884,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -854,7 +916,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -878,13 +940,34 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
+                      functionInputExpressions: [col 1:string, col 1:string, col 3:double]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, double, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 6]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 4, 5, 7]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2) -> 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -955,6 +1038,8 @@ from noop(on part_orc
           order by p_name 
           )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -965,6 +1050,8 @@ from noop(on part_orc
           order by p_name 
           )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -995,11 +1082,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -1038,7 +1125,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -1069,7 +1156,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1172,6 +1259,8 @@ from noop(on part_orc
           ) 
 group by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -1183,6 +1272,8 @@ from noop(on part_orc
           ) 
 group by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1213,11 +1304,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -1256,7 +1347,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -1296,7 +1387,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -1396,6 +1487,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select abc.* 
 from noop(on part_orc 
@@ -1403,6 +1496,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1433,11 +1528,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [0, 3, 4, 5, 6, 7, 8]
+                        partitionColumns: 2:string
+                        valueColumns: 0:int, 3:string, 4:string, 5:int, 6:string, 7:double, 8:string
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
             Execution mode: vectorized
@@ -1478,10 +1573,9 @@ STAGE PLANS:
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
@@ -1519,7 +1613,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
@@ -1613,6 +1707,8 @@ partition by p_mfgr
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select abc.* 
 from part_orc p1 join noop(on part_orc 
@@ -1620,6 +1716,8 @@ partition by p_mfgr
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1658,10 +1756,9 @@ STAGE PLANS:
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
@@ -1693,11 +1790,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [0, 3, 4, 5, 6, 7, 8]
+                        partitionColumns: 2:string
+                        valueColumns: 0:int, 3:string, 4:string, 5:int, 6:string, 7:double, 8:string
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
             Execution mode: vectorized
@@ -1762,7 +1859,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
@@ -1834,6 +1931,8 @@ from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
@@ -1841,6 +1940,8 @@ from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1871,7 +1972,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: p_name ASC NULLS FIRST, p_size DESC NULLS LAST
+                          order by: p_name ASC NULLS LAST, p_size DESC NULLS LAST
                           output shape: p_name: string, p_mfgr: string, p_size: int
                           partition by: p_mfgr
                           raw input shape:
@@ -1909,7 +2010,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col1 ASC NULLS FIRST, _col5 DESC NULLS LAST
+                        order by: _col1 ASC NULLS LAST, _col5 DESC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -1921,15 +2022,28 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
-                vectorized: false
+                reduceColumnNullOrder: azz
+                reduceColumnSortOrder: ++-
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, KEY.reducesinkkey2:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -1940,7 +2054,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST, _col5 DESC NULLS LAST
+                        order by: _col1 ASC NULLS LAST, _col5 DESC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1951,13 +2065,33 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank]
+                      functionInputExpressions: [col 1:string]
+                      functionNames: [rank]
+                      keyInputColumns: [1, 0, 2]
+                      native: true
+                      nonKeyInputColumns: []
+                      orderExpressions: [col 1:string, col 2:int]
+                      outputColumns: [3, 1, 0, 2]
+                      outputTypes: [int, string, string, int]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [3]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2021,6 +2155,8 @@ from noopwithmap(on part_orc
   partition by p_mfgr
   order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -2030,6 +2166,8 @@ from noopwithmap(on part_orc
   partition by p_mfgr
   order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2060,7 +2198,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: p_name ASC NULLS FIRST
+                          order by: p_name ASC NULLS LAST
                           output shape: p_name: string, p_mfgr: string, p_size: int, p_retailprice: double
                           partition by: p_mfgr
                           raw input shape:
@@ -2099,7 +2237,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2112,15 +2250,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -2131,7 +2282,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2155,13 +2306,34 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
+                      functionInputExpressions: [col 1:string, col 1:string, col 3:double]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, double, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 6]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 4, 5, 7]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2) -> 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2229,6 +2401,8 @@ from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
@@ -2238,6 +2412,8 @@ from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2268,11 +2444,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5, 7]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int, 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -2311,7 +2487,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2323,15 +2499,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -2342,7 +2531,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2366,13 +2555,34 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
+                      functionInputExpressions: [col 1:string, col 1:string, col 3:double]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, double, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 6]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 4, 5, 7]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2) -> 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2441,6 +2651,8 @@ partition by p_mfgr
 order by p_mfgr, p_name
 )))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -2451,6 +2663,8 @@ partition by p_mfgr
 order by p_mfgr, p_name
 )))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2482,11 +2696,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5, 7]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int, 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -2525,7 +2739,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2539,7 +2753,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int, _col7: double
                           partition by: _col2
                           raw input shape:
@@ -2547,7 +2761,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_2
                           name: noop
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int, _col7: double
                           partition by: _col2
                           raw input shape:
@@ -2579,7 +2793,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2587,7 +2801,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2599,15 +2813,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -2618,7 +2845,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2642,13 +2869,34 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
+                      functionInputExpressions: [col 1:string, col 1:string, col 3:double]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, double, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 6]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 4, 5, 7]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2) -> 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2722,6 +2970,8 @@ order by p_name)
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
@@ -2735,6 +2985,8 @@ order by p_name)
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2765,11 +3017,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5, 7]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int, 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -2808,7 +3060,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -2839,7 +3091,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2940,6 +3192,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
@@ -2952,6 +3206,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2983,11 +3239,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [0, 5, 7]
+                        partitionColumns: 2:string
+                        valueColumns: 0:int, 5:int, 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_partkey (type: int), p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -3028,10 +3284,9 @@ STAGE PLANS:
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
@@ -3069,7 +3324,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -3108,7 +3363,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
+                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3124,7 +3379,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3240,12 +3495,16 @@ from noop(on part_orc
 partition by p_mfgr 
 order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3276,11 +3535,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -3319,7 +3578,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -3451,6 +3710,9 @@ partition by p_mfgr
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mfgr_price_view_n0
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
@@ -3459,6 +3721,9 @@ partition by p_mfgr
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mfgr_price_view_n0
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3511,11 +3776,11 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [0, 1]
+                            keyColumns: 0:string, 1:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [0]
-                            valueColumnNums: [2]
+                            partitionColumns: 0:string
+                            valueColumns: 2:double
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: double)
             Execution mode: vectorized
@@ -3560,7 +3825,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noop
-                          order by: _col0 ASC NULLS FIRST
+                          order by: _col0 ASC NULLS LAST
                           output shape: _col0: string, _col1: string, _col2: double
                           partition by: _col0
                           raw input shape:
@@ -3591,7 +3856,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -3716,6 +3981,9 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+PREHOOK: Output: default@part_4
+PREHOOK: Output: default@part_5
 POSTHOOK: query: explain vectorization detail
 from noop(on part_orc 
 partition by p_mfgr 
@@ -3732,6 +4000,9 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+POSTHOOK: Output: default@part_4
+POSTHOOK: Output: default@part_5
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3768,11 +4039,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: [5, 7]
+                        partitionColumns: 2:string
+                        valueColumns: 5:int, 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -3792,15 +4063,28 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 3 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -3811,7 +4095,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3835,13 +4119,34 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
+                      functionInputExpressions: [col 1:string, col 1:string, col 3:double]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, double, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 6]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 4, 5, 7]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2) -> 7:double
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3868,7 +4173,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3893,7 +4198,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
+                notVectorizedReason: PTF operator: cume_dist not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3909,7 +4214,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col3 ASC NULLS FIRST, _col2 ASC NULLS FIRST
+                        order by: _col3 ASC NULLS LAST, _col2 ASC NULLS LAST
                         partition by: _col3
                         raw input shape:
                         window functions:
@@ -3972,7 +4277,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4001,7 +4306,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4175,6 +4480,8 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
@@ -4192,6 +4499,8 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4223,10 +4532,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [2]
+                        keyColumns: 2:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 5]
+                        valueColumns: 1:string, 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_size (type: int)
             Execution mode: vectorized
@@ -4265,14 +4574,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -4286,7 +4595,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -4294,7 +4603,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_2
                           name: noop
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -4326,7 +4635,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4334,7 +4643,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4346,15 +4655,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
-                vectorized: false
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -4389,13 +4711,32 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingLongSum]
+                      functionInputExpressions: [col 0:string, col 0:string, col 2:int]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 0:string, col 1:string]
+                      outputColumns: [3, 4, 5, 1, 0, 2]
+                      outputTypes: [int, int, bigint, string, string, int]
+                      streamingColumns: [3, 4, 5]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 3, 4, 2, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -4487,6 +4828,8 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -4504,6 +4847,8 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4536,10 +4881,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
-                        keyColumnNums: [2]
+                        keyColumns: 2:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [1, 5]
+                        valueColumns: 1:string, 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_size (type: int)
             Execution mode: vectorized
@@ -4578,14 +4923,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -4616,7 +4961,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4647,7 +4992,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -4659,15 +5004,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
         Reducer 5 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -4678,7 +5036,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -4702,13 +5060,33 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingLongSum]
+                      functionInputExpressions: [col 1:string, col 1:string, col 2:int]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [3, 4, 5, 1, 0, 2]
+                      outputTypes: [int, int, bigint, string, string, int]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [3, 4, 5]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 3, 4, 2, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -4798,6 +5176,8 @@ from noop(on
           partition by p_mfgr 
           order by p_mfgr))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -4813,6 +5193,8 @@ from noop(on
           partition by p_mfgr 
           order by p_mfgr))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4844,10 +5226,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkMultiKeyOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [5]
+                        valueColumns: 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -4886,14 +5268,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -4924,14 +5306,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -4947,7 +5329,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -4975,7 +5357,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -5113,6 +5495,8 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
@@ -5130,6 +5514,8 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5162,10 +5548,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkMultiKeyOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [5]
+                        valueColumns: 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -5204,14 +5590,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -5242,7 +5628,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -5256,7 +5642,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -5289,7 +5675,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -5302,15 +5688,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
         Reducer 5 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
-                vectorized: false
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -5345,13 +5744,32 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingLongSum]
+                      functionInputExpressions: [col 0:string, col 0:string, col 2:int]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 0:string, col 1:string]
+                      outputColumns: [3, 4, 5, 1, 0, 2]
+                      outputTypes: [int, int, bigint, string, string, int]
+                      streamingColumns: [3, 4, 5]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 3, 4, 2, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -5442,6 +5860,8 @@ from noop(on
           order by p_mfgr
           ))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
@@ -5458,6 +5878,8 @@ from noop(on
           order by p_mfgr
           ))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5489,10 +5911,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkMultiKeyOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [5]
+                        valueColumns: 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -5531,7 +5953,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -5545,7 +5967,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2
                           raw input shape:
@@ -5553,7 +5975,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_2
                           name: noop
-                          order by: _col2 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2
                           raw input shape:
@@ -5585,7 +6007,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -5593,7 +6015,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
@@ -5605,15 +6027,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
-                vectorized: false
+                reduceColumnNullOrder: zz
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -5624,7 +6059,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         partition by: _col2, _col1
                         raw input shape:
                         window functions:
@@ -5648,13 +6083,32 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingLongSum]
+                      functionInputExpressions: [col 0:string, col 0:string, col 2:int]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 0:string, col 1:string]
+                      outputColumns: [3, 4, 5, 1, 0, 2]
+                      outputTypes: [int, int, bigint, string, string, int]
+                      streamingColumns: [3, 4, 5]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 3, 4, 2, 5, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -5741,6 +6195,8 @@ from noopwithmap(on
               order by p_mfgr, p_name) 
           ))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -5755,6 +6211,8 @@ from noopwithmap(on
               order by p_mfgr, p_name) 
           ))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5786,10 +6244,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkMultiKeyOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [5]
+                        valueColumns: 5:int
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -5828,14 +6286,14 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
                       Partition table definition
                         input alias: ptf_2
                         name: noop
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -5849,7 +6307,7 @@ STAGE PLANS:
                         Partition table definition
                           input alias: ptf_1
                           name: noopwithmap
-                          order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                          order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
@@ -5882,7 +6340,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: ptf_1
                         name: noopwithmap
-                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
@@ -5899,7 +6357,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -5927,7 +6385,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:

@@ -12655,7 +12655,7 @@ module ThriftHiveMetastore
 
   class Add_write_notification_log_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    RQST = -1
+    RQST = 1
 
     FIELDS = {
       RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::WriteNotificationLogRequest}
@@ -13573,7 +13573,7 @@ module ThriftHiveMetastore
   class Create_ischema_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
-    O2 = -1
+    O2 = 2
     O3 = 3
 
     FIELDS = {

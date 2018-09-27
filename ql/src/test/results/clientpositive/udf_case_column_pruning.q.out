@@ -8,6 +8,8 @@ FROM src a JOIN src b
 ON a.key = b.key
 ORDER BY key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT CASE a.key
         WHEN '1' THEN 2
@@ -18,6 +20,8 @@ FROM src a JOIN src b
 ON a.key = b.key
 ORDER BY key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

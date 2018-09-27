@@ -32,7 +32,7 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jmh.version>1.19</jmh.version>
+    <jmh.version>1.21</jmh.version>
     <uberjar.name>benchmarks</uberjar.name>
   </properties>
 

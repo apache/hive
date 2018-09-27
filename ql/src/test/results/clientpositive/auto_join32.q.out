@@ -19,11 +19,17 @@ from studenttab10k s join votertab10k v
 on (s.name = v.name)
 group by s.name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k
+PREHOOK: Input: default@votertab10k
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.name, count(distinct registration)
 from studenttab10k s join votertab10k v
 on (s.name = v.name)
 group by s.name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Input: default@votertab10k
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -147,11 +153,17 @@ from studenttab10k_smb s join votertab10k_smb v
 on (s.name = v.name)
 group by s.name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.name, count(distinct registration)
 from studenttab10k_smb s join votertab10k_smb v
 on (s.name = v.name)
 group by s.name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -259,11 +271,17 @@ from studenttab10k_smb s join votertab10k_smb v
 on (s.name = v.name)
 group by s.name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.name, count(distinct registration)
 from studenttab10k_smb s join votertab10k_smb v
 on (s.name = v.name)
 group by s.name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -391,6 +409,9 @@ where s.p = 'bar'
 and v.p = 'bar'
 group by s.name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_part
+PREHOOK: Input: default@votertab10k_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.name, count(distinct registration)
 from studenttab10k_part s join votertab10k_part v
 on (s.name = v.name)
@@ -398,6 +419,9 @@ where s.p = 'bar'
 and v.p = 'bar'
 group by s.name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_part
+POSTHOOK: Input: default@votertab10k_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

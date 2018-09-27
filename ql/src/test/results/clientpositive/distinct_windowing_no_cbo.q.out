@@ -47,9 +47,13 @@ POSTHOOK: Output: default@over10k_n14
 PREHOOK: query: explain
 select distinct first_value(t) over ( partition by si order by i ) from over10k_n14 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct first_value(t) over ( partition by si order by i ) from over10k_n14 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -83,7 +87,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col2 ASC NULLS FIRST
+                  order by: _col2 ASC NULLS LAST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -166,10 +170,14 @@ PREHOOK: query: explain
 select distinct last_value(i) over ( partition by si order by i )
 from over10k_n14 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct last_value(i) over ( partition by si order by i )
 from over10k_n14 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -202,7 +210,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col2 ASC NULLS FIRST
+                  order by: _col2 ASC NULLS LAST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -288,11 +296,15 @@ select distinct last_value(i) over ( partition by si order by i ),
                 first_value(t)  over ( partition by si order by i )
 from over10k_n14 limit 50
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct last_value(i) over ( partition by si order by i ),
                 first_value(t)  over ( partition by si order by i )
 from over10k_n14 limit 50
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -326,7 +338,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col2 ASC NULLS FIRST
+                  order by: _col2 ASC NULLS LAST
                   partition by: _col1
                   raw input shape:
                   window functions:
@@ -462,6 +474,8 @@ GROUP BY si
 HAVING max(f) > 0
 limit 50
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select si, max(f) mf, rank() over ( partition by si order by mf )
 FROM over10k_n14
@@ -469,6 +483,8 @@ GROUP BY si
 HAVING max(f) > 0
 limit 50
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -539,7 +555,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1 ASC NULLS FIRST
+                  order by: _col1 ASC NULLS LAST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -643,11 +659,15 @@ select distinct si, rank() over ( partition by si order by i )
 FROM over10k_n14
 limit 50
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct si, rank() over ( partition by si order by i )
 FROM over10k_n14
 limit 50
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -680,7 +700,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col2 ASC NULLS FIRST
+                  order by: _col2 ASC NULLS LAST
                   partition by: _col1
                   raw input shape:
                   window functions:

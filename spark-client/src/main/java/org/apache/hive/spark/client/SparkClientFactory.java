@@ -20,6 +20,7 @@ package org.apache.hive.spark.client;
 import java.io.IOException;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.spark.client.rpc.RpcServer;
@@ -47,12 +48,12 @@ public final class SparkClientFactory {
    *
    * @param conf Map containing configuration parameters for the client library.
    */
-  public static void initialize(Map<String, String> conf) throws IOException {
+  public static void initialize(Map<String, String> conf, HiveConf hiveConf) throws IOException {
     if (server == null) {
       synchronized (serverLock) {
         if (server == null) {
           try {
-            server = new RpcServer(conf);
+            server = new RpcServer(conf, hiveConf);
           } catch (InterruptedException ie) {
             throw Throwables.propagate(ie);
           }
@@ -93,5 +94,10 @@ public final class SparkClientFactory {
               HiveConf.ConfVars.SPARK_CLIENT_TYPE) + " valid options are " +
               HiveConf.HIVE_SPARK_SUBMIT_CLIENT + " or " + HiveConf.HIVE_SPARK_LAUNCHER_CLIENT);
     }
+  }
+
+  @VisibleForTesting
+  public static int getServerPort() {
+    return server.getPort();
   }
 }

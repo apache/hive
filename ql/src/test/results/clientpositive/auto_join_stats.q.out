@@ -24,8 +24,14 @@ POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Output: default@smalltable_n0
 PREHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable_n0
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable_n0
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-8 is a root stage , consists of Stage-10, Stage-11, Stage-1
   Stage-10 has a backup stage: Stage-1
@@ -295,8 +301,16 @@ POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Output: default@smalltable_n0
 PREHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable2_n0
+PREHOOK: Input: default@smalltable_n0
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable2_n0
+POSTHOOK: Input: default@smalltable_n0
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-9 is a root stage , consists of Stage-11, Stage-12, Stage-1
   Stage-11 has a backup stage: Stage-1

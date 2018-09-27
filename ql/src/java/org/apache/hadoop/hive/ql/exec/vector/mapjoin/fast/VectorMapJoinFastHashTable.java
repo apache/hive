@@ -22,15 +22,19 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
+import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
 
 public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTable {
   public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastHashTable.class);
 
+  protected final boolean isFullOuter;
+
   protected int logicalHashBucketCount;
   protected int logicalHashBucketMask;
 
-  protected float loadFactor;
+  protected final float loadFactor;
   protected final int writeBuffersSize;
 
   protected long estimatedKeyCount;
@@ -69,7 +73,10 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   }
 
   public VectorMapJoinFastHashTable(
-        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+      boolean isFullOuter,
+      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+
+    this.isFullOuter = isFullOuter;
 
     initialCapacity = (Long.bitCount(initialCapacity) == 1)
         ? initialCapacity : nextHighestPowerOfTwo(initialCapacity);
@@ -93,7 +100,27 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
 
   @Override
   public long getEstimatedMemorySize() {
+    int size = 0;
     JavaDataModel jdm = JavaDataModel.get();
-    return JavaDataModel.alignUp(10L * jdm.primitive1() + jdm.primitive2(), jdm.memoryAlign());
+    size += JavaDataModel.alignUp(10L * jdm.primitive1() + jdm.primitive2(), jdm.memoryAlign());
+    if (isFullOuter) {
+      size += MatchTracker.calculateEstimatedMemorySize(logicalHashBucketCount);
+    }
+    return size;
+  }
+
+  @Override
+  public MatchTracker createMatchTracker() {
+    return MatchTracker.create(logicalHashBucketCount);
+  }
+
+  @Override
+  public VectorMapJoinNonMatchedIterator createNonMatchedIterator(MatchTracker matchTracker) {
+    throw new RuntimeException("Not implemented");
+  }
+
+  @Override
+  public int spillPartitionId() {
+    throw new RuntimeException("Not implemented");
   }
 }

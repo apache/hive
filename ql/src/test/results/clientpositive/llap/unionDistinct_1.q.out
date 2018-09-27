@@ -14,6 +14,8 @@ insert overwrite table tmptable_n9
                                         UNION DISTINCT
                                             select 'tst3_n22' as key, count(1) as value from src s3) unionsrc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable_n9
 POSTHOOK: query: explain 
 insert overwrite table tmptable_n9
   select unionsrc.key, unionsrc.value FROM (select 'tst1_n93' as key, count(1) as value from src s1
@@ -22,6 +24,8 @@ insert overwrite table tmptable_n9
                                         UNION DISTINCT
                                             select 'tst3_n22' as key, count(1) as value from src s3) unionsrc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmptable_n9
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -284,6 +288,10 @@ insert overwrite table tmptable12
                                         UNION DISTINCT
                                             select 'tst3_n22' as key, count(1) as value from srcbucket s3) unionsrc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@tmptable12
 POSTHOOK: query: explain 
 insert overwrite table tmptable12
   select unionsrc.key, unionsrc.value FROM (select 'tst1_n93' as key, count(1) as value from src s1
@@ -292,6 +300,10 @@ insert overwrite table tmptable12
                                         UNION DISTINCT
                                             select 'tst3_n22' as key, count(1) as value from srcbucket s3) unionsrc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@tmptable12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -559,10 +571,14 @@ PREHOOK: query: explain
   select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src s2) unionsrc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain 
   select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src s2) unionsrc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -983,6 +999,9 @@ FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST1_n96 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
 INSERT OVERWRITE TABLE DEST2_n26 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n96
+PREHOOK: Output: default@dest2_n26
 POSTHOOK: query: explain 
 FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -990,6 +1009,9 @@ FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST1_n96 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
 INSERT OVERWRITE TABLE DEST2_n26 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n96
+POSTHOOK: Output: default@dest2_n26
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -1908,6 +1930,9 @@ FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST118 SELECT unionsrc.key, unionsrc.value
 INSERT OVERWRITE TABLE DEST218 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest118
+PREHOOK: Output: default@dest218
 POSTHOOK: query: explain 
 FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -1915,6 +1940,9 @@ FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST118 SELECT unionsrc.key, unionsrc.value
 INSERT OVERWRITE TABLE DEST218 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest118
+POSTHOOK: Output: default@dest218
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -2802,6 +2830,9 @@ FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST119 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
 INSERT OVERWRITE TABLE DEST219 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest119
+PREHOOK: Output: default@dest219
 POSTHOOK: query: explain 
 FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -2809,6 +2840,9 @@ FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST119 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
 INSERT OVERWRITE TABLE DEST219 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest119
+POSTHOOK: Output: default@dest219
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -3742,6 +3776,11 @@ where a.k1 > 20
 )
 subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dst_union22_delta_n0
+PREHOOK: Input: default@dst_union22_delta_n0@ds=1
+PREHOOK: Input: default@dst_union22_n0
+PREHOOK: Input: default@dst_union22_n0@ds=1
+PREHOOK: Output: default@dst_union22_n0@ds=2
 POSTHOOK: query: explain extended
 insert overwrite table dst_union22_n0 partition (ds='2')
 select * from
@@ -3755,6 +3794,11 @@ where a.k1 > 20
 )
 subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dst_union22_delta_n0
+POSTHOOK: Input: default@dst_union22_delta_n0@ds=1
+POSTHOOK: Input: default@dst_union22_n0
+POSTHOOK: Input: default@dst_union22_n0@ds=1
+POSTHOOK: Output: default@dst_union22_n0@ds=2
 OPTIMIZED SQL: SELECT `k1`, `k2`, `k3`, `k4`
 FROM (SELECT `k1`, `k2`, `k3`, `k4`
 FROM `default`.`dst_union22_delta_n0`
@@ -4583,6 +4627,8 @@ from (
   UNION DISTINCT 
   select key as key2, value as value2 from src) s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select s.key2, s.value2
 from (
@@ -4591,6 +4637,8 @@ from (
   UNION DISTINCT 
   select key as key2, value as value2 from src) s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5061,6 +5109,11 @@ select s.key, s.count from (
   select key, count(1) as count from src5_n1 where key < 10 group by key
 )s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src2_n2
+PREHOOK: Input: default@src3
+PREHOOK: Input: default@src4
+PREHOOK: Input: default@src5_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain extended
 select s.key, s.count from (
   select key, count from src2_n2  where key < 10
@@ -5072,6 +5125,11 @@ select s.key, s.count from (
   select key, count(1) as count from src5_n1 where key < 10 group by key
 )s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src2_n2
+POSTHOOK: Input: default@src3
+POSTHOOK: Input: default@src4
+POSTHOOK: Input: default@src5_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT `key`, `count`
 FROM (SELECT `key`, `count`
 FROM (SELECT `key`, `count`
@@ -5604,6 +5662,11 @@ select s.key, s.count from (
   select a.key as key, b.count as count from src4 a join src5_n1 b on a.key=b.key where a.key < 10
 )s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src2_n2
+PREHOOK: Input: default@src3
+PREHOOK: Input: default@src4
+PREHOOK: Input: default@src5_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain extended
 select s.key, s.count from (
   select key, count from src2_n2  where key < 10
@@ -5613,6 +5676,11 @@ select s.key, s.count from (
   select a.key as key, b.count as count from src4 a join src5_n1 b on a.key=b.key where a.key < 10
 )s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src2_n2
+POSTHOOK: Input: default@src3
+POSTHOOK: Input: default@src4
+POSTHOOK: Input: default@src5_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT `key`, `count`
 FROM (SELECT `key`, `count`
 FROM (SELECT `key`, `count`
@@ -6109,6 +6177,11 @@ select s.key, s.count from (
   select a.key as key, count(1) as count from src4 a join src5_n1 b on a.key=b.key where a.key < 10 group by a.key
 )s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src2_n2
+PREHOOK: Input: default@src3
+PREHOOK: Input: default@src4
+PREHOOK: Input: default@src5_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain extended
 select s.key, s.count from (
   select key, count from src2_n2  where key < 10
@@ -6118,6 +6191,11 @@ select s.key, s.count from (
   select a.key as key, count(1) as count from src4 a join src5_n1 b on a.key=b.key where a.key < 10 group by a.key
 )s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src2_n2
+POSTHOOK: Input: default@src3
+POSTHOOK: Input: default@src4
+POSTHOOK: Input: default@src5_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT `key`, `count`
 FROM (SELECT `key`, `count`
 FROM (SELECT `key`, `count`
@@ -6669,6 +6747,12 @@ FROM
   ) master_table
 ) a GROUP BY key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@tmp_srcpart_n0
+PREHOOK: Input: default@tmp_srcpart_n0@ds=2008-04-08/hr=11
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_unionall_n0
 POSTHOOK: query: explain
 create table tmp_unionall_n0 as
 SELECT count(1) as counts, key, value
@@ -6687,6 +6771,12 @@ FROM
   ) master_table
 ) a GROUP BY key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@tmp_srcpart_n0
+POSTHOOK: Input: default@tmp_srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_unionall_n0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -6875,6 +6965,10 @@ WHERE ds='2008-04-08' and hr='11'
 ) a
 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT 
 count(1) as counts,
@@ -6897,6 +6991,10 @@ WHERE ds='2008-04-08' and hr='11'
 ) a
 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -8159,8 +8257,16 @@ POSTHOOK: Lineage: jackson_sev_add.key SIMPLE [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: jackson_sev_add.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select b.* from jackson_sev_same a join (select * from dim_pho UNION DISTINCT select * from jackson_sev_add)b on a.key=b.key and b.key=97
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dim_pho
+PREHOOK: Input: default@jackson_sev_add
+PREHOOK: Input: default@jackson_sev_same
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select b.* from jackson_sev_same a join (select * from dim_pho UNION DISTINCT select * from jackson_sev_add)b on a.key=b.key and b.key=97
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim_pho
+POSTHOOK: Input: default@jackson_sev_add
+POSTHOOK: Input: default@jackson_sev_same
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -8322,6 +8428,8 @@ select * from (
   ) subq
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@union_subq_union_n0
 POSTHOOK: query: explain
 insert overwrite table union_subq_union_n0 
 select * from (
@@ -8335,6 +8443,8 @@ select * from (
   ) subq
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@union_subq_union_n0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -8631,6 +8741,8 @@ select * from (
   ) subq
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@union_subq_union29
 POSTHOOK: query: explain
 insert overwrite table union_subq_union29 
 select * from (
@@ -8644,6 +8756,8 @@ select * from (
   ) subq
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@union_subq_union29
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -8890,6 +9004,8 @@ FROM (
   CLUSTER BY id
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT *
 FROM (
@@ -8907,6 +9023,8 @@ FROM (
   CLUSTER BY id
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -9190,6 +9308,8 @@ UNION DISTINCT
 select key, value from src
 ) aa
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@union_subq_union30
 POSTHOOK: query: explain
 insert overwrite table union_subq_union30 
 select * from (
@@ -9210,6 +9330,8 @@ UNION DISTINCT
 select key, value from src
 ) aa
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@union_subq_union30
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -9600,6 +9722,10 @@ insert overwrite table t3_n22
 insert overwrite table t4_n11
   select value, count(1) group by value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n93
+PREHOOK: Input: default@t2_n58
+PREHOOK: Output: default@t3_n22
+PREHOOK: Output: default@t4_n11
 POSTHOOK: query: explain
 from
 (select * from t1_n93
@@ -9611,6 +9737,10 @@ insert overwrite table t3_n22
 insert overwrite table t4_n11
   select value, count(1) group by value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n93
+POSTHOOK: Input: default@t2_n58
+POSTHOOK: Output: default@t3_n22
+POSTHOOK: Output: default@t4_n11
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -9921,6 +10051,10 @@ insert overwrite table t5_n4
 insert overwrite table t6_n3
   select c1, sum(cnt) group by c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n93
+PREHOOK: Input: default@t2_n58
+PREHOOK: Output: default@t5_n4
+PREHOOK: Output: default@t6_n3
 POSTHOOK: query: explain
 from
 (
@@ -9933,6 +10067,10 @@ insert overwrite table t5_n4
 insert overwrite table t6_n3
   select c1, sum(cnt) group by c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n93
+POSTHOOK: Input: default@t2_n58
+POSTHOOK: Output: default@t5_n4
+POSTHOOK: Output: default@t6_n3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -10288,6 +10426,10 @@ insert overwrite table t7_n4
 insert overwrite table t8_n2
   select c1, count(1) group by c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n93
+PREHOOK: Input: default@t9_n1
+PREHOOK: Output: default@t7_n4
+PREHOOK: Output: default@t8_n2
 POSTHOOK: query: explain
 from
 (
@@ -10300,6 +10442,10 @@ insert overwrite table t7_n4
 insert overwrite table t8_n2
   select c1, count(1) group by c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n93
+POSTHOOK: Input: default@t9_n1
+POSTHOOK: Output: default@t7_n4
+POSTHOOK: Output: default@t8_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -10603,12 +10749,18 @@ SELECT * FROM
 UNION DISTINCT
 SELECT CAST(key AS BIGINT) AS key FROM t2_n58) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n93
+PREHOOK: Input: default@t2_n58
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t1_n93
 UNION DISTINCT
 SELECT CAST(key AS BIGINT) AS key FROM t2_n58) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n93
+POSTHOOK: Input: default@t2_n58
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -10715,12 +10867,18 @@ SELECT * FROM
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key FROM t2_n58) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n93
+PREHOOK: Input: default@t2_n58
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key FROM t2_n58) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n93
+POSTHOOK: Input: default@t2_n58
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -10865,12 +11023,18 @@ SELECT * FROM
 UNION DISTINCT
 SELECT CAST(a.key AS BIGINT) AS key FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n93
+PREHOOK: Input: default@t2_n58
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t2_n58
 UNION DISTINCT
 SELECT CAST(a.key AS BIGINT) AS key FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n93
+POSTHOOK: Input: default@t2_n58
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -11015,12 +11179,18 @@ SELECT * FROM
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n58) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n93
+PREHOOK: Input: default@t2_n58
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS STRING) AS value FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n58) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n93
+POSTHOOK: Input: default@t2_n58
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -11165,12 +11335,18 @@ SELECT * FROM
 UNION DISTINCT
 SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n93
+PREHOOK: Input: default@t2_n58
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n58
 UNION DISTINCT
 SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n93
+POSTHOOK: Input: default@t2_n58
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -11330,6 +11506,8 @@ UNION DISTINCT
  	GROUP BY key
 )a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_src
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
 	SELECT key, value FROM src 
@@ -11339,6 +11517,8 @@ UNION DISTINCT
  	GROUP BY key
 )a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -11535,6 +11715,8 @@ UNION DISTINCT
 	WHERE key = 0
 )a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_src
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
 	SELECT key, cast(COUNT(*) as string) AS value FROM src
@@ -11544,6 +11726,8 @@ UNION DISTINCT
 	WHERE key = 0
 )a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -11836,6 +12020,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
 ) alias1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src10_1
+PREHOOK: Input: default@src10_2
+PREHOOK: Input: default@src10_3
+PREHOOK: Input: default@src10_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
@@ -11843,6 +12032,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src10_1
+POSTHOOK: Input: default@src10_2
+POSTHOOK: Input: default@src10_3
+POSTHOOK: Input: default@src10_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -12036,6 +12230,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
 ) alias1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src10_1
+PREHOOK: Input: default@src10_2
+PREHOOK: Input: default@src10_3
+PREHOOK: Input: default@src10_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
@@ -12043,6 +12242,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src10_1
+POSTHOOK: Input: default@src10_2
+POSTHOOK: Input: default@src10_3
+POSTHOOK: Input: default@src10_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

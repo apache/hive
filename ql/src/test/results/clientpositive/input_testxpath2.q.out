@@ -10,10 +10,14 @@ PREHOOK: query: EXPLAIN
 FROM src_thrift
 INSERT OVERWRITE TABLE dest1_n32 SELECT size(src_thrift.lint), size(src_thrift.lintstring), size(src_thrift.mstringstring) where src_thrift.lint IS NOT NULL AND NOT (src_thrift.mstringstring IS NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1_n32
 POSTHOOK: query: EXPLAIN
 FROM src_thrift
 INSERT OVERWRITE TABLE dest1_n32 SELECT size(src_thrift.lint), size(src_thrift.lintstring), size(src_thrift.mstringstring) where src_thrift.lint IS NOT NULL AND NOT (src_thrift.mstringstring IS NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1_n32
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

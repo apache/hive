@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -839,11 +840,22 @@ public class VectorizationContext {
             }
             break;
           case ALL:
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("We will try to use the VectorUDFAdaptor for " + exprDesc.toString()
+            // Check if this is UDF for _bucket_number
+            if (expr.getGenericUDF() instanceof GenericUDFBucketNumber) {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("UDF to handle _bucket_number : Create BucketNumExpression");
+              }
+              int outCol = ocm.allocateOutputColumn(exprDesc.getTypeInfo());
+              ve = new BucketNumExpression(outCol);
+              ve.setInputTypeInfos(exprDesc.getTypeInfo());
+              ve.setOutputTypeInfo(exprDesc.getTypeInfo());
+            } else {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("We will try to use the VectorUDFAdaptor for " + exprDesc.toString()
                   + " because hive.vectorized.adaptor.usage.mode=all");
+              }
+              ve = getCustomUDFExpression(expr, mode);
             }
-            ve = getCustomUDFExpression(expr, mode);
             break;
           default:
             throw new RuntimeException("Unknown hive vector adaptor usage mode " +
@@ -858,7 +870,7 @@ public class VectorizationContext {
       }
     } else if (exprDesc instanceof ExprNodeConstantDesc) {
       ve = getConstantVectorExpression(((ExprNodeConstantDesc) exprDesc).getValue(), exprDesc.getTypeInfo(),
-          mode);
+        mode);
     } else if (exprDesc instanceof ExprNodeDynamicValueDesc) {
       ve = getDynamicValueVectorExpression((ExprNodeDynamicValueDesc) exprDesc, mode);
     } else if (exprDesc instanceof ExprNodeFieldDesc) {
@@ -1806,6 +1818,25 @@ public class VectorizationContext {
     return vectorExpression;
   }
 
+  public void wrapWithDecimal64ToDecimalConversions(VectorExpression[] vecExprs)
+      throws HiveException{
+    if (vecExprs == null) {
+      return;
+    }
+    final int size = vecExprs.length;
+    for (int i = 0; i < size; i++) {
+      VectorExpression vecExpr = vecExprs[i];
+      if (vecExpr.getOutputTypeInfo() instanceof DecimalTypeInfo) {
+        DataTypePhysicalVariation outputDataTypePhysicalVariation =
+            vecExpr.getOutputDataTypePhysicalVariation();
+        if (outputDataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+          vecExprs[i] =
+              wrapWithDecimal64ToDecimalConversion(vecExpr);
+        }
+      }
+    }
+  }
+
   public VectorExpression wrapWithDecimal64ToDecimalConversion(VectorExpression inputExpression)
       throws HiveException {
 
@@ -2074,6 +2105,8 @@ public class VectorizationContext {
 
       // Elt is a special case because it can take variable number of arguments.
       ve = getEltExpression(childExpr, returnType);
+    } else if (udf instanceof GenericUDFGrouping) {
+      ve = getGroupingExpression((GenericUDFGrouping) udf, childExpr, returnType);
     } else if (udf instanceof GenericUDFBridge) {
       ve = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode,
           returnType);
@@ -2193,6 +2226,53 @@ public class VectorizationContext {
 
     freeNonColumns(vectorChildren);
     return vectorElt;
+  }
+
+  private VectorExpression getGroupingExpression(GenericUDFGrouping udf,
+      List<ExprNodeDesc> childExprs, TypeInfo returnType)
+          throws HiveException {
+
+    ExprNodeDesc childExpr0 = childExprs.get(0);
+    if (!(childExpr0 instanceof ExprNodeColumnDesc)) {
+      return null;
+    }
+    ExprNodeColumnDesc groupingIdColDesc = (ExprNodeColumnDesc) childExpr0;
+    int groupingIdColNum = getInputColumnIndex(groupingIdColDesc.getColumn());
+
+    final int indexCount = childExprs.size() - 1;
+    int[] indices = new int[indexCount];
+    for (int i = 0; i < indexCount; i++) {
+      ExprNodeDesc indexChildExpr = childExprs.get(i + 1);
+      if (!(indexChildExpr instanceof ExprNodeConstantDesc)) {
+        return null;
+      }
+      Object scalarObject = ((ExprNodeConstantDesc) indexChildExpr).getValue();
+      final int index;
+      if (scalarObject instanceof Integer) {
+        index = (int) scalarObject;
+      } else if (scalarObject instanceof Long) {
+        index = (int) ((long) scalarObject);
+      } else {
+        return null;
+      }
+      indices[i] = index;
+    }
+
+    final int outputColumnNum = ocm.allocateOutputColumn(returnType);
+    final VectorExpression ve;
+    if (indices.length == 1) {
+      ve = new GroupingColumn(groupingIdColNum, indices[0], outputColumnNum);
+    } else {
+      ve = new GroupingColumns(groupingIdColNum, indices, outputColumnNum);
+    }
+
+    ve.setInputTypeInfos(groupingIdColDesc.getTypeInfo());
+    ve.setInputDataTypePhysicalVariations(DataTypePhysicalVariation.NONE);
+
+    ve.setOutputTypeInfo(returnType);
+    ve.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
+
+    return ve;
   }
 
   public enum InConstantType {
@@ -2854,7 +2934,11 @@ public class VectorizationContext {
     } else if (isTimestampFamily(inputType)) {
       return createVectorExpression(CastTimestampToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (isStringFamily(inputType)) {
-      return createVectorExpression(CastStringGroupToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+
+      // STRING and VARCHAR types require no conversion, so use a no-op.
+      // Also, CHAR is stored in BytesColumnVector with trimmed blank padding, so it also
+      // requires no conversion;
+      return getIdentityExpression(childExpr);
     }
     return null;
   }
@@ -3074,8 +3158,27 @@ public class VectorizationContext {
 
     List<ExprNodeDesc> castChildren = new ArrayList<ExprNodeDesc>();
     boolean wereCastUdfs = false;
+    Category commonTypeCategory = commonType.getCategory();
     for (ExprNodeDesc desc: childExpr.subList(1, 4)) {
-      if (commonType.equals(desc.getTypeInfo())) {
+      TypeInfo childTypeInfo = desc.getTypeInfo();
+      Category childCategory = childTypeInfo.getCategory();
+
+      if (childCategory != commonTypeCategory) {
+        return null;
+      }
+      final boolean isNeedsCast;
+      if (commonTypeCategory == Category.PRIMITIVE) {
+
+        // Do not to strict TypeInfo comparisons for DECIMAL -- just compare the category.
+        // Otherwise, we generate unnecessary casts.
+        isNeedsCast =
+            ((PrimitiveTypeInfo) commonType).getPrimitiveCategory() !=
+            ((PrimitiveTypeInfo) childTypeInfo).getPrimitiveCategory();
+      } else {
+        isNeedsCast = !commonType.equals(desc.getTypeInfo());
+      }
+
+      if (!isNeedsCast) {
         castChildren.add(desc);
       } else {
         GenericUDF castUdf = getGenericUDFForCast(commonType);

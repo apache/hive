@@ -59,6 +59,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
 
 public class LoadTable {
@@ -218,9 +219,25 @@ public class LoadTable {
   private Task<?> loadTableTask(Table table, ReplicationSpec replicationSpec, Path tgtPath,
       Path fromURI) {
     Path dataPath = new Path(fromURI, EximUtil.DATA_PATH_NAME);
-    Path tmpPath = PathUtils.getExternalTmpPath(tgtPath, context.pathInfo);
-    Task<?> copyTask =
-        ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf);
+    Path tmpPath = tgtPath;
+
+    // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
+    LoadFileType loadFileType;
+    if (replicationSpec.isInReplicationScope() &&
+            context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
+      loadFileType = LoadFileType.IGNORE;
+    } else {
+      loadFileType =
+              replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+      tmpPath = PathUtils.getExternalTmpPath(tgtPath, context.pathInfo);
+    }
+
+    LOG.debug("adding dependent CopyWork/AddPart/MoveWork for table "
+            + table.getCompleteName() + " with source location: "
+            + dataPath.toString() + " and target location " + tmpPath.toString());
+
+    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf,
+            false, false);
 
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
     if (AcidUtils.isTransactionalTable(table)) {
@@ -232,7 +249,7 @@ public class LoadTable {
     } else {
       LoadTableDesc loadTableWork = new LoadTableDesc(
               tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
-              replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING, 0L
+              loadFileType, 0L
       );
       moveWork.setLoadTableWork(loadTableWork);
     }

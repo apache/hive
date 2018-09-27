@@ -12,8 +12,12 @@ POSTHOOK: Lineage: a_n4.key SIMPLE []
 POSTHOOK: Lineage: a_n4.value SCRIPT []
 PREHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`a_n4`) AS `t`
@@ -216,8 +220,12 @@ POSTHOOK: Input: default@a_n4
 100	60	NULL	NULL	100	60
 PREHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
@@ -420,8 +428,12 @@ NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
 PREHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
@@ -624,8 +636,12 @@ NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
 PREHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`a_n4`) AS `t`
@@ -780,7 +796,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
                Left Outer Join 1 to 2
                Left Outer Join 0 to 3
           filter mappings:
@@ -842,8 +858,12 @@ NULL	NULL	100	40	NULL	NULL	NULL	NULL
 NULL	NULL	100	60	100	60	NULL	NULL
 PREHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n4
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`a_n4`) AS `t`

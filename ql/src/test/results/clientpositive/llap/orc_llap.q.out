@@ -125,9 +125,13 @@ Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 PREHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -237,9 +241,13 @@ POSTHOOK: Input: default@orc_llap_small
 PREHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -310,9 +318,13 @@ POSTHOOK: Input: default@orc_llap
 PREHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -383,9 +395,13 @@ POSTHOOK: Input: default@orc_llap
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -456,9 +472,13 @@ NULL
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -551,9 +571,13 @@ POSTHOOK: Input: default@orc_llap
 PREHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -695,9 +719,13 @@ POSTHOOK: Output: default@orc_llap
 PREHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -768,9 +796,13 @@ POSTHOOK: Input: default@orc_llap
 PREHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -841,9 +873,13 @@ POSTHOOK: Input: default@orc_llap
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -914,9 +950,13 @@ NULL
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1009,9 +1049,13 @@ POSTHOOK: Input: default@orc_llap
 PREHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1021,8 +1065,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1046,7 +1090,7 @@ STAGE PLANS:
                         value expressions: _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 4 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: o2
@@ -1059,38 +1103,31 @@ STAGE PLANS:
                       expressions: csmallint (type: smallint), cstring2 (type: string)
                       outputColumnNames: _col0, _col2
                       Statistics: Num rows: 136968 Data size: 11042828 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: smallint)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: smallint)
-                        Statistics: Num rows: 136968 Data size: 11042828 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col2 (type: string)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: smallint)
+                          1 _col0 (type: smallint)
+                        outputColumnNames: _col2, _col5
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 636522 Data size: 114343414 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: hash(_col2,_col5) (type: int)
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 636522 Data size: 114343414 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: sum(_col0)
+                            mode: hash
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: smallint)
-                  1 _col0 (type: smallint)
-                outputColumnNames: _col2, _col5
-                Statistics: Num rows: 636522 Data size: 114343414 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: hash(_col2,_col5) (type: int)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 636522 Data size: 114343414 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    aggregations: sum(_col0)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

@@ -54,6 +54,9 @@ join tez_self_join2
 on s.id1=tez_self_join2.id1
 where s.id2='ab'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tez_self_join1
+PREHOOK: Input: default@tez_self_join2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select s.id2, s.id3
 from  
@@ -65,6 +68,9 @@ join tez_self_join2
 on s.id1=tez_self_join2.id1
 where s.id2='ab'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tez_self_join1
+POSTHOOK: Input: default@tez_self_join2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

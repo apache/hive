@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,6 +53,7 @@ class SparkSubmitSparkClient extends AbstractSparkClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(SparkSubmitSparkClient.class);
 
+  private static final Pattern YARN_APPLICATION_ID_REGEX = Pattern.compile("\\s(application_[0-9]+_[0-9]+)(\\s|$)");
   private static final String SPARK_HOME_ENV = "SPARK_HOME";
   private static final String SPARK_HOME_KEY = "spark.home";
 
@@ -191,17 +194,37 @@ class SparkSubmitSparkClient extends AbstractSparkClient {
     final Process child = pb.start();
     String threadName = Thread.currentThread().getName();
     final List<String> childErrorLog = Collections.synchronizedList(new ArrayList<String>());
+    final List<String> childOutLog = Collections.synchronizedList(new ArrayList<String>());
     final LogRedirector.LogSourceCallback callback = () -> isAlive;
 
     LogRedirector.redirect("spark-submit-stdout-redir-" + threadName,
-        new LogRedirector(child.getInputStream(), LOG, callback));
+        new LogRedirector(child.getInputStream(), LOG, childOutLog, callback));
     LogRedirector.redirect("spark-submit-stderr-redir-" + threadName,
         new LogRedirector(child.getErrorStream(), LOG, childErrorLog, callback));
 
     runnable = () -> {
       try {
         int exitCode = child.waitFor();
-        if (exitCode != 0) {
+        if (exitCode == 0) {
+          synchronized (childOutLog) {
+            for (String line : childOutLog) {
+              Matcher m = YARN_APPLICATION_ID_REGEX.matcher(line);
+              if (m.find()) {
+                LOG.info("Found application id " + m.group(1));
+                rpcServer.setApplicationId(m.group(1));
+              }
+            }
+          }
+          synchronized (childErrorLog) {
+            for (String line : childErrorLog) {
+              Matcher m = YARN_APPLICATION_ID_REGEX.matcher(line);
+              if (m.find()) {
+                LOG.info("Found application id " + m.group(1));
+                rpcServer.setApplicationId(m.group(1));
+              }
+            }
+          }
+        } else {
           List<String> errorMessages = new ArrayList<>();
           synchronized (childErrorLog) {
             for (String line : childErrorLog) {

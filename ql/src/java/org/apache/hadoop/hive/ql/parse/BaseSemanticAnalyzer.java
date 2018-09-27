@@ -94,6 +94,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentUser;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -832,7 +833,8 @@ public abstract class BaseSemanticAnalyzer {
       if(defFunc.getGenericUDF() instanceof GenericUDFOPNull
           || defFunc.getGenericUDF() instanceof GenericUDFCurrentTimestamp
           || defFunc.getGenericUDF() instanceof GenericUDFCurrentDate
-          || defFunc.getGenericUDF() instanceof GenericUDFCurrentUser){
+          || defFunc.getGenericUDF() instanceof GenericUDFCurrentUser
+          || defFunc.getGenericUDF() instanceof GenericUDFSurrogateKey){
         return true;
       }
     }
@@ -1332,13 +1334,8 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child = (ASTNode) ast.getChild(i);
       if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
         child = (ASTNode) child.getChild(0);
-        if (child.getToken().getType() == HiveParser.TOK_NULLS_FIRST) {
-          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-              HIVE_COLUMN_ORDER_ASC));
-        } else {
-          throw new SemanticException("create/alter table: "
-                  + "not supported NULLS LAST for ORDER BY in ASC order");
-        }
+        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+            HIVE_COLUMN_ORDER_ASC));
       } else {
         child = (ASTNode) child.getChild(0);
         if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {

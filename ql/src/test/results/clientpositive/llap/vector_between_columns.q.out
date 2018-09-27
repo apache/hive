@@ -86,9 +86,15 @@ Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduce
 PREHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tint
+PREHOOK: Input: default@tsint
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tint
+POSTHOOK: Input: default@tsint
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -196,6 +202,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -255,9 +264,15 @@ Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 PREHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tint
+PREHOOK: Input: default@tsint
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tint
+POSTHOOK: Input: default@tsint
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -368,6 +383,9 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator

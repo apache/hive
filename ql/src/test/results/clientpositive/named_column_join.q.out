@@ -18,8 +18,12 @@ POSTHOOK: Lineage: t_n8.a SCRIPT []
 POSTHOOK: Lineage: t_n8.b SCRIPT []
 PREHOOK: query: explain select * from t_n8 t1 join t_n8 t2 using (a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n8
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t_n8 t1 join t_n8 t2 using (a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

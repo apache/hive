@@ -10,10 +10,17 @@ PREHOOK: query: EXPLAIN
 from srcpart
 insert overwrite table dest_n1 partition (ds) select key, value, ds where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest_n1
 POSTHOOK: query: EXPLAIN
 from srcpart
 insert overwrite table dest_n1 partition (ds) select key, value, ds where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

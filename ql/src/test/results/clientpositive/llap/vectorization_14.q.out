@@ -31,6 +31,8 @@ WHERE    (((ctinyint <= cbigint)
 GROUP BY ctimestamp1, cfloat, cstring1, cboolean1, cdouble
 ORDER BY cstring1, cfloat, cdouble, ctimestamp1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT   ctimestamp1,
          cfloat,
@@ -64,6 +66,8 @@ WHERE    (((ctinyint <= cbigint)
 GROUP BY ctimestamp1, cfloat, cstring1, cboolean1, cdouble
 ORDER BY cstring1, cfloat, cdouble, ctimestamp1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -126,10 +130,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: float), _col2 (type: double), _col3 (type: timestamp), _col4 (type: boolean)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
-                              keyColumnNums: [0, 1, 2, 3, 4]
+                              keyColumns: 0:string, 1:float, 2:double, 3:timestamp, 4:boolean
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [5, 6, 7, 8, 9, 10, 11]
+                              valueColumns: 5:double, 6:double, 7:bigint, 8:float, 9:double, 10:double, 11:bigint
                           Statistics: Num rows: 303 Data size: 52846 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: bigint)
             Execution mode: vectorized, llap
@@ -193,10 +197,10 @@ STAGE PLANS:
                     sort order: ++++
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1, 2, 3]
+                        keyColumns: 0:string, 1:float, 2:double, 3:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [4, 12, 14, 13, 15, 8, 19, 20, 21, 22, 11, 24, 25, 23, 29, 28, 31, 34]
+                        valueColumns: 4:boolean, 12:double, 14:double, 13:double, 15:float, 8:float, 19:float, 20:float, 21:double, 22:double, 11:bigint, 24:double, 25:double, 23:double, 29:double, 28:double, 31:double, 34:double
                     Statistics: Num rows: 151 Data size: 36700 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col3 (type: boolean), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: float), _col10 (type: float), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: bigint), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double)
         Reducer 3 
@@ -204,7 +208,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaa
+                reduceColumnNullOrder: zzzz
                 reduceColumnSortOrder: ++++
                 allNative: false
                 usesVectorUDFAdaptor: false

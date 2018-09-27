@@ -459,6 +459,9 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         MapJoinProcessor.convertJoinOpMapJoinOp(context.getConf(), joinOp,
             joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
             joinOp.getConf().getMapAliases(), bigTablePosition, true);
+    if (mapJoinOp == null) {
+      return null;
+    }
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);

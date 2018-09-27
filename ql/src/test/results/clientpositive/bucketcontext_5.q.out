@@ -64,8 +64,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_big_n13
 PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n13
+PREHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n13
+POSTHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -242,8 +248,14 @@ POSTHOOK: Input: default@bucket_small_n13
 464
 PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n13
+PREHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n13
+POSTHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

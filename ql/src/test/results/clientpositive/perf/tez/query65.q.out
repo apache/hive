@@ -26,6 +26,11 @@ select
  order by s_store_name, i_item_desc
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select 
 	s_store_name,
@@ -54,6 +59,11 @@ select
  order by s_store_name, i_item_desc
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -133,9 +143,9 @@ Stage-0
                                       <-Map 7 [SIMPLE_EDGE] vectorized
                                         SHUFFLE [RS_134]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_131] (rows=8116 width=1119)
+                                          Select Operator [SEL_131] (rows=73049 width=1119)
                                             Output:["_col0"]
-                                            Filter Operator [FIL_130] (rows=8116 width=1119)
+                                            Filter Operator [FIL_130] (rows=73049 width=1119)
                                               predicate:(d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223)
                                               TableScan [TS_3] (rows=73049 width=1119)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
@@ -167,7 +177,7 @@ Stage-0
                                                     SHUFFLE [RS_139]
                                                       Group By Operator [GBY_137] (rows=1 width=12)
                                                         Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                        Select Operator [SEL_135] (rows=8116 width=1119)
+                                                        Select Operator [SEL_135] (rows=73049 width=1119)
                                                           Output:["_col0"]
                                                            Please refer to the previous Select Operator [SEL_131]
                       <-Reducer 3 [SIMPLE_EDGE] vectorized
@@ -217,7 +227,7 @@ Stage-0
                                               SHUFFLE [RS_138]
                                                 Group By Operator [GBY_136] (rows=1 width=12)
                                                   Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                  Select Operator [SEL_133] (rows=8116 width=1119)
+                                                  Select Operator [SEL_133] (rows=73049 width=1119)
                                                     Output:["_col0"]
                                                      Please refer to the previous Select Operator [SEL_131]
 

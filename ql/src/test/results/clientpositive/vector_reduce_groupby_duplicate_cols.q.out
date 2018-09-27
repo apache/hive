@@ -24,6 +24,9 @@ join (select 1 as one, 2 as two) b
 on a.one = b.one and a.two = b.two
 group by a.one, a.two, a.one
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@demo
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select one as one_0, two, one as one_1
 from demo a
@@ -31,6 +34,9 @@ join (select 1 as one, 2 as two) b
 on a.one = b.one and a.two = b.two
 group by a.one, a.two, a.one
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@demo
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

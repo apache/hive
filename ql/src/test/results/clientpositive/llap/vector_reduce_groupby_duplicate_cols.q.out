@@ -24,6 +24,9 @@ join (select 1 as one, 2 as two) b
 on a.one = b.one and a.two = b.two
 group by a.one, a.two, a.one
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@demo
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select one as one_0, two, one as one_1
 from demo a
@@ -31,6 +34,9 @@ join (select 1 as one, 2 as two) b
 on a.one = b.one and a.two = b.two
 group by a.one, a.two, a.one
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@demo
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -90,13 +96,15 @@ STAGE PLANS:
                         0 one (type: int), two (type: int)
                         1 1 (type: int), 2 (type: int)
                       Map Join Vectorization:
-                          bigTableKeyColumnNums: [0, 1]
-                          bigTableRetainedColumnNums: [0, 1]
-                          bigTableValueColumnNums: [0, 1]
+                          bigTableKeyColumns: 0:int, 1:int
+                          bigTableRetainColumnNums: [0, 1]
+                          bigTableValueColumns: 0:int, 1:int
                           className: VectorMapJoinInnerBigOnlyMultiKeyOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutputColumnNums: [0, 1]
+                          nonOuterSmallTableKeyMapping: []
+                          projectedOutput: 0:int, 1:int
+                          hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col1
                       input vertices:
                         1 Map 1

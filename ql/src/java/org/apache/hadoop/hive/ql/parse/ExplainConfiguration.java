@@ -48,6 +48,8 @@ public class ExplainConfiguration {
   private boolean vectorizationOnly = false;
   private VectorizationDetailLevel vectorizationDetailLevel = VectorizationDetailLevel.SUMMARY;
   private boolean locks = false;
+  private boolean ast = false;
+  private boolean debug = false;
 
   private Path explainRootPath;
   private Map<String, Long> opIdToRuntimeNumRows;
@@ -138,6 +140,14 @@ public class ExplainConfiguration {
     this.vectorizationDetailLevel = vectorizationDetailLevel;
   }
 
+  public boolean isDebug() {
+    return debug;
+  }
+
+  public void setDebug(boolean debug) {
+    this.debug = debug;
+  }
+
   public Path getExplainRootPath() {
     return explainRootPath;
   }
@@ -160,5 +170,13 @@ public class ExplainConfiguration {
 
   public void setLocks(boolean locks) {
     this.locks = locks;
+  }
+
+  public boolean isAst() {
+    return ast;
+  }
+
+  public void setAst(boolean ast) {
+    this.ast = ast;
   }
 }

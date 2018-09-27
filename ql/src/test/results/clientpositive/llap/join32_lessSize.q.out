@@ -20,12 +20,22 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j1_n21
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1_n21
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j1_n21
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
@@ -564,6 +574,9 @@ FROM src w JOIN src1 x ON (x.value = w.value)
 JOIN src y ON (x.key = y.key) 
 JOIN src1 z ON (x.key = z.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest_j1_n21
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1_n21
 SELECT x.key, z.value, y.value
@@ -571,6 +584,9 @@ FROM src w JOIN src1 x ON (x.value = w.value)
 JOIN src y ON (x.key = y.key) 
 JOIN src1 z ON (x.key = z.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest_j1_n21
 OPTIMIZED SQL: SELECT `t4`.`key`, `t6`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`
 FROM `default`.`src`
@@ -1199,12 +1215,22 @@ SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j2_n1
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j2_n1
 SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j2_n1
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t4`.`value` AS `value1`
 FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
@@ -1742,12 +1768,22 @@ SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x LEFT OUTER JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j2_n1
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j2_n1
 SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x LEFT OUTER JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j2_n1
 OPTIMIZED SQL: SELECT `t2`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
@@ -2300,12 +2336,22 @@ SELECT res.key, x.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart x ON (res.value = x.value and x.ds='2008-04-08' and x.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j2_n1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j2_n1
 SELECT res.key, x.value, res.value  
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart x ON (res.value = x.value and x.ds='2008-04-08' and x.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j2_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2589,12 +2635,22 @@ SELECT res.key, y.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart y ON (res.value = y.value and y.ds='2008-04-08' and y.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j2_n1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j2_n1
 SELECT res.key, y.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart y ON (res.value = y.value and y.ds='2008-04-08' and y.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j2_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

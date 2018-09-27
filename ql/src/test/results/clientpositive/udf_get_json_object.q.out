@@ -45,9 +45,13 @@ POSTHOOK: Lineage: dest1_n66.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_json
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_json
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

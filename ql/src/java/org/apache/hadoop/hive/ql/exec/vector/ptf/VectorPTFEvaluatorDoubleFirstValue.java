@@ -45,7 +45,8 @@ public class VectorPTFEvaluatorDoubleFirstValue extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -95,6 +96,7 @@ public class VectorPTFEvaluatorDoubleFirstValue extends VectorPTFEvaluatorBase {
     }
   }
 
+  @Override
   public boolean streamsResult() {
     return true;
   }

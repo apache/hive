@@ -93,6 +93,15 @@ public abstract class TableFunctionEvaluator {
   boolean transformsRawInput;
   transient protected PTFPartition outputPartition;
   transient protected boolean canAcceptInputAsStream;
+  protected boolean nullsLast;
+
+  public boolean getNullsLast() {
+    return nullsLast;
+  }
+
+  public void setNullsLast(boolean nullsLast) {
+    this.nullsLast = nullsLast;
+  }
 
   public StructObjectInspector getOutputOI() {
     return OI;

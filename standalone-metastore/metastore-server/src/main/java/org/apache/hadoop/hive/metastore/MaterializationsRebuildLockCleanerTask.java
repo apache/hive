@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
     TxnStore.MutexAPI.LockHandle handle = null;
     try {
       handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.MaterializationRebuild.name());
-      ValidTxnList validTxnList = TxnUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
+      ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
       long removedCnt = txnHandler.cleanupMaterializationRebuildLocks(validTxnList,
           MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS));
       if (removedCnt > 0) {

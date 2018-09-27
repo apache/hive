@@ -45,9 +45,13 @@ POSTHOOK: Lineage: json_t.key EXPRESSION []
 PREHOOK: query: explain 
 select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@json_t
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_t
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -132,9 +136,13 @@ POSTHOOK: Input: default@json_t
 PREHOOK: query: explain 
 select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@json_t
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_t
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -189,18 +197,22 @@ POSTHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
 #### A masked pattern was here ####
-NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL
 	NULL	NULL	NULL	NULL
 value1	value2	3	NULL	5.23
 value12	2	value3	4.01	NULL
 value13	2	value33	value44	5.01
+NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain 
 select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@json_t
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_t
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -285,9 +297,13 @@ POSTHOOK: Input: default@json_t
 PREHOOK: query: explain 
 select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@json_t
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_t
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -403,9 +419,9 @@ POSTHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jst
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
 #### A masked pattern was here ####
-NULL	1
 2	2
 value2	1
+NULL	1
 PREHOOK: query: CREATE TABLE dest1_n65(c1 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

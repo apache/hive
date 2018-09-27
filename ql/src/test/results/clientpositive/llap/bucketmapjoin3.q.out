@@ -118,12 +118,22 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part_2_n11 a join srcbucket_mapjoin_part_n13 b 
 on a.key=b.key and b.ds="2008-04-08" and a.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n11
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n11@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_n13
+PREHOOK: Input: default@srcbucket_mapjoin_part_n13@ds=2008-04-08
+PREHOOK: Output: default@bucketmapjoin_tmp_result_n6
 POSTHOOK: query: explain extended
 insert overwrite table bucketmapjoin_tmp_result_n6 
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_part_2_n11 a join srcbucket_mapjoin_part_n13 b 
 on a.key=b.key and b.ds="2008-04-08" and a.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n11
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n11@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n13
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n13@ds=2008-04-08
+POSTHOOK: Output: default@bucketmapjoin_tmp_result_n6
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcbucket_mapjoin_part_2_n11`
@@ -557,12 +567,22 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part_2_n11 a join srcbucket_mapjoin_part_n13 b 
 on a.key=b.key and b.ds="2008-04-08" and a.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n11
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n11@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_n13
+PREHOOK: Input: default@srcbucket_mapjoin_part_n13@ds=2008-04-08
+PREHOOK: Output: default@bucketmapjoin_tmp_result_n6
 POSTHOOK: query: explain extended 
 insert overwrite table bucketmapjoin_tmp_result_n6 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_part_2_n11 a join srcbucket_mapjoin_part_n13 b 
 on a.key=b.key and b.ds="2008-04-08" and a.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n11
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n11@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n13
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n13@ds=2008-04-08
+POSTHOOK: Output: default@bucketmapjoin_tmp_result_n6
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcbucket_mapjoin_part_2_n11`

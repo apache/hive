@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cint),
        (SUM(cint) * -563),
        (-3728 + SUM(cint)),
@@ -21,7 +21,9 @@ WHERE  (((csmallint >= cint)
             AND ((ctinyint != cbigint)
                  OR (-3728 >= cdouble))))
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cint),
        (SUM(cint) * -563),
        (-3728 + SUM(cint)),
@@ -44,6 +46,8 @@ WHERE  (((csmallint >= cint)
             AND ((ctinyint != cbigint)
                  OR (-3728 >= cdouble))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -67,7 +71,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -100,10 +103,8 @@ STAGE PLANS:
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
-                              keyColumnNums: []
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [0, 1, 2, 3, 4]
                           Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint), _col1 (type: double), _col2 (type: double), _col3 (type: bigint), _col4 (type: tinyint)
             Execution mode: vectorized
@@ -116,27 +117,14 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [0, 1, 2, 3, 5]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [double]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 5
-                    dataColumns: VALUE._col0:bigint, VALUE._col1:double, VALUE._col2:double, VALUE._col3:bigint, VALUE._col4:tinyint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), count(VALUE._col3), min(VALUE._col4)

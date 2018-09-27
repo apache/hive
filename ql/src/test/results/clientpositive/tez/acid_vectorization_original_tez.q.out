@@ -97,7 +97,6 @@ POSTHOOK: query: select distinct si, si%4 from over10k_n9 order by si
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_n9
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	NULL
 256	0
 257	1
 258	2
@@ -350,6 +349,7 @@ NULL	NULL
 509	1
 510	2
 511	3
+NULL	NULL
 PREHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_n9
@@ -428,8 +428,12 @@ POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: default@over10k_orc_bucketed_n0
 PREHOOK: query: explain select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by t, si, i
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by t, si, i
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -497,8 +501,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 35	463	65646
 PREHOOK: query: explain select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -567,8 +575,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"writeid":0,"bucketid":537067520,"rowid":406}	35	463	65646
 PREHOOK: query: explain update over10k_orc_bucketed_n0 set i = 0 where b = 4294967363 and t < 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: default@over10k_orc_bucketed_n0
 POSTHOOK: query: explain update over10k_orc_bucketed_n0 set i = 0 where b = 4294967363 and t < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -662,8 +674,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"writeid":### Masked writeid ###,"bucketid":537067520,"rowid":1}	35	463	0
 PREHOOK: query: explain select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

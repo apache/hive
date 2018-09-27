@@ -178,9 +178,11 @@ public abstract class MessageFactory {
    * @param before The table before the alter
    * @param after The table after the alter
    * @param isTruncateOp Flag to denote truncate table
+   * @param writeId writeId under which alter is done (for ACID tables)
    * @return
    */
-  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp);
+  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp,
+                                                           Long writeId);
 
   /**
    * Factory method for DropTableMessage.
@@ -205,10 +207,12 @@ public abstract class MessageFactory {
    * @param before The partition before it was altered
    * @param after The partition after it was altered
    * @param isTruncateOp Flag to denote truncate partition
+   * @param writeId writeId under which alter is done (for ACID tables)
    * @return a new AlterPartitionMessage
    */
   public abstract AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-                                                                   Partition after, boolean isTruncateOp);
+                                                                   Partition after, boolean isTruncateOp,
+                                                                   Long writeId);
 
   /**
    * Factory method for DropPartitionMessage.

@@ -125,9 +125,15 @@ POSTHOOK: Output: default@items
 PREHOOK: query: explain
 CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@items
+PREHOOK: Output: database:default
+PREHOOK: Output: default@priceview
 POSTHOOK: query: explain
 CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@items
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@priceview
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
 

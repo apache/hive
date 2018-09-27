@@ -27,6 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.Constants;
@@ -41,12 +42,16 @@ import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer.HashP
 import org.apache.hadoop.hive.ql.exec.persistence.KeyValueContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
+import org.apache.hadoop.hive.ql.exec.persistence.AbstractRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.ReusableGetAdaptorDirectAccess;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.NonMatchedSmallTableIterator;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
+import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.persistence.ObjectContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.UnwrapRowContainer;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
@@ -66,7 +71,9 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -74,8 +81,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import com.esotericsoftware.kryo.KryoException;
+import com.google.common.base.Preconditions;
 
 /**
  * Map side Join operator implementation.
@@ -104,6 +111,23 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
                                                                           // spilled small tables
   protected HybridHashTableContainer firstSmallTable; // The first small table;
                                                       // Only this table has spilled big table rows
+
+  /*
+   * FULL OUTER MapJoin members.
+   */
+  protected transient boolean isFullOuterMapJoin;     // Are we doing a FULL OUTER MapJoin?
+
+  protected transient int fullOuterBigTableRetainSize;
+                                                      // The number of Big Table columns being
+                                                      // retained in the output result for
+                                                      // FULL OUTER MapJoin.
+
+  /*
+   * Small Table key match tracking used for FULL OUTER MapJoin.  Otherwise, null.
+   * Since the Small Table hash table can be shared among vertces, we require this non-shared object
+   * for our vertex (i.e. operator private) key match tracking.
+   */
+  protected transient MatchTracker matchTracker;
 
   protected transient boolean isTestingNoHashTableLoad;
   // Only used in bucket map join.
@@ -177,6 +201,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     hybridMapJoinLeftover = false;
     firstSmallTable = null;
 
+    doFullOuterMapJoinInit();
+
     generateMapMetaData();
 
     isTestingNoHashTableLoad = HiveConf.getBoolVar(hconf,
@@ -249,6 +275,24 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       // properly
       this.getExecContext().setLastInputPath(null);
       this.getExecContext().setCurrentInputPath(null);
+    }
+  }
+
+  /*
+   * Do initialization for FULL OUTER MapJoin.
+   *
+   * Currently, we do not support FULL OUTER MapJoin for N-way.
+   */
+  private void doFullOuterMapJoinInit() {
+
+    // This will be set during the first process call or during closeOp if no rows processed.
+    matchTracker = null;
+
+    isFullOuterMapJoin = (condn.length == 1 && condn[0].getType() == JoinDesc.FULL_OUTER_JOIN);
+    if (isFullOuterMapJoin) {
+      fullOuterBigTableRetainSize = conf.getRetainList().get(posBigTable).size();
+    } else {
+      fullOuterBigTableRetainSize = 0;
     }
   }
 
@@ -415,6 +459,16 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     return dest.setFromRow(row, joinKeys[alias], joinKeysObjectInspectors[alias]);
   }
 
+  /*
+   * This variation is for FULL OUTER MapJoin.  It does key match tracking only if the key has
+   * no NULLs.
+   */
+  protected JoinUtil.JoinResult setMapJoinKeyNoNulls(
+      ReusableGetAdaptor dest, Object row, byte alias, MatchTracker matchTracker)
+          throws HiveException {
+    return dest.setFromRowNoNulls(row, joinKeys[alias], joinKeysObjectInspectors[alias], matchTracker);
+  }
+
   protected MapJoinKey getRefKey(byte alias) {
     // We assume that since we are joining on the same key, all tables would have either
     // optimized or non-optimized key; hence, we can pass any key in any table as reference.
@@ -437,6 +491,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         for (byte pos = 0; pos < order.length; pos++) {
           if (pos != alias) {
             hashMapRowGetters[pos] = mapJoinTables[pos].createGetter(refKey);
+            if (isFullOuterMapJoin) {
+              matchTracker =
+                  ((ReusableGetAdaptorDirectAccess) hashMapRowGetters[pos]).createMatchTracker();
+            }
           }
         }
       }
@@ -463,7 +521,13 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           ReusableGetAdaptor adaptor;
           if (firstSetKey == null) {
             adaptor = firstSetKey = hashMapRowGetters[pos];
-            joinResult = setMapJoinKey(firstSetKey, row, alias);
+            if (!isFullOuterMapJoin) {
+              // Normal case.
+              joinResult = setMapJoinKey(firstSetKey, row, alias);
+            } else {
+              // FULL OUTER MapJoin. We do not want keys with any NULLs to get tracked.
+              joinResult = setMapJoinKeyNoNulls(firstSetKey, row, alias, matchTracker);
+            }
           } else {
             // Keys for all tables are the same, so only the first has to deserialize them.
             adaptor = hashMapRowGetters[pos];
@@ -544,8 +608,139 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     bigTable.add(row);
   }
 
+  /*
+   * For FULL OUTER MapJoin, create a key match tracker on the Small Table.
+   */
+  private void createMatchTracker(MapJoinTableContainer smallTable) {
+    ReusableGetAdaptor hashMapRowGetter = smallTable.createGetter(null);
+    matchTracker =
+        ((ReusableGetAdaptorDirectAccess) hashMapRowGetter).createMatchTracker();
+    Preconditions.checkState(matchTracker != null);
+  }
+
+  private byte findSmallTable() {
+    byte smallTablePos = -1;
+    for (byte pos = 0; pos < mapJoinTables.length; pos++) {
+      if (pos != conf.getPosBigTable()) {
+        smallTablePos = pos;
+        break;
+      }
+    }
+    Preconditions.checkState(smallTablePos != -1);
+    return smallTablePos;
+  }
+
+  /*
+   * For FULL OUTER MapJoin, find the non matched Small Table keys and values and odd them to the
+   * join output result.
+   */
+  protected void generateFullOuterSmallTableNoMatches(byte smallTablePos,
+      MapJoinTableContainer substituteSmallTable) throws HiveException {
+
+    // FUTURE: Currently, in the MapJoinOperaotr, we only support FULL OUTER MapJoin for
+    // FUTURE  MapJoinBytesTableContainer.  NOTE: Vectorization code will override this method.
+
+    if (matchTracker == null) {
+
+      // When the process method isn't called (i.e. no rows), then we need to create the
+      // MatchTracker here.
+      //
+      // It will indicate no matches, of course.
+      //
+      createMatchTracker(substituteSmallTable);
+    }
+
+    boolean isSmallTableValuesOnly = false;
+    int[] smallTableValuesIndex = conf.getValueIndex(smallTablePos);
+    if (smallTableValuesIndex == null) {
+      List<Integer> valuesList = conf.getRetainList().get(smallTablePos);
+      smallTableValuesIndex =
+          ArrayUtils.toPrimitive(valuesList.toArray(new Integer[0]));
+      isSmallTableValuesOnly = true;
+    }
+    final int smallTableValuesIndexSize = smallTableValuesIndex.length;
+
+    // Our first output column for Small Table results is based on order.  (The Big Table columns
+    // will all be NULL).
+    final int firstOutputColumnNum = (posBigTable == (byte) 0 ? fullOuterBigTableRetainSize : 0);
+
+    /*
+     * Create iterator that produces each  non-matched Small Table key and a ReusableRowContainer
+     * the Small Table values.
+     */
+    NonMatchedSmallTableIterator nonMatchedIterator =
+        substituteSmallTable.createNonMatchedSmallTableIterator(matchTracker);
+    int nonMatchedKeyCount = 0;
+    int nonMatchedValueCount = 0;
+    while (nonMatchedIterator.isNext()) {
+      List<Object> keyObjList = nonMatchedIterator.getCurrentKey();
+
+      MapJoinRowContainer values = nonMatchedIterator.getCurrentRows();
+      AbstractRowContainer.RowIterator<List<Object>> iter = values.rowIter();
+      for (List<Object> valueObjList = iter.first();
+          valueObjList != null;
+          valueObjList = iter.next()) {
+
+        // Form non-matched Small Table join result. We only fill in the Small Table columns,
+        // so the Big Table retained columns are NULLs from the new allocation.
+
+        Object[] row = new Object[fullOuterBigTableRetainSize + smallTableValuesIndexSize];
+        int outputColumnNum = firstOutputColumnNum;
+
+        if (isSmallTableValuesOnly) {
+          for (int i = 0; i < smallTableValuesIndexSize; i++) {
+            row[outputColumnNum++] = valueObjList.get(smallTableValuesIndex[i]);
+          }
+        } else {
+          for (int i = 0; i < smallTableValuesIndexSize; i++) {
+            final int index = smallTableValuesIndex[i];
+
+            if (index >= 0) {
+
+              // Zero and above numbers indicate a big table key is needed for
+              // small table result "area".
+
+              row[outputColumnNum++] = keyObjList.get(index);
+            } else {
+
+              // Negative numbers indicate a column to be (deserialize) read from the small table's
+              // LazyBinary value row.
+
+              int smallTableValueIndex = -index - 1;
+
+              row[outputColumnNum++] = valueObjList.get(smallTableValueIndex);
+            }
+          }
+        }
+
+        Object standardCopyRow =
+            ObjectInspectorUtils.copyToStandardObject(
+                row, outputObjInspector, ObjectInspectorCopyOption.WRITABLE);
+
+        // FUTURE: Support residual filters for non-equi joins.
+        internalForward(standardCopyRow, outputObjInspector);
+        nonMatchedValueCount++;
+      }
+
+      nonMatchedKeyCount++;
+    }
+  }
+
   @Override
   public void closeOp(boolean abort) throws HiveException {
+
+    if (isFullOuterMapJoin) {
+
+      // FULL OUTER MapJoin: After matching the Big Table row keys against the Small Table, we now
+      // add any non matched Small Table key and values to the join output result.
+
+      // FUTURE: Currently, we only support FULL OUTER MapJoin for single condition MapJoins.
+      byte smallTablePos = findSmallTable();
+      generateFullOuterSmallTableNoMatches(
+          smallTablePos,
+          (MapJoinTableContainer) mapJoinTables[smallTablePos]);
+    }
+
     boolean spilled = false;
     for (MapJoinTableContainer container : mapJoinTables) {
       if (container != null) {

@@ -333,6 +333,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         for (int i = 0; i <lmfd.getSourceDirs().size(); ++i) {
           Path srcPath = lmfd.getSourceDirs().get(i);
           Path destPath = lmfd.getTargetDirs().get(i);
+          if (destPath.equals(srcPath)) {
+            continue;
+          }
           String filePrefix = targetPrefixes == null ? null : targetPrefixes.get(i);
           FileSystem destFs = destPath.getFileSystem(conf);
           if (filePrefix == null) {

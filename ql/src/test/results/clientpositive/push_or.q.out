@@ -32,8 +32,16 @@ POSTHOOK: Lineage: push_or PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.Fie
 POSTHOOK: Lineage: push_or PARTITION(ds=2000-04-09).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended select key, value, ds from push_or where ds='2000-04-09' or key=5 order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@push_or
+PREHOOK: Input: default@push_or@ds=2000-04-08
+PREHOOK: Input: default@push_or@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds from push_or where ds='2000-04-09' or key=5 order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@push_or
+POSTHOOK: Input: default@push_or@ds=2000-04-08
+POSTHOOK: Input: default@push_or@ds=2000-04-09
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`push_or`
 WHERE `ds` = '2000-04-09' OR `key` = 5
@@ -61,7 +69,7 @@ STAGE PLANS:
                 Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col2 (type: string)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                   tag: -1

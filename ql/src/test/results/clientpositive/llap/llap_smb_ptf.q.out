@@ -400,6 +400,11 @@ FROM (
     ON ( failed_rqst.cogs_alc_rqst_id = status_rqst.cogs_alc_rqst_id )
 WHERE failed_rqst.cogs_alc_rqst_id IS NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cogs_alc_rqst
+PREHOOK: Input: default@cogs_alc_rqst_trgt_offs
+PREHOOK: Input: default@cogs_alc_stat
+PREHOOK: Input: default@int_cogs_alc_post_stg
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT status_rqst.*
 FROM (
@@ -460,6 +465,11 @@ FROM (
     ON ( failed_rqst.cogs_alc_rqst_id = status_rqst.cogs_alc_rqst_id )
 WHERE failed_rqst.cogs_alc_rqst_id IS NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cogs_alc_rqst
+POSTHOOK: Input: default@cogs_alc_rqst_trgt_offs
+POSTHOOK: Input: default@cogs_alc_stat
+POSTHOOK: Input: default@int_cogs_alc_post_stg
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -591,7 +601,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col4 ASC NULLS FIRST
+                        order by: _col4 ASC NULLS LAST
                         partition by: _col0, _col4
                         raw input shape:
                         window functions:
@@ -715,7 +725,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         partition by: _col3, _col2
                         raw input shape:
                         window functions:

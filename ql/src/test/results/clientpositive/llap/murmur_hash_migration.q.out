@@ -148,10 +148,16 @@ PREHOOK: query: explain
 insert overwrite table tab_part_n11 partition (ds='2008-04-08')
   select key,value from srcbucket_mapjoin_part_n20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n11@ds=2008-04-08
 POSTHOOK: query: explain
 insert overwrite table tab_part_n11 partition (ds='2008-04-08')
   select key,value from srcbucket_mapjoin_part_n20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n11@ds=2008-04-08
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -243,10 +249,16 @@ PREHOOK: query: explain
 insert overwrite table tab_n10 partition (ds='2008-04-08')
   select key,value from srcbucket_mapjoin_n18
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n18
+PREHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+PREHOOK: Output: default@tab_n10@ds=2008-04-08
 POSTHOOK: query: explain
 insert overwrite table tab_n10 partition (ds='2008-04-08')
   select key,value from srcbucket_mapjoin_n18
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+POSTHOOK: Output: default@tab_n10@ds=2008-04-08
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -357,9 +369,19 @@ POSTHOOK: Output: default@tab_n10@ds=2008-04-08
 PREHOOK: query: explain
 select t1.key, t1.value, t2.key, t2.value from srcbucket_mapjoin_n18 t1, srcbucket_mapjoin_part_n20 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n18
+PREHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select t1.key, t1.value, t2.key, t2.value from srcbucket_mapjoin_n18 t1, srcbucket_mapjoin_part_n20 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -488,9 +510,19 @@ POSTHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
 PREHOOK: query: explain
 select t1.key, t1.value, t2.key, t2.value from tab_part_n11 t1, tab_n10 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n10
+PREHOOK: Input: default@tab_n10@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select t1.key, t1.value, t2.key, t2.value from tab_part_n11 t1, tab_n10 t2 where t1.key = t2.key order by t1.key, t1.value, t2.key, t2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n10
+POSTHOOK: Input: default@tab_n10@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

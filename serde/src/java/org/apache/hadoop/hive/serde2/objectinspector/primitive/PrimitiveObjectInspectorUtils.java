@@ -1117,34 +1117,37 @@ public final class PrimitiveObjectInspectorUtils {
     Date result = null;
     switch (oi.getPrimitiveCategory()) {
     case VOID:
-      result = null;
       break;
     case STRING:
       StringObjectInspector soi = (StringObjectInspector) oi;
       String s = soi.getPrimitiveJavaObject(o).trim();
       try {
-        result = Date.valueOf(s);
-      } catch (IllegalArgumentException e) {
-        Timestamp ts = getTimestampFromString(s);
-        if (ts != null) {
-          result = Date.ofEpochMilli(ts.toEpochMilli());
+        if (s.length() == DATE_LENGTH) {
+          result = Date.valueOf(s);
         } else {
-          result = null;
+          Timestamp ts = getTimestampFromString(s);
+          if (ts != null) {
+            result = Date.ofEpochMilli(ts.toEpochMilli());
+          }
         }
+      } catch (IllegalArgumentException e) {
+        // Do nothing
       }
       break;
     case CHAR:
     case VARCHAR: {
       String val = getString(o, oi).trim();
       try {
-        result = Date.valueOf(val);
-      } catch (IllegalArgumentException e) {
-        Timestamp ts = getTimestampFromString(val);
-        if (ts != null) {
-          result = Date.ofEpochMilli(ts.toEpochMilli());
+        if (val.length() == DATE_LENGTH) {
+          result = Date.valueOf(val);
         } else {
-          result = null;
+          Timestamp ts = getTimestampFromString(val);
+          if (ts != null) {
+            result = Date.ofEpochMilli(ts.toEpochMilli());
+          }
         }
+      } catch (IllegalArgumentException e) {
+        // Do nothing
       }
       break;
     }
@@ -1248,26 +1251,38 @@ public final class PrimitiveObjectInspectorUtils {
     return result;
   }
 
+  private final static int DATE_LENGTH = "YYYY-MM-DD".length();
+  private final static int TS_LENGTH = "yyyy-mm-dd hh:mm:ss".length();
+
   public static Timestamp getTimestampFromString(String s) {
-    Timestamp result;
+    Timestamp result = null;
     s = s.trim();
     s = trimNanoTimestamp(s);
 
+    // Handle simpler cases directly avoiding exceptions
     try {
-      result = Timestamp.valueOf(s);
-    } catch (IllegalArgumentException e) {
-      // Let's try to parse it as timestamp with time zone and transform
-      try {
-        result = Timestamp.valueOf(TimestampTZUtil.parse(s).getZonedDateTime()
-            .toLocalDateTime().toString());
-      } catch (DateTimeException e2) {
-        // Last try: we try to parse it as date and transform
-        try {
-          result = Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
-        } catch (IllegalArgumentException e3) {
-          result = null;
-        }
+      if (s.length() == DATE_LENGTH) {
+        // Its a date!
+        return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+      } else if (isValidTimeStamp(s)) {
+        return Timestamp.valueOf(s);
       }
+      // If a timestamp does not have a space, then it is likely zoned time.
+      if (s.contains("+") || (s.length() > DATE_LENGTH && s.charAt(DATE_LENGTH) == '-')) {
+        // Timestamp with timezone
+        // Let's try to parse it as timestamp with time zone and transform
+        try {
+          result = Timestamp.valueOf(TimestampTZUtil.parse(s).getZonedDateTime()
+                  .toLocalDateTime().toString());
+        } catch (DateTimeException e2) {
+          // Do nothing
+        }
+      } else {
+        // Last attempt
+        result = Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+      }
+    } catch (IllegalArgumentException e) {
+      // Do nothing
     }
     return result;
   }
@@ -1284,6 +1299,19 @@ public final class PrimitiveObjectInspectorUtils {
       }
     }
     return s;
+  }
+
+  private static boolean isValidTimeStamp(final String s) {
+    if (s.length() == TS_LENGTH ||
+            (s.contains(".") &&
+                    s.substring(0, s.indexOf('.')).length() == TS_LENGTH)) {
+      // Possible timestamp
+      if (s.charAt(DATE_LENGTH) == '-') {
+        return false;
+      }
+      return true;
+    }
+    return false;
   }
 
   public static TimestampTZ getTimestampLocalTZ(Object o, PrimitiveObjectInspector oi,

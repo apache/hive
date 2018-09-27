@@ -24,11 +24,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
 import static org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer.makeBinaryPredicate;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
@@ -370,6 +372,10 @@ public class Hive {
     hiveDB.remove();
   }
 
+  public static Hive getThreadLocal() {
+    return hiveDB.get();
+  }
+
   /**
    * Hive
    *
@@ -620,7 +626,12 @@ public class Hive {
   }
 
   public void alterTable(String catName, String dbName, String tblName, Table newTbl, boolean cascade,
-      EnvironmentContext environmentContext, boolean transactional)
+                         EnvironmentContext environmentContext, boolean transactional) throws HiveException {
+    alterTable(catName, dbName, tblName, newTbl, cascade, environmentContext, transactional, 0);
+  }
+
+  public void alterTable(String catName, String dbName, String tblName, Table newTbl, boolean cascade,
+      EnvironmentContext environmentContext, boolean transactional, long replWriteId)
       throws HiveException {
 
     if (catName == null) {
@@ -642,8 +653,13 @@ public class Hive {
       // Take a table snapshot and set it to newTbl.
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
-        // Make sure we pass in the names, so we can get the correct snapshot for rename table.
-        tableSnapshot = AcidUtils.getTableSnapshot(conf, newTbl, dbName, tblName, true);
+        if (replWriteId > 0) {
+          ValidWriteIdList writeIds = getMSC().getValidWriteIds(getFullTableName(dbName, tblName), replWriteId);
+          tableSnapshot = new TableSnapshot(replWriteId, writeIds.writeToString());
+        } else {
+          // Make sure we pass in the names, so we can get the correct snapshot for rename table.
+          tableSnapshot = AcidUtils.getTableSnapshot(conf, newTbl, dbName, tblName, true);
+        }
         if (tableSnapshot != null) {
           newTbl.getTTable().setWriteId(tableSnapshot.getWriteId());
         } else {
@@ -1075,12 +1091,18 @@ public class Hive {
    *          name of the table
    * @throws HiveException
    */
-  public void truncateTable(String dbDotTableName, Map<String, String> partSpec) throws HiveException {
+  public void truncateTable(String dbDotTableName, Map<String, String> partSpec, Long writeId) throws HiveException {
     try {
       Table table = getTable(dbDotTableName, true);
       AcidUtils.TableSnapshot snapshot = null;
       if (AcidUtils.isTransactionalTable(table)) {
-        snapshot = AcidUtils.getTableSnapshot(conf, table, true);
+        if (writeId <= 0) {
+          snapshot = AcidUtils.getTableSnapshot(conf, table, true);
+        } else {
+          String fullTableName = getFullTableName(table.getDbName(), table.getTableName());
+          ValidWriteIdList writeIdList = getMSC().getValidWriteIds(fullTableName, writeId);
+          snapshot = new TableSnapshot(writeId, writeIdList.writeToString());
+        }
       }
 
       // TODO: APIs with catalog names
@@ -1290,6 +1312,17 @@ public class Hive {
    */
   public List<Table> getAllMaterializedViewObjects(String dbName) throws HiveException {
     return getTableObjects(dbName, ".*", TableType.MATERIALIZED_VIEW);
+  }
+
+  /**
+   * Get materialized views for the specified database that match the provided regex pattern.
+   * @param dbName
+   * @param pattern
+   * @return List of materialized view table objects
+   * @throws HiveException
+   */
+  public List<Table> getMaterializedViewObjectsByPattern(String dbName, String pattern) throws HiveException {
+    return getTableObjects(dbName, pattern, TableType.MATERIALIZED_VIEW);
   }
 
   private List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
@@ -1868,7 +1901,8 @@ public class Hive {
       //       to ACID updates. So the are not themselves ACID.
 
       // Note: this assumes both paths are qualified; which they are, currently.
-      if ((isMmTableWrite || isFullAcidTable) && loadPath.equals(newPartPath)) {
+      if (((isMmTableWrite || isFullAcidTable) && loadPath.equals(newPartPath)) ||
+              (loadFileType == LoadFileType.IGNORE)) {
         // MM insert query, move itself is a no-op.
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("not moving " + loadPath + " to " + newPartPath + " (MM)");
@@ -1908,7 +1942,7 @@ public class Hive {
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(), isSrcLocal,
               isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged);
         } else {
-          FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
+          FileSystem fs = destPath.getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
               (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles,
               tbl.getNumBuckets() > 0, isFullAcidTable, isManaged);
@@ -2479,7 +2513,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     // Note: this assumes both paths are qualified; which they are, currently.
-    if ((isMmTable || isFullAcidTable) && loadPath.equals(tbl.getPath())) {
+    if (((isMmTable || isFullAcidTable) && loadPath.equals(tbl.getPath())) || (loadFileType == LoadFileType.IGNORE)) {
       /**
        * some operations on Transactional tables (e.g. Import) write directly to the final location
        * and avoid the 'move' operation.  Since MoveTask does other things, setting 'loadPath' to be
@@ -3757,10 +3791,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } else if (isSrcLocal) {
       destFs.copyFromLocalFile(sourcePath, destFilePath);
     } else {
-      FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
+      if (!FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
           true,   // delete source
           false,  // overwrite destination
-          conf);
+          conf)) {
+        LOG.error("Copy failed for source: " + sourcePath + " to destination: " + destFilePath);
+        throw new IOException("File copy failed.");
+      }
     }
     return destFilePath;
   }
@@ -4342,16 +4379,52 @@ private void constructOneLBLocationMap(FileStatus fSta,
           listNewFilesRecursively(destFs, destf, newFiles);
         }
       } else {
+        final Map<Future<Boolean>, Path> moveFutures = Maps.newLinkedHashMapWithExpectedSize(srcs.length);
+        final int moveFilesThreadCount = HiveConf.getIntVar(conf, ConfVars.HIVE_MOVE_FILES_THREAD_COUNT);
+        final ExecutorService pool = moveFilesThreadCount > 0
+            ? Executors.newFixedThreadPool(
+                moveFilesThreadCount,
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Replace-Thread-%d").build())
+            : MoreExecutors.newDirectExecutorService();
+        final SessionState parentSession = SessionState.get();
         // its either a file or glob
         for (FileStatus src : srcs) {
           Path destFile = new Path(destf, src.getPath().getName());
-          if (!moveFile(conf, src.getPath(), destFile, true, isSrcLocal, isManaged)) {
+          moveFutures.put(
+              pool.submit(
+                  new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                      SessionState.setCurrentSessionState(parentSession);
+                      return moveFile(
+                          conf, src.getPath(), destFile, true, isSrcLocal, isManaged);
+                    }
+                  }),
+              destFile);
+        }
+
+        pool.shutdown();
+        for (Map.Entry<Future<Boolean>, Path> moveFuture : moveFutures.entrySet()) {
+          boolean moveFailed;
+          try {
+            moveFailed = !moveFuture.getKey().get();
+          } catch (InterruptedException | ExecutionException e) {
+            pool.shutdownNow();
+            if (e.getCause() instanceof IOException) {
+              throw (IOException) e.getCause();
+            }
+            if (e.getCause() instanceof HiveException) {
+              throw (HiveException) e.getCause();
+            }
+            throw handlePoolException(pool, e);
+          }
+          if (moveFailed) {
             throw new IOException("Error moving: " + srcf + " into: " + destf);
           }
 
           // Add file paths of the files that will be moved to the destination if the caller needs it
           if (null != newFiles) {
-            newFiles.add(destFile);
+            newFiles.add(moveFuture.getValue());
           }
         }
       }
@@ -4389,7 +4462,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
-  private void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
+  public void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
       PathFilter pathFilter, HiveConf conf, boolean purge, boolean isNeedRecycle) throws IOException, HiveException {
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);
@@ -5341,10 +5414,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
-  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
+  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName, boolean ifNotExists)
       throws HiveException {
     try {
       getMSC().createResourcePlan(resourcePlan, copyFromName);
+    } catch (AlreadyExistsException e) {
+      if (!ifNotExists) {
+        throw new HiveException(e, ErrorMsg.RESOURCE_PLAN_ALREADY_EXISTS, resourcePlan.getName());
+      }
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -5368,9 +5445,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public void dropResourcePlan(String rpName) throws HiveException {
+  public void dropResourcePlan(String rpName, boolean ifExists) throws HiveException {
     try {
       getMSC().dropResourcePlan(rpName);
+    } catch (NoSuchObjectException e) {
+      if (!ifExists) {
+        throw new HiveException(e, ErrorMsg.RESOURCE_PLAN_NOT_EXISTS, rpName);
+      }
     } catch (Exception e) {
       throw new HiveException(e);
     }

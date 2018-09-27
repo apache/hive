@@ -75,9 +75,15 @@ POSTHOOK: Lineage: t2_n59.dec EXPRESSION [(over1k_n5)over1k_n5.FieldSchema(name:
 PREHOOK: query: explain
 select t1_n95.`dec`, t2_n59.`dec` from t1_n95 join t2_n59 on (t1_n95.`dec`=t2_n59.`dec`) order by t1_n95.`dec`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n95
+PREHOOK: Input: default@t2_n59
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select t1_n95.`dec`, t2_n59.`dec` from t1_n95 join t2_n59 on (t1_n95.`dec`=t2_n59.`dec`) order by t1_n95.`dec`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n95
+POSTHOOK: Input: default@t2_n59
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

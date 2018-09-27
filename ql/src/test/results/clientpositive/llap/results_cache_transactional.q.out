@@ -37,9 +37,13 @@ POSTHOOK: Lineage: tab2_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:s
 PREHOOK: query: explain
 select max(key) from tab1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select max(key) from tab1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -107,9 +111,11 @@ test.comment="Query on transactional table should use cache"
 PREHOOK: query: explain
 select max(key) from tab1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n1
 POSTHOOK: query: explain
 select max(key) from tab1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -131,9 +137,15 @@ POSTHOOK: Input: default@tab1_n1
 PREHOOK: query: explain
 select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n1
+PREHOOK: Input: default@tab2_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n1
+POSTHOOK: Input: default@tab2_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -243,9 +255,13 @@ test.comment="Join on transactional tables, should use cache"
 PREHOOK: query: explain
 select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n1
+PREHOOK: Input: default@tab2_n1
 POSTHOOK: query: explain
 select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n1
+POSTHOOK: Input: default@tab2_n1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -269,9 +285,13 @@ POSTHOOK: Input: default@tab2_n1
 PREHOOK: query: explain
 select max(key) from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select max(key) from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -339,9 +359,13 @@ test.comment="Query on non-transactional table should not use cache"
 PREHOOK: query: explain
 select max(key) from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select max(key) from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -408,9 +432,15 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tab1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tab1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -520,9 +550,15 @@ test.comment="Join uses non-transactional table, should not use cache"
 PREHOOK: query: explain
 select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tab1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tab1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

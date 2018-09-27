@@ -905,6 +905,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String resourcePlanName = unescapeIdentifier(ast.getChild(0).getText());
     Integer queryParallelism = null;
     String likeName = null;
+    boolean ifNotExists = false;
     for (int i = 1; i < ast.getChildCount(); ++i) {
       Tree child = ast.getChild(i);
       switch (child.getType()) {
@@ -923,11 +924,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("Conflicting create arguments " + ast.toStringTree());
         }
         break;
+      case HiveParser.TOK_IFNOTEXISTS:
+        ifNotExists = true;
+        break;
       default: throw new SemanticException("Invalid create arguments " + ast.toStringTree());
       }
     }
     CreateResourcePlanDesc desc = new CreateResourcePlanDesc(
-        resourcePlanName, queryParallelism, likeName);
+        resourcePlanName, queryParallelism, likeName, ifNotExists);
     addServiceOutput();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
@@ -1070,7 +1074,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Expected name in DROP RESOURCE PLAN statement");
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
-    DropResourcePlanDesc desc = new DropResourcePlanDesc(rpName);
+    boolean ifExists = false;
+    for (int i = 1; i < ast.getChildCount(); ++i) {
+      Tree child = ast.getChild(i);
+      switch (child.getType()) {
+      case HiveParser.TOK_IFEXISTS:
+        ifExists = true;
+        break;
+      default: throw new SemanticException("Invalid create arguments " + ast.toStringTree());
+      }
+    }
+    DropResourcePlanDesc desc = new DropResourcePlanDesc(rpName, ifExists);
     addServiceOutput();
     rootTasks.add(TaskFactory.get(
         new DDLWork(getInputs(), getOutputs(), desc)));
@@ -1992,7 +2006,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     addLocationToOutputs(newLocation);
     AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, newLocation, partSpec);
-
+    Table tbl = getTable(tableName);
+    if (AcidUtils.isTransactionalTable(tbl)) {
+      setAcidDdlDesc(alterTblDesc);
+    }
     addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc)));
@@ -2277,6 +2294,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTblDesc.setOldName(tableName);
     alterTblDesc.setIsCascade(isCascade);
     alterTblDesc.setPartSpec(partSpec);
+    Table tbl = getTable(tableName);
+    if (AcidUtils.isTransactionalTable(tbl)) {
+      setAcidDdlDesc(alterTblDesc);
+    }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
             alterTblDesc), conf));

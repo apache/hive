@@ -52822,7 +52822,7 @@ class ThriftHiveMetastore_add_write_notification_log_args {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'rqst',
           'type' => TType::STRUCT,
           'class' => '\metastore\WriteNotificationLogRequest',
@@ -52855,7 +52855,7 @@ class ThriftHiveMetastore_add_write_notification_log_args {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRUCT) {
             $this->rqst = new \metastore\WriteNotificationLogRequest();
             $xfer += $this->rqst->read($input);
@@ -52880,7 +52880,7 @@ class ThriftHiveMetastore_add_write_notification_log_args {
       if (!is_object($this->rqst)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('rqst', TType::STRUCT, -1);
+      $xfer += $output->writeFieldBegin('rqst', TType::STRUCT, 1);
       $xfer += $this->rqst->write($output);
       $xfer += $output->writeFieldEnd();
     }
@@ -58155,7 +58155,7 @@ class ThriftHiveMetastore_create_ischema_result {
           'type' => TType::STRUCT,
           'class' => '\metastore\AlreadyExistsException',
           ),
-        -1 => array(
+        2 => array(
           'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => '\metastore\NoSuchObjectException',
@@ -58207,7 +58207,7 @@ class ThriftHiveMetastore_create_ischema_result {
             $xfer += $input->skip($ftype);
           }
           break;
-        case -1:
+        case 2:
           if ($ftype == TType::STRUCT) {
             $this->o2 = new \metastore\NoSuchObjectException();
             $xfer += $this->o2->read($input);
@@ -58236,14 +58236,14 @@ class ThriftHiveMetastore_create_ischema_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_ischema_result');
-    if ($this->o2 !== null) {
-      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -1);
-      $xfer += $this->o2->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o3 !== null) {

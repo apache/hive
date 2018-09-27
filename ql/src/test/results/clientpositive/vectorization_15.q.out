@@ -29,6 +29,8 @@ WHERE    (((cstring2 LIKE '%ss%')
 GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 ORDER BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT   cfloat,
          cboolean1,
@@ -60,6 +62,8 @@ WHERE    (((cstring2 LIKE '%ss%')
 GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 ORDER BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

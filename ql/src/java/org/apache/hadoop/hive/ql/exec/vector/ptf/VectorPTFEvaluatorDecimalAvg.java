@@ -51,7 +51,8 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -124,14 +125,21 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
         }
       }
     }
+  }
 
-    if (isLastGroupBatch) {
-      if (!isGroupResultNull) {
-        avg.set(sum);
-        temp.setFromLong(nonNullGroupCount);
-        avg.mutateDivide(temp);
-      }
+  @Override
+  public void doLastBatchWork() {
+    if (!isGroupResultNull) {
+      avg.set(sum);
+      temp.setFromLong(nonNullGroupCount);
+      avg.mutateDivide(temp);
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

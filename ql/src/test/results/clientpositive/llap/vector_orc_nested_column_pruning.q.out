@@ -124,9 +124,13 @@ POSTHOOK: Lineage: nested_tbl_2.s6 EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION
 SELECT a FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT a FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -186,9 +190,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f1 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f1 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -259,9 +267,13 @@ false
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f1, s1.f2 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f1, s1.f2 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -332,9 +344,13 @@ false	foo
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -405,9 +421,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -478,9 +498,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -551,9 +575,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -632,9 +660,13 @@ foo
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -713,9 +745,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -796,11 +832,15 @@ SELECT col1, col2 FROM nested_tbl_1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT col1, col2 FROM nested_tbl_1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -955,9 +995,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1028,9 +1072,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1151,9 +1199,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1240,9 +1292,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1358,12 +1414,18 @@ FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5, t2.s2.f8
 FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1492,6 +1554,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1522,12 +1587,16 @@ FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5, t2.s2.f8
 FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1638,6 +1707,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1665,11 +1737,15 @@ SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1811,6 +1887,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1837,11 +1916,15 @@ SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f1 <> t2.s2.f8.f9
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f1 <> t2.s2.f8.f9
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1949,6 +2032,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1975,11 +2061,15 @@ SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2110,6 +2200,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -2172,11 +2265,15 @@ SELECT count(s1.f6), s3.f12[0].f14
 FROM nested_tbl_1
 GROUP BY s3.f12[0].f14
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s3.f12[0].f14
 FROM nested_tbl_1
 GROUP BY s3.f12[0].f14
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2311,11 +2408,15 @@ SELECT count(s1.f6), s4['key1'].f15
 FROM nested_tbl_1
 GROUP BY s4['key1'].f15
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s4['key1'].f15
 FROM nested_tbl_1
 GROUP BY s4['key1'].f15
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2450,11 +2551,15 @@ SELECT count(s1.f6), s5.f16[0].f18.f19
 FROM nested_tbl_1
 GROUP BY s5.f16[0].f18.f19
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s5.f16[0].f18.f19
 FROM nested_tbl_1
 GROUP BY s5.f16[0].f18.f19
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2589,11 +2694,15 @@ SELECT count(s1.f6), s5.f16.f18.f19
 FROM nested_tbl_1
 GROUP BY s5.f16.f18.f19
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s5.f16.f18.f19
 FROM nested_tbl_1
 GROUP BY s5.f16.f18.f19
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2690,11 +2799,15 @@ SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
 FROM nested_tbl_1
 GROUP BY s6['key1'].f20[0].f21.f22
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
 FROM nested_tbl_1
 GROUP BY s6['key1'].f20[0].f21.f22
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2829,11 +2942,15 @@ SELECT count(s1.f6), s6['key1'].f20.f21.f22
 FROM nested_tbl_1
 GROUP BY s6['key1'].f20.f21.f22
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s6['key1'].f20.f21.f22
 FROM nested_tbl_1
 GROUP BY s6['key1'].f20.f21.f22
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

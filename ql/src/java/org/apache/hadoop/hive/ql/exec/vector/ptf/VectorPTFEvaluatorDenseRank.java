@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec.vector.ptf;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
@@ -35,27 +34,29 @@ public class VectorPTFEvaluatorDenseRank extends VectorPTFEvaluatorBase {
 
   private int denseRank;
 
-  public VectorPTFEvaluatorDenseRank(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
-      int outputColumnNum) {
-    super(windowFrameDef, inputVecExpr, outputColumnNum);
+  public VectorPTFEvaluatorDenseRank(WindowFrameDef windowFrameDef, int outputColumnNum) {
+    super(windowFrameDef, outputColumnNum);
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
+    // We don't evaluate input columns...
 
     LongColumnVector longColVector = (LongColumnVector) batch.cols[outputColumnNum];
     longColVector.isRepeating = true;
     longColVector.isNull[0] = false;
     longColVector.vector[0] = denseRank;
-
-    if (isLastGroupBatch) {
-      denseRank++;
-    }
   }
 
+  @Override
+  public void doLastBatchWork() {
+    denseRank++;
+  }
+
+  @Override
   public boolean streamsResult() {
     // No group value.
     return true;

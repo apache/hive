@@ -1581,8 +1581,8 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_GBY_9: 1
    RECORDS_OUT_OPERATOR_MAP_0: 0
    RECORDS_OUT_OPERATOR_RS_8: 1000
-   RECORDS_OUT_OPERATOR_SEL_7: 1000
-   RECORDS_OUT_OPERATOR_TS_0: 1000
+   RECORDS_OUT_OPERATOR_SEL_7: 618
+   RECORDS_OUT_OPERATOR_TS_0: 618
 Stage-1 LLAP IO COUNTERS:
    CACHE_MISS_BYTES: 3812
    NUM_DECODED_BATCHES: 618
@@ -1612,8 +1612,8 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_GBY_11: 1
    RECORDS_OUT_OPERATOR_MAP_0: 0
    RECORDS_OUT_OPERATOR_RS_10: 8
-   RECORDS_OUT_OPERATOR_SEL_9: 8
-   RECORDS_OUT_OPERATOR_TS_0: 8
+   RECORDS_OUT_OPERATOR_SEL_9: 4
+   RECORDS_OUT_OPERATOR_TS_0: 4
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 18
    NUM_DECODED_BATCHES: 4
@@ -1715,8 +1715,8 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_GBY_11: 1
    RECORDS_OUT_OPERATOR_MAP_0: 0
    RECORDS_OUT_OPERATOR_RS_10: 240
-   RECORDS_OUT_OPERATOR_SEL_9: 240
-   RECORDS_OUT_OPERATOR_TS_0: 240
+   RECORDS_OUT_OPERATOR_SEL_9: 148
+   RECORDS_OUT_OPERATOR_TS_0: 148
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 922
    NUM_DECODED_BATCHES: 148
@@ -1825,10 +1825,10 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_GBY_7: 74
    RECORDS_OUT_OPERATOR_MAP_0: 0
    RECORDS_OUT_OPERATOR_RS_14: 240
-   RECORDS_OUT_OPERATOR_SEL_11: 240
-   RECORDS_OUT_OPERATOR_SEL_13: 240
+   RECORDS_OUT_OPERATOR_SEL_11: 148
+   RECORDS_OUT_OPERATOR_SEL_13: 148
    RECORDS_OUT_OPERATOR_SEL_8: 74
-   RECORDS_OUT_OPERATOR_TS_0: 240
+   RECORDS_OUT_OPERATOR_TS_0: 148
    TOTAL_TABLE_ROWS_WRITTEN: 240
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 922
@@ -1842,6 +1842,392 @@ Stage-1 INPUT COUNTERS:
    RAW_INPUT_SPLITS_Map_1: 148
 PREHOOK: query: explain select sum(hash(*)) from testpart t1 join testpart1 t2 on t1.v = t2.v
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testpart
+PREHOOK: Input: default@testpart1
+PREHOOK: Input: default@testpart1@v=val_0
+PREHOOK: Input: default@testpart1@v=val_10
+PREHOOK: Input: default@testpart1@v=val_100
+PREHOOK: Input: default@testpart1@v=val_103
+PREHOOK: Input: default@testpart1@v=val_104
+PREHOOK: Input: default@testpart1@v=val_105
+PREHOOK: Input: default@testpart1@v=val_11
+PREHOOK: Input: default@testpart1@v=val_111
+PREHOOK: Input: default@testpart1@v=val_113
+PREHOOK: Input: default@testpart1@v=val_114
+PREHOOK: Input: default@testpart1@v=val_116
+PREHOOK: Input: default@testpart1@v=val_118
+PREHOOK: Input: default@testpart1@v=val_119
+PREHOOK: Input: default@testpart1@v=val_12
+PREHOOK: Input: default@testpart1@v=val_120
+PREHOOK: Input: default@testpart1@v=val_125
+PREHOOK: Input: default@testpart1@v=val_126
+PREHOOK: Input: default@testpart1@v=val_128
+PREHOOK: Input: default@testpart1@v=val_129
+PREHOOK: Input: default@testpart1@v=val_131
+PREHOOK: Input: default@testpart1@v=val_133
+PREHOOK: Input: default@testpart1@v=val_134
+PREHOOK: Input: default@testpart1@v=val_136
+PREHOOK: Input: default@testpart1@v=val_137
+PREHOOK: Input: default@testpart1@v=val_138
+PREHOOK: Input: default@testpart1@v=val_143
+PREHOOK: Input: default@testpart1@v=val_145
+PREHOOK: Input: default@testpart1@v=val_146
+PREHOOK: Input: default@testpart1@v=val_149
+PREHOOK: Input: default@testpart1@v=val_15
+PREHOOK: Input: default@testpart1@v=val_150
+PREHOOK: Input: default@testpart1@v=val_152
+PREHOOK: Input: default@testpart1@v=val_153
+PREHOOK: Input: default@testpart1@v=val_155
+PREHOOK: Input: default@testpart1@v=val_156
+PREHOOK: Input: default@testpart1@v=val_157
+PREHOOK: Input: default@testpart1@v=val_158
+PREHOOK: Input: default@testpart1@v=val_160
+PREHOOK: Input: default@testpart1@v=val_162
+PREHOOK: Input: default@testpart1@v=val_163
+PREHOOK: Input: default@testpart1@v=val_164
+PREHOOK: Input: default@testpart1@v=val_165
+PREHOOK: Input: default@testpart1@v=val_166
+PREHOOK: Input: default@testpart1@v=val_167
+PREHOOK: Input: default@testpart1@v=val_168
+PREHOOK: Input: default@testpart1@v=val_169
+PREHOOK: Input: default@testpart1@v=val_17
+PREHOOK: Input: default@testpart1@v=val_170
+PREHOOK: Input: default@testpart1@v=val_172
+PREHOOK: Input: default@testpart1@v=val_174
+PREHOOK: Input: default@testpart1@v=val_175
+PREHOOK: Input: default@testpart1@v=val_176
+PREHOOK: Input: default@testpart1@v=val_177
+PREHOOK: Input: default@testpart1@v=val_178
+PREHOOK: Input: default@testpart1@v=val_179
+PREHOOK: Input: default@testpart1@v=val_18
+PREHOOK: Input: default@testpart1@v=val_180
+PREHOOK: Input: default@testpart1@v=val_181
+PREHOOK: Input: default@testpart1@v=val_183
+PREHOOK: Input: default@testpart1@v=val_186
+PREHOOK: Input: default@testpart1@v=val_187
+PREHOOK: Input: default@testpart1@v=val_189
+PREHOOK: Input: default@testpart1@v=val_19
+PREHOOK: Input: default@testpart1@v=val_190
+PREHOOK: Input: default@testpart1@v=val_191
+PREHOOK: Input: default@testpart1@v=val_192
+PREHOOK: Input: default@testpart1@v=val_193
+PREHOOK: Input: default@testpart1@v=val_194
+PREHOOK: Input: default@testpart1@v=val_195
+PREHOOK: Input: default@testpart1@v=val_196
+PREHOOK: Input: default@testpart1@v=val_197
+PREHOOK: Input: default@testpart1@v=val_199
+PREHOOK: Input: default@testpart1@v=val_2
+PREHOOK: Input: default@testpart1@v=val_20
+PREHOOK: Input: default@testpart@v=val_0
+PREHOOK: Input: default@testpart@v=val_10
+PREHOOK: Input: default@testpart@v=val_100
+PREHOOK: Input: default@testpart@v=val_103
+PREHOOK: Input: default@testpart@v=val_104
+PREHOOK: Input: default@testpart@v=val_105
+PREHOOK: Input: default@testpart@v=val_11
+PREHOOK: Input: default@testpart@v=val_111
+PREHOOK: Input: default@testpart@v=val_113
+PREHOOK: Input: default@testpart@v=val_114
+PREHOOK: Input: default@testpart@v=val_116
+PREHOOK: Input: default@testpart@v=val_118
+PREHOOK: Input: default@testpart@v=val_119
+PREHOOK: Input: default@testpart@v=val_12
+PREHOOK: Input: default@testpart@v=val_120
+PREHOOK: Input: default@testpart@v=val_125
+PREHOOK: Input: default@testpart@v=val_126
+PREHOOK: Input: default@testpart@v=val_128
+PREHOOK: Input: default@testpart@v=val_129
+PREHOOK: Input: default@testpart@v=val_131
+PREHOOK: Input: default@testpart@v=val_133
+PREHOOK: Input: default@testpart@v=val_134
+PREHOOK: Input: default@testpart@v=val_136
+PREHOOK: Input: default@testpart@v=val_137
+PREHOOK: Input: default@testpart@v=val_138
+PREHOOK: Input: default@testpart@v=val_143
+PREHOOK: Input: default@testpart@v=val_145
+PREHOOK: Input: default@testpart@v=val_146
+PREHOOK: Input: default@testpart@v=val_149
+PREHOOK: Input: default@testpart@v=val_15
+PREHOOK: Input: default@testpart@v=val_150
+PREHOOK: Input: default@testpart@v=val_152
+PREHOOK: Input: default@testpart@v=val_153
+PREHOOK: Input: default@testpart@v=val_155
+PREHOOK: Input: default@testpart@v=val_156
+PREHOOK: Input: default@testpart@v=val_157
+PREHOOK: Input: default@testpart@v=val_158
+PREHOOK: Input: default@testpart@v=val_160
+PREHOOK: Input: default@testpart@v=val_162
+PREHOOK: Input: default@testpart@v=val_163
+PREHOOK: Input: default@testpart@v=val_164
+PREHOOK: Input: default@testpart@v=val_165
+PREHOOK: Input: default@testpart@v=val_166
+PREHOOK: Input: default@testpart@v=val_167
+PREHOOK: Input: default@testpart@v=val_168
+PREHOOK: Input: default@testpart@v=val_169
+PREHOOK: Input: default@testpart@v=val_17
+PREHOOK: Input: default@testpart@v=val_170
+PREHOOK: Input: default@testpart@v=val_172
+PREHOOK: Input: default@testpart@v=val_174
+PREHOOK: Input: default@testpart@v=val_175
+PREHOOK: Input: default@testpart@v=val_176
+PREHOOK: Input: default@testpart@v=val_177
+PREHOOK: Input: default@testpart@v=val_178
+PREHOOK: Input: default@testpart@v=val_179
+PREHOOK: Input: default@testpart@v=val_18
+PREHOOK: Input: default@testpart@v=val_180
+PREHOOK: Input: default@testpart@v=val_181
+PREHOOK: Input: default@testpart@v=val_183
+PREHOOK: Input: default@testpart@v=val_186
+PREHOOK: Input: default@testpart@v=val_187
+PREHOOK: Input: default@testpart@v=val_189
+PREHOOK: Input: default@testpart@v=val_19
+PREHOOK: Input: default@testpart@v=val_190
+PREHOOK: Input: default@testpart@v=val_191
+PREHOOK: Input: default@testpart@v=val_192
+PREHOOK: Input: default@testpart@v=val_193
+PREHOOK: Input: default@testpart@v=val_194
+PREHOOK: Input: default@testpart@v=val_195
+PREHOOK: Input: default@testpart@v=val_196
+PREHOOK: Input: default@testpart@v=val_197
+PREHOOK: Input: default@testpart@v=val_199
+PREHOOK: Input: default@testpart@v=val_2
+PREHOOK: Input: default@testpart@v=val_20
+PREHOOK: Input: default@testpart@v=val_200
+PREHOOK: Input: default@testpart@v=val_201
+PREHOOK: Input: default@testpart@v=val_202
+PREHOOK: Input: default@testpart@v=val_203
+PREHOOK: Input: default@testpart@v=val_205
+PREHOOK: Input: default@testpart@v=val_207
+PREHOOK: Input: default@testpart@v=val_208
+PREHOOK: Input: default@testpart@v=val_209
+PREHOOK: Input: default@testpart@v=val_213
+PREHOOK: Input: default@testpart@v=val_214
+PREHOOK: Input: default@testpart@v=val_216
+PREHOOK: Input: default@testpart@v=val_217
+PREHOOK: Input: default@testpart@v=val_218
+PREHOOK: Input: default@testpart@v=val_219
+PREHOOK: Input: default@testpart@v=val_221
+PREHOOK: Input: default@testpart@v=val_222
+PREHOOK: Input: default@testpart@v=val_223
+PREHOOK: Input: default@testpart@v=val_224
+PREHOOK: Input: default@testpart@v=val_226
+PREHOOK: Input: default@testpart@v=val_228
+PREHOOK: Input: default@testpart@v=val_229
+PREHOOK: Input: default@testpart@v=val_230
+PREHOOK: Input: default@testpart@v=val_233
+PREHOOK: Input: default@testpart@v=val_235
+PREHOOK: Input: default@testpart@v=val_237
+PREHOOK: Input: default@testpart@v=val_238
+PREHOOK: Input: default@testpart@v=val_239
+PREHOOK: Input: default@testpart@v=val_24
+PREHOOK: Input: default@testpart@v=val_241
+PREHOOK: Input: default@testpart@v=val_242
+PREHOOK: Input: default@testpart@v=val_244
+PREHOOK: Input: default@testpart@v=val_247
+PREHOOK: Input: default@testpart@v=val_248
+PREHOOK: Input: default@testpart@v=val_249
+PREHOOK: Input: default@testpart@v=val_252
+PREHOOK: Input: default@testpart@v=val_255
+PREHOOK: Input: default@testpart@v=val_256
+PREHOOK: Input: default@testpart@v=val_257
+PREHOOK: Input: default@testpart@v=val_258
+PREHOOK: Input: default@testpart@v=val_26
+PREHOOK: Input: default@testpart@v=val_260
+PREHOOK: Input: default@testpart@v=val_262
+PREHOOK: Input: default@testpart@v=val_263
+PREHOOK: Input: default@testpart@v=val_265
+PREHOOK: Input: default@testpart@v=val_266
+PREHOOK: Input: default@testpart@v=val_27
+PREHOOK: Input: default@testpart@v=val_272
+PREHOOK: Input: default@testpart@v=val_273
+PREHOOK: Input: default@testpart@v=val_274
+PREHOOK: Input: default@testpart@v=val_275
+PREHOOK: Input: default@testpart@v=val_277
+PREHOOK: Input: default@testpart@v=val_278
+PREHOOK: Input: default@testpart@v=val_28
+PREHOOK: Input: default@testpart@v=val_280
+PREHOOK: Input: default@testpart@v=val_281
+PREHOOK: Input: default@testpart@v=val_282
+PREHOOK: Input: default@testpart@v=val_283
+PREHOOK: Input: default@testpart@v=val_284
+PREHOOK: Input: default@testpart@v=val_285
+PREHOOK: Input: default@testpart@v=val_286
+PREHOOK: Input: default@testpart@v=val_287
+PREHOOK: Input: default@testpart@v=val_288
+PREHOOK: Input: default@testpart@v=val_289
+PREHOOK: Input: default@testpart@v=val_291
+PREHOOK: Input: default@testpart@v=val_292
+PREHOOK: Input: default@testpart@v=val_296
+PREHOOK: Input: default@testpart@v=val_298
+PREHOOK: Input: default@testpart@v=val_30
+PREHOOK: Input: default@testpart@v=val_302
+PREHOOK: Input: default@testpart@v=val_305
+PREHOOK: Input: default@testpart@v=val_306
+PREHOOK: Input: default@testpart@v=val_307
+PREHOOK: Input: default@testpart@v=val_308
+PREHOOK: Input: default@testpart@v=val_309
+PREHOOK: Input: default@testpart@v=val_310
+PREHOOK: Input: default@testpart@v=val_311
+PREHOOK: Input: default@testpart@v=val_315
+PREHOOK: Input: default@testpart@v=val_316
+PREHOOK: Input: default@testpart@v=val_317
+PREHOOK: Input: default@testpart@v=val_318
+PREHOOK: Input: default@testpart@v=val_321
+PREHOOK: Input: default@testpart@v=val_322
+PREHOOK: Input: default@testpart@v=val_323
+PREHOOK: Input: default@testpart@v=val_325
+PREHOOK: Input: default@testpart@v=val_327
+PREHOOK: Input: default@testpart@v=val_33
+PREHOOK: Input: default@testpart@v=val_331
+PREHOOK: Input: default@testpart@v=val_332
+PREHOOK: Input: default@testpart@v=val_333
+PREHOOK: Input: default@testpart@v=val_335
+PREHOOK: Input: default@testpart@v=val_336
+PREHOOK: Input: default@testpart@v=val_338
+PREHOOK: Input: default@testpart@v=val_339
+PREHOOK: Input: default@testpart@v=val_34
+PREHOOK: Input: default@testpart@v=val_341
+PREHOOK: Input: default@testpart@v=val_342
+PREHOOK: Input: default@testpart@v=val_344
+PREHOOK: Input: default@testpart@v=val_345
+PREHOOK: Input: default@testpart@v=val_348
+PREHOOK: Input: default@testpart@v=val_35
+PREHOOK: Input: default@testpart@v=val_351
+PREHOOK: Input: default@testpart@v=val_353
+PREHOOK: Input: default@testpart@v=val_356
+PREHOOK: Input: default@testpart@v=val_360
+PREHOOK: Input: default@testpart@v=val_362
+PREHOOK: Input: default@testpart@v=val_364
+PREHOOK: Input: default@testpart@v=val_365
+PREHOOK: Input: default@testpart@v=val_366
+PREHOOK: Input: default@testpart@v=val_367
+PREHOOK: Input: default@testpart@v=val_368
+PREHOOK: Input: default@testpart@v=val_369
+PREHOOK: Input: default@testpart@v=val_37
+PREHOOK: Input: default@testpart@v=val_373
+PREHOOK: Input: default@testpart@v=val_374
+PREHOOK: Input: default@testpart@v=val_375
+PREHOOK: Input: default@testpart@v=val_377
+PREHOOK: Input: default@testpart@v=val_378
+PREHOOK: Input: default@testpart@v=val_379
+PREHOOK: Input: default@testpart@v=val_382
+PREHOOK: Input: default@testpart@v=val_384
+PREHOOK: Input: default@testpart@v=val_386
+PREHOOK: Input: default@testpart@v=val_389
+PREHOOK: Input: default@testpart@v=val_392
+PREHOOK: Input: default@testpart@v=val_393
+PREHOOK: Input: default@testpart@v=val_394
+PREHOOK: Input: default@testpart@v=val_395
+PREHOOK: Input: default@testpart@v=val_396
+PREHOOK: Input: default@testpart@v=val_397
+PREHOOK: Input: default@testpart@v=val_399
+PREHOOK: Input: default@testpart@v=val_4
+PREHOOK: Input: default@testpart@v=val_400
+PREHOOK: Input: default@testpart@v=val_401
+PREHOOK: Input: default@testpart@v=val_402
+PREHOOK: Input: default@testpart@v=val_403
+PREHOOK: Input: default@testpart@v=val_404
+PREHOOK: Input: default@testpart@v=val_406
+PREHOOK: Input: default@testpart@v=val_407
+PREHOOK: Input: default@testpart@v=val_409
+PREHOOK: Input: default@testpart@v=val_41
+PREHOOK: Input: default@testpart@v=val_411
+PREHOOK: Input: default@testpart@v=val_413
+PREHOOK: Input: default@testpart@v=val_414
+PREHOOK: Input: default@testpart@v=val_417
+PREHOOK: Input: default@testpart@v=val_418
+PREHOOK: Input: default@testpart@v=val_419
+PREHOOK: Input: default@testpart@v=val_42
+PREHOOK: Input: default@testpart@v=val_421
+PREHOOK: Input: default@testpart@v=val_424
+PREHOOK: Input: default@testpart@v=val_427
+PREHOOK: Input: default@testpart@v=val_429
+PREHOOK: Input: default@testpart@v=val_43
+PREHOOK: Input: default@testpart@v=val_430
+PREHOOK: Input: default@testpart@v=val_431
+PREHOOK: Input: default@testpart@v=val_432
+PREHOOK: Input: default@testpart@v=val_435
+PREHOOK: Input: default@testpart@v=val_436
+PREHOOK: Input: default@testpart@v=val_437
+PREHOOK: Input: default@testpart@v=val_438
+PREHOOK: Input: default@testpart@v=val_439
+PREHOOK: Input: default@testpart@v=val_44
+PREHOOK: Input: default@testpart@v=val_443
+PREHOOK: Input: default@testpart@v=val_444
+PREHOOK: Input: default@testpart@v=val_446
+PREHOOK: Input: default@testpart@v=val_448
+PREHOOK: Input: default@testpart@v=val_449
+PREHOOK: Input: default@testpart@v=val_452
+PREHOOK: Input: default@testpart@v=val_453
+PREHOOK: Input: default@testpart@v=val_454
+PREHOOK: Input: default@testpart@v=val_455
+PREHOOK: Input: default@testpart@v=val_457
+PREHOOK: Input: default@testpart@v=val_458
+PREHOOK: Input: default@testpart@v=val_459
+PREHOOK: Input: default@testpart@v=val_460
+PREHOOK: Input: default@testpart@v=val_462
+PREHOOK: Input: default@testpart@v=val_463
+PREHOOK: Input: default@testpart@v=val_466
+PREHOOK: Input: default@testpart@v=val_467
+PREHOOK: Input: default@testpart@v=val_468
+PREHOOK: Input: default@testpart@v=val_469
+PREHOOK: Input: default@testpart@v=val_47
+PREHOOK: Input: default@testpart@v=val_470
+PREHOOK: Input: default@testpart@v=val_472
+PREHOOK: Input: default@testpart@v=val_475
+PREHOOK: Input: default@testpart@v=val_477
+PREHOOK: Input: default@testpart@v=val_478
+PREHOOK: Input: default@testpart@v=val_479
+PREHOOK: Input: default@testpart@v=val_480
+PREHOOK: Input: default@testpart@v=val_481
+PREHOOK: Input: default@testpart@v=val_482
+PREHOOK: Input: default@testpart@v=val_483
+PREHOOK: Input: default@testpart@v=val_484
+PREHOOK: Input: default@testpart@v=val_485
+PREHOOK: Input: default@testpart@v=val_487
+PREHOOK: Input: default@testpart@v=val_489
+PREHOOK: Input: default@testpart@v=val_490
+PREHOOK: Input: default@testpart@v=val_491
+PREHOOK: Input: default@testpart@v=val_492
+PREHOOK: Input: default@testpart@v=val_493
+PREHOOK: Input: default@testpart@v=val_494
+PREHOOK: Input: default@testpart@v=val_495
+PREHOOK: Input: default@testpart@v=val_496
+PREHOOK: Input: default@testpart@v=val_497
+PREHOOK: Input: default@testpart@v=val_498
+PREHOOK: Input: default@testpart@v=val_5
+PREHOOK: Input: default@testpart@v=val_51
+PREHOOK: Input: default@testpart@v=val_53
+PREHOOK: Input: default@testpart@v=val_54
+PREHOOK: Input: default@testpart@v=val_57
+PREHOOK: Input: default@testpart@v=val_58
+PREHOOK: Input: default@testpart@v=val_64
+PREHOOK: Input: default@testpart@v=val_65
+PREHOOK: Input: default@testpart@v=val_66
+PREHOOK: Input: default@testpart@v=val_67
+PREHOOK: Input: default@testpart@v=val_69
+PREHOOK: Input: default@testpart@v=val_70
+PREHOOK: Input: default@testpart@v=val_72
+PREHOOK: Input: default@testpart@v=val_74
+PREHOOK: Input: default@testpart@v=val_76
+PREHOOK: Input: default@testpart@v=val_77
+PREHOOK: Input: default@testpart@v=val_78
+PREHOOK: Input: default@testpart@v=val_8
+PREHOOK: Input: default@testpart@v=val_80
+PREHOOK: Input: default@testpart@v=val_82
+PREHOOK: Input: default@testpart@v=val_83
+PREHOOK: Input: default@testpart@v=val_84
+PREHOOK: Input: default@testpart@v=val_85
+PREHOOK: Input: default@testpart@v=val_86
+PREHOOK: Input: default@testpart@v=val_87
+PREHOOK: Input: default@testpart@v=val_9
+PREHOOK: Input: default@testpart@v=val_90
+PREHOOK: Input: default@testpart@v=val_92
+PREHOOK: Input: default@testpart@v=val_95
+PREHOOK: Input: default@testpart@v=val_96
+PREHOOK: Input: default@testpart@v=val_97
+PREHOOK: Input: default@testpart@v=val_98
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2346,21 +2732,21 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_INTERMEDIATE_Map_4: 240
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 952
    RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
-   RECORDS_OUT_OPERATOR_EVENT_30: 309
+   RECORDS_OUT_OPERATOR_EVENT_30: 1
    RECORDS_OUT_OPERATOR_FS_34: 1
-   RECORDS_OUT_OPERATOR_GBY_29: 309
+   RECORDS_OUT_OPERATOR_GBY_29: 1
    RECORDS_OUT_OPERATOR_GBY_33: 1
    RECORDS_OUT_OPERATOR_MAP_0: 0
    RECORDS_OUT_OPERATOR_MERGEJOIN_25: 952
    RECORDS_OUT_OPERATOR_RS_11: 952
    RECORDS_OUT_OPERATOR_RS_27: 1000
    RECORDS_OUT_OPERATOR_RS_32: 240
-   RECORDS_OUT_OPERATOR_SEL_26: 1000
-   RECORDS_OUT_OPERATOR_SEL_28: 1000
-   RECORDS_OUT_OPERATOR_SEL_31: 240
+   RECORDS_OUT_OPERATOR_SEL_26: 618
+   RECORDS_OUT_OPERATOR_SEL_28: 618
+   RECORDS_OUT_OPERATOR_SEL_31: 74
    RECORDS_OUT_OPERATOR_SEL_9: 952
-   RECORDS_OUT_OPERATOR_TS_0: 1000
-   RECORDS_OUT_OPERATOR_TS_3: 240
+   RECORDS_OUT_OPERATOR_TS_0: 618
+   RECORDS_OUT_OPERATOR_TS_3: 74
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3812
    CACHE_MISS_BYTES: 922

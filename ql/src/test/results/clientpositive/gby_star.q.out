@@ -1,9 +1,13 @@
 PREHOOK: query: explain
 select *, sum(key) from src group by key, value limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *, sum(key) from src group by key, value limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -77,9 +81,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select *, sum(key) from src where key < 100 group by key, value limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *, sum(key) from src where key < 100 group by key, value limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -153,9 +161,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select *, sum(key) from (select key from src where key < 100) a group by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *, sum(key) from (select key from src where key < 100) a group by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -230,10 +242,14 @@ PREHOOK: query: explain
 select a.*, sum(src.key) from (select key from src where key < 100) a 
 inner join src on a.key = src.key group by a.key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.*, sum(src.key) from (select key from src where key < 100) a 
 inner join src on a.key = src.key group by a.key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

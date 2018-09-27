@@ -36,8 +36,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part2_n2
 PREHOOK: query: explain select * from src11_n0 where src11_n0.key1 in (select key from src where src11_n0.value1 = value and key > '9')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src11_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src11_n0 where src11_n0.key1 in (select key from src where src11_n0.value1 = value and key > '9')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src11_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -108,8 +114,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from src a where a.key in (select key from src where a.value = value and key > '9')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src a where a.key in (select key from src where a.value = value and key > '9')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -187,6 +197,8 @@ where b.key in
          where b.value = value and key > '9'
         )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select * 
 from src b 
@@ -196,6 +208,8 @@ where b.key in
          where b.value = value and key > '9'
         )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -273,6 +287,8 @@ where b.p_name not in
   where r <= 2 and b.p_mfgr = p_mfgr 
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select p_mfgr, b.p_name, p_size 
 from part b 
@@ -282,6 +298,8 @@ where b.p_name not in
   where r <= 2 and b.p_mfgr = p_mfgr 
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-4 depends on stages: Stage-3
@@ -324,7 +342,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col5 ASC NULLS FIRST
+                  order by: _col5 ASC NULLS LAST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -493,7 +511,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col5 ASC NULLS FIRST
+                  order by: _col5 ASC NULLS LAST
                   partition by: _col2
                   raw input shape:
                   window functions:

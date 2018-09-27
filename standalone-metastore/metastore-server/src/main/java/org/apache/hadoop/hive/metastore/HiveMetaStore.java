@@ -1862,7 +1862,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
         if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
-            !MetaStoreServerUtils.isView(tbl)) {
+            !MetaStoreUtils.isView(tbl)) {
           MetaStoreServerUtils.updateTableStatsSlow(db, tbl, wh, madeDir, false, envContext);
         }
 
@@ -2708,13 +2708,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (!transactionalListeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                 EventType.ALTER_PARTITION,
-                new AlterPartitionEvent(partition, partition, table, true, true, this));
+                new AlterPartitionEvent(partition, partition, table, true, true,
+                        writeId, this));
       }
 
       if (!listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners,
                 EventType.ALTER_PARTITION,
-                new AlterPartitionEvent(partition, partition, table, true, true, this));
+                new AlterPartitionEvent(partition, partition, table, true, true,
+                        writeId, this));
       }
 
       if (writeId > 0) {
@@ -2740,13 +2742,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!transactionalListeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventType.ALTER_TABLE,
-                    new AlterTableEvent(table, table, true, true, this));
+                    new AlterTableEvent(table, table, true, true,
+                            writeId, this));
           }
 
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                     EventType.ALTER_TABLE,
-                    new AlterTableEvent(table, table, true, true, this));
+                    new AlterTableEvent(table, table, true, true,
+                            writeId, this));
           }
 
           // TODO: this should actually pass thru and set writeId for txn stats.
@@ -3804,7 +3808,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             updateStatsTbl = !Boolean.valueOf(tblParams.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
         }
         if (!MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) ||
-            MetaStoreServerUtils.isView(tbl) ||
+            MetaStoreUtils.isView(tbl) ||
             !updateStatsTbl) {
           return false;
         }
@@ -4919,7 +4923,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
           MetaStoreListenerNotifier.notifyEvent(listeners,
                                                 EventType.ALTER_PARTITION,
-                                                new AlterPartitionEvent(oldPart, new_part, table, false, true, this),
+                                                new AlterPartitionEvent(oldPart, new_part, table, false,
+                                                        true, new_part.getWriteId(), this),
                                                 envContext);
         }
       } catch (InvalidObjectException e) {
@@ -5019,7 +5024,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                                                   EventType.ALTER_PARTITION,
-                                                  new AlterPartitionEvent(oldTmpPart, tmpPart, table, false, true, this));
+                                                  new AlterPartitionEvent(oldTmpPart, tmpPart, table, false,
+                                                   true, writeId, this));
           }
         }
       } catch (InvalidObjectException e) {
@@ -7456,7 +7462,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
-            throws MetaException, NoSuchObjectException {
+            throws TException {
       Table tableObj = getTblObject(rqst.getDb(), rqst.getTable());
       Partition ptnObj = getPartitionObj(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals(), tableObj);
       addTxnWriteNotificationLog(tableObj, ptnObj, rqst);

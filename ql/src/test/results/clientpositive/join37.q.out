@@ -11,11 +11,17 @@ INSERT OVERWRITE TABLE dest_j1_n9
 SELECT /*+ MAPJOIN(X) */ x.key, x.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest_j1_n9
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1_n9 
 SELECT /*+ MAPJOIN(X) */ x.key, x.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest_j1_n9
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-5 depends on stages: Stage-6
