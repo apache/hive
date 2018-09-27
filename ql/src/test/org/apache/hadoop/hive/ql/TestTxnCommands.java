@@ -95,6 +95,15 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     return TEST_DATA_DIR;
   }
 
+  @Override
+  void initHiveConf() {
+    super.initHiveConf();
+    //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
+    //of these tests.
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+  }
+
+
   /**
    * tests that a failing Insert Overwrite (which creates a new base_x) is properly marked as
    * aborted.

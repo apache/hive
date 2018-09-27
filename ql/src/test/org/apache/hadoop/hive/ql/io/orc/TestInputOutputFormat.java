@@ -794,8 +794,8 @@ public class TestInputOutputFormat {
       int readsAfter = fs.statistics.getReadOps();
       System.out.println("STATS TRACE END - " + testCaseName.getMethodName());
       int delta = readsAfter - readsBefore;
-      // 16 without HIVE-19588, 8 with HIVE-19588
-      assertEquals(8, delta);
+      //HIVE-16812 adds 1 read of the footer of each file
+      assertEquals(16, delta);
     } finally {
       MockFileSystem.clearGlobalFiles();
     }

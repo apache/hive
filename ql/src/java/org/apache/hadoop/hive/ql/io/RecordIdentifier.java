@@ -176,6 +176,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
   @Override
   public int compareTo(RecordIdentifier other) {
     if (other.getClass() != RecordIdentifier.class) {
+      //WTF?  assumes that other instanceof OrcRawRecordMerger.ReaderKey???
       return -other.compareTo(this);
     }
     return compareToInternal(other);
@@ -219,17 +220,15 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
 
   @Override
   public String toString() {
-    BucketCodec codec = 
-      BucketCodec.determineVersion(bucketId);
-    String s = "(" + codec.getVersion() + "." + codec.decodeWriterId(bucketId) +
-      "." + codec.decodeStatementId(bucketId) + ")";
-    return "{originalWriteId: " + writeId + ", " + bucketToString() + ", row: " + getRowId() +"}";
+    return "RecordIdentifier(" + writeId + ", " + bucketToString(bucketId) + ","
+        + getRowId() +")";
   }
-  protected String bucketToString() {
-    if (bucketId == -1) return ("bucket: " + bucketId);
+  public static String bucketToString(int bucketId) {
+    if (bucketId == -1) return "" + bucketId;
     BucketCodec codec =
       BucketCodec.determineVersion(bucketId);
-    return  "bucket: " + bucketId + "(" + codec.getVersion() + "." +
-      codec.decodeWriterId(bucketId) + "." + codec.decodeStatementId(bucketId) + ")";
+    return  bucketId + "(" + codec.getVersion() + "." +
+        codec.decodeWriterId(bucketId) + "." +
+        codec.decodeStatementId(bucketId) + ")";
   }
 }

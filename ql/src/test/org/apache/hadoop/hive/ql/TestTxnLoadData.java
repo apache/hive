@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,6 +47,11 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
 
+  @Before
+  public void setUp() throws Exception {
+    setUpInternal();
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+  }
   @Override
   protected String getTestDataDir() {
     return TEST_DATA_DIR;

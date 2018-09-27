@@ -249,4 +249,9 @@ public abstract class TxnCommandsBaseForTests {
     checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
     assertVectorized(isVectorized, query);
   }
+  void dropTable(String[] tabs) throws Exception {
+    for(String tab : tabs) {
+      d.run("drop table if exists " + tab);
+    }
+  }
 }
