@@ -30,6 +30,8 @@ SELECT GREATEST('a', 'b', 'c'),
        GREATEST(cast(null as string), null, null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT GREATEST('a', 'b', 'c'),
        GREATEST('C', 'a', 'B'),
@@ -47,6 +49,8 @@ SELECT GREATEST('a', 'b', 'c'),
        GREATEST(cast(null as string), null, null)
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

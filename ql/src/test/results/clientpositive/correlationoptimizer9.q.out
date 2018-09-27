@@ -28,6 +28,8 @@ JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
@@ -36,6 +38,8 @@ JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -196,6 +200,8 @@ JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
@@ -204,6 +210,8 @@ JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -349,6 +357,8 @@ JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
@@ -357,6 +367,8 @@ JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -521,6 +533,8 @@ JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
@@ -529,6 +543,8 @@ JOIN
 (SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

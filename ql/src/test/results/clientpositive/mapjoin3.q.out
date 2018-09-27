@@ -76,6 +76,9 @@ test_1
 ) t1 
 ON t2.member = t1.member
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT 
 t2.member 
@@ -93,6 +96,9 @@ test_1
 ) t1 
 ON t2.member = t1.member
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4

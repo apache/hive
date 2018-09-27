@@ -31,8 +31,14 @@ POSTHOOK: Lineage: b_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select * from A_n2 join B_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from A_n2 join B_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -103,8 +109,14 @@ STAGE PLANS:
 Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select * from B_n2 d1 join B_n2 d2 on d1.key = d2.key join A_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from B_n2 d1 join B_n2 d2 on d1.key = d2.key join A_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -218,11 +230,17 @@ PREHOOK: query: explain select * from A_n2 join
           from B_n2 d1 join B_n2 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from A_n2 join 
          (select d1.key 
           from B_n2 d1 join B_n2 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -356,8 +374,14 @@ Warning: Map Join MAPJOIN[19][bigTable=?] in task 'Stage-1:MAPRED' is a cross pr
 Warning: Map Join MAPJOIN[20][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select * from A_n2 join (select d1.key from B_n2 d1 join B_n2 d2 where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from A_n2 join (select d1.key from B_n2 d1 join B_n2 d2 where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -482,10 +506,16 @@ PREHOOK: query: explain select * from
 (select A_n2.key from A_n2 group by key) ss join 
 (select d1.key from B_n2 d1 join B_n2 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from 
 (select A_n2.key from A_n2 group by key) ss join 
 (select d1.key from B_n2 d1 join B_n2 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3

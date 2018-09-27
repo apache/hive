@@ -40,6 +40,9 @@ select * from
   select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
 ) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n157
+PREHOOK: Input: default@t2_n92
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN	 
 select * from	
 (      
@@ -48,6 +51,9 @@ select * from
   select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
 ) subq1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n157
+POSTHOOK: Input: default@t2_n92
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-16 is a root stage
   Stage-2 depends on stages: Stage-16

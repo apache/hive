@@ -27,9 +27,17 @@ POSTHOOK: Output: default@tstparttbl_n0@ds=2008-04-08
 PREHOOK: query: explain
 select count(1) from tstparttbl_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl_n0
+PREHOOK: Input: default@tstparttbl_n0@ds=2008-04-08
+PREHOOK: Input: default@tstparttbl_n0@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from tstparttbl_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl_n0
+POSTHOOK: Input: default@tstparttbl_n0@ds=2008-04-08
+POSTHOOK: Input: default@tstparttbl_n0@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -115,9 +123,17 @@ POSTHOOK: Output: default@tstparttbl2_n0@ds=2008-04-08
 PREHOOK: query: explain
 select count(1) from tstparttbl2_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl2_n0
+PREHOOK: Input: default@tstparttbl2_n0@ds=2008-04-08
+PREHOOK: Input: default@tstparttbl2_n0@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from tstparttbl2_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl2_n0
+POSTHOOK: Input: default@tstparttbl2_n0@ds=2008-04-08
+POSTHOOK: Input: default@tstparttbl2_n0@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -211,9 +227,17 @@ POSTHOOK: Output: default@tstparttbl_n0@ds=2008-04-08
 PREHOOK: query: explain
 select count(1) from tstparttbl_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl_n0
+PREHOOK: Input: default@tstparttbl_n0@ds=2008-04-08
+PREHOOK: Input: default@tstparttbl_n0@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from tstparttbl_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl_n0
+POSTHOOK: Input: default@tstparttbl_n0@ds=2008-04-08
+POSTHOOK: Input: default@tstparttbl_n0@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -307,9 +331,17 @@ POSTHOOK: Output: default@tstparttbl2_n0@ds=2008-04-08
 PREHOOK: query: explain
 select count(1) from tstparttbl2_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl2_n0
+PREHOOK: Input: default@tstparttbl2_n0@ds=2008-04-08
+PREHOOK: Input: default@tstparttbl2_n0@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from tstparttbl2_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl2_n0
+POSTHOOK: Input: default@tstparttbl2_n0@ds=2008-04-08
+POSTHOOK: Input: default@tstparttbl2_n0@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

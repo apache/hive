@@ -47,6 +47,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n13 group by key
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n13
+PREHOOK: Output: default@outputtbl1_n19@ds=2004
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n19 partition(ds='2004')
 SELECT *
@@ -56,6 +58,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n13 group by key
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n13
+POSTHOOK: Output: default@outputtbl1_n19@ds=2004
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -222,6 +226,10 @@ FROM (
   select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@outputtbl2_n6
 POSTHOOK: query: explain 
 insert overwrite table outputTbl2_n6 partition(ds)
 SELECT *
@@ -231,6 +239,9 @@ FROM (
   select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -394,6 +405,10 @@ FROM (
   select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@outputtbl3_n3
 POSTHOOK: query: explain insert overwrite table outputTbl3_n3 partition(ds, hr)
 SELECT *
 FROM (
@@ -402,6 +417,9 @@ FROM (
   select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

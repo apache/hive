@@ -18,10 +18,14 @@ PREHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part_n3 partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@list_bucketing_static_part_n3@ds=2008-04-08/hr=11
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part_n3 partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@list_bucketing_static_part_n3@ds=2008-04-08/hr=11
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
@@ -283,9 +287,15 @@ Storage Desc Params:
 PREHOOK: query: explain extended
 select key, value from list_bucketing_static_part_n3 where ds='2008-04-08' and hr='11' and value = "val_466"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part_n3
+PREHOOK: Input: default@list_bucketing_static_part_n3@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value from list_bucketing_static_part_n3 where ds='2008-04-08' and hr='11' and value = "val_466"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part_n3
+POSTHOOK: Input: default@list_bucketing_static_part_n3@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, CAST('val_466' AS STRING) AS `value`
 FROM `default`.`list_bucketing_static_part_n3`
 WHERE `ds` = '2008-04-08' AND `hr` = '11' AND `value` = 'val_466'

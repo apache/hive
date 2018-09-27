@@ -34,6 +34,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n112
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1_n112
@@ -41,6 +43,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n112
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -210,6 +214,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n112
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1_n112
@@ -217,6 +223,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n112
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

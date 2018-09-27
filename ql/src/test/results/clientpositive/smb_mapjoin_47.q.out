@@ -90,6 +90,9 @@ ON (test1_n8.value=test2_n5.value
   AND test2_n5.key between 100 and 102)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n8 JOIN test2_n5
@@ -98,6 +101,9 @@ ON (test1_n8.value=test2_n5.value
   AND test2_n5.key between 100 and 102)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -166,12 +172,18 @@ FROM test1_n8 JOIN test2_n5
 ON (test1_n8.value=test2_n5.value AND true)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n8 JOIN test2_n5
 ON (test1_n8.value=test2_n5.value AND true)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -242,6 +254,9 @@ ON (test1_n8.key between 100 and 102
   AND true)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n8 JOIN test2_n5
@@ -250,6 +265,9 @@ ON (test1_n8.key between 100 and 102
   AND true)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -354,6 +372,9 @@ ON (test1_n8.value=test2_n5.value
   OR test2_n5.key between 100 and 102)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n8 JOIN test2_n5
@@ -362,6 +383,9 @@ ON (test1_n8.value=test2_n5.value
   OR test2_n5.key between 100 and 102)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -465,6 +489,9 @@ ON (test1_n8.key+test2_n5.key >= 100
   AND test1_n8.key+test2_n5.key <= 102)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n8 JOIN test2_n5
@@ -472,6 +499,9 @@ ON (test1_n8.key+test2_n5.key >= 100
   AND test1_n8.key+test2_n5.key <= 102)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -563,6 +593,9 @@ ON (test1_n8.key+test2_n5.key >= 100
   OR test1_n8.key+test2_n5.key <= 102)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n8 JOIN test2_n5
@@ -570,6 +603,9 @@ ON (test1_n8.key+test2_n5.key >= 100
   OR test1_n8.key+test2_n5.key <= 102)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -670,12 +706,18 @@ FROM test1_n8 JOIN test2_n5
 ON ((test1_n8.key,test2_n5.key) IN ((100,100),(101,101),(102,102)))
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n8 JOIN test2_n5
 ON ((test1_n8.key,test2_n5.key) IN ((100,100),(101,101),(102,102)))
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -765,6 +807,9 @@ JOIN test1_n8 a ON (a.key+test2_n5.key >= 100)
 LEFT OUTER JOIN test1_n8 b ON (b.value = test2_n5.value)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test2_n5
@@ -772,6 +817,9 @@ JOIN test1_n8 a ON (a.key+test2_n5.key >= 100)
 LEFT OUTER JOIN test1_n8 b ON (b.value = test2_n5.value)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -872,6 +920,9 @@ LEFT OUTER JOIN test1_n8 a ON (a.value = test2_n5.value)
 JOIN test1_n8 b ON (b.key+test2_n5.key<= 102)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test2_n5
@@ -879,6 +930,9 @@ LEFT OUTER JOIN test1_n8 a ON (a.value = test2_n5.value)
 JOIN test1_n8 b ON (b.key+test2_n5.key<= 102)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -966,6 +1020,9 @@ JOIN test1_n8 a ON (a.key+test2_n5.key >= 100)
 RIGHT OUTER JOIN test1_n8 b ON (b.value = test2_n5.value)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test2_n5
@@ -973,6 +1030,9 @@ JOIN test1_n8 a ON (a.key+test2_n5.key >= 100)
 RIGHT OUTER JOIN test1_n8 b ON (b.value = test2_n5.value)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-7 depends on stages: Stage-9
@@ -1166,6 +1226,9 @@ RIGHT OUTER JOIN test1_n8 a ON (a.value = test2_n5.value)
 JOIN test1_n8 b ON (b.key+test2_n5.key<= 102)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test2_n5
@@ -1173,6 +1236,9 @@ RIGHT OUTER JOIN test1_n8 a ON (a.value = test2_n5.value)
 JOIN test1_n8 b ON (b.key+test2_n5.key<= 102)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1260,6 +1326,9 @@ JOIN test1_n8 a ON (a.key+test2_n5.key >= 100)
 FULL OUTER JOIN test1_n8 b ON (b.value = test2_n5.value)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test2_n5
@@ -1267,6 +1336,9 @@ JOIN test1_n8 a ON (a.key+test2_n5.key >= 100)
 FULL OUTER JOIN test1_n8 b ON (b.value = test2_n5.value)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-2 depends on stages: Stage-6
@@ -1396,6 +1468,9 @@ FULL OUTER JOIN test1_n8 a ON (a.value = test2_n5.value)
 JOIN test1_n8 b ON (b.key+test2_n5.key<= 102)
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n8
+PREHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test2_n5
@@ -1403,6 +1478,9 @@ FULL OUTER JOIN test1_n8 a ON (a.value = test2_n5.value)
 JOIN test1_n8 b ON (b.key+test2_n5.key<= 102)
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n8
+POSTHOOK: Input: default@test2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1

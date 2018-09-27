@@ -22,6 +22,8 @@ WHERE  (((cstring2 <= '10')
             AND ((csmallint = 9763215.5639)
                  OR (cstring1 LIKE '%a'))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cdouble,
        ctimestamp1,
@@ -46,6 +48,8 @@ WHERE  (((cstring2 <= '10')
             AND ((csmallint = 9763215.5639)
                  OR (cstring1 LIKE '%a'))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

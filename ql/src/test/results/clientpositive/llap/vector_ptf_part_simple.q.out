@@ -100,6 +100,8 @@ count(p_retailprice) over(partition by p_mfgr) as c,
 count(*) over(partition by p_mfgr) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr) as rn,
@@ -111,6 +113,8 @@ count(p_retailprice) over(partition by p_mfgr) as c,
 count(*) over(partition by p_mfgr) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -360,6 +364,8 @@ count(p_retailprice) over(partition by p_mfgr range between unbounded preceding 
 count(*) over(partition by p_mfgr range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr range between unbounded preceding and unbounded following) as rn,
@@ -371,6 +377,8 @@ count(p_retailprice) over(partition by p_mfgr range between unbounded preceding 
 count(*) over(partition by p_mfgr range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -589,6 +597,8 @@ count(p_retailprice) over(partition by p_mfgr rows between unbounded preceding a
 count(*) over(partition by p_mfgr rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr rows between unbounded preceding and unbounded following) as rn,
@@ -600,6 +610,8 @@ count(p_retailprice) over(partition by p_mfgr rows between unbounded preceding a
 count(*) over(partition by p_mfgr rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -818,6 +830,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name) as c,
 count(*) over(partition by p_mfgr order by p_name) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr order by p_name) as rn,
@@ -829,6 +843,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name) as c,
 count(*) over(partition by p_mfgr order by p_name) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1080,6 +1096,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name range between unbo
 count(*) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr order by p_name range between unbounded preceding and unbounded following) as rn,
@@ -1091,6 +1109,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name range between unbo
 count(*) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1310,6 +1330,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name rows between unbou
 count(*) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr order by p_name rows between unbounded preceding and unbounded following) as rn,
@@ -1321,6 +1343,8 @@ count(p_retailprice) over(partition by p_mfgr order by p_name rows between unbou
 count(*) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1540,6 +1564,8 @@ count(p_retailprice) over(order by p_name) as c,
 count(*) over(order by p_name) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(order by p_name) as rn,
@@ -1551,6 +1577,8 @@ count(p_retailprice) over(order by p_name) as c,
 count(*) over(order by p_name) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1803,6 +1831,8 @@ count(p_retailprice) over(order by p_name range between unbounded preceding and 
 count(*) over(order by p_name range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(order by p_name range between unbounded preceding and unbounded following) as rn,
@@ -1814,6 +1844,8 @@ count(p_retailprice) over(order by p_name range between unbounded preceding and 
 count(*) over(order by p_name range between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2034,6 +2066,8 @@ count(p_retailprice) over(order by p_name rows between unbounded preceding and c
 count(*) over(order by p_name rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(order by p_name rows between unbounded preceding and unbounded following) as rn,
@@ -2045,6 +2079,8 @@ count(p_retailprice) over(order by p_name rows between unbounded preceding and c
 count(*) over(order by p_name rows between unbounded preceding and current row) as cs
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2262,6 +2298,8 @@ max(p_retailprice) over(partition by p_mfgr) as ma,
 avg(p_retailprice) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr) as s,
@@ -2270,6 +2308,8 @@ max(p_retailprice) over(partition by p_mfgr) as ma,
 avg(p_retailprice) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2490,6 +2530,8 @@ max(p_retailprice) over(partition by p_mfgr range between unbounded preceding an
 avg(p_retailprice) over(partition by p_mfgr range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr range between unbounded preceding and current row) as s,
@@ -2498,6 +2540,8 @@ max(p_retailprice) over(partition by p_mfgr range between unbounded preceding an
 avg(p_retailprice) over(partition by p_mfgr range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2718,6 +2762,8 @@ max(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and
 avg(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and current row) as s,
@@ -2726,6 +2772,8 @@ max(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and
 avg(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2946,6 +2994,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
 avg(p_retailprice) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name) as s,
@@ -2954,6 +3004,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
 avg(p_retailprice) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3176,6 +3228,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name range between unboun
 avg(p_retailprice) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as s,
@@ -3184,6 +3238,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name range between unboun
 avg(p_retailprice) over(partition by p_mfgr order by p_name range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3406,6 +3462,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name rows between unbound
 avg(p_retailprice) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s,
@@ -3414,6 +3472,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name rows between unbound
 avg(p_retailprice) over(partition by p_mfgr order by p_name rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3636,6 +3696,8 @@ max(p_retailprice) over(order by p_name) as ma,
 avg(p_retailprice) over(order by p_name) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(order by p_name) as s,
@@ -3644,6 +3706,8 @@ max(p_retailprice) over(order by p_name) as ma,
 avg(p_retailprice) over(order by p_name) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3867,6 +3931,8 @@ max(p_retailprice) over(order by p_name range between unbounded preceding and cu
 avg(p_retailprice) over(order by p_name range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(order by p_name range between unbounded preceding and current row) as s,
@@ -3875,6 +3941,8 @@ max(p_retailprice) over(order by p_name range between unbounded preceding and cu
 avg(p_retailprice) over(order by p_name range between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4098,6 +4166,8 @@ max(p_retailprice) over(order by p_name rows between unbounded preceding and cur
 avg(p_retailprice) over(order by p_name rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(order by p_name rows between unbounded preceding and current row) as s,
@@ -4106,6 +4176,8 @@ max(p_retailprice) over(order by p_name rows between unbounded preceding and cur
 avg(p_retailprice) over(order by p_name rows between unbounded preceding and current row) as av 
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4371,6 +4443,8 @@ max(p_retailprice) over(partition by p_mfgr) as ma,
 avg(p_retailprice) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc_decimal
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc_decimal
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr) as s,
@@ -4379,6 +4453,8 @@ max(p_retailprice) over(partition by p_mfgr) as ma,
 avg(p_retailprice) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc_decimal
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc_decimal
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4599,6 +4675,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
 avg(p_retailprice) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc_decimal
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc_decimal
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name) as s,
@@ -4607,6 +4685,8 @@ max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
 avg(p_retailprice) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc_decimal
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc_decimal
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4849,6 +4929,8 @@ max(p_bigint) over(partition by p_mfgr) as ma,
 avg(p_bigint) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc_long
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc_long
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_bigint,
 sum(p_bigint) over(partition by p_mfgr) as s,
@@ -4857,6 +4939,8 @@ max(p_bigint) over(partition by p_mfgr) as ma,
 avg(p_bigint) over(partition by p_mfgr) as av 
 from vector_ptf_part_simple_orc_long
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc_long
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5077,6 +5161,8 @@ max(p_bigint) over(partition by p_mfgr order by p_name) as ma,
 avg(p_bigint) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc_long
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc_long
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_bigint,
 sum(p_bigint) over(partition by p_mfgr order by p_name) as s,
@@ -5085,6 +5171,8 @@ max(p_bigint) over(partition by p_mfgr order by p_name) as ma,
 avg(p_bigint) over(partition by p_mfgr order by p_name) as av 
 from vector_ptf_part_simple_orc_long
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc_long
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5304,11 +5392,15 @@ select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5503,11 +5595,15 @@ select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5704,11 +5800,15 @@ select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5904,11 +6004,15 @@ select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6236,11 +6340,15 @@ select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6435,11 +6543,15 @@ select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6636,11 +6748,15 @@ select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6838,11 +6954,15 @@ select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

@@ -168,12 +168,22 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_n0 a join srcbucket_mapjoin_part_n0 b 
 on a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n0
+PREHOOK: Input: default@srcbucket_mapjoin_part_n0
+PREHOOK: Input: default@srcbucket_mapjoin_part_n0@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_n0@ds=2008-04-09
+PREHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: query: explain extended
 insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_n0 a join srcbucket_mapjoin_part_n0 b 
 on a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n0
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n0
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n0@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n0@ds=2008-04-09
+POSTHOOK: Output: default@bucketmapjoin_tmp_result
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-1 depends on stages: Stage-9
@@ -772,12 +782,22 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_n0 a join srcbucket_mapjoin_part_2 b 
 on a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n0
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-09
+PREHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: query: explain extended
 insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_n0 a join srcbucket_mapjoin_part_2 b 
 on a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n0
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-09
+POSTHOOK: Output: default@bucketmapjoin_tmp_result
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-1 depends on stages: Stage-9

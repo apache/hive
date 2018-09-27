@@ -81,9 +81,15 @@ tjoin2stage.rnum	tjoin2stage.c1	tjoin2stage.c2
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: false
@@ -177,9 +183,15 @@ tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: false
@@ -273,9 +285,15 @@ tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -433,9 +451,15 @@ tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -593,9 +617,15 @@ tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -757,9 +787,15 @@ tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

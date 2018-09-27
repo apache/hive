@@ -23,6 +23,10 @@ select
    rank_within_parent
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select   
     sum(ws_net_paid) as total_sum
@@ -48,6 +52,10 @@ select
    rank_within_parent
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

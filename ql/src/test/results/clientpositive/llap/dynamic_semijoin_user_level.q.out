@@ -150,8 +150,22 @@ POSTHOOK: Output: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -225,8 +239,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.ds)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.ds)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -291,8 +319,24 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -364,8 +408,24 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -466,8 +526,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -528,8 +602,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -615,8 +703,24 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -694,8 +798,24 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -799,8 +919,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN extended select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN extended select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM (SELECT `key`
 FROM `default`.`srcpart_date_n9`
@@ -1168,8 +1302,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1227,8 +1375,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1286,8 +1448,24 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1359,8 +1537,24 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1435,11 +1629,27 @@ PREHOOK: query: explain select * from alltypesorc_int_n2 join
                                        union all
                                        select srcpart_small_n4.key1 as key from srcpart_small_n4) unionsrc on (alltypesorc_int_n2.cstring = unionsrc.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from alltypesorc_int_n2 join
                                       (select srcpart_date_n9.key as key from srcpart_date_n9
                                        union all
                                        select srcpart_small_n4.key1 as key from srcpart_small_n4) unionsrc on (alltypesorc_int_n2.cstring = unionsrc.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

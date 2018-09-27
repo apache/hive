@@ -107,8 +107,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(a) from p where c=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@p
+PREHOOK: Input: default@p@c=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(a) from p where c=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p@c=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -171,8 +177,12 @@ POSTHOOK: Output: default@p@c=1
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(a) from p where c=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@p
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(a) from p where c=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@p
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -242,8 +252,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(a) from p where c=4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@p
+PREHOOK: Input: default@p@c=4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(a) from p where c=4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p@c=4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -336,8 +352,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(a) from p where c=100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@p
+PREHOOK: Input: default@p@c=100
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(a) from p where c=100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p@c=100
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -400,8 +422,14 @@ POSTHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(a) from p where c=100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@p
+PREHOOK: Input: default@p@c=100
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(a) from p where c=100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p@c=100
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -511,8 +539,12 @@ POSTHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(a) from p where c=100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@p
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(a) from p where c=100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@p
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

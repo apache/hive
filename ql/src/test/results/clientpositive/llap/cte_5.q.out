@@ -48,12 +48,18 @@ select a.colnum
 from mydb.q1_n0 as a join q1_n0 as b
 on a.colnum=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: mydb@q1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1_n0 as (select * from src where key= '5')
 select a.colnum
 from mydb.q1_n0 as a join q1_n0 as b
 on a.colnum=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: mydb@q1_n0
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage

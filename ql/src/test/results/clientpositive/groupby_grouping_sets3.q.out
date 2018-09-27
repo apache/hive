@@ -25,9 +25,13 @@ POSTHOOK: Output: default@t1_n118
 PREHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n118
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n118
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -85,9 +89,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by cube(a, b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n118
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by cube(a, b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n118
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -170,9 +178,13 @@ NULL	NULL	3.8333333333333335	12
 PREHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n118
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n118
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

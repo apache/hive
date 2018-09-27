@@ -79,11 +79,21 @@ select a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and a.ds="2008-04-08" and b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, a.value, b.value 
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and a.ds="2008-04-08" and b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part
+POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -158,11 +168,21 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and a.ds="2008-04-08" and b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and a.ds="2008-04-08" and b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part
+POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3

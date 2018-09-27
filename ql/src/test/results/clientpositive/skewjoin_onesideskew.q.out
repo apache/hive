@@ -75,9 +75,17 @@ POSTHOOK: Lineage: nonskewtable.value SCRIPT []
 PREHOOK: query: EXPLAIN
 CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@nonskewtable
+PREHOOK: Input: default@skewtable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@result_n1
 POSTHOOK: query: EXPLAIN
 CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@nonskewtable
+POSTHOOK: Input: default@skewtable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@result_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-5 depends on stages: Stage-1 , consists of Stage-6, Stage-0

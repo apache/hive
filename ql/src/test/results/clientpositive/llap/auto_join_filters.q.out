@@ -57,8 +57,12 @@ POSTHOOK: Input: default@myinput1_n5
 Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -307,8 +311,12 @@ POSTHOOK: Input: default@myinput1_n5
 4939870
 PREHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -739,8 +747,12 @@ POSTHOOK: Input: default@myinput1_n5
 4939870
 PREHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

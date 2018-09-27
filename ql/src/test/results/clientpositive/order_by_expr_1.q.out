@@ -39,6 +39,8 @@ from t_n5
 order by interval '2-2' year to month + interval '3-3' year to month
 limit 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   interval '2-2' year to month + interval '3-3' year to month,
@@ -47,6 +49,8 @@ from t_n5
 order by interval '2-2' year to month + interval '3-3' year to month
 limit 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -301,8 +305,12 @@ POSTHOOK: Input: default@t_n5
 -100
 PREHOOK: query: explain select b from t_n5 order by 0-b, a+1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain select b from t_n5 order by 0-b, a+1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -464,8 +472,12 @@ POSTHOOK: Input: default@t_n5
 20	21	-100	-200
 PREHOOK: query: explain select a, a+1 as c, b, 2*b from t_n5 order by a, a+1, 0-b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a, a+1 as c, b, 2*b from t_n5 order by a, a+1, 0-b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

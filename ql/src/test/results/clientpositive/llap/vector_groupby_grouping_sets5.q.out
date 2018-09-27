@@ -32,10 +32,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n33 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n33
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n33 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n33
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -223,10 +227,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n33 group by a, b) subq1 group by cube(a, b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n33
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n33 group by a, b) subq1 group by cube(a, b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n33
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -440,10 +448,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n33 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n33
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1_n33 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n33
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

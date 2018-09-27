@@ -55,8 +55,14 @@ POSTHOOK: Output: default@table3_n0
 POSTHOOK: Lineage: table3_n0.id SCRIPT []
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id where table1_n10.val = 't1val01'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id where table1_n10.val = 't1val01'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -155,8 +161,16 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	t1val01	val106
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id left semi join table3_n0 on table1_n10.dimid = table3_n0.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table2_n6
+PREHOOK: Input: default@table3_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id left semi join table3_n0 on table1_n10.dimid = table3_n0.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table2_n6
+POSTHOOK: Input: default@table3_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -294,8 +308,16 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	t1val01	t2val203
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table2_n6
+PREHOOK: Input: default@table3_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table2_n6
+POSTHOOK: Input: default@table3_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -432,8 +454,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	t1val01	t2val203
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -525,8 +553,14 @@ POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -620,8 +654,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	t1val01	val104
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -713,8 +753,14 @@ POSTHOOK: Input: default@table3_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -808,8 +854,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	t1val01	val104
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n10
+PREHOOK: Input: default@table3_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n10
+POSTHOOK: Input: default@table3_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

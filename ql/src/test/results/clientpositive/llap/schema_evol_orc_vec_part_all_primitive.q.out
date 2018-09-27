@@ -245,9 +245,15 @@ insert_num	boolean1	boolean1_1	boolean1_2	boolean1_3	boolean1_4	boolean1_5	boole
 PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_change_various_various_boolean_to_bigint_n0
+PREHOOK: Input: default@part_change_various_various_boolean_to_bigint_n0@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint_n0
+POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint_n0@part=1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -496,9 +502,15 @@ insert_num	decimal1	decimal1_1	decimal1_2	decimal1_3	decimal1_4	decimal1_5	decim
 PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_change_various_various_decimal_to_double_n0
+PREHOOK: Input: default@part_change_various_various_decimal_to_double_n0@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_change_various_various_decimal_to_double_n0
+POSTHOOK: Input: default@part_change_various_various_decimal_to_double_n0@part=1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -669,9 +681,15 @@ insert_num	timestamp1	timestamp1_1	timestamp1_2	timestamp1_3	timestamp1_4	timest
 PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_change_various_various_timestamp_n0
+PREHOOK: Input: default@part_change_various_various_timestamp_n0@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_change_various_various_timestamp_n0
+POSTHOOK: Input: default@part_change_various_various_timestamp_n0@part=1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -826,9 +844,15 @@ insert_num	date1	date1_1	date1_2	date1_3	_c5
 PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_change_various_various_date_n0
+PREHOOK: Input: default@part_change_various_various_date_n0@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_change_various_various_date_n0
+POSTHOOK: Input: default@part_change_various_various_date_n0@part=1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1064,9 +1088,17 @@ same_type1_c_txt_n0.insert_num	same_type1_c_txt_n0.c1	same_type1_c_txt_n0.c2	sam
 PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_change_same_type_different_params_n0
+PREHOOK: Input: default@part_change_same_type_different_params_n0@part=1
+PREHOOK: Input: default@part_change_same_type_different_params_n0@part=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_change_same_type_different_params_n0
+POSTHOOK: Input: default@part_change_same_type_different_params_n0@part=1
+POSTHOOK: Input: default@part_change_same_type_different_params_n0@part=2
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

@@ -3,11 +3,15 @@ SELECT src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 WHERE src1.key = 97
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 WHERE src1.key = 97
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -114,10 +118,14 @@ PREHOOK: query: EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
 INSERT OVERWRITE TABLE dest SELECT src1.key, src3.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest
 POSTHOOK: query: EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
 INSERT OVERWRITE TABLE dest SELECT src1.key, src3.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -369,6 +377,12 @@ SELECT t3.c1, t3.c3, t5.c5 FROM t3 JOIN e AS t5 ON t3.c2 = t5.c6
 )
 SELECT * FROM t4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a
+PREHOOK: Input: default@b
+PREHOOK: Input: default@c
+PREHOOK: Input: default@d
+PREHOOK: Input: default@e
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 WITH t1 AS (
 SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3 FROM a JOIN b ON a.c2 = b.c4
@@ -384,6 +398,12 @@ SELECT t3.c1, t3.c3, t5.c5 FROM t3 JOIN e AS t5 ON t3.c2 = t5.c6
 )
 SELECT * FROM t4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a
+POSTHOOK: Input: default@b
+POSTHOOK: Input: default@c
+POSTHOOK: Input: default@d
+POSTHOOK: Input: default@e
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2

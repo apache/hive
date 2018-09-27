@@ -16,10 +16,17 @@ PREHOOK: query: EXPLAIN
 CREATE MATERIALIZED VIEW partition_mv_1 PARTITIONED ON (key) AS
 SELECT value, key FROM src_txn where key > 200 and key < 250
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partition_mv_1
+PREHOOK: Output: default@partition_mv_1
 POSTHOOK: query: EXPLAIN
 CREATE MATERIALIZED VIEW partition_mv_1 PARTITIONED ON (key) AS
 SELECT value, key FROM src_txn where key > 200 and key < 250
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partition_mv_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -212,9 +219,15 @@ Outdated for Rewriting:	No
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_mv_1 where key = 238
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_mv_1
+PREHOOK: Input: default@partition_mv_1@key=238
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_mv_1 where key = 238
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_mv_1
+POSTHOOK: Input: default@partition_mv_1@key=238
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -323,9 +336,15 @@ POSTHOOK: Lineage: partition_mv_2 PARTITION(value=val_249).key SIMPLE [(src_txn)
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_mv_2 where value = 'val_238'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_mv_2
+PREHOOK: Input: default@partition_mv_2@value=val_238
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_mv_2 where value = 'val_238'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_mv_2
+POSTHOOK: Input: default@partition_mv_2@value=val_238
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -357,9 +376,77 @@ POSTHOOK: Input: default@partition_mv_2@value=val_238
 PREHOOK: query: EXPLAIN
 SELECT value FROM partition_mv_2 where key = 238
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_mv_2
+PREHOOK: Input: default@partition_mv_2@value=val_201
+PREHOOK: Input: default@partition_mv_2@value=val_202
+PREHOOK: Input: default@partition_mv_2@value=val_203
+PREHOOK: Input: default@partition_mv_2@value=val_205
+PREHOOK: Input: default@partition_mv_2@value=val_207
+PREHOOK: Input: default@partition_mv_2@value=val_208
+PREHOOK: Input: default@partition_mv_2@value=val_209
+PREHOOK: Input: default@partition_mv_2@value=val_213
+PREHOOK: Input: default@partition_mv_2@value=val_214
+PREHOOK: Input: default@partition_mv_2@value=val_216
+PREHOOK: Input: default@partition_mv_2@value=val_217
+PREHOOK: Input: default@partition_mv_2@value=val_218
+PREHOOK: Input: default@partition_mv_2@value=val_219
+PREHOOK: Input: default@partition_mv_2@value=val_221
+PREHOOK: Input: default@partition_mv_2@value=val_222
+PREHOOK: Input: default@partition_mv_2@value=val_223
+PREHOOK: Input: default@partition_mv_2@value=val_224
+PREHOOK: Input: default@partition_mv_2@value=val_226
+PREHOOK: Input: default@partition_mv_2@value=val_228
+PREHOOK: Input: default@partition_mv_2@value=val_229
+PREHOOK: Input: default@partition_mv_2@value=val_230
+PREHOOK: Input: default@partition_mv_2@value=val_233
+PREHOOK: Input: default@partition_mv_2@value=val_235
+PREHOOK: Input: default@partition_mv_2@value=val_237
+PREHOOK: Input: default@partition_mv_2@value=val_238
+PREHOOK: Input: default@partition_mv_2@value=val_239
+PREHOOK: Input: default@partition_mv_2@value=val_241
+PREHOOK: Input: default@partition_mv_2@value=val_242
+PREHOOK: Input: default@partition_mv_2@value=val_244
+PREHOOK: Input: default@partition_mv_2@value=val_247
+PREHOOK: Input: default@partition_mv_2@value=val_248
+PREHOOK: Input: default@partition_mv_2@value=val_249
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT value FROM partition_mv_2 where key = 238
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_mv_2
+POSTHOOK: Input: default@partition_mv_2@value=val_201
+POSTHOOK: Input: default@partition_mv_2@value=val_202
+POSTHOOK: Input: default@partition_mv_2@value=val_203
+POSTHOOK: Input: default@partition_mv_2@value=val_205
+POSTHOOK: Input: default@partition_mv_2@value=val_207
+POSTHOOK: Input: default@partition_mv_2@value=val_208
+POSTHOOK: Input: default@partition_mv_2@value=val_209
+POSTHOOK: Input: default@partition_mv_2@value=val_213
+POSTHOOK: Input: default@partition_mv_2@value=val_214
+POSTHOOK: Input: default@partition_mv_2@value=val_216
+POSTHOOK: Input: default@partition_mv_2@value=val_217
+POSTHOOK: Input: default@partition_mv_2@value=val_218
+POSTHOOK: Input: default@partition_mv_2@value=val_219
+POSTHOOK: Input: default@partition_mv_2@value=val_221
+POSTHOOK: Input: default@partition_mv_2@value=val_222
+POSTHOOK: Input: default@partition_mv_2@value=val_223
+POSTHOOK: Input: default@partition_mv_2@value=val_224
+POSTHOOK: Input: default@partition_mv_2@value=val_226
+POSTHOOK: Input: default@partition_mv_2@value=val_228
+POSTHOOK: Input: default@partition_mv_2@value=val_229
+POSTHOOK: Input: default@partition_mv_2@value=val_230
+POSTHOOK: Input: default@partition_mv_2@value=val_233
+POSTHOOK: Input: default@partition_mv_2@value=val_235
+POSTHOOK: Input: default@partition_mv_2@value=val_237
+POSTHOOK: Input: default@partition_mv_2@value=val_238
+POSTHOOK: Input: default@partition_mv_2@value=val_239
+POSTHOOK: Input: default@partition_mv_2@value=val_241
+POSTHOOK: Input: default@partition_mv_2@value=val_242
+POSTHOOK: Input: default@partition_mv_2@value=val_244
+POSTHOOK: Input: default@partition_mv_2@value=val_247
+POSTHOOK: Input: default@partition_mv_2@value=val_248
+POSTHOOK: Input: default@partition_mv_2@value=val_249
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -465,9 +552,12 @@ POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Output: default@partition_mv_1
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -837,9 +927,14 @@ POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_3 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_txn
+PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: default@partition_mv_3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_3 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_txn
+POSTHOOK: Input: default@src_txn_2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

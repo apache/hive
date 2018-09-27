@@ -92,8 +92,14 @@ POSTHOOK: Output: default@dsrv2_small
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_bigint = b.partkey_bigint)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_bigint = b.partkey_bigint)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -228,8 +234,14 @@ POSTHOOK: Input: default@dsrv2_small
 20
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -497,8 +509,14 @@ POSTHOOK: Input: default@dsrv2_small
 20
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_double = b.partkey_double)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_double = b.partkey_double)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -633,8 +651,14 @@ POSTHOOK: Input: default@dsrv2_small
 20
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_date = b.shipdate_date)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_date = b.shipdate_date)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -769,8 +793,14 @@ POSTHOOK: Input: default@dsrv2_small
 23
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_ts = b.shipdate_ts)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_ts = b.shipdate_ts)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -905,8 +935,14 @@ POSTHOOK: Input: default@dsrv2_small
 23
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_string = b.shipdate_string)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_string = b.shipdate_string)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1041,8 +1077,14 @@ POSTHOOK: Input: default@dsrv2_small
 23
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_char = b.shipdate_char)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_char = b.shipdate_char)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1177,8 +1219,14 @@ POSTHOOK: Input: default@dsrv2_small
 23
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_varchar = b.shipdate_varchar)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_varchar = b.shipdate_varchar)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

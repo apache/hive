@@ -100,6 +100,8 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(1) from sih_src_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sih_src_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -117,6 +119,8 @@ PREHOOK: Input: default@sih_src_n1
 1500
 PREHOOK: query: explain select count(1) from sih_src_n1 tablesample(1 percent)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sih_src_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -167,6 +171,8 @@ PREHOOK: Input: default@sih_src_n1
 25
 PREHOOK: query: explain select count(1) from sih_src_n1 tablesample(10 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sih_src_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

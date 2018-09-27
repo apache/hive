@@ -10,6 +10,9 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   a.*
@@ -22,6 +25,9 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -204,6 +210,9 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   a.*
@@ -216,6 +225,9 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -398,6 +410,9 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   a.*
@@ -410,6 +425,9 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -5,6 +5,11 @@ FROM
  FROM src1 x JOIN src y ON (x.key = y.key)) subq
  JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT subq.key1, z.value
 FROM
@@ -12,6 +17,11 @@ FROM
  FROM src1 x JOIN src y ON (x.key = y.key)) subq
  JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -252,6 +262,11 @@ FROM
  FROM src1 x JOIN src y ON (x.key = y.key)) subq
  JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN 
 SELECT subq.key1, z.value
 FROM
@@ -259,6 +274,11 @@ FROM
  FROM src1 x JOIN src y ON (x.key = y.key)) subq
  JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

@@ -2,10 +2,14 @@ PREHOOK: query: explain
 select sum(l_extendedprice) from lineitem q0 where l_discount
 between cast('0.05' as decimal(3,2)) and cast('0.07' as decimal(3,2))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(l_extendedprice) from lineitem q0 where l_discount
 between cast('0.05' as decimal(3,2)) and cast('0.07' as decimal(3,2))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -70,10 +74,14 @@ PREHOOK: query: explain
 select sum(l_extendedprice) from lineitem q1 where l_discount
 between 0.06 - 0.01 and 0.06 + 0.01
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(l_extendedprice) from lineitem q1 where l_discount
 between 0.06 - 0.01 and 0.06 + 0.01
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -175,10 +183,14 @@ PREHOOK: query: explain
 select sum(l_extendedprice) from lineitem q10 where l_discount
 between cast('0.05' as decimal(3,2)) and cast('0.07' as decimal(3,2))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(l_extendedprice) from lineitem q10 where l_discount
 between cast('0.05' as decimal(3,2)) and cast('0.07' as decimal(3,2))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -243,10 +255,14 @@ PREHOOK: query: explain
 select sum(l_extendedprice) from lineitem q11 where l_discount
 between 0.06 - 0.01 and 0.06 + 0.01
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(l_extendedprice) from lineitem q11 where l_discount
 between 0.06 - 0.01 and 0.06 + 0.01
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

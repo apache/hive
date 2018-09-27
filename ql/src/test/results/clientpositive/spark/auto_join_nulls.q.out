@@ -190,8 +190,12 @@ POSTHOOK: Input: default@myinput1_n2
 4543526
 PREHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

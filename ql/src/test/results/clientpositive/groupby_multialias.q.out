@@ -11,11 +11,15 @@ select t1_n150.a as a1, min(t1_n150.a) as a
 from t1_n150
 group by t1_n150.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n150
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select t1_n150.a as a1, min(t1_n150.a) as a
 from t1_n150
 group by t1_n150.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n150
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

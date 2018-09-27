@@ -48,10 +48,14 @@ PREHOOK: query: explain vectorization detail
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -193,11 +197,15 @@ select *
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a 
 where r < 4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a 
 where r < 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -393,11 +401,15 @@ select *
 from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n8
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * 
 from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n8
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -639,9 +651,13 @@ a.t	a.f	a.r
 PREHOOK: query: explain vectorization detail
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: false
@@ -764,10 +780,16 @@ PREHOOK: query: explain vectorization detail
 create table sD ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sD
 POSTHOOK: query: explain vectorization detail
 create table sD ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sD
 Explain
 PLAN VECTORIZATION:
   enabled: true

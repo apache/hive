@@ -52,12 +52,20 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -226,12 +234,20 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -446,12 +462,20 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -658,12 +682,20 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -866,12 +898,20 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1074,12 +1114,20 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1282,12 +1330,20 @@ FROM (SELECT z.key AS key, count(1) AS cnt
       FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
       FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1490,12 +1546,20 @@ FROM (SELECT z.key AS key, count(1) AS cnt
       FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
       FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1698,12 +1762,20 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1906,12 +1978,20 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2114,12 +2194,20 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2322,12 +2410,20 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2530,12 +2626,20 @@ FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

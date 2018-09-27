@@ -114,7 +114,7 @@ public class Utils {
     // Use ZooKeeper for indirection while using dynamic service discovery
     public static final String SERVICE_DISCOVERY_MODE_ZOOKEEPER = "zooKeeper";
     public static final String SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA = "zooKeeperHA";
-    static final String ZOOKEEPER_NAMESPACE = "zooKeeperNamespace";
+    public static final String ZOOKEEPER_NAMESPACE = "zooKeeperNamespace";
     // Default namespace value on ZooKeeper.
     // This value is used if the param "zooKeeperNamespace" is not specified in the JDBC Uri.
     static final String ZOOKEEPER_DEFAULT_NAMESPACE = "hiveserver2";

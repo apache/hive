@@ -220,6 +220,10 @@ PREHOOK: query: explain vectorization select
  order by s_state
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_n0
+PREHOOK: Input: default@store_n2
+PREHOOK: Input: default@store_sales_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select
         s_state, count(1)
  from store_sales_n2,
@@ -232,6 +236,10 @@ POSTHOOK: query: explain vectorization select
  order by s_state
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_n0
+POSTHOOK: Input: default@store_n2
+POSTHOOK: Input: default@store_sales_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -100,8 +100,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(1) from calendar_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from calendar_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -114,8 +118,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select max(year) from calendar_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendar_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -235,8 +243,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendar_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendar_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -303,8 +315,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendar_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendar_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -370,8 +386,12 @@ POSTHOOK: Input: default@calendar_n0
 2015
 PREHOOK: query: explain select max(month) from calendar_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(month) from calendar_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -482,8 +502,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendar_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendar_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -505,8 +529,12 @@ POSTHOOK: Input: default@calendar_n0
 2015
 PREHOOK: query: explain select max(month) from calendar_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(month) from calendar_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -617,8 +645,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(month) from calendar_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(month) from calendar_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendar_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -693,8 +725,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendarp where p=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendarp
+PREHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendarp where p=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendarp
+POSTHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -813,8 +851,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendarp where p=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendarp
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendarp where p=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendarp
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -872,8 +914,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendarp where p=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendarp
+PREHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendarp where p=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendarp
+POSTHOOK: Input: default@calendarp@p=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

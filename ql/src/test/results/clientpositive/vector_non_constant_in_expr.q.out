@@ -1,7 +1,11 @@
 PREHOOK: query: explain vectorization SELECT * FROM alltypesorc WHERE cint in (ctinyint, cbigint)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization SELECT * FROM alltypesorc WHERE cint in (ctinyint, cbigint)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

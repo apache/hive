@@ -37,9 +37,15 @@ POSTHOOK: Output: default@t2_n21
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n31 a JOIN T2_n21 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n31
+PREHOOK: Input: default@t2_n21
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n31 a JOIN T2_n21 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n31
+POSTHOOK: Input: default@t2_n21
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
   Stage-2 depends on stages: Stage-8

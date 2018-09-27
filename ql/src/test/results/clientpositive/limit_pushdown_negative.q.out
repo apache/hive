@@ -1,7 +1,11 @@
 PREHOOK: query: explain select * from src a join src b on a.key=b.key limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src a join src b on a.key=b.key limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -72,8 +76,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select value, sum(key) as sum from src group by value having sum > 100 limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select value, sum(key) as sum from src group by value having sum > 100 limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -130,8 +138,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -221,10 +233,16 @@ PREHOOK: query: EXPLAIN FROM src
 INSERT OVERWRITE TABLE dest_2 SELECT value, sum(key) GROUP BY value
 INSERT OVERWRITE TABLE dest_3 SELECT value, sum(key) GROUP BY value limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest_2
+PREHOOK: Output: default@dest_3
 POSTHOOK: query: EXPLAIN FROM src
 INSERT OVERWRITE TABLE dest_2 SELECT value, sum(key) GROUP BY value
 INSERT OVERWRITE TABLE dest_3 SELECT value, sum(key) GROUP BY value limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest_2
+POSTHOOK: Output: default@dest_3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

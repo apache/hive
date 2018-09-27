@@ -21,6 +21,9 @@ JOIN
   (SELECT src.key,src.value FROM src JOIN T1_n94 ON src.key=T1_n94.key) b
 ON a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@t1_n94
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*) FROM
   (SELECT src1.key,src1.value FROM src src1 JOIN src src2 ON src1.key=src2.key) a
@@ -28,6 +31,9 @@ JOIN
   (SELECT src.key,src.value FROM src JOIN T1_n94 ON src.key=T1_n94.key) b
 ON a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t1_n94
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
   Stage-1 depends on stages: Stage-8

@@ -212,8 +212,12 @@ POSTHOOK: Input: default@b_n11
 2	20
 PREHOOK: query: explain select * from src except all select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src except all select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -386,8 +390,12 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from src except all select * from src except distinct select * from src except distinct select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src except all select * from src except distinct select * from src except distinct select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-6
@@ -816,8 +824,14 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: explain select value from a_n15 group by value except distinct select key from b_n11 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n15
+PREHOOK: Input: default@b_n11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select value from a_n15 group by value except distinct select key from b_n11 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n15
+POSTHOOK: Input: default@b_n11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3

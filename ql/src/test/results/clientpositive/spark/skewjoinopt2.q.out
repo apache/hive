@@ -37,9 +37,15 @@ POSTHOOK: Output: default@t2_n81
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -179,9 +185,15 @@ POSTHOOK: Input: default@t2_n81
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -323,9 +335,15 @@ POSTHOOK: Input: default@t2_n81
 PREHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -489,9 +507,15 @@ POSTHOOK: Input: default@t2_n81
 PREHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

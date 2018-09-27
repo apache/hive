@@ -394,6 +394,7 @@ public class TestOperators extends TestCase {
       // ensure that both of the partitions are in the complete list.
       String[] dirs = job.get("hive.complete.dir.list").split("\t");
       assertEquals(2, dirs.length);
+      Arrays.sort(dirs);
       assertEquals(true, dirs[0].endsWith("/state=CA"));
       assertEquals(true, dirs[1].endsWith("/state=OR"));
       return super.getSplits(job, splits);

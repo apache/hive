@@ -94,8 +94,14 @@ POSTHOOK: Input: default@daysales@dt=2001-01-03
 3	2001-01-03
 PREHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' and customer=1, false)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' and customer=1, false)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `customer`, `dt`
 FROM `default`.`daysales`
 WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
@@ -168,8 +174,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' or customer=3, false)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' or customer=3, false)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `customer`, `dt`
 FROM `default`.`daysales`
 WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)
@@ -288,8 +302,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' or customer=3, false)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@daysales
+PREHOOK: Input: default@daysales@dt=2001-01-01
+PREHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from daysales where nvl(dt='2001-01-01' or customer=3, false)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@daysales
+POSTHOOK: Input: default@daysales@dt=2001-01-01
+POSTHOOK: Input: default@daysales@dt=2001-01-03
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `customer`, `dt`
 FROM `default`.`daysales`
 WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)

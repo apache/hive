@@ -1628,6 +1628,10 @@ public class HiveConf extends Configuration {
                                                                  + " expressed as multiple of Local FS read cost"),
     HIVE_CBO_SHOW_WARNINGS("hive.cbo.show.warnings", true,
          "Toggle display of CBO warnings like missing column stats"),
+    HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS("hive.cbo.stats.correlated.multi.key.joins", false,
+        "When CBO estimates output rows for a join involving multiple columns, the default behavior assumes" +
+            "the columns are independent. Setting this flag to true will cause the estimator to assume" +
+            "the columns are correlated."),
     AGGR_JOIN_TRANSPOSE("hive.transpose.aggr.join", false, "push aggregates through join"),
     SEMIJOIN_CONVERSION("hive.optimize.semijoin.conversion", true, "convert group by followed by inner equi join into semijoin"),
     HIVE_COLUMN_ALIGNMENT("hive.order.columnalignment", true, "Flag to control whether we want to try to align" +
@@ -2064,13 +2068,21 @@ public class HiveConf extends Configuration {
     HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE("hive.mapjoin.followby.gby.localtask.max.memory.usage", (float) 0.55,
         "This number means how much memory the local task can take to hold the key/value into an in-memory hash table \n" +
         "when this map join is followed by a group by. If the local task's memory usage is more than this number, \n" +
-        "the local task will abort by itself. It means the data of the small table is too large to be held in memory."),
+        "the local task will abort by itself. It means the data of the small table is too large " +
+        "to be held in memory. Does not apply to Hive-on-Spark (replaced by " +
+        "hive.mapjoin.max.gc.time.percentage)"),
     HIVEHASHTABLEMAXMEMORYUSAGE("hive.mapjoin.localtask.max.memory.usage", (float) 0.90,
         "This number means how much memory the local task can take to hold the key/value into an in-memory hash table. \n" +
         "If the local task's memory usage is more than this number, the local task will abort by itself. \n" +
-        "It means the data of the small table is too large to be held in memory."),
+        "It means the data of the small table is too large to be held in memory. Does not apply to " +
+        "Hive-on-Spark (replaced by hive.mapjoin.max.gc.time.percentage)"),
     HIVEHASHTABLESCALE("hive.mapjoin.check.memory.rows", (long)100000,
         "The number means after how many rows processed it needs to check the memory usage"),
+    HIVEHASHTABLEMAXGCTIMEPERCENTAGE("hive.mapjoin.max.gc.time.percentage", (float) 0.60,
+        new RangeValidator(0.0f, 1.0f), "This number means how much time (what percentage, " +
+        "0..1, of wallclock time) the JVM is allowed to spend in garbage collection when running " +
+        "the local task. If GC time percentage exceeds this number, the local task will abort by " +
+        "itself. Applies to Hive-on-Spark only"),
 
     HIVEDEBUGLOCALTASK("hive.debug.localtask",false, ""),
 

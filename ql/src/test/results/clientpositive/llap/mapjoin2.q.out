@@ -30,9 +30,13 @@ Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain
 select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  left outer join  (select * from tbl_n1 where 1 = 2) b on a.n = b.n
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  left outer join  (select * from tbl_n1 where 1 = 2) b on a.n = b.n
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -120,9 +124,13 @@ Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: explain
 select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl_n1 where 2 = 1) a  right outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl_n1 where 2 = 1) a  right outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -213,9 +221,13 @@ Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 PREHOOK: query: explain
 select isnull(a.n), isnull(a.t), isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  full outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select isnull(a.n), isnull(a.t), isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  full outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -313,9 +325,13 @@ Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain
 select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -392,9 +408,13 @@ Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain
 select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a left outer join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a left outer join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -475,9 +495,13 @@ Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: explain
 select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a right outer join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a right outer join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -561,9 +585,13 @@ Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: explain
 select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a right outer join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a right outer join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

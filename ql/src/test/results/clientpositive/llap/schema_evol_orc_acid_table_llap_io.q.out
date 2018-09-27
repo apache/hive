@@ -60,9 +60,13 @@ col1	col2	col3	col4
 PREHOOK: query: explain vectorization only detail
 select insert_num,a,b,c from table_add_int_permute_select_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_add_int_permute_select_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only detail
 select insert_num,a,b,c from table_add_int_permute_select_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_add_int_permute_select_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: false

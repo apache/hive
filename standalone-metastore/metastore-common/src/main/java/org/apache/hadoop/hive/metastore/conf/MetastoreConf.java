@@ -392,6 +392,10 @@ public class MetastoreConf {
             "tables or partitions to be compacted once they are determined to need compaction.\n" +
             "It will also increase the background load on the Hadoop cluster as more MapReduce jobs\n" +
             "will be running in the background."),
+    COMPACTOR_MINOR_STATS_COMPRESSION(
+        "metastore.compactor.enable.stats.compression",
+        "metastore.compactor.enable.stats.compression", true,
+        "Can be used to disable compression and ORC indexes for files produced by minor compaction."),
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
         "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
         "Driver class name for a JDBC metastore"),

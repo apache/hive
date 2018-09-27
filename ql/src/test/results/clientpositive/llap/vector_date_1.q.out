@@ -75,6 +75,8 @@ select
   dt2 > dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -89,6 +91,8 @@ select
   dt2 > dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -240,6 +244,8 @@ select
   dt2 < dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -254,6 +260,8 @@ select
   dt2 < dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -405,6 +413,8 @@ select
   date '1970-01-01' < dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1,
@@ -419,6 +429,8 @@ select
   date '1970-01-01' < dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -570,6 +582,8 @@ select
   date '1970-01-01' > dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1,
@@ -584,6 +598,8 @@ select
   date '1970-01-01' > dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -734,6 +750,8 @@ where
   and dt2 >= dt1
 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2
@@ -747,6 +765,8 @@ where
   and dt2 >= dt1
 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -903,6 +923,8 @@ where
   and date '1970-01-01' <= dt1
 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2
@@ -918,6 +940,8 @@ where
   and date '1970-01-01' <= dt1
 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1028,9 +1052,13 @@ dt1	dt2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

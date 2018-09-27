@@ -32,9 +32,13 @@ t1_n41.a	t1_n41.b	t1_n41.c
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n41 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n41 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -116,9 +120,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n41 group by cube(a, b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n41 group by cube(a, b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -200,9 +208,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n41 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n41 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -284,9 +296,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n41 GROUP BY a, b GROUPING SETS (a, (a, b))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n41 GROUP BY a, b GROUPING SETS (a, (a, b))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -364,9 +380,13 @@ a	b	_c2
 PREHOOK: query: EXPLAIN
 SELECT a FROM T1_n41 GROUP BY a, b, c GROUPING SETS (a, b, c)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a FROM T1_n41 GROUP BY a, b, c GROUPING SETS (a, b, c)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -444,9 +464,13 @@ NULL
 PREHOOK: query: EXPLAIN
 SELECT a FROM T1_n41 GROUP BY a GROUPING SETS ((a), (a))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a FROM T1_n41 GROUP BY a GROUPING SETS ((a), (a))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -510,9 +534,13 @@ a
 PREHOOK: query: EXPLAIN
 SELECT a + b, count(*) FROM T1_n41 GROUP BY a + b GROUPING SETS (a+b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a + b, count(*) FROM T1_n41 GROUP BY a + b GROUPING SETS (a+b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n41
+#### A masked pattern was here ####
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

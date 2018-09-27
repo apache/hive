@@ -204,6 +204,16 @@
 </property>
 
 <property>
+  <name>hive.mapjoin.max.gc.time.percentage</name>
+  <value>0.99</value>
+  <description>
+  Maximum percentage of wallclock time that the JVM can spend in GC.
+  If this limit is exceeded, the local task will abort by itself.
+  Tests may run in very stressed environment, so this number is set very high to avoid false negatives.
+  </description>
+</property>
+
+<property>
   <name>hive.input.format</name>
   <value>org.apache.hadoop.hive.ql.io.CombineHiveInputFormat</value>
   <description>The default input format, if it is not specified, the system assigns it. It is set to HiveInputFormat for hadoop versions 17, 18 and 19, whereas it is set to CombineHiveInputFormat for hadoop 20. The user can always overwrite it - if there is a bug in CombineHiveInputFormat, it can always be manually set to HiveInputFormat. </description>

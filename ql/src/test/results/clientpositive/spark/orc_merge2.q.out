@@ -19,11 +19,14 @@ PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge2a_n0 PARTITION (one
         PMOD(HASH(value), 10) as three
     FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge2a_n0@one=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge2a_n0 PARTITION (one='1', two, three)
     SELECT key, value, PMOD(HASH(key), 10) as two, 
         PMOD(HASH(value), 10) as three
     FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

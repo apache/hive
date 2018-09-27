@@ -122,8 +122,22 @@ POSTHOOK: Output: default@srcpart_small_n1@ds=2008-04-09
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN select /*+ mapjoin(None)*/ count(*) from srcpart_date_n5 join srcpart_small_n1 on (srcpart_date_n5.key = srcpart_small_n1.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n5
+PREHOOK: Input: default@srcpart_date_n5@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n5@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n1
+PREHOOK: Input: default@srcpart_small_n1@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n1@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select /*+ mapjoin(None)*/ count(*) from srcpart_date_n5 join srcpart_small_n1 on (srcpart_date_n5.key = srcpart_small_n1.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n5
+POSTHOOK: Input: default@srcpart_date_n5@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n5@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n1
+POSTHOOK: Input: default@srcpart_small_n1@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n1@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -247,8 +261,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n5 join srcpart_small_n1 on (srcpart_date_n5.key = srcpart_small_n1.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n5
+PREHOOK: Input: default@srcpart_date_n5@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n5@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n1
+PREHOOK: Input: default@srcpart_small_n1@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n1@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n5 join srcpart_small_n1 on (srcpart_date_n5.key = srcpart_small_n1.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n5
+POSTHOOK: Input: default@srcpart_date_n5@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n5@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n1
+POSTHOOK: Input: default@srcpart_small_n1@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n1@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -421,8 +449,14 @@ POSTHOOK: Lineage: part_null_n1.p_type SCRIPT []
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select /*+ mapjoin(None)*/ * from part where p_name = (select p_name from part_null_n1 where p_name is null)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ mapjoin(None)*/ * from part where p_name = (select p_name from part_null_n1 where p_name is null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -530,8 +564,14 @@ STAGE PLANS:
 Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain select * from part where p_name = (select p_name from part_null_n1 where p_name is null)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_name = (select p_name from part_null_n1 where p_name is null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

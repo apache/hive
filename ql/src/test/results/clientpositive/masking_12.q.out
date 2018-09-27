@@ -25,9 +25,15 @@ POSTHOOK: Lineage: v0.value SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema
 PREHOOK: query: explain
 select * from `v0`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from `v0`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -108,10 +114,18 @@ PREHOOK: query: explain
 select * from `v1_n9`
 limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_subq_n1
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from `v1_n9`
 limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_subq_n1
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -307,9 +321,17 @@ POSTHOOK: Lineage: masking_test_view.key SIMPLE [(masking_test_n5)masking_test_n
 PREHOOK: query: explain
 select key from `masking_test_view`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key from `masking_test_view`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -362,9 +384,17 @@ POSTHOOK: Input: default@v0
 PREHOOK: query: explain
 select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

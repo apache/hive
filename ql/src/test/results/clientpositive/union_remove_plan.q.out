@@ -21,11 +21,15 @@ select column1 from test_table group by column1
 union all
 select column1 from test_table group by column1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select column1 from test_table group by column1
 union all
 select column1 from test_table group by column1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 is a root stage

@@ -8,8 +8,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n138
 PREHOOK: query: explain select * from t1_n138 where ts_field = "2016-01-23 00:00:00"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n138 where ts_field = "2016-01-23 00:00:00"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -46,8 +50,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from t1_n138 where date_field = "2016-01-23"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n138 where date_field = "2016-01-23"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -84,8 +92,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from t1_n138 where ts_field = timestamp '2016-01-23 00:00:00'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n138 where ts_field = timestamp '2016-01-23 00:00:00'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -122,8 +134,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from t1_n138 where date_field = date '2016-01-23'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n138 where date_field = date '2016-01-23'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -160,8 +176,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from t1_n138 where date_field = ts_field
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n138 where date_field = ts_field
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n138
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -20,12 +20,16 @@ FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
       FROM INPUT4) a
 ORDER BY KEY2 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@input4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.KEY2
 FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
       FROM INPUT4) a
 ORDER BY KEY2 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

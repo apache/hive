@@ -29,9 +29,13 @@ POSTHOOK: Output: default@t1_n11
 PREHOOK: query: explain 
 select count(distinct b) from t1_n11 group by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n11
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(distinct b) from t1_n11 group by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -86,9 +90,13 @@ STAGE PLANS:
 PREHOOK: query: explain 
 select distinct(b) from t1_n11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n11
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select distinct(b) from t1_n11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -138,9 +146,13 @@ STAGE PLANS:
 PREHOOK: query: explain 
 select a, count(*) from t1_n11 group by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n11
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select a, count(*) from t1_n11 group by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

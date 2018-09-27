@@ -37,9 +37,15 @@ POSTHOOK: Lineage: tx2.b SCRIPT []
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -135,9 +141,15 @@ POSTHOOK: Input: default@tx2
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.b <=> v.b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.b <=> v.b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -228,9 +240,15 @@ Warning: Shuffle Join MERGEJOIN[10][tables = [u, v]] in Stage 'Reducer 2' is a c
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.b <> v.b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.b <> v.b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -323,9 +341,15 @@ NULL	400
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a and u.b <> v.b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a and u.b <> v.b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -427,9 +451,15 @@ Warning: Shuffle Join MERGEJOIN[10][tables = [u, v]] in Stage 'Reducer 2' is a c
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a or u.b <> v.b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a or u.b <> v.b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -522,9 +552,13 @@ NULL	400
 PREHOOK: query: explain
 select * from tx1 u left semi join tx1 v on u.a=v.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx1 v on u.a=v.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -623,6 +657,9 @@ on (u.a + v.b > 400)
       or (coalesce(u.a) + coalesce(v.b) > 1900))
   and u.a = v.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v
 on (u.a + v.b > 400)
@@ -630,6 +667,9 @@ on (u.a + v.b > 400)
       or (coalesce(u.a) + coalesce(v.b) > 1900))
   and u.a = v.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

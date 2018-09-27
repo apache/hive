@@ -6,6 +6,8 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   *
@@ -14,6 +16,8 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -141,6 +145,8 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   count(*)
@@ -148,6 +154,8 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -268,6 +276,8 @@ where
 group by a.csmallint
 order by a.csmallint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   a.csmallint, count(*) c1
@@ -277,6 +287,8 @@ where
 group by a.csmallint
 order by a.csmallint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -422,6 +434,8 @@ where
   a.cint between 1000000 and 3000000
 order by a.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain select
   *
 from alltypesorc a left outer join alltypesorc b on a.cint = b.cint and a.csmallint != a.cint
@@ -429,6 +443,8 @@ where
   a.cint between 1000000 and 3000000
 order by a.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -564,6 +580,8 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   *
@@ -572,6 +590,8 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -703,6 +723,8 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   count(*)
@@ -710,6 +732,8 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -834,6 +858,8 @@ where
 group by a.csmallint
 order by cs
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
   a.csmallint cs, count(*) c1
@@ -843,6 +869,8 @@ where
 group by a.csmallint
 order by cs
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -41,6 +41,10 @@ with wss as
  order by s_store_name1,s_store_id1,d_week_seq1
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with wss as 
  (select d_week_seq,
@@ -84,6 +88,10 @@ with wss as
  order by s_store_name1,s_store_id1,d_week_seq1
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2

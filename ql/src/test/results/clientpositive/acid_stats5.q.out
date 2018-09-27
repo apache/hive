@@ -28,8 +28,12 @@ POSTHOOK: Lineage: stats2.key SCRIPT []
 POSTHOOK: Lineage: stats2.value SCRIPT []
 PREHOOK: query: explain select count(*) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -42,8 +46,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select min(key) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -120,8 +128,12 @@ bitVector           	HL
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain select count(*) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -167,8 +179,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(distinct key) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(distinct key) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -309,8 +325,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain select count(*) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -323,8 +343,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select min(key) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -438,8 +462,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain select count(*) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -452,8 +480,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select min(key) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -528,8 +560,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain select count(*) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -542,8 +578,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(distinct key) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(distinct key) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -684,8 +724,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain select count(*) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -698,8 +742,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select min(key) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -813,8 +861,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain select count(*) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -827,8 +879,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select min(key) from stats2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

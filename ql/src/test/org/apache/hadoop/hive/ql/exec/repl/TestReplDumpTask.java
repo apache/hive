@@ -79,16 +79,16 @@ public class TestReplDumpTask {
     }
 
     @Override
-    void dumpFunctionMetadata(String dbName, Path dumpRoot) {
+    void dumpFunctionMetadata(String dbName, Path dumpRoot, Hive hiveDb) {
     }
 
     @Override
-    Path dumpDbMetadata(String dbName, Path dumpRoot, long lastReplId) {
+    Path dumpDbMetadata(String dbName, Path dumpRoot, long lastReplId, Hive hiveDb) {
       return Mockito.mock(Path.class);
     }
 
     @Override
-    void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot) {
+    void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot, Hive hiveDb) {
     }
   }
 
@@ -116,7 +116,7 @@ public class TestReplDumpTask {
       private int tableDumpCount = 0;
 
       @Override
-      void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId)
+      void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId, Hive hiveDb)
           throws Exception {
         tableDumpCount++;
         if (tableDumpCount > 1) {
@@ -133,7 +133,7 @@ public class TestReplDumpTask {
     );
 
     try {
-      task.bootStrapDump(mock(Path.class), null, mock(Path.class));
+      task.bootStrapDump(mock(Path.class), null, mock(Path.class), hive);
     } finally {
       verifyStatic();
       Utils.resetDbBootstrapDumpState(same(hive), eq("default"), eq(dbRandomKey));

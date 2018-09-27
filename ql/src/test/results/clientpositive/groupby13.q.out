@@ -20,6 +20,8 @@ int_col_7,
 LEAST(COALESCE(int_col_5, -279),
   COALESCE(int_col_7, 476))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@grpby_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT
 int_col_7,
@@ -32,6 +34,8 @@ int_col_7,
 LEAST(COALESCE(int_col_5, -279),
   COALESCE(int_col_7, 476))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@grpby_test
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

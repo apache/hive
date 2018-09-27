@@ -1,8 +1,12 @@
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: explain vectorization SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 7
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 7
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -72,9 +76,13 @@ POSTHOOK: Input: default@alltypesparquet
 PREHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,cdouble,csmallint from alltypesparquet where ctinyint is not null order by ctinyint,cdouble limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,cdouble,csmallint from alltypesparquet where ctinyint is not null order by ctinyint,cdouble limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -186,9 +194,13 @@ POSTHOOK: Input: default@alltypesparquet
 PREHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,avg(cdouble + 1) from alltypesparquet group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,avg(cdouble + 1) from alltypesparquet group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -314,9 +326,13 @@ POSTHOOK: Input: default@alltypesparquet
 PREHOOK: query: explain VECTORIZATION EXPRESSION
 select distinct(ctinyint) from alltypesparquet limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select distinct(ctinyint) from alltypesparquet limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -433,9 +449,13 @@ NULL
 PREHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint, count(distinct(cdouble)) from alltypesparquet group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint, count(distinct(cdouble)) from alltypesparquet group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -532,9 +552,13 @@ POSTHOOK: Input: default@alltypesparquet
 PREHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,cdouble from alltypesparquet order by ctinyint limit 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select ctinyint,cdouble from alltypesparquet order by ctinyint limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -560,9 +584,13 @@ POSTHOOK: Input: default@alltypesparquet
 PREHOOK: query: explain VECTORIZATION EXPRESSION
 select cdouble, sum(ctinyint) as sum from alltypesparquet where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain VECTORIZATION EXPRESSION
 select cdouble, sum(ctinyint) as sum from alltypesparquet where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

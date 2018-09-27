@@ -1,9 +1,15 @@
 PREHOOK: query: explain
 select * from src a join src1 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from src a join src1 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -244,10 +250,20 @@ PREHOOK: query: explain
 select count(*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -357,10 +373,20 @@ PREHOOK: query: explain
 select count (*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count (*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -470,10 +496,20 @@ PREHOOK: query: explain
 select count (*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count (*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -581,8 +617,20 @@ POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
 480
 PREHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -717,8 +765,20 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -863,8 +923,18 @@ POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
 40
 PREHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -961,8 +1031,18 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1078,12 +1158,22 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab_n11 s2
 ) a join tab_part_n12 b on (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from (select s1.key as key, s1.value as value from tab_n11 s1 join tab_n11 s3 on s1.key=s3.key
 UNION  ALL
 select s2.key as key, s2.value as value from tab_n11 s2
 ) a join tab_part_n12 b on (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1223,8 +1313,18 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1315,8 +1415,18 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1422,8 +1532,20 @@ POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
 480
 PREHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1545,8 +1667,20 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from tab_n11 a join tab_part_n12 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1689,12 +1823,22 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab_n11 s2
 ) a join tab_part_n12 b on (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from (select s1.key as key, s1.value as value from tab_n11 s1 join tab_n11 s3 on s1.key=s3.key
 UNION  ALL
 select s2.key as key, s2.value as value from tab_n11 s2
 ) a join tab_part_n12 b on (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1863,6 +2007,11 @@ join
 (select t2.key as id, t2.value as od from tab_part_n12 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n11
+PREHOOK: Input: default@tab_n11@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n12
+PREHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select rt1.id from
@@ -1872,6 +2021,11 @@ join
 (select t2.key as id, t2.value as od from tab_part_n12 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n11
+POSTHOOK: Input: default@tab_n11@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n12
+POSTHOOK: Input: default@tab_part_n12@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

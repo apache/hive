@@ -61,6 +61,8 @@ where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
    cdecimal1
@@ -98,6 +100,8 @@ where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -308,6 +312,8 @@ where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
    cdecimal1
@@ -345,6 +351,8 @@ where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

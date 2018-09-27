@@ -372,6 +372,10 @@ public class Hive {
     hiveDB.remove();
   }
 
+  public static Hive getThreadLocal() {
+    return hiveDB.get();
+  }
+
   /**
    * Hive
    *
@@ -1310,6 +1314,17 @@ public class Hive {
     return getTableObjects(dbName, ".*", TableType.MATERIALIZED_VIEW);
   }
 
+  /**
+   * Get materialized views for the specified database that match the provided regex pattern.
+   * @param dbName
+   * @param pattern
+   * @return List of materialized view table objects
+   * @throws HiveException
+   */
+  public List<Table> getMaterializedViewObjectsByPattern(String dbName, String pattern) throws HiveException {
+    return getTableObjects(dbName, pattern, TableType.MATERIALIZED_VIEW);
+  }
+
   private List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
     try {
       return Lists.transform(getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, pattern, tableType)),
@@ -1927,7 +1942,7 @@ public class Hive {
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(), isSrcLocal,
               isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged);
         } else {
-          FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
+          FileSystem fs = destPath.getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
               (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles,
               tbl.getNumBuckets() > 0, isFullAcidTable, isManaged);

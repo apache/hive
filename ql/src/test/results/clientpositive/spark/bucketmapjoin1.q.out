@@ -27,11 +27,17 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part_n1 a join srcbucket_mapjoin_part_2_n1 b
 on a.key=b.key where b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n1
+PREHOOK: Input: default@srcbucket_mapjoin_part_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part_n1 a join srcbucket_mapjoin_part_2_n1 b
 on a.key=b.key where b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_n1`
@@ -125,11 +131,17 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part_n1 a join srcbucket_mapjoin_part_2_n1 b
 on a.key=b.key where b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n1
+PREHOOK: Input: default@srcbucket_mapjoin_part_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part_n1 a join srcbucket_mapjoin_part_2_n1 b
 on a.key=b.key where b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_n1`
@@ -314,12 +326,20 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_n1 a join srcbucket_mapjoin_part_n1 b 
 on a.key=b.key where b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n1
+PREHOOK: Input: default@srcbucket_mapjoin_part_n1
+PREHOOK: Input: default@srcbucket_mapjoin_part_n1@ds=2008-04-08
+PREHOOK: Output: default@bucketmapjoin_tmp_result_n0
 POSTHOOK: query: explain extended
 insert overwrite table bucketmapjoin_tmp_result_n0 
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_n1 a join srcbucket_mapjoin_part_n1 b 
 on a.key=b.key where b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n1@ds=2008-04-08
+POSTHOOK: Output: default@bucketmapjoin_tmp_result_n0
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_n1`
@@ -684,12 +704,20 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_n1 a join srcbucket_mapjoin_part_n1 b 
 on a.key=b.key where b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_n1
+PREHOOK: Input: default@srcbucket_mapjoin_part_n1
+PREHOOK: Input: default@srcbucket_mapjoin_part_n1@ds=2008-04-08
+PREHOOK: Output: default@bucketmapjoin_tmp_result_n0
 POSTHOOK: query: explain extended
 insert overwrite table bucketmapjoin_tmp_result_n0 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_n1 a join srcbucket_mapjoin_part_n1 b 
 on a.key=b.key where b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_n1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n1@ds=2008-04-08
+POSTHOOK: Output: default@bucketmapjoin_tmp_result_n0
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_n1`

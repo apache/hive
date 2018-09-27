@@ -104,9 +104,13 @@ POSTHOOK: Lineage: vectortab2korc_n7.ts2 SIMPLE [(vectortab2k_n8)vectortab2k_n8.
 PREHOOK: query: explain vectorization expression
 select b from vectortab2korc_n7 order by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select b from vectortab2korc_n7 order by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc_n7
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -50,9 +50,13 @@ Warning: Map Join MAPJOIN[16][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -290,9 +294,13 @@ POSTHOOK: Input: default@myinput1_n1
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -459,9 +467,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -628,9 +640,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -797,9 +813,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n1 a RIGHT OUTER JOIN myinput1_n1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

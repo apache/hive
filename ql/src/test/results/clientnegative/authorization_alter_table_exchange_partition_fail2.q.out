@@ -53,8 +53,12 @@ POSTHOOK: query: show grant user user1 on table exchange_partition_test_2
 POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: explain authorization alter table exchange_partition_test_2 exchange partition (b=1) with table exchange_partition_test_1
 PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: Input: default@exchange_partition_test_1
+PREHOOK: Output: default@exchange_partition_test_2
 POSTHOOK: query: explain authorization alter table exchange_partition_test_2 exchange partition (b=1) with table exchange_partition_test_1
 POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: Input: default@exchange_partition_test_1
+POSTHOOK: Output: default@exchange_partition_test_2
 INPUTS: 
   default@exchange_partition_test_1
 OUTPUTS: 

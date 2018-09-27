@@ -3,11 +3,15 @@ SELECT f.key, g.value
 FROM src f JOIN src m JOIN src g ON(g.value = m.value AND m.value is not null AND m.value !='')
 WHERE (f.key = m.key AND f.value='2008-04-08' AND m.value='2008-04-08') OR (f.key = m.key AND f.value='2008-04-09')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM src f JOIN src m JOIN src g ON(g.value = m.value AND m.value is not null AND m.value !='')
 WHERE (f.key = m.key AND f.value='2008-04-08' AND m.value='2008-04-08') OR (f.key = m.key AND f.value='2008-04-09')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -128,11 +132,15 @@ SELECT f.key, g.value
 FROM src f JOIN src m JOIN src g ON(g.value = m.value AND m.value is not null AND m.value !='')
 WHERE (f.key = m.key AND f.value IN ('2008-04-08','2008-04-10') AND m.value='2008-04-08') OR (f.key = m.key AND f.value='2008-04-09')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM src f JOIN src m JOIN src g ON(g.value = m.value AND m.value is not null AND m.value !='')
 WHERE (f.key = m.key AND f.value IN ('2008-04-08','2008-04-10') AND m.value='2008-04-08') OR (f.key = m.key AND f.value='2008-04-09')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -258,6 +266,12 @@ JOIN (
   WHERE ((t2.key=t3.key) AND (t2.c_float + t3.c_float > 2)) OR
       ((t2.key=t3.key) AND (t2.c_int + t3.c_int > 2))) t4 ON t1.key=t4.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT t1.key 
 FROM cbo_t1 t1
@@ -268,6 +282,12 @@ JOIN (
   WHERE ((t2.key=t3.key) AND (t2.c_float + t3.c_float > 2)) OR
       ((t2.key=t3.key) AND (t2.c_int + t3.c_int > 2))) t4 ON t1.key=t4.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -387,11 +407,15 @@ SELECT f.key, f.value, m.value
 FROM src f JOIN src m ON(f.key = m.key AND m.value is not null AND m.value !='')
 WHERE (f.value IN ('2008-04-08','2008-04-10') AND f.value IN ('2008-04-08','2008-04-09') AND m.value='2008-04-10') OR (m.value='2008-04-08')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, f.value, m.value
 FROM src f JOIN src m ON(f.key = m.key AND m.value is not null AND m.value !='')
 WHERE (f.value IN ('2008-04-08','2008-04-10') AND f.value IN ('2008-04-08','2008-04-09') AND m.value='2008-04-10') OR (m.value='2008-04-08')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

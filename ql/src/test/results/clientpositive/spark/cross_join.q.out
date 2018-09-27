@@ -1,8 +1,12 @@
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain select src.key from src join src src2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src.key from src join src src2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -66,8 +70,12 @@ STAGE PLANS:
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain select src.key from src cross join src src2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src.key from src cross join src src2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -130,8 +138,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select src.key from src cross join src src2 on src.key=src2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src.key from src cross join src src2 on src.key=src2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -208,8 +220,12 @@ STAGE PLANS:
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select src.key from src join src src2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src.key from src join src src2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -278,8 +294,12 @@ STAGE PLANS:
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select src.key from src cross join src src2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src.key from src cross join src src2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -347,8 +367,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select src.key from src cross join src src2 on src.key=src2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src.key from src cross join src src2 on src.key=src2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

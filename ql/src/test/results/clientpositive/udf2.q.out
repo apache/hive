@@ -18,9 +18,13 @@ POSTHOOK: Lineage: dest1_n55.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT '|', trim(dest1_n55.c1), '|', rtrim(dest1_n55.c1), '|', ltrim(dest1_n55.c1), '|' FROM dest1_n55
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n55
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT '|', trim(dest1_n55.c1), '|', rtrim(dest1_n55.c1), '|', ltrim(dest1_n55.c1), '|' FROM dest1_n55
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n55
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -23,6 +23,8 @@ FROM src INSERT OVERWRITE TABLE dest1_n1 SELECT 'a' LIKE '%a%', 'b' LIKE '%a%', 
   REGEXP_REPLACE('abc', '', 'A'), 'abc' RLIKE ''
   WHERE src.key = 86
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n1
 POSTHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest1_n1 SELECT 'a' LIKE '%a%', 'b' LIKE '%a%', 'ab' LIKE '%a%', 'ab' LIKE '%a_',
   '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a',
@@ -32,6 +34,8 @@ FROM src INSERT OVERWRITE TABLE dest1_n1 SELECT 'a' LIKE '%a%', 'b' LIKE '%a%', 
   REGEXP_REPLACE('abc', '', 'A'), 'abc' RLIKE ''
   WHERE src.key = 86
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

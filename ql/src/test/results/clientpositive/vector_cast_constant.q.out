@@ -102,6 +102,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
   FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1korc_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT 
   i,
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
@@ -109,6 +111,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
   FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1korc_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

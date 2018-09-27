@@ -46,8 +46,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_part
 PREHOOK: query: explain select count(key) from stats_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -60,8 +64,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(key) from stats_part where p > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part where p > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -299,8 +307,12 @@ p=101
 p=102
 PREHOOK: query: explain select count(*) from stats_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -322,8 +334,12 @@ POSTHOOK: Input: default@stats_part
 8
 PREHOOK: query: explain select count(key) from stats_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -345,8 +361,12 @@ POSTHOOK: Input: default@stats_part
 8
 PREHOOK: query: explain select count(key) from stats_part where p > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part where p > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -368,8 +388,12 @@ POSTHOOK: Input: default@stats_part
 6
 PREHOOK: query: explain select max(key) from stats_part where p > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(key) from stats_part where p > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -433,8 +457,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select max(key) from stats_part where p > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(key) from stats_part where p > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -516,8 +544,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from stats_part where p = 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_part where p = 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -539,8 +571,12 @@ POSTHOOK: Input: default@stats_part
 2
 PREHOOK: query: explain select count(*) from stats_part where p > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_part where p > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -562,8 +598,12 @@ POSTHOOK: Input: default@stats_part
 6
 PREHOOK: query: explain select count(key) from stats_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -585,8 +625,12 @@ POSTHOOK: Input: default@stats_part
 8
 PREHOOK: query: explain select count(*) from stats_part where p > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_part where p > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -608,8 +652,12 @@ POSTHOOK: Input: default@stats_part
 6
 PREHOOK: query: explain select max(key) from stats_part where p > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select max(key) from stats_part where p > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

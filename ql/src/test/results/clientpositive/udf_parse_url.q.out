@@ -33,6 +33,8 @@ parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'USERINFO') ,
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY') 
   FROM src WHERE key = 86
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST'), 
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PATH'), 
@@ -47,6 +49,8 @@ parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'USERINFO') ,
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY') 
   FROM src WHERE key = 86
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

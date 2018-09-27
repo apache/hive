@@ -13,9 +13,13 @@ POSTHOOK: Lineage: masking_test_n7.value SIMPLE [(src)src.FieldSchema(name:value
 PREHOOK: query: explain
 select key, count(*) from masking_test_n7 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(*) from masking_test_n7 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -89,9 +93,13 @@ POSTHOOK: Input: default@masking_test_n7
 PREHOOK: query: explain
 select key, count(*) from masking_test_n7 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(*) from masking_test_n7 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
