@@ -334,7 +334,7 @@ public enum ErrorMsg {
       "A column on which a partition/table is list bucketed cannot be truncated."),
 
   TABLE_NOT_PARTITIONED(10241, "Table {0} is not a partitioned table", true),
-  DATABSAE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
+  DATABASE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
   CANNOT_REPLACE_COLUMNS(10243, "Replace columns is not supported for table {0}. SerDe may be incompatible.", true),
   BAD_LOCATION_VALUE(10244, "{0}  is not absolute.  Please specify a complete absolute uri."),
   UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported"),
@@ -386,6 +386,9 @@ public enum ErrorMsg {
   MASKING_FILTERING_ON_ACID_NOT_SUPPORTED(10287,
       "Detected {0}.{1} has row masking/column filtering enabled, " +
       "which is not supported for query involving ACID operations", true),
+  MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
+      "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
+          "used by materialized view has row masking/column filtering enabled", true),
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
@@ -464,7 +467,8 @@ public enum ErrorMsg {
     "insert-only transactional", true),
   LOAD_DATA_LAUNCH_JOB_IO_ERROR(10415, "Encountered I/O error while parsing rewritten load data into insert query"),
   LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
-
+  RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
+  RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
 
   //========================== 20000 range starts here ========================//
 
@@ -599,6 +603,9 @@ public enum ErrorMsg {
   SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}"),
 
   REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired."),
+  SPARK_GET_STAGES_INFO_TIMEOUT(30048, "Spark job GetSparkStagesInfoJob timed out after {0} seconds.", true),
+  SPARK_GET_STAGES_INFO_INTERRUPTED(30049, "Spark job GetSparkStagesInfoJob was interrupted."),
+  SPARK_GET_STAGES_INFO_EXECUTIONERROR(30050, "Spark job GetSparkStagesInfoJob failed in execution while getting job info due to exception {0}", true),
 
   //========================== 40000 range starts here ========================//
 

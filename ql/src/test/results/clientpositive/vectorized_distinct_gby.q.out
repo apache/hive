@@ -19,9 +19,13 @@ POSTHOOK: Lineage: dtest.b SIMPLE []
 PREHOOK: query: explain vectorization detail
 select sum(distinct a), count(distinct a) from dtest
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dtest
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(distinct a), count(distinct a) from dtest
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dtest
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -94,9 +98,13 @@ POSTHOOK: Input: default@dtest
 PREHOOK: query: explain vectorization detail
 select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

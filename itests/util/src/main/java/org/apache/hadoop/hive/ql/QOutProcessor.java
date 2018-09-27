@@ -121,7 +121,8 @@ public class QOutProcessor {
       ".*at com\\.zaxxer.*",
       "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*",
       "^Repair: Added partition to metastore.*",
-      "^Repair: Dropped partition from metastore.*"
+      "^latestOffsets.*",
+      "^minimumLag.*"
   });
 
   public QOutProcessor(FsType fsType) {
@@ -273,6 +274,8 @@ public class QOutProcessor {
     ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9_]+"), "attempt_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));
+    ppm.add(new PatternReplacementPair(Pattern.compile("for Spark session.*?:"),
+            "#SPARK_SESSION_ID#:"));
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }
   /* This list may be modified by specific cli drivers to mask strings that change on every test */

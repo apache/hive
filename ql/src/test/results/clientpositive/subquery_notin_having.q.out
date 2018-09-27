@@ -8,6 +8,8 @@ having key not in
     where s1.key > '12'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(*) 
 from src 
@@ -17,6 +19,8 @@ having key not in
     where s1.key > '12'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -220,6 +224,8 @@ having b.p_mfgr not in
   where min(p_retailprice) = l and r - l > 600
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select b.p_mfgr, min(p_retailprice) 
 from part b 
@@ -230,6 +236,8 @@ having b.p_mfgr not in
   where min(p_retailprice) = l and r - l > 600
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-5
@@ -512,6 +520,8 @@ having b.p_mfgr not in
   having max(p_retailprice) - min(p_retailprice) > 600
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select b.p_mfgr, min(p_retailprice) 
 from part b 
@@ -523,6 +533,8 @@ having b.p_mfgr not in
   having max(p_retailprice) - min(p_retailprice) > 600
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-5
@@ -826,8 +838,14 @@ POSTHOOK: Lineage: t2_n85.c1 SCRIPT []
 Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n145
+PREHOOK: Input: default@t2_n85
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n145
+POSTHOOK: Input: default@t2_n85
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -1031,8 +1049,14 @@ POSTHOOK: Input: default@t2_n85
 #### A masked pattern was here ####
 PREHOOK: query: explain SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85 where t1_n145.c1=t2_n85.c1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n145
+PREHOOK: Input: default@t2_n85
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85 where t1_n145.c1=t2_n85.c1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n145
+POSTHOOK: Input: default@t2_n85
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3, Stage-5

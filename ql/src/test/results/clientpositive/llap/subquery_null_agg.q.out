@@ -27,6 +27,8 @@ FROM table_7
 WHERE
 (t1.int_col) = (tt1.int_col))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_7
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT
 (t1.int_col) * (t1.int_col) AS int_col
@@ -46,6 +48,8 @@ FROM table_7
 WHERE
 (t1.int_col) = (tt1.int_col))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -87,7 +91,7 @@ STAGE PLANS:
                       predicate: false (type: boolean)
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Group By Operator
-                        keys: false (type: boolean)
+                        keys: true (type: boolean)
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE

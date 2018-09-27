@@ -183,7 +183,7 @@ public class TestRetryingThriftCLIServiceClient {
         }
       }
       if (service == null) {
-        service = new CLIService(server);
+        service = new CLIService(server, true);
       }
       RetryingThriftCLIServiceClient.CLIServiceClientWrapper client
         = RetryingThriftCLIServiceClientTest.newRetryingCLIServiceClient(hiveConf);

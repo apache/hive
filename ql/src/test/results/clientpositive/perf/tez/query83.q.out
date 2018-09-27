@@ -64,6 +64,12 @@ with sr_items as
          ,sr_item_qty
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@web_returns
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 with sr_items as
  (select i_item_id item_id,
@@ -130,6 +136,12 @@ with sr_items as
          ,sr_item_qty
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -214,11 +226,11 @@ Stage-0
                                         <-Map 19 [SIMPLE_EDGE] vectorized
                                           SHUFFLE [RS_378]
                                             PartitionCols:_col0
-                                            Group By Operator [GBY_377] (rows=36525 width=1119)
+                                            Group By Operator [GBY_377] (rows=73049 width=1119)
                                               Output:["_col0"],keys:_col0
-                                              Select Operator [SEL_376] (rows=36525 width=1119)
+                                              Select Operator [SEL_376] (rows=73049 width=1119)
                                                 Output:["_col0"]
-                                                Filter Operator [FIL_375] (rows=36525 width=1119)
+                                                Filter Operator [FIL_375] (rows=73049 width=1119)
                                                   predicate:((d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10') and d_week_seq is not null)
                                                   TableScan [TS_12] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]

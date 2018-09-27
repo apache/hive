@@ -25,9 +25,13 @@ POSTHOOK: Lineage: testorc1.name SCRIPT []
 PREHOOK: query: explain
 select id, UDFHelloTest(name) from testorc1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testorc1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select id, UDFHelloTest(name) from testorc1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testorc1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

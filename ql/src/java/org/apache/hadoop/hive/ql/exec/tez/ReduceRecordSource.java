@@ -349,7 +349,7 @@ public class ReduceRecordSource implements RecordSource {
       } else {
         row.add(passDownKey.get(0));
       }
-      if ((passDownKey == null) && (reducer instanceof CommonMergeJoinOperator)) {
+      if ((passDownKey == null) && (reducer instanceof CommonMergeJoinOperator) && hasNext()) {
         passDownKey =
             (List<Object>) ObjectInspectorUtils.copyToStandardObject(row,
                 reducer.getInputObjInspectors()[tag], ObjectInspectorCopyOption.WRITABLE);
@@ -450,6 +450,11 @@ public class ReduceRecordSource implements RecordSource {
             reducer.setNextVectorBatchGroupStatus(/* isLastGroupBatch */ false);
           }
           reducer.process(batch, tag);
+
+          // Do the non-column batch reset logic.
+          batch.selectedInUse = false;
+          batch.size = 0;
+          batch.endOfFile = false;
 
           // Reset just the value columns and value buffer.
           for (int i = firstValueColumnOffset; i < batch.numCols; i++) {

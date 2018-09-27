@@ -21,6 +21,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n86
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1_n86
@@ -28,6 +30,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n86
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -111,6 +115,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n86
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1_n86
@@ -118,6 +124,8 @@ GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n86
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

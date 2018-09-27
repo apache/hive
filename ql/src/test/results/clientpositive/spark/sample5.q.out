@@ -11,11 +11,15 @@ INSERT OVERWRITE TABLE dest1_n69 SELECT s.*
 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@dest1_n69
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1_n69 SELECT s.* 
 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@dest1_n69
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

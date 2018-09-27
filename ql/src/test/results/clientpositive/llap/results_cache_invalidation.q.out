@@ -38,9 +38,13 @@ test.comment="Run queries to load into cache"
 PREHOOK: query: explain
 select count(*) from tab1_n6 a where key >= 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1_n6 a where key >= 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n6
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -58,20 +62,20 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: (UDFToDouble(key) >= 0.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) >= 0.0D) (type: boolean)
-                    Statistics: Num rows: 166 Data size: 29077 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 166 Data size: 29077 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -82,10 +86,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -109,9 +113,13 @@ POSTHOOK: Input: default@tab1_n6
 PREHOOK: query: explain
 select max(key) from tab2_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select max(key) from tab2_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -128,19 +136,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(key)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -151,10 +159,10 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -178,9 +186,15 @@ POSTHOOK: Input: default@tab2_n5
 PREHOOK: query: explain
 select count(*) from tab1_n6 join tab2_n5 on (tab1_n6.key = tab2_n5.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n6
+PREHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1_n6 join tab2_n5 on (tab1_n6.key = tab2_n5.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n6
+POSTHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -199,19 +213,19 @@ STAGE PLANS:
                 TableScan
                   alias: tab1_n6
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
@@ -219,19 +233,19 @@ STAGE PLANS:
                 TableScan
                   alias: tab2_n5
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -243,15 +257,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 522 Data size: 91524 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 791 Data size: 6328 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -260,10 +274,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -290,9 +304,11 @@ test.comment="Q1 should now be able to use cache"
 PREHOOK: query: explain
 select count(*) from tab1_n6 a where key >= 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n6
 POSTHOOK: query: explain
 select count(*) from tab1_n6 a where key >= 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n6
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -315,9 +331,11 @@ test.comment="Q2 should now be able to use cache"
 PREHOOK: query: explain
 select max(key) from tab2_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab2_n5
 POSTHOOK: query: explain
 select max(key) from tab2_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab2_n5
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -340,9 +358,13 @@ test.comment="Q3 should now be able to use cache"
 PREHOOK: query: explain
 select count(*) from tab1_n6 join tab2_n5 on (tab1_n6.key = tab2_n5.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n6
+PREHOOK: Input: default@tab2_n5
 POSTHOOK: query: explain
 select count(*) from tab1_n6 join tab2_n5 on (tab1_n6.key = tab2_n5.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n6
+POSTHOOK: Input: default@tab2_n5
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -377,9 +399,13 @@ test.comment="Q1 should not use cache"
 PREHOOK: query: explain
 select count(*) from tab1_n6 a where key >= 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1_n6 a where key >= 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n6
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -397,20 +423,20 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: (UDFToDouble(key) >= 0.0D) (type: boolean)
-                  Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) >= 0.0D) (type: boolean)
-                    Statistics: Num rows: 167 Data size: 29256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 167 Data size: 14529 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 167 Data size: 29256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 167 Data size: 14529 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -421,10 +447,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -449,9 +475,11 @@ test.comment="Q2 should still use cache since tab2_n5 not updated"
 PREHOOK: query: explain
 select max(key) from tab2_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab2_n5
 POSTHOOK: query: explain
 select max(key) from tab2_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab2_n5
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -474,9 +502,15 @@ test.comment="Q3 should not use cache"
 PREHOOK: query: explain
 select count(*) from tab1_n6 join tab2_n5 on (tab1_n6.key = tab2_n5.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n6
+PREHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1_n6 join tab2_n5 on (tab1_n6.key = tab2_n5.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n6
+POSTHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -495,19 +529,19 @@ STAGE PLANS:
                 TableScan
                   alias: tab1_n6
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
@@ -515,19 +549,19 @@ STAGE PLANS:
                 TableScan
                   alias: tab2_n5
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -539,15 +573,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 523 Data size: 91726 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 792 Data size: 6336 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -556,10 +590,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -596,9 +630,11 @@ test.comment="Q1 should use cache"
 PREHOOK: query: explain
 select count(*) from tab1_n6 a where key >= 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n6
 POSTHOOK: query: explain
 select count(*) from tab1_n6 a where key >= 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n6
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -621,9 +657,13 @@ test.comment="Q2 should not use cache"
 PREHOOK: query: explain
 select max(key) from tab2_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select max(key) from tab2_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -640,19 +680,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
-                  Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(key)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -663,10 +703,10 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -691,9 +731,15 @@ test.comment="Q3 should not use cache"
 PREHOOK: query: explain
 select count(*) from tab1_n6 join tab2_n5 on (tab1_n6.key = tab2_n5.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n6
+PREHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1_n6 join tab2_n5 on (tab1_n6.key = tab2_n5.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n6
+POSTHOOK: Input: default@tab2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -712,19 +758,19 @@ STAGE PLANS:
                 TableScan
                   alias: tab1_n6
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
@@ -732,19 +778,19 @@ STAGE PLANS:
                 TableScan
                   alias: tab2_n5
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 501 Data size: 43587 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -756,15 +802,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 523 Data size: 91726 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 794 Data size: 6352 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -773,10 +819,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

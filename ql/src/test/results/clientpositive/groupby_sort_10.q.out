@@ -22,8 +22,14 @@ POSTHOOK: Lineage: t1_n149 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name
 POSTHOOK: Lineage: t1_n149 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN select distinct key from T1_n149
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n149
+PREHOOK: Input: default@t1_n149@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select distinct key from T1_n149
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Input: default@t1_n149@ds=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -85,8 +91,16 @@ POSTHOOK: Lineage: t1_n149 PARTITION(ds=2).key SIMPLE [(src)src.FieldSchema(name
 POSTHOOK: Lineage: t1_n149 PARTITION(ds=2).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN select distinct key from T1_n149
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n149
+PREHOOK: Input: default@t1_n149@ds=1
+PREHOOK: Input: default@t1_n149@ds=2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select distinct key from T1_n149
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Input: default@t1_n149@ds=1
+POSTHOOK: Input: default@t1_n149@ds=2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

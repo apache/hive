@@ -29,9 +29,13 @@ POSTHOOK: Lineage: coalesce_test.b EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select coalesce(a, b) from coalesce_test order by a, b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@coalesce_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select coalesce(a, b) from coalesce_test order by a, b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@coalesce_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -70,10 +74,10 @@ STAGE PLANS:
                       sort order: ++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0, 1]
+                          keyColumns: 0:int, 1:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [3]
+                          valueColumns: 3:int
                       Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
@@ -98,7 +102,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -142,5 +146,5 @@ POSTHOOK: query: select coalesce(a, b) from coalesce_test order by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@coalesce_test
 #### A masked pattern was here ####
-NULL
 1
+NULL

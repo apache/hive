@@ -28,6 +28,12 @@ and not exists(select *
 order by count(distinct cs_order_number)
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@call_center
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  
    count(distinct cs_order_number) as `order count`
@@ -58,6 +64,12 @@ and not exists(select *
 order by count(distinct cs_order_number)
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@call_center
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -77,11 +89,11 @@ STAGE PLANS:
                   Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County') and cc_call_center_sk is not null) (type: boolean)
-                    Statistics: Num rows: 30 Data size: 61350 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cc_call_center_sk (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 30 Data size: 61350 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col2 (type: int)

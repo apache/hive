@@ -37,6 +37,9 @@ WHERE (t2.tinyint_col_21) IN (
         ON (tt2.decimal1911_col_16) = (tt1.decimal1309_col_65)
         WHERE (tt1.timestamp_col_66) = (tt2.timestamp_col_19))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_1
+PREHOOK: Input: default@table_18
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT
     COALESCE(498,
@@ -55,6 +58,9 @@ WHERE (t2.tinyint_col_21) IN (
         ON (tt2.decimal1911_col_16) = (tt1.decimal1309_col_65)
         WHERE (tt1.timestamp_col_66) = (tt2.timestamp_col_19))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_1
+POSTHOOK: Input: default@table_18
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-6
@@ -169,7 +175,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (UDFToShort(UDFToByte(-92)) + _col1) ASC NULLS FIRST, floor(_col3) DESC NULLS LAST
+                  order by: (UDFToShort(UDFToByte(-92)) + _col1) ASC NULLS LAST, floor(_col3) DESC NULLS LAST
                   partition by: (UDFToShort(UDFToByte(-92)) + _col1)
                   raw input shape:
                   window functions:
@@ -237,7 +243,7 @@ STAGE PLANS:
             1 _col0 (type: decimal(19,11)), _col1 (type: timestamp)
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Group By Operator
-            keys: -92 (type: int)
+            keys: true (type: boolean)
             mode: hash
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -253,14 +259,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: int)
+              key expressions: _col0 (type: boolean)
               sort order: +
-              Map-reduce partition columns: _col0 (type: int)
+              Map-reduce partition columns: _col0 (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: int)
+          keys: KEY._col0 (type: boolean)
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE

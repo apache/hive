@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -158,6 +160,18 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   @Override
+  public void truncateTable(String dbName, String tableName,
+      List<String> partNames, String validWriteIds, long writeId)
+      throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    if (table != null) {
+      truncateTempTable(table);
+      return;
+    }
+    super.truncateTable(dbName, tableName, partNames, validWriteIds, writeId);
+  }
+
+  @Override
   public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name) throws MetaException,
   TException, NoSuchObjectException {
     // First check temp tables
@@ -229,6 +243,46 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     combinedTableNames.addAll(tableNames);
     tableNames = new ArrayList<String>(combinedTableNames);
     Collections.sort(tableNames);
+    return tableNames;
+  }
+
+  @Override
+  public List<String> getTables(String dbname, String tablePattern, TableType tableType) throws MetaException {
+    List<String> tableNames = super.getTables(dbname, tablePattern, tableType);
+
+    if (tableType == TableType.MANAGED_TABLE || tableType == TableType.EXTERNAL_TABLE) {
+      // May need to merge with list of temp tables
+      dbname = dbname.toLowerCase();
+      tablePattern = tablePattern.toLowerCase();
+      Map<String, Table> tables = getTempTablesForDatabase(dbname, tablePattern);
+      if (tables == null || tables.size() == 0) {
+        return tableNames;
+      }
+      tablePattern = tablePattern.replaceAll("\\*", ".*");
+      Pattern pattern = Pattern.compile(tablePattern);
+      Matcher matcher = pattern.matcher("");
+      Set<String> combinedTableNames = new HashSet<String>();
+      combinedTableNames.addAll(tableNames);
+      for (Entry<String, Table> tableData : tables.entrySet()) {
+        matcher.reset(tableData.getKey());
+        if (matcher.matches()) {
+          if (tableData.getValue().getTableType() == tableType) {
+            // If tableType is the same that we are requesting,
+            // add table the the list
+            combinedTableNames.add(tableData.getKey());
+          } else {
+            // If tableType is not the same that we are requesting,
+            // remove it in case it was added before, as temp table
+            // overrides original table
+            combinedTableNames.remove(tableData.getKey());
+          }
+        }
+      }
+      // Combine/sort temp and normal table results
+      tableNames = new ArrayList<>(combinedTableNames);
+      Collections.sort(tableNames);
+    }
+
     return tableNames;
   }
 
@@ -345,6 +399,20 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return;
     }
     super.alter_table(dbname, tbl_name, new_tbl, cascade);
+  }
+
+  @Override
+  public void alter_table(String catName, String dbName, String tbl_name,
+      org.apache.hadoop.hive.metastore.api.Table new_tbl,
+      EnvironmentContext envContext, String validWriteIds)
+      throws InvalidOperationException, MetaException, TException {
+    org.apache.hadoop.hive.metastore.api.Table old_tbl = getTempTable(dbName, tbl_name);
+    if (old_tbl != null) {
+      //actually temp table does not support partitions, cascade is not applicable here
+      alterTempTable(dbName, tbl_name, old_tbl, new_tbl, null);
+      return;
+    }
+    super.alter_table(catName, dbName, tbl_name, new_tbl, envContext, validWriteIds);
   }
 
   @Override
@@ -593,7 +661,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return false;
     }
     boolean statsPresent = false;
-    for (String stat : StatsSetupConst.supportedStats) {
+    for (String stat : StatsSetupConst.SUPPORTED_STATS) {
       String statVal = props.get(stat);
       if (statVal != null && Long.parseLong(statVal) > 0) {
         statsPresent = true;

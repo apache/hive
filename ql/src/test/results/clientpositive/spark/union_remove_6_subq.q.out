@@ -41,6 +41,9 @@ FROM (
 insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n0
+PREHOOK: Output: default@outputtbl1_n0
+PREHOOK: Output: default@outputtbl2
 POSTHOOK: query: explain
 FROM (
   select * from(
@@ -52,6 +55,9 @@ FROM (
 insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n0
+POSTHOOK: Output: default@outputtbl1_n0
+POSTHOOK: Output: default@outputtbl2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -231,6 +237,8 @@ select avg(c) from(
   SELECT count(1) as c from src
 )subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select avg(c) from(
   SELECT count(1)-200 as c from src
@@ -238,6 +246,8 @@ select avg(c) from(
   SELECT count(1) as c from src
 )subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -298,7 +308,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: (_col0 / _col1) (type: double)
+                  expressions: (UDFToDouble(_col0) / _col1) (type: double)
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -357,6 +367,8 @@ select key, avg(c) over w from(
 )subq group by key, c
 WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, avg(c) over w from(
   SELECT key, count(1)*2 as c from src group by key
@@ -365,6 +377,8 @@ select key, avg(c) over w from(
 )subq group by key, c
 WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -439,7 +453,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:

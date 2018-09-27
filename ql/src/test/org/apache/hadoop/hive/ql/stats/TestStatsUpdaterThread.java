@@ -29,9 +29,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -136,6 +138,148 @@ public class TestStatsUpdaterThread {
     drainWorkQueue(su);
     verifyStatsUpToDate("simple_stats", Lists.newArrayList("i"), msClient, false);
     verifyAndUnsetColStats("simple_stats2", Lists.newArrayList("s"), msClient);
+
+    msClient.close();
+  }
+
+  @Test(timeout=80000)
+  public void testTxnTable() throws Exception {
+    StatsUpdaterThread su = createUpdater();
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+
+    executeQuery("create table simple_stats (s string) TBLPROPERTIES "
+        + "(\"transactional\"=\"true\", \"transactional_properties\"=\"insert_only\")");
+    executeQuery("insert into simple_stats (s) values ('test')");
+    List<String> cols = Lists.newArrayList("s");
+    String dbName = ss.getCurrentDatabase(), tblName = "simple_stats", fqName = dbName + "." + tblName;
+    ValidWriteIdList initialWriteIds = msClient.getValidWriteIds(fqName);
+    verifyStatsUpToDate(tblName, cols, msClient, initialWriteIds.toString(), true);
+    assertFalse(su.runOneIteration());
+    drainWorkQueue(su, 0);
+
+    executeQuery("insert overwrite table simple_stats values ('test2')");
+    ValidWriteIdList nextWriteIds = msClient.getValidWriteIds(fqName);
+    verifyStatsUpToDate(tblName, cols, msClient, nextWriteIds.toString(), true);
+    assertFalse(su.runOneIteration());
+    drainWorkQueue(su, 0);
+    String currentWriteIds = msClient.getValidWriteIds(fqName).toString();
+
+    // Overwrite the txn state to refer to an open txn.
+    long badTxnId = msClient.openTxn("moo");
+    long badWriteId = msClient.allocateTableWriteId(badTxnId, dbName, tblName);
+
+    Table tbl = msClient.getTable(dbName, tblName);
+    tbl.setWriteId(badWriteId);
+    msClient.alter_table(
+        null, dbName, tblName, tbl, new EnvironmentContext(), initialWriteIds.toString());
+
+    // Stats should not be valid.
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, false);
+
+    // Analyze should not be able to set valid stats for a running txn.
+    assertTrue(su.runOneIteration());
+    drainWorkQueue(su);
+
+    currentWriteIds = msClient.getValidWriteIds(fqName).toString();
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, false);
+
+    msClient.abortTxns(Lists.newArrayList(badTxnId));
+
+    // Analyze should be able to override stats of an aborted txn.
+    assertTrue(su.runOneIteration());
+    drainWorkQueue(su);
+
+    // Stats will now be valid.
+    currentWriteIds = msClient.getValidWriteIds(fqName).toString();
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, true);
+
+    // Verify that incorrect stats from a valid write ID are also handled.
+    badTxnId = msClient.openTxn("moo");
+    badWriteId = msClient.allocateTableWriteId(badTxnId, dbName, tblName);
+    tbl = msClient.getTable(dbName, tblName);
+    tbl.setWriteId(badWriteId);
+    StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
+    msClient.alter_table(null, dbName, tblName, tbl, new EnvironmentContext(), initialWriteIds.toString());
+
+    // Stats should not be valid.
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, false);
+
+    // Analyze should not be able to set valid stats for a running txn.
+    assertTrue(su.runOneIteration());
+    drainWorkQueue(su);
+
+    currentWriteIds = msClient.getValidWriteIds(fqName).toString();
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, false);
+
+    msClient.commitTxn(badTxnId);
+
+    // Analyze should be able to override stats of an committed txn.
+    assertTrue(su.runOneIteration());
+    drainWorkQueue(su);
+
+    // Stats will now be valid.
+    currentWriteIds = msClient.getValidWriteIds(fqName).toString();
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, true);
+
+    msClient.close();
+  }
+
+
+  @Test
+  public void testTxnPartitions() throws Exception {
+    StatsUpdaterThread su = createUpdater();
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+
+    executeQuery("create table simple_stats (s string) partitioned by (p int) TBLPROPERTIES "
+        + "(\"transactional\"=\"true\", \"transactional_properties\"=\"insert_only\")");
+    executeQuery("insert into simple_stats partition(p=1) values ('test')");
+    executeQuery("insert into simple_stats partition(p=2) values ('test2')");
+    executeQuery("insert into simple_stats partition(p=3) values ('test3')");
+    assertFalse(su.runOneIteration());
+    drainWorkQueue(su, 0);
+
+    executeQuery("insert overwrite table simple_stats partition(p=1) values ('test2')");
+    executeQuery("insert overwrite table simple_stats partition(p=2) values ('test3')");
+    assertFalse(su.runOneIteration());
+    drainWorkQueue(su, 0);
+
+    // Overwrite the txn state to refer to an aborted txn on some partitions.
+    String dbName = ss.getCurrentDatabase(), tblName = "simple_stats", fqName = dbName + "." + tblName;
+    long badTxnId = msClient.openTxn("moo");
+    long badWriteId = msClient.allocateTableWriteId(badTxnId, dbName, tblName);
+    msClient.abortTxns(Lists.newArrayList(badTxnId));
+
+    Partition part1 = msClient.getPartition(dbName, tblName, "p=1");
+    Partition part2 = msClient.getPartition(dbName, tblName, "p=2");
+    part1.setWriteId(badWriteId);
+    part2.setWriteId(badWriteId);
+    String currentWriteIds = msClient.getValidWriteIds(fqName).toString();
+    // To update write ID we need to specify the write ID list to validate concurrent writes.
+    msClient.alter_partitions(dbName, tblName,
+        Lists.newArrayList(part1), null, currentWriteIds, badWriteId);
+    msClient.alter_partitions(dbName, tblName,
+        Lists.newArrayList(part2), null, currentWriteIds, badWriteId);
+
+    // We expect two partitions to be updated.
+    Map<String, List<ColumnStatisticsObj>> stats = msClient.getPartitionColumnStatistics(
+        dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
+        Lists.newArrayList("s"), currentWriteIds);
+    assertEquals(1, stats.size());
+
+    assertTrue(su.runOneIteration());
+    drainWorkQueue(su, 2);
+    // Analyze treats stats like data (new write ID), so stats still should not be valid.
+    stats = msClient.getPartitionColumnStatistics(
+        dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
+        Lists.newArrayList("s"), currentWriteIds);
+    assertEquals(1, stats.size());
+
+    // New reader.
+    currentWriteIds = msClient.getValidWriteIds(fqName).toString();
+    stats = msClient.getPartitionColumnStatistics(
+        dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
+        Lists.newArrayList("s"), currentWriteIds);
+    assertEquals(3, stats.size());
 
     msClient.close();
   }
@@ -437,13 +581,19 @@ public class TestStatsUpdaterThread {
     }
   }
 
-  private void verifyStatsUpToDate(String tbl, ArrayList<String> cols, IMetaStoreClient msClient,
+  private void verifyStatsUpToDate(String tbl, List<String> cols, IMetaStoreClient msClient,
       boolean isUpToDate) throws Exception {
     Table table = msClient.getTable(ss.getCurrentDatabase(), tbl);
     verifyStatsUpToDate(table.getParameters(), cols, isUpToDate);
   }
 
-  private void verifyStatsUpToDate(Map<String, String> params, ArrayList<String> cols,
+  private void verifyStatsUpToDate(String tbl, List<String> cols, IMetaStoreClient msClient,
+      String validWriteIds, boolean isUpToDate) throws Exception {
+    Table table = msClient.getTable(ss.getCurrentCatalog(), ss.getCurrentDatabase(), tbl, validWriteIds);
+    verifyStatsUpToDate(table.getParameters(), cols, isUpToDate);
+  }
+
+  private void verifyStatsUpToDate(Map<String, String> params, List<String> cols,
       boolean isUpToDate) {
     if (isUpToDate) {
       assertTrue(StatsSetupConst.areBasicStatsUptoDate(params));

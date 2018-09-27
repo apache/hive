@@ -12,8 +12,12 @@ POSTHOOK: Lineage: s_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, 
 POSTHOOK: Lineage: s_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select * from s_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from s_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -41,8 +45,12 @@ POSTHOOK: Input: default@s_n5
 POSTHOOK: Output: default@s_n5
 PREHOOK: query: explain select * from s_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from s_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -70,8 +78,12 @@ POSTHOOK: Input: default@s_n5
 POSTHOOK: Output: default@s_n5
 PREHOOK: query: explain select * from s_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from s_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -99,8 +111,12 @@ POSTHOOK: Input: default@s_n5
 POSTHOOK: Output: default@s_n5
 PREHOOK: query: explain select * from s_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from s_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -137,8 +153,14 @@ POSTHOOK: Output: default@calendarp_n0@p=1
 POSTHOOK: Lineage: calendarp_n0 PARTITION(p=1).year SCRIPT []
 PREHOOK: query: explain select * from calendarp_n0 where p=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendarp_n0
+PREHOOK: Input: default@calendarp_n0@p=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from calendarp_n0 where p=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendarp_n0
+POSTHOOK: Input: default@calendarp_n0@p=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -168,8 +190,14 @@ POSTHOOK: Input: default@calendarp_n0@p=1
 POSTHOOK: Output: default@calendarp_n0@p=1
 PREHOOK: query: explain select * from calendarp_n0 where p=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@calendarp_n0
+PREHOOK: Input: default@calendarp_n0@p=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from calendarp_n0 where p=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calendarp_n0
+POSTHOOK: Input: default@calendarp_n0@p=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -234,8 +262,14 @@ POSTHOOK: Lineage: src_stat_part_two_n0 PARTITION(px=2,py=b).key SIMPLE [(src)sr
 POSTHOOK: Lineage: src_stat_part_two_n0 PARTITION(px=2,py=b).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_part_two_n0
+PREHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_part_two_n0
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -256,8 +290,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_part_two_n0
+PREHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+PREHOOK: Input: default@src_stat_part_two_n0@px=1/py=b
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_part_two_n0
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=b
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -287,8 +329,14 @@ POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
 POSTHOOK: Output: default@src_stat_part_two_n0@px=1/py=a
 PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_part_two_n0
+PREHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_part_two_n0
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -309,8 +357,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_part_two_n0
+PREHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+PREHOOK: Input: default@src_stat_part_two_n0@px=1/py=b
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_part_two_n0
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=b
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -343,8 +399,14 @@ POSTHOOK: Output: default@src_stat_part_two_n0@px=1/py=a
 POSTHOOK: Output: default@src_stat_part_two_n0@px=1/py=b
 PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_part_two_n0
+PREHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_part_two_n0
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -365,8 +427,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_part_two_n0
+PREHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+PREHOOK: Input: default@src_stat_part_two_n0@px=1/py=b
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_part_two_n0
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=b
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

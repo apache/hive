@@ -39,6 +39,7 @@ between
 bin
 bloom_filter
 bround
+bucket_number
 cardinality_violation
 case
 cbrt
@@ -130,6 +131,7 @@ isnottrue
 isnull
 istrue
 java_method
+json_read
 json_tuple
 lag
 last_day
@@ -252,6 +254,7 @@ substr
 substring
 substring_index
 sum
+surrogate_key
 tan
 to_date
 to_epoch_milli
@@ -268,7 +271,6 @@ udftofloat
 udftointeger
 udftolong
 udftoshort
-udftostring
 unbase64
 unhex
 unix_timestamp

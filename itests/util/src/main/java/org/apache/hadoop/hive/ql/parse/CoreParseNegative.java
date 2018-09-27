@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -55,8 +56,18 @@ public class CoreParseNegative extends CliAdapter{
     firstRun = true;
     try {
       String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR, null,
-          hadoopVer, initScript, cleanupScript, false);
+      qt = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(null)
+            .withHadoopVer(hadoopVer)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(false)
+            .build());
+
       qt.newSession();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());

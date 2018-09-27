@@ -20,8 +20,12 @@ POSTHOOK: Lineage: t1_n60.str1 SIMPLE [(src)src.FieldSchema(name:value, type:str
 POSTHOOK: Lineage: t1_n60.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select Q1.int1_n60, sum(distinct Q1.int1_n60) from (select * from t1_n60 order by int1_n60) Q1 group by Q1.int1_n60
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
 POSTHOOK: query: explain select Q1.int1_n60, sum(distinct Q1.int1_n60) from (select * from t1_n60 order by int1_n60) Q1 group by Q1.int1_n60
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -71,8 +75,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select int1_n60, sum(distinct int1_n60) from t1_n60 group by int1_n60
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
 POSTHOOK: query: explain select int1_n60, sum(distinct int1_n60) from t1_n60 group by int1_n60
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

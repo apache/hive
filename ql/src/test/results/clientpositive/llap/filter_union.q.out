@@ -11,6 +11,8 @@ select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m >2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended 
 select key, c, m from
 (
@@ -24,6 +26,15 @@ select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m >2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, COUNT(`key`) AS `c`, 3 AS `m`
+FROM `default`.`src`
+GROUP BY `key`
+UNION ALL
+SELECT `key`, COUNT(`key`) AS `c`, 4 AS `m`
+FROM `default`.`src`
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -291,6 +302,8 @@ select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select key, c, m from
 (
@@ -304,6 +317,8 @@ select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -379,6 +394,8 @@ select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select key, c, m from
 (
@@ -392,6 +409,8 @@ select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -467,6 +486,8 @@ select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select key, c, m from
 (
@@ -480,6 +501,8 @@ select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -38,10 +38,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT key, count(1) FROM T1_n80 GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl1_n18
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT key, count(1) FROM T1_n80 GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl1_n18
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t1_n80`
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -235,10 +242,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2_n5
 SELECT key, val, count(1) FROM T1_n80 GROUP BY key, val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl2_n5
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2_n5
 SELECT key, val, count(1) FROM T1_n80 GROUP BY key, val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl2_n5
+OPTIMIZED SQL: SELECT `key`, `val`, COUNT(*) AS `$f2`
+FROM `default`.`t1_n80`
+GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -447,10 +461,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT key, count(1) FROM (SELECT key, val FROM T1_n80) subq1 GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl1_n18
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT key, count(1) FROM (SELECT key, val FROM T1_n80) subq1 GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl1_n18
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t1_n80`
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -636,10 +657,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1_n80) subq1 GROUP BY k
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl1_n18
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1_n80) subq1 GROUP BY k
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl1_n18
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t1_n80`
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -833,10 +861,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl3_n2
 SELECT 1, key, count(1) FROM T1_n80 GROUP BY 1, key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl3_n2
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3_n2
 SELECT 1, key, count(1) FROM T1_n80 GROUP BY 1, key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl3_n2
+OPTIMIZED SQL: SELECT 1 AS `_o__c0`, `key`, COUNT(*) AS `_o__c2`
+FROM `default`.`t1_n80`
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1031,10 +1066,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4_n2
 SELECT key, 1, val, count(1) FROM T1_n80 GROUP BY key, 1, val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl4_n2
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4_n2
 SELECT key, 1, val, count(1) FROM T1_n80 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl4_n2
+OPTIMIZED SQL: SELECT `key`, 1 AS `_o__c1`, `val`, COUNT(*) AS `_o__c3`
+FROM `default`.`t1_n80`
+GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1244,10 +1286,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl3_n2
 SELECT key, key + 1, count(1) FROM T1_n80 GROUP BY key, key + 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl3_n2
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3_n2
 SELECT key, key + 1, count(1) FROM T1_n80 GROUP BY key, key + 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl3_n2
+OPTIMIZED SQL: SELECT `key` AS `$f0`, CAST(`key` AS DOUBLE) + CAST(1 AS DOUBLE) AS `$f1`, COUNT(*) AS `$f2`
+FROM `default`.`t1_n80`
+GROUP BY `key`, CAST(`key` AS DOUBLE) + CAST(1 AS DOUBLE)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1457,12 +1506,19 @@ SELECT key + key, sum(cnt) from
 (SELECT key, count(1) as cnt FROM T1_n80 GROUP BY key) subq1
 group by key + key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl1_n18
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT key + key, sum(cnt) from
 (SELECT key, count(1) as cnt FROM T1_n80 GROUP BY key) subq1
 group by key + key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl1_n18
+OPTIMIZED SQL: SELECT CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE) AS `$f0`, SUM(COUNT(*)) AS `$f1`
+FROM `default`.`t1_n80`
+GROUP BY CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1687,6 +1743,8 @@ SELECT key, count(1) FROM T1_n80 GROUP BY key
 SELECT key, count(1) FROM T1_n80 GROUP BY key
 ) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl1_n18
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT * FROM (
@@ -1695,6 +1753,15 @@ SELECT key, count(1) FROM T1_n80 GROUP BY key
 SELECT key, count(1) FROM T1_n80 GROUP BY key
 ) subq1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl1_n18
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t1_n80`
+GROUP BY `key`
+UNION ALL
+SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t1_n80`
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2008,6 +2075,8 @@ SELECT key, count(1) FROM T1_n80 GROUP BY key
 SELECT cast(key + key as string) as key, count(1) FROM T1_n80 GROUP BY key + key
 ) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl1_n18
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT * FROM (
@@ -2016,6 +2085,15 @@ SELECT key, count(1) FROM T1_n80 GROUP BY key
 SELECT cast(key + key as string) as key, count(1) FROM T1_n80 GROUP BY key + key
 ) subq1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl1_n18
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t1_n80`
+GROUP BY `key`
+UNION ALL
+SELECT CAST(CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE) AS STRING) AS `key`, COUNT(*) AS `_o__c1`
+FROM `default`.`t1_n80`
+GROUP BY CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2233,7 +2311,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToString(_col0) (type: string), _col1 (type: bigint)
+                  expressions: CAST( _col0 AS STRING) (type: string), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -2354,6 +2432,8 @@ JOIN
 (SELECT key, count(1) as cnt FROM T1_n80 GROUP BY key) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+PREHOOK: Output: default@outputtbl1_n18
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT subq1.key, subq1.cnt+subq2.cnt FROM 
@@ -2362,6 +2442,17 @@ JOIN
 (SELECT key, count(1) as cnt FROM T1_n80 GROUP BY key) subq2
 ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+POSTHOOK: Output: default@outputtbl1_n18
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`$f1` + `t2`.`$f1` AS `_o__c1`
+FROM (SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t1_n80`
+WHERE `key` IS NOT NULL
+GROUP BY `key`) AS `t0`
+INNER JOIN (SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t1_n80`
+WHERE `key` IS NOT NULL
+GROUP BY `key`) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2665,6 +2756,8 @@ JOIN
 (SELECT key, val, count(1) FROM T1_n80 GROUP BY key, val) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n80
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED 
 SELECT * FROM 
 (SELECT key, count(1) FROM T1_n80 GROUP BY key) subq1
@@ -2672,6 +2765,17 @@ JOIN
 (SELECT key, val, count(1) FROM T1_n80 GROUP BY key, val) subq2
 ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n80
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t1_n80`
+WHERE `key` IS NOT NULL
+GROUP BY `key`) AS `t0`
+INNER JOIN (SELECT `key`, `val`, COUNT(*) AS `$f2`
+FROM `default`.`t1_n80`
+WHERE `key` IS NOT NULL
+GROUP BY `key`, `val`) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2935,10 +3039,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT key, count(1) FROM T2_n49 GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n49
+PREHOOK: Output: default@outputtbl1_n18
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1_n18
 SELECT key, count(1) FROM T2_n49 GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n49
+POSTHOOK: Output: default@outputtbl1_n18
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`t2_n49`
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3146,10 +3257,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4_n2
 SELECT key, 1, val, count(1) FROM T2_n49 GROUP BY key, 1, val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n49
+PREHOOK: Output: default@outputtbl4_n2
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4_n2
 SELECT key, 1, val, count(1) FROM T2_n49 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n49
+POSTHOOK: Output: default@outputtbl4_n2
+OPTIMIZED SQL: SELECT `key`, 1 AS `_o__c1`, `val`, COUNT(*) AS `_o__c3`
+FROM `default`.`t2_n49`
+GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3346,10 +3464,17 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl5_n2
 SELECT key, 1, val, 2, count(1) FROM T2_n49 GROUP BY key, 1, val, 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n49
+PREHOOK: Output: default@outputtbl5_n2
 POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl5_n2
 SELECT key, 1, val, 2, count(1) FROM T2_n49 GROUP BY key, 1, val, 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n49
+POSTHOOK: Output: default@outputtbl5_n2
+OPTIMIZED SQL: SELECT `key`, 1 AS `_o__c1`, `val`, 2 AS `_o__c3`, COUNT(*) AS `_o__c4`
+FROM `default`.`t2_n49`
+GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3543,12 +3668,19 @@ SELECT key, constant, val, count(1) from
 (SELECT key, 1 as constant, val from T2_n49)subq
 group by key, constant, val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n49
+PREHOOK: Output: default@outputtbl4_n2
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4_n2
 SELECT key, constant, val, count(1) from 
 (SELECT key, 1 as constant, val from T2_n49)subq
 group by key, constant, val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n49
+POSTHOOK: Output: default@outputtbl4_n2
+OPTIMIZED SQL: SELECT `key`, 1 AS `constant`, `val`, COUNT(*) AS `_o__c3`
+FROM `default`.`t2_n49`
+GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3746,6 +3878,8 @@ SELECT key, constant as constant2, val, 2 as constant3 from
 )subq2
 group by key, constant3, val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n49
+PREHOOK: Output: default@outputtbl4_n2
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4_n2
 select key, constant3, val, count(1) from
@@ -3755,6 +3889,11 @@ SELECT key, constant as constant2, val, 2 as constant3 from
 )subq2
 group by key, constant3, val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n49
+POSTHOOK: Output: default@outputtbl4_n2
+OPTIMIZED SQL: SELECT `key`, 2 AS `constant3`, `val`, COUNT(*) AS `_o__c3`
+FROM `default`.`t2_n49`
+GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3970,11 +4109,17 @@ FROM T2_n49
 INSERT OVERWRITE TABLE DEST1_n80 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE DEST2_n18 SELECT key, val, count(1) GROUP BY key, val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n49
+PREHOOK: Output: default@dest1_n80
+PREHOOK: Output: default@dest2_n18
 POSTHOOK: query: EXPLAIN
 FROM T2_n49
 INSERT OVERWRITE TABLE DEST1_n80 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE DEST2_n18 SELECT key, val, count(1) GROUP BY key, val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n49
+POSTHOOK: Output: default@dest1_n80
+POSTHOOK: Output: default@dest2_n18
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -4135,11 +4280,17 @@ FROM (select key, val from T2_n49 where key = 8) x
 INSERT OVERWRITE TABLE DEST1_n80 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE DEST2_n18 SELECT key, val, count(1) GROUP BY key, val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n49
+PREHOOK: Output: default@dest1_n80
+PREHOOK: Output: default@dest2_n18
 POSTHOOK: query: EXPLAIN
 FROM (select key, val from T2_n49 where key = 8) x
 INSERT OVERWRITE TABLE DEST1_n80 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE DEST2_n18 SELECT key, val, count(1) GROUP BY key, val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n49
+POSTHOOK: Output: default@dest1_n80
+POSTHOOK: Output: default@dest2_n18
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

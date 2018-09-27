@@ -79,8 +79,7 @@ public class MapOperator extends AbstractMapOperator {
   protected transient long logEveryNRows = 0;
 
   // input path --> {operator --> context}
-  private final Map<String, Map<Operator<?>, MapOpCtx>> opCtxMap =
-      new HashMap<String, Map<Operator<?>, MapOpCtx>>();
+  private final Map<Path, Map<Operator<?>, MapOpCtx>> opCtxMap = new HashMap<>();
   // child operator --> object inspector (converted OI if it's needed)
   private final Map<Operator<?>, StructObjectInspector> childrenOpToOI =
       new HashMap<Operator<?>, StructObjectInspector>();
@@ -440,10 +439,8 @@ public class MapOperator extends AbstractMapOperator {
           LOG.debug("Adding alias " + alias + " to work list for file "
               + onefile);
         }
-        Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(onefile.toString());
-        if (contexts == null) {
-          opCtxMap.put(onefile.toString(), contexts = new LinkedHashMap<Operator<?>, MapOpCtx>());
-        }
+        Map<Operator<?>, MapOpCtx> contexts = opCtxMap.computeIfAbsent(onefile,
+                k -> new LinkedHashMap<>());
         if (contexts.containsKey(op)) {
           continue;
         }
@@ -515,7 +512,7 @@ public class MapOperator extends AbstractMapOperator {
   public void cleanUpInputFileChangedOp() throws HiveException {
     super.cleanUpInputFileChangedOp();
     Path fpath = getExecContext().getCurrentInputPath();
-    String nominalPath = getNominalPath(fpath);
+    Path nominalPath = getNominalPath(fpath);
     Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(nominalPath);
     if (LOG.isInfoEnabled()) {
       StringBuilder builder = new StringBuilder();
@@ -677,6 +674,12 @@ public class MapOperator extends AbstractMapOperator {
   }
 
   @Override
+  public void closeOp(boolean abort) throws HiveException {
+    super.closeOp(abort);
+    LOG.info("{}: Total records read - {}. abort - {}", this, numRows, abort);
+  }
+
+  @Override
   public void process(Object row, int tag) throws HiveException {
     throw new HiveException("Hive 2 Internal error: should not be called!");
   }
@@ -697,7 +700,7 @@ public class MapOperator extends AbstractMapOperator {
 
   public void initializeContexts() {
     Path fpath = getExecContext().getCurrentInputPath();
-    String nominalPath = getNominalPath(fpath);
+    Path nominalPath = getNominalPath(fpath);
     Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(nominalPath);
     currentCtxs = contexts.values().toArray(new MapOpCtx[contexts.size()]);
   }

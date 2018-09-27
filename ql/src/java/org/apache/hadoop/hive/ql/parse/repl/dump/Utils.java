@@ -75,7 +75,7 @@ public class Utils {
     }
   }
 
-  public static Iterable<? extends String> matchesDb(Hive db, String dbPattern) throws HiveException {
+  public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {
     if (dbPattern == null) {
       return db.getAllDatabases();
     } else {
@@ -83,7 +83,7 @@ public class Utils {
     }
   }
 
-  public static Iterable<? extends String> matchesTbl(Hive db, String dbName, String tblPattern)
+  public static Iterable<String> matchesTbl(Hive db, String dbName, String tblPattern)
       throws HiveException {
     if (tblPattern == null) {
       return getAllTables(db, dbName);
@@ -186,10 +186,6 @@ public class Utils {
         return false;
       }
 
-      boolean isAcidTable = AcidUtils.isTransactionalTable(tableHandle);
-      if (isAcidTable) {
-        return hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES);
-      }
       return !tableHandle.isTemporary();
     }
     return true;

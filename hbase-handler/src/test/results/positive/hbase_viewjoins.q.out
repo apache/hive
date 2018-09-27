@@ -14,7 +14,7 @@ PREHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE HBASE_TABLE_TEST_1(
+PREHOOK: query: CREATE EXTERNAL TABLE HBASE_TABLE_TEST_1(
   cvalue string ,
   pk string,
  ccount int   )
@@ -29,11 +29,12 @@ WITH SERDEPROPERTIES (
   'serialization.format'='1')
 TBLPROPERTIES (
   'hbase.table.name'='hbase_table_test_1',
-  'serialization.null.format'=''  )
+  'serialization.null.format'='',
+  'external.table.purge' = 'true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@HBASE_TABLE_TEST_1
-POSTHOOK: query: CREATE TABLE HBASE_TABLE_TEST_1(
+POSTHOOK: query: CREATE EXTERNAL TABLE HBASE_TABLE_TEST_1(
   cvalue string ,
   pk string,
  ccount int   )
@@ -48,7 +49,8 @@ WITH SERDEPROPERTIES (
   'serialization.format'='1')
 TBLPROPERTIES (
   'hbase.table.name'='hbase_table_test_1',
-  'serialization.null.format'=''  )
+  'serialization.null.format'='',
+  'external.table.purge' = 'true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@HBASE_TABLE_TEST_1
@@ -65,7 +67,7 @@ POSTHOOK: Output: default@VIEW_HBASE_TABLE_TEST_1
 POSTHOOK: Lineage: VIEW_HBASE_TABLE_TEST_1.ccount SIMPLE [(hbase_table_test_1)hbase_table_test_1.FieldSchema(name:ccount, type:int, comment:), ]
 POSTHOOK: Lineage: VIEW_HBASE_TABLE_TEST_1.cvalue SIMPLE [(hbase_table_test_1)hbase_table_test_1.FieldSchema(name:cvalue, type:string, comment:), ]
 POSTHOOK: Lineage: VIEW_HBASE_TABLE_TEST_1.pk SIMPLE [(hbase_table_test_1)hbase_table_test_1.FieldSchema(name:pk, type:string, comment:), ]
-PREHOOK: query: CREATE TABLE HBASE_TABLE_TEST_2(
+PREHOOK: query: CREATE EXTERNAL TABLE HBASE_TABLE_TEST_2(
   cvalue string ,
     pk string ,
    ccount int  )
@@ -80,11 +82,12 @@ WITH SERDEPROPERTIES (
   'serialization.format'='1')
 TBLPROPERTIES (
   'hbase.table.name'='hbase_table_test_2',
-  'serialization.null.format'='')
+  'serialization.null.format'='',
+  'external.table.purge' = 'true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@HBASE_TABLE_TEST_2
-POSTHOOK: query: CREATE TABLE HBASE_TABLE_TEST_2(
+POSTHOOK: query: CREATE EXTERNAL TABLE HBASE_TABLE_TEST_2(
   cvalue string ,
     pk string ,
    ccount int  )
@@ -99,7 +102,8 @@ WITH SERDEPROPERTIES (
   'serialization.format'='1')
 TBLPROPERTIES (
   'hbase.table.name'='hbase_table_test_2',
-  'serialization.null.format'='')
+  'serialization.null.format'='',
+  'external.table.purge' = 'true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@HBASE_TABLE_TEST_2

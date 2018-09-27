@@ -18,6 +18,8 @@ WHERE    ((cstring2 LIKE '%b%')
               OR (cstring1 < 'a')))
 GROUP BY cstring1, cdouble, ctimestamp1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT   cstring1,
          cdouble,
@@ -38,6 +40,8 @@ WHERE    ((cstring2 LIKE '%b%')
               OR (cstring1 < 'a')))
 GROUP BY cstring1, cdouble, ctimestamp1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -99,10 +103,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: double), _col2 (type: timestamp)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
-                              keyColumnNums: [0, 1, 2]
+                              keyColumns: 0:string, 1:double, 2:timestamp
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [3, 4, 5, 6]
+                              valueColumns: 3:bigint, 4:double, 5:double, 6:double
                           Statistics: Num rows: 2048 Data size: 303516 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: bigint), _col4 (type: double), _col5 (type: double), _col6 (type: double)
             Execution mode: vectorized, llap

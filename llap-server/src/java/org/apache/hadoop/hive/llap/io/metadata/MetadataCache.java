@@ -28,11 +28,13 @@ import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapAllocatorBuffer;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
+import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 
 public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
   private final ConcurrentHashMap<Object, LlapBufferOrBuffers> metadata =
@@ -51,10 +54,10 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
   private final ConcurrentHashMap<Object, OrcFileEstimateErrors> estimateErrors;
   private final MemoryManager memoryManager;
   private final LowLevelCachePolicy policy;
-  private final EvictionAwareAllocator allocator;
+  private final BuddyAllocator allocator;
   private final LlapDaemonCacheMetrics metrics;
 
-  public MetadataCache(EvictionAwareAllocator allocator, MemoryManager memoryManager,
+  public MetadataCache(BuddyAllocator allocator, MemoryManager memoryManager,
       LowLevelCachePolicy policy, boolean useEstimateCache, LlapDaemonCacheMetrics metrics) {
     this.memoryManager = memoryManager;
     this.allocator = allocator;
@@ -64,7 +67,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
         ? new ConcurrentHashMap<Object, OrcFileEstimateErrors>() : null;
   }
 
-  public void putIncompleteCbs(Object fileKey, DiskRange[] ranges, long baseOffset) {
+  public void putIncompleteCbs(Object fileKey, DiskRange[] ranges, long baseOffset, AtomicBoolean isStopped) {
     if (estimateErrors == null) return;
     OrcFileEstimateErrors errorData = estimateErrors.get(fileKey);
     boolean isNew = false;
@@ -76,7 +79,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
         errorData.addError(range.getOffset(), range.getLength(), baseOffset);
       }
       long memUsage = errorData.estimateMemoryUsage();
-      memoryManager.reserveMemory(memUsage);
+      memoryManager.reserveMemory(memUsage, isStopped);
       OrcFileEstimateErrors old = estimateErrors.putIfAbsent(fileKey, errorData);
       if (old != null) {
         errorData = old;
@@ -150,34 +153,49 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
   }
 
   @Override
-  public LlapBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer) {
-    return putInternal(fileKey, tailBuffer, null);
+  public MemoryBufferOrBuffers putFileMetadata(Object fileKey,
+      ByteBuffer tailBuffer) {
+    return putInternal(fileKey, tailBuffer, null, null);
   }
 
   @Override
-  public LlapBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer, String tag) {
-    return putInternal(fileKey, tailBuffer, tag);
+  public MemoryBufferOrBuffers putFileMetadata(Object fileKey,
+      ByteBuffer tailBuffer, String tag) {
+    return putInternal(fileKey, tailBuffer, tag, null);
+  }
+
+  @Override
+  public MemoryBufferOrBuffers putFileMetadata(Object fileKey, int length,
+      InputStream is) throws IOException {
+    return putFileMetadata(fileKey, length, is, null, null);
   }
 
   public LlapBufferOrBuffers putStripeTail(
-      OrcBatchKey stripeKey, ByteBuffer tailBuffer, String tag) {
-    return putInternal(new StripeKey(stripeKey.fileKey, stripeKey.stripeIx), tailBuffer, tag);
+      OrcBatchKey stripeKey, ByteBuffer tailBuffer, String tag, AtomicBoolean isStopped) {
+    return putInternal(new StripeKey(stripeKey.fileKey, stripeKey.stripeIx), tailBuffer, tag, isStopped);
   }
 
   @Override
-  public LlapBufferOrBuffers putFileMetadata(
-      Object fileKey, int length, InputStream is) throws IOException {
-    return putFileMetadata(fileKey, length, is, null);
+  public MemoryBufferOrBuffers putFileMetadata(Object fileKey, int length,
+      InputStream is, String tag) throws IOException {
+    return putFileMetadata(fileKey, length, is, tag, null);
+  }
+
+
+  @Override
+  public LlapBufferOrBuffers putFileMetadata(Object fileKey,
+      ByteBuffer tailBuffer, String tag, AtomicBoolean isStopped) {
+    return putInternal(fileKey, tailBuffer, tag, isStopped);
   }
 
   @Override
-  public LlapBufferOrBuffers putFileMetadata(
-      Object fileKey, int length, InputStream is, String tag) throws IOException {
+  public LlapBufferOrBuffers putFileMetadata(Object fileKey, int length, InputStream is,
+      String tag, AtomicBoolean isStopped) throws IOException {
     LlapBufferOrBuffers result = null;
     while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
       LlapBufferOrBuffers oldVal = metadata.get(fileKey);
       if (oldVal == null) {
-        result = wrapBbForFile(result, fileKey, length, is, tag);
+        result = wrapBbForFile(result, fileKey, length, is, tag, isStopped);
         if (!lockBuffer(result, false)) {
           throw new AssertionError("Cannot lock a newly created value " + result);
         }
@@ -198,7 +216,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private LlapBufferOrBuffers wrapBbForFile(LlapBufferOrBuffers result,
-      Object fileKey, int length, InputStream stream, String tag) throws IOException {
+      Object fileKey, int length, InputStream stream, String tag, AtomicBoolean isStopped) throws IOException {
     if (result != null) return result;
     int maxAlloc = allocator.getMaxAllocation();
     LlapMetadataBuffer<Object>[] largeBuffers = null;
@@ -207,7 +225,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
       for (int i = 0; i < largeBuffers.length; ++i) {
         largeBuffers[i] = new LlapMetadataBuffer<Object>(fileKey, tag);
       }
-      allocator.allocateMultiple(largeBuffers, maxAlloc, null);
+      allocator.allocateMultiple(largeBuffers, maxAlloc, null, isStopped);
       for (int i = 0; i < largeBuffers.length; ++i) {
         readIntoCacheBuffer(stream, maxAlloc, largeBuffers[i]);
       }
@@ -218,7 +236,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     } else {
       LlapMetadataBuffer<Object>[] smallBuffer = new LlapMetadataBuffer[1];
       smallBuffer[0] = new LlapMetadataBuffer(fileKey, tag);
-      allocator.allocateMultiple(smallBuffer, length, null);
+      allocator.allocateMultiple(smallBuffer, length, null, isStopped);
       readIntoCacheBuffer(stream, smallSize, smallBuffer[0]);
       if (largeBuffers == null) {
         return smallBuffer[0]; // This is the overwhelmingly common case.
@@ -243,12 +261,12 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     bb.position(pos);
   }
 
-  private <T> LlapBufferOrBuffers putInternal(T key, ByteBuffer tailBuffer, String tag) {
+  private <T> LlapBufferOrBuffers putInternal(T key, ByteBuffer tailBuffer, String tag, AtomicBoolean isStopped) {
     LlapBufferOrBuffers result = null;
     while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
       LlapBufferOrBuffers oldVal = metadata.get(key);
       if (oldVal == null) {
-        result = wrapBb(result, key, tailBuffer, tag);
+        result = wrapBb(result, key, tailBuffer, tag, isStopped);
         oldVal = metadata.putIfAbsent(key, result);
         if (oldVal == null) {
           cacheInPolicy(result); // Cached successfully, add to policy.
@@ -306,11 +324,11 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
   }
 
   private <T> LlapBufferOrBuffers wrapBb(
-      LlapBufferOrBuffers result, T key, ByteBuffer tailBuffer, String tag) {
+      LlapBufferOrBuffers result, T key, ByteBuffer tailBuffer, String tag, AtomicBoolean isStopped) {
     if (result != null) return result;
     if (tailBuffer.remaining() <= allocator.getMaxAllocation()) {
       // The common case by far.
-      return wrapSmallBb(new LlapMetadataBuffer<T>(key, tag), tailBuffer);
+      return wrapSmallBb(new LlapMetadataBuffer<T>(key, tag), tailBuffer, isStopped);
     } else {
       int allocCount = determineAllocCount(tailBuffer);
       @SuppressWarnings("unchecked")
@@ -318,22 +336,24 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
       for (int i = 0; i < allocCount; ++i) {
         results[i] = new LlapMetadataBuffer<T>(key, tag);
       }
-      wrapLargeBb(results, tailBuffer);
+      wrapLargeBb(results, tailBuffer, isStopped);
       return new LlapMetadataBuffers<T>(results);
     }
   }
 
-  private <T extends LlapAllocatorBuffer> T wrapSmallBb(T result, ByteBuffer tailBuffer) {
+  private <T extends LlapAllocatorBuffer> T wrapSmallBb(T result, ByteBuffer tailBuffer,
+      AtomicBoolean isStopped) {
     // Note: we pass in null factory because we allocate objects here. We could also pass a
     //       per-call factory that would set fileKey; or set it after put.
-    allocator.allocateMultiple(new MemoryBuffer[] { result }, tailBuffer.remaining(), null);
+    allocator.allocateMultiple(new MemoryBuffer[] { result }, tailBuffer.remaining(), null, isStopped);
     return putBufferToDest(tailBuffer.duplicate(), result);
   }
 
-  private <T extends LlapAllocatorBuffer> void wrapLargeBb(T[] results, ByteBuffer tailBuffer) {
+  private <T extends LlapAllocatorBuffer> void wrapLargeBb(T[] results, ByteBuffer tailBuffer,
+      AtomicBoolean isStopped) {
     // Note: we pass in null factory because we allocate objects here. We could also pass a
     //       per-call factory that would set fileKey; or set it after put.
-    allocator.allocateMultiple(results, allocator.getMaxAllocation(), null);
+    allocator.allocateMultiple(results, allocator.getMaxAllocation(), null, isStopped);
     ByteBuffer src = tailBuffer.duplicate();
     int pos = src.position(), remaining = src.remaining();
     for (int i = 0; i < results.length; ++i) {

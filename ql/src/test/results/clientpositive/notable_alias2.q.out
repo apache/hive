@@ -10,10 +10,14 @@ PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n50 SELECT '1234', src.key, count(1) WHERE key < 100 group by src.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n50
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n50 SELECT '1234', src.key, count(1) WHERE key < 100 group by src.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n50
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

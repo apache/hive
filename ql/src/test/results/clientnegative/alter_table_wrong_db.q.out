@@ -1,0 +1,25 @@
+PREHOOK: query: create database bad_rename1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:bad_rename1
+POSTHOOK: query: create database bad_rename1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:bad_rename1
+PREHOOK: query: use bad_rename1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:bad_rename1
+POSTHOOK: query: use bad_rename1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:bad_rename1
+PREHOOK: query: create table rename1(a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: bad_rename1@rename1
+PREHOOK: Output: database:bad_rename1
+POSTHOOK: query: create table rename1(a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: bad_rename1@rename1
+POSTHOOK: Output: database:bad_rename1
+PREHOOK: query: alter table bad_rename1.rename1 rename to bad_db_notexists.rename1
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: bad_rename1@rename1
+PREHOOK: Output: bad_rename1@rename1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Unable to change partition or table. Object bad_db_notexists does not exist. Check metastore logs for detailed stack.

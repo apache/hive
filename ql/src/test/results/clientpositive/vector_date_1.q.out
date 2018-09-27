@@ -58,9 +58,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 vector_date_1.dt1	vector_date_1.dt2
-NULL	NULL
 1999-12-31	2000-01-01
 2001-01-01	2001-06-01
+NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -75,6 +75,8 @@ select
   dt2 > dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -89,6 +91,8 @@ select
   dt2 > dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -197,9 +201,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	dt2	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	2000-01-01	true	true	true	true	true	true	true	true
 2001-01-01	2001-06-01	true	true	true	true	true	true	true	true
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -214,6 +218,8 @@ select
   dt2 < dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -228,6 +234,8 @@ select
   dt2 < dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -336,9 +344,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	dt2	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	2000-01-01	false	false	false	false	false	false	false	false
 2001-01-01	2001-06-01	false	false	false	false	false	false	false	false
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1,
@@ -353,6 +361,8 @@ select
   date '1970-01-01' < dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1,
@@ -367,6 +377,8 @@ select
   date '1970-01-01' < dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -475,9 +487,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	true	true	true	true	true	true	true	true
 2001-01-01	true	true	true	true	true	true	true	true
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1,
@@ -492,6 +504,8 @@ select
   date '1970-01-01' > dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1,
@@ -506,6 +520,8 @@ select
   date '1970-01-01' > dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -614,9 +630,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	false	false	false	false	false	false	false	false
 2001-01-01	false	false	false	false	false	false	false	false
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1, dt2
@@ -630,6 +646,8 @@ where
   and dt2 >= dt1
 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2
@@ -643,6 +661,8 @@ where
   and dt2 >= dt1
 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -773,6 +793,8 @@ where
   and date '1970-01-01' <= dt1
 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2
@@ -788,6 +810,8 @@ where
   and date '1970-01-01' <= dt1
 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -894,9 +918,13 @@ dt1	dt2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -923,7 +951,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterLongColumnInList(col 0:date, values [0, 11323])
               predicate: (dt1) IN (DATE'1970-01-01', DATE'2001-01-01') (type: boolean)
-              Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: dt1 (type: date)
                 outputColumnNames: _col0
@@ -931,13 +959,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

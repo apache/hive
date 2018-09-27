@@ -45,7 +45,7 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
   public TemporaryFolder folder = new TemporaryFolder();
 
   @Override
-  String getTestDataDir() {
+  protected String getTestDataDir() {
     return TEST_DATA_DIR;
   }
 
@@ -219,7 +219,7 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
         "select count(*) from COMPACTION_QUEUE where CQ_TABLE='s'"));
     Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from WRITE_SET where WS_TABLE='s'"));
-    Assert.assertEquals(2, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(3, TxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='s'"));
     Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from NEXT_WRITE_ID where NWI_TABLE='s'"));
@@ -234,7 +234,7 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
             "select count(*) from COMPACTION_QUEUE where CQ_TABLE='bar'"));
     Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
             "select count(*) from WRITE_SET where WS_TABLE='bar'"));
-    Assert.assertEquals(2, TxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(4, TxnDbUtil.countQueryAgent(hiveConf,
             "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='bar'"));
     Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
             "select count(*) from NEXT_WRITE_ID where NWI_TABLE='bar'"));

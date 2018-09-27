@@ -75,9 +75,17 @@ POSTHOOK: Lineage: inventory_part_0 PARTITION(par=2).inv_warehouse_sk SIMPLE [(i
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_0
+PREHOOK: Input: default@inventory_part_0@par=1
+PREHOOK: Input: default@inventory_part_0@par=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_0
+POSTHOOK: Input: default@inventory_part_0@par=1
+POSTHOOK: Input: default@inventory_part_0@par=2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -245,9 +253,17 @@ POSTHOOK: Lineage: inventory_part_1 PARTITION(par=5cols).inv_warehouse_sk SIMPLE
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_1
+PREHOOK: Input: default@inventory_part_1@par=4cols
+PREHOOK: Input: default@inventory_part_1@par=5cols
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_1
+POSTHOOK: Input: default@inventory_part_1@par=4cols
+POSTHOOK: Input: default@inventory_part_1@par=5cols
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -415,9 +431,17 @@ POSTHOOK: Output: default@inventory_part_2a@par=2
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_2a
+PREHOOK: Input: default@inventory_part_2a@par=1
+PREHOOK: Input: default@inventory_part_2a@par=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_2a
+POSTHOOK: Input: default@inventory_part_2a@par=1
+POSTHOOK: Input: default@inventory_part_2a@par=2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -572,9 +596,17 @@ POSTHOOK: Output: default@inventory_part_2b@par1=2/par2=3
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_2b
+PREHOOK: Input: default@inventory_part_2b@par1=1/par2=4
+PREHOOK: Input: default@inventory_part_2b@par1=2/par2=3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_2b
+POSTHOOK: Input: default@inventory_part_2b@par1=1/par2=4
+POSTHOOK: Input: default@inventory_part_2b@par1=2/par2=3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -729,9 +761,17 @@ POSTHOOK: Output: default@inventory_part_3@par=2
 PREHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_3
+PREHOOK: Input: default@inventory_part_3@par=1
+PREHOOK: Input: default@inventory_part_3@par=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_3
+POSTHOOK: Input: default@inventory_part_3@par=1
+POSTHOOK: Input: default@inventory_part_3@par=2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -144,7 +145,7 @@ public class TestVectorStringConcat {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
     ExprNodeDesc col1Expr;
     if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
         columnScalarMode == ColumnScalarMode.COLUMN_SCALAR) {
@@ -190,7 +191,8 @@ public class TestVectorStringConcat {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, generationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
 
     Object[][] randomRows = rowSource.randomRows(100000);
@@ -305,12 +307,14 @@ public class TestVectorStringConcat {
       ObjectInspector rowInspector,
       GenericUDF genericUdf, Object[] resultObjects) throws Exception {
 
+    /*
     System.out.println(
         "*DEBUG* stringTypeInfo " + stringTypeInfo.toString() +
         " integerTypeInfo " + integerTypeInfo +
         " stringConcatTestMode ROW_MODE" +
         " columnScalarMode " + columnScalarMode +
         " genericUdf " + genericUdf.toString());
+    */
 
     ExprNodeGenericFuncDesc exprDesc =
         new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo, genericUdf, children);
@@ -398,6 +402,16 @@ public class TestVectorStringConcat {
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
 
+    if (stringConcatTestMode == StringConcatTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* stringTypeInfo1 " + stringTypeInfo1.toString() +
+          " stringTypeInfo2 " + stringTypeInfo2.toString() +
+          " stringConcatTestMode " + stringConcatTestMode +
+          " columnScalarMode " + columnScalarMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
+
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorExtractRow resultVectorExtractRow = new VectorExtractRow();
@@ -405,12 +419,16 @@ public class TestVectorStringConcat {
         new TypeInfo[] { outputTypeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
     System.out.println(
         "*DEBUG* stringTypeInfo1 " + stringTypeInfo1.toString() +
         " stringTypeInfo2 " + stringTypeInfo2.toString() +
         " stringConcatTestMode " + stringConcatTestMode +
         " columnScalarMode " + columnScalarMode +
         " vectorExpression " + vectorExpression.toString());
+    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;

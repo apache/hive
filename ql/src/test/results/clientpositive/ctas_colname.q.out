@@ -1,9 +1,15 @@
 PREHOOK: query: explain
 create table summary as select *, key + 1, concat(value, value) from src limit 20
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@summary
 POSTHOOK: query: explain
 create table summary as select *, key + 1, concat(value, value) from src limit 20
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@summary
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -148,9 +154,15 @@ POSTHOOK: Input: default@summary
 PREHOOK: query: explain
 create table x4 as select *, rank() over(partition by key order by value) as rr from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x4
 POSTHOOK: query: explain
 create table x4 as select *, rank() over(partition by key order by value) as rr from src1
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x4
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -184,7 +196,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1 ASC NULLS FIRST
+                  order by: _col1 ASC NULLS LAST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -313,9 +325,15 @@ POSTHOOK: Input: default@x4
 PREHOOK: query: explain
 create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x5
 POSTHOOK: query: explain
 create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -350,7 +368,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1 ASC NULLS FIRST
+                  order by: _col1 ASC NULLS LAST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -502,9 +520,15 @@ POSTHOOK: Input: default@x5
 PREHOOK: query: explain
 create table x6 as select * from (select *, key + 1 from src1) a
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x6
 POSTHOOK: query: explain
 create table x6 as select * from (select *, key + 1 from src1) a
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x6
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -680,9 +704,15 @@ POSTHOOK: Input: default@x6
 PREHOOK: query: explain
 create table x7 as select * from (select *, count(value) from src group by key, value) a
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x7
 POSTHOOK: query: explain
 create table x7 as select * from (select *, count(value) from src group by key, value) a
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x7
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1117,9 +1147,15 @@ POSTHOOK: Input: default@x7
 PREHOOK: query: explain
 create table x8 as select * from (select *, count(value) from src group by key, value having key < 9) a
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x8
 POSTHOOK: query: explain
 create table x8 as select * from (select *, count(value) from src group by key, value having key < 9) a
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1250,9 +1286,15 @@ POSTHOOK: Input: default@x8
 PREHOOK: query: explain
 create table x9 as select * from (select max(value),key from src group by key having key < 9 AND max(value) IS NOT NULL) a
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x9
 POSTHOOK: query: explain
 create table x9 as select * from (select max(value),key from src group by key having key < 9 AND max(value) IS NOT NULL) a
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x9
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

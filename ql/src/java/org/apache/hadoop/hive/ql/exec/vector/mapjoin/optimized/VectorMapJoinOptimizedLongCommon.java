@@ -41,8 +41,6 @@ public class VectorMapJoinOptimizedLongCommon {
 
   private HashTableKeyType hashTableKeyType;
 
-  // private BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
-
   private BinarySortableSerializeWrite keyBinarySortableSerializeWrite;
 
   private transient Output output;

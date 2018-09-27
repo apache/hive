@@ -55,6 +55,9 @@ from (
  ) ddd 
 inner join tlb2 aaa on aaa.fid = ddd.fkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tlb1
+PREHOOK: Input: default@tlb2
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select ddd.id, ddd.fkey, aaa.name
 from (
@@ -64,6 +67,9 @@ from (
  ) ddd 
 inner join tlb2 aaa on aaa.fid = ddd.fkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlb1
+POSTHOOK: Input: default@tlb2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -195,6 +201,9 @@ from (
  ) ddd
 inner join tlb2 aaa on aaa.fid = ddd.fkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tlb1
+PREHOOK: Input: default@tlb2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select ddd.id, ddd.fkey, aaa.name, ddd.rnum
 from (
@@ -204,6 +213,9 @@ from (
  ) ddd
 inner join tlb2 aaa on aaa.fid = ddd.fkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlb1
+POSTHOOK: Input: default@tlb2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -355,6 +367,9 @@ from (
  ) ddd
 inner join tlb2 aaa on aaa.fid = ddd.fkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tlb1
+PREHOOK: Input: default@tlb2
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select ddd.id, ddd.fkey, aaa.name
 from (
@@ -364,6 +379,9 @@ from (
  ) ddd
 inner join tlb2 aaa on aaa.fid = ddd.fkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tlb1
+POSTHOOK: Input: default@tlb2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

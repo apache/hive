@@ -22,6 +22,9 @@ insert into table t2_n13 select
 key, value
 group by key, value grouping sets ((key), (key, value))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_n21
+PREHOOK: Output: default@t2_n13
 POSTHOOK: query: explain from src
 insert into table t1_n21 select
 key, GROUPING__ID
@@ -30,6 +33,9 @@ insert into table t2_n13 select
 key, value
 group by key, value grouping sets ((key), (key, value))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_n21
+POSTHOOK: Output: default@t2_n13
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -84,7 +90,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), UDFToString(_col2) (type: string)
+            expressions: _col0 (type: string), CAST( _col2 AS STRING) (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

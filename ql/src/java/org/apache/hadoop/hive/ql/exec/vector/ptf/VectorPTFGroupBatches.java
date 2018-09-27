@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.exec.vector.ptf;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -46,10 +44,6 @@ import com.google.common.base.Preconditions;
  * This class is encapsulates one or more VectorizedRowBatch of a PTF group.
  */
 public class VectorPTFGroupBatches {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFGroupBatches.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   private Configuration hconf;
 
@@ -168,7 +162,10 @@ public class VectorPTFGroupBatches {
 
     // Streaming evaluators fill in their results during the evaluate call.
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
-      evaluator.evaluateGroupBatch(batch, isLastGroupBatch);
+      evaluator.evaluateGroupBatch(batch);
+      if (isLastGroupBatch) {
+        evaluator.doLastBatchWork();
+      }
     }
   }
 
@@ -176,7 +173,10 @@ public class VectorPTFGroupBatches {
       throws HiveException {
 
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
-      evaluator.evaluateGroupBatch(batch, isLastGroupBatch);
+      evaluator.evaluateGroupBatch(batch);
+      if (isLastGroupBatch) {
+        evaluator.doLastBatchWork();
+      }
     }
   }
 

@@ -23,6 +23,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -173,7 +174,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    * Contains only stripes that are read, and only columns included. null => read all RGs.
    */
   private boolean[][] stripeRgs;
-  private volatile boolean isStopped = false;
+  private AtomicBoolean isStopped = new AtomicBoolean(false);
   @SuppressWarnings("unused")
   private volatile boolean isPaused = false;
 
@@ -240,7 +241,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   @Override
   public void stop() {
     LOG.debug("Encoded reader is being stopped");
-    isStopped = true;
+    isStopped.set(true);
   }
 
   @Override
@@ -436,6 +437,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     stripeReader = orcReader.encodedReader(
         fileKey, dw, dw, useObjectPools ? POOL_FACTORY : null, trace, useCodecPool, cacheTag);
     stripeReader.setTracing(LlapIoImpl.ORC_LOGGER.isTraceEnabled());
+    stripeReader.setStopped(isStopped);
   }
 
   private void recordReaderTime(long startTime) {
@@ -454,7 +456,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private boolean processStop() {
-    if (!isStopped) return false;
+    if (!isStopped.get()) return false;
     LOG.info("Encoded data reader is stopping");
     tracePool.offer(trace);
     cleanupReaders();
@@ -584,7 +586,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     ensureOrcReader();
     ByteBuffer tailBufferBb = orcReader.getSerializedFileFooter();
     if (hasCache) {
-      tailBuffers = metadataCache.putFileMetadata(fileKey, tailBufferBb, cacheTag);
+      tailBuffers = metadataCache.putFileMetadata(fileKey, tailBufferBb, cacheTag, isStopped);
       metadataCache.decRefBuffer(tailBuffers); // We don't use the cache's copy of the buffer.
     }
     FileTail ft = orcReader.getFileTail();
@@ -677,7 +679,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     assert footerRange.next == null; // Can only happens w/zcr for a single input buffer.
     if (hasCache) {
       LlapBufferOrBuffers cacheBuf = metadataCache.putStripeTail(
-          stripeKey, footerRange.getData().duplicate(), cacheTag);
+          stripeKey, footerRange.getData().duplicate(), cacheTag, isStopped);
       metadataCache.decRefBuffer(cacheBuf); // We don't use this one.
     }
     ByteBuffer bb = footerRange.getData().duplicate();
@@ -918,7 +920,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         return lowLevelCache.putFileData(
             fileKey, ranges, data, baseOffset, Priority.NORMAL, counters, tag);
       } else if (metadataCache != null) {
-        metadataCache.putIncompleteCbs(fileKey, ranges, baseOffset);
+        metadataCache.putIncompleteCbs(fileKey, ranges, baseOffset, isStopped);
       }
       return null;
     }

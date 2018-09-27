@@ -19,6 +19,8 @@ WHERE  (((cdouble > ctinyint)
             OR ((cint > cbigint)
                 OR (cboolean1 < 0))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT VAR_POP(ctinyint),
        (VAR_POP(ctinyint) / -26.28),
@@ -40,6 +42,8 @@ WHERE  (((cdouble > ctinyint)
             OR ((cint > cbigint)
                 OR (cboolean1 < 0))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -97,10 +101,9 @@ STAGE PLANS:
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
-                              keyColumnNums: []
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                              valueColumns: 0:double, 1:double, 2:bigint, 3:double, 4:tinyint, 5:int, 6:double, 7:double, 8:bigint, 9:bigint
                           Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: bigint), _col3 (type: double), _col4 (type: tinyint), _col5 (type: int), _col6 (type: double), _col7 (type: double), _col8 (type: bigint), _col9 (type: bigint)
             Execution mode: vectorized, llap

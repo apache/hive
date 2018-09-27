@@ -26,8 +26,12 @@ POSTHOOK: Lineage: decimal_date_test.cdecimal2 EXPRESSION []
 POSTHOOK: Lineage: decimal_date_test.cdouble EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -122,8 +126,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -144,7 +152,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: (not (cdate) IN (DATE'1969-10-26', DATE'1969-07-14', DATE'1970-01-21')) (type: boolean)
+                  filterExpr: ((cdate <> DATE'1969-10-26') and (cdate <> DATE'1969-07-14') and (cdate <> DATE'1970-01-21')) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 653856 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -152,15 +160,15 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: LongColumnInList(col 3, values [-67, -171, 20]) -> 5:boolean)
-                    predicate: (not (cdate) IN (DATE'1969-10-26', DATE'1969-07-14', DATE'1970-01-21')) (type: boolean)
-                    Statistics: Num rows: 12284 Data size: 653589 Basic stats: COMPLETE Column stats: NONE
+                        predicateExpression: FilterExprAndExpr(children: FilterDateColNotEqualDateScalar(col 3:date, val -67), FilterDateColNotEqualDateScalar(col 3:date, val -171), FilterDateColNotEqualDateScalar(col 3:date, val 20))
+                    predicate: ((cdate <> DATE'1969-07-14') and (cdate <> DATE'1969-10-26') and (cdate <> DATE'1970-01-21')) (type: boolean)
+                    Statistics: Num rows: 12289 Data size: 653856 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 12284 Data size: 653589 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12289 Data size: 653856 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -232,8 +240,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -328,8 +340,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -350,7 +366,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: (not (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568)) (type: boolean)
+                  filterExpr: ((cdecimal1 <> 2365.8945945946) and (cdecimal1 <> 881.0135135135) and (cdecimal1 <> -3367.6517567568)) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1307712 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -358,15 +374,15 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 5:boolean)
-                    predicate: (not (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568)) (type: boolean)
-                    Statistics: Num rows: 12274 Data size: 1306115 Basic stats: COMPLETE Column stats: NONE
+                        predicateExpression: FilterExprAndExpr(children: FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 2365.8945945946), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 881.0135135135), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val -3367.6517567568))
+                    predicate: ((cdecimal1 <> -3367.6517567568) and (cdecimal1 <> 2365.8945945946) and (cdecimal1 <> 881.0135135135)) (type: boolean)
+                    Statistics: Num rows: 12289 Data size: 1307712 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 12274 Data size: 1306115 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12289 Data size: 1307712 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -438,8 +454,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -534,8 +554,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -630,8 +654,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -726,8 +754,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1081,8 +1113,12 @@ POSTHOOK: Input: default@decimal_date_test
 6172
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1108,13 +1144,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
+                    expressions: ((cdate = DATE'1969-10-26') or (cdate = DATE'1969-07-14')) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: LongColumnInList(col 3, values [-67, -171]) -> 5:boolean
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: ColOrCol(col 5:boolean, col 6:boolean)(children: DateColEqualDateScalar(col 3:date, date 1969-10-26) -> 5:boolean, DateColEqualDateScalar(col 3:date, date 1969-07-14) -> 6:boolean) -> 7:boolean
                     Statistics: Num rows: 12289 Data size: 653856 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1122,7 +1158,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 5:boolean
+                          keyExpressions: col 7:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -1219,8 +1255,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1246,13 +1286,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
+                    expressions: ((cdecimal1 = 2365.8945945946) or (cdecimal1 = 881.0135135135) or (cdecimal1 = -3367.6517567568)) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 5:boolean
+                        projectedOutputColumnNums: [8]
+                        selectExpressions: VectorUDFAdaptor(((cdecimal1 = 2365.8945945946) or (cdecimal1 = 881.0135135135) or (cdecimal1 = -3367.6517567568)))(children: DecimalColEqualDecimalScalar(col 1:decimal(20,10), val 2365.8945945946) -> 5:boolean, DecimalColEqualDecimalScalar(col 1:decimal(20,10), val 881.0135135135) -> 6:boolean, DecimalColEqualDecimalScalar(col 1:decimal(20,10), val -3367.6517567568) -> 7:boolean) -> 8:boolean
                     Statistics: Num rows: 12289 Data size: 1307712 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1260,7 +1300,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 5:boolean
+                          keyExpressions: col 8:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -1287,7 +1327,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -1357,8 +1397,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0  FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0  FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1390,7 +1434,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                        selectExpressions: VectorUDFAdaptor(cdate BETWEEN DATE'1969-12-30' AND DATE'1970-01-02') -> 5:boolean
+                        selectExpressions: LongColumnBetween(col 3:date, left -2, right 1) -> 5:boolean
                     Statistics: Num rows: 12289 Data size: 653856 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1425,7 +1469,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -1495,8 +1539,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1528,7 +1576,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                        selectExpressions: VectorUDFAdaptor(cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351) -> 5:boolean
+                        selectExpressions: DecimalColumnNotBetween(col 1:decimal(20,10), left -2000, right 4390.1351351351) -> 5:boolean
                     Statistics: Num rows: 12289 Data size: 1307712 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1563,7 +1611,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -1639,9 +1687,9 @@ POSTHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-NULL	6231
 false	6041
 true	17
+NULL	6231
 PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
@@ -1650,9 +1698,9 @@ POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-NULL	3115
 false	9165
 true	9
+NULL	3115
 PREHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
@@ -1661,9 +1709,9 @@ POSTHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-NULL	6231
 false	5974
 true	84
+NULL	6231
 PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
@@ -1672,9 +1720,9 @@ POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AN
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-NULL	3115
 false	3002
 true	6172
+NULL	3115
 PREHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
@@ -1683,9 +1731,9 @@ POSTHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-NULL	6231
 false	6041
 true	17
+NULL	6231
 PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
@@ -1694,9 +1742,9 @@ POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-NULL	3115
 false	9165
 true	9
+NULL	3115
 PREHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
@@ -1705,9 +1753,9 @@ POSTHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-NULL	6231
 false	5974
 true	84
+NULL	6231
 PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
@@ -1716,6 +1764,6 @@ POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AN
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-NULL	3115
 false	3002
 true	6172
+NULL	3115

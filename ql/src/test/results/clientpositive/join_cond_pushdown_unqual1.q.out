@@ -57,9 +57,17 @@ POSTHOOK: Output: default@part3_n0
 PREHOOK: query: explain select *
 from part p1 join part2_n0 p2 join part3_n0 p3 on p1.p_name = p2_name and p2_name = p3_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part2_n0
+PREHOOK: Input: default@part3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part2_n0 p2 join part3_n0 p3 on p1.p_name = p2_name and p2_name = p3_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part2_n0
+POSTHOOK: Input: default@part3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -151,9 +159,17 @@ STAGE PLANS:
 PREHOOK: query: explain select *
 from part p1 join part2_n0 p2 join part3_n0 p3 on p2_name = p1.p_name and p3_name = p2_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part2_n0
+PREHOOK: Input: default@part3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part2_n0 p2 join part3_n0 p3 on p2_name = p1.p_name and p3_name = p2_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part2_n0
+POSTHOOK: Input: default@part3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -246,9 +262,17 @@ Warning: Shuffle Join JOIN[13][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'S
 PREHOOK: query: explain select *
 from part p1 join part2_n0 p2 join part3_n0 p3 on p2_partkey + p_partkey = p1.p_partkey and p3_name = p2_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part2_n0
+PREHOOK: Input: default@part3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part2_n0 p2 join part3_n0 p3 on p2_partkey + p_partkey = p1.p_partkey and p3_name = p2_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part2_n0
+POSTHOOK: Input: default@part3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -361,9 +385,17 @@ Warning: Shuffle Join JOIN[13][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'S
 PREHOOK: query: explain select *
 from part p1 join part2_n0 p2 join part3_n0 p3 on p2_partkey = 1 and p3_name = p2_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part2_n0
+PREHOOK: Input: default@part3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part2_n0 p2 join part3_n0 p3 on p2_partkey = 1 and p3_name = p2_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part2_n0
+POSTHOOK: Input: default@part3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

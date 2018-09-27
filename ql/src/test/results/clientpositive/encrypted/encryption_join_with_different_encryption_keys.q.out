@@ -52,8 +52,21 @@ POSTHOOK: Lineage: table_key_2.key EXPRESSION [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: table_key_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM table_key_1 t1 JOIN table_key_2 t2 WHERE (t1.key = t2.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_key_1
+PREHOOK: Input: default@table_key_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM table_key_1 t1 JOIN table_key_2 t2 WHERE (t1.key = t2.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_key_1
+POSTHOOK: Input: default@table_key_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`table_key_1`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`table_key_2`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

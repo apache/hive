@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Implementation of memory manager for low level cache. Note that memory is released during
@@ -49,21 +49,28 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     }
   }
 
+  public static class ReserveFailedException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+    public ReserveFailedException(AtomicBoolean isStopped) {
+      super("Cannot reserve memory"
+          + (Thread.currentThread().isInterrupted() ? "; thread interrupted" : "")
+          + ((isStopped != null && isStopped.get()) ? "; thread stopped" : ""));
+    }
+  }
 
   @Override
-  public void reserveMemory(final long memoryToReserve) {
-    boolean result = reserveMemory(memoryToReserve, true);
+  public void reserveMemory(final long memoryToReserve, AtomicBoolean isStopped) {
+    boolean result = reserveMemory(memoryToReserve, true, isStopped);
     if (result) return;
     // Can only happen if there's no evictor, or if thread is interrupted.
-    throw new RuntimeException("Cannot reserve memory"
-        + (Thread.currentThread().isInterrupted() ? "; thread interrupted" : ""));
+    throw new ReserveFailedException(isStopped);
   }
 
   @VisibleForTesting
-  public boolean reserveMemory(final long memoryToReserve, boolean waitForEviction) {
+  public boolean reserveMemory(final long memoryToReserve,
+      boolean waitForEviction, AtomicBoolean isStopped) {
     // TODO: if this cannot evict enough, it will spin infinitely. Terminate at some point?
     int badCallCount = 0;
-    int nextLog = 4;
     long evictedTotalMetric = 0, reservedTotalMetric = 0, remainingToReserve = memoryToReserve;
     boolean result = true;
     while (remainingToReserve > 0) {
@@ -79,21 +86,23 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
       // TODO: for one-block case, we could move notification for the last block out of the loop.
       long evicted = evictor.evictSomeBlocks(remainingToReserve);
       if (evicted == 0) {
+        ++badCallCount;
         if (!waitForEviction) {
           result = false;
           break;
         }
-        ++badCallCount;
-        if (badCallCount == nextLog) {
-          LlapIoImpl.LOG.warn("Cannot evict blocks for " + badCallCount + " calls; cache full?");
-          nextLog <<= 1;
-          try {
-            Thread.sleep(Math.min(1000, nextLog));
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            result = false;
-            break;
-          }
+
+        if (isStopped != null && isStopped.get()) {
+          result = false;
+          break;
+        }
+        try {
+          Thread.sleep(badCallCount > 9 ? 1000 : (1 << badCallCount));
+        } catch (InterruptedException e) {
+          LlapIoImpl.LOG.warn("Thread interrupted"); // We currently don't expect this.
+          Thread.currentThread().interrupt();
+          result = false;
+          break;
         }
         continue;
       }

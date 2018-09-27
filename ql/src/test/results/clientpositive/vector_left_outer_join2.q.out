@@ -65,6 +65,7 @@ POSTHOOK: Output: default@tjoin1
 POSTHOOK: Lineage: tjoin1.c1 SIMPLE [(tjoin1stage)tjoin1stage.FieldSchema(name:c1, type:int, comment:null), ]
 POSTHOOK: Lineage: tjoin1.c2 EXPRESSION [(tjoin1stage)tjoin1stage.FieldSchema(name:c2, type:char(2), comment:null), ]
 POSTHOOK: Lineage: tjoin1.rnum SIMPLE [(tjoin1stage)tjoin1stage.FieldSchema(name:rnum, type:int, comment:null), ]
+_col0	_col1	_col2
 PREHOOK: query: INSERT INTO TABLE TJOIN2 SELECT * from TJOIN2STAGE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tjoin2stage
@@ -76,12 +77,20 @@ POSTHOOK: Output: default@tjoin2
 POSTHOOK: Lineage: tjoin2.c1 SIMPLE [(tjoin2stage)tjoin2stage.FieldSchema(name:c1, type:int, comment:null), ]
 POSTHOOK: Lineage: tjoin2.c2 SIMPLE [(tjoin2stage)tjoin2stage.FieldSchema(name:c2, type:char(2), comment:null), ]
 POSTHOOK: Lineage: tjoin2.rnum SIMPLE [(tjoin2stage)tjoin2stage.FieldSchema(name:rnum, type:int, comment:null), ]
-PREHOOK: query: explain vectorization expression
+tjoin2stage.rnum	tjoin2stage.c1	tjoin2stage.c2
+PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+Explain
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -166,15 +175,27 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
+tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 0	10	15	NULL
 1	20	25	NULL
 2	NULL	50	NULL
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+Explain
+PLAN VECTORIZATION:
+  enabled: false
+  enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
+
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -255,15 +276,23 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
+tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 0	10	15	NULL
 1	20	25	NULL
 2	NULL	50	NULL
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -305,6 +334,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: rnum (type: int), c1 (type: int), c2 (type: int)
               outputColumnNames: _col0, _col1, _col2
@@ -359,6 +389,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 3
+              includeColumns: [0, 1, 2]
+              dataColumns: rnum:int, c1:int, c2:int
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [string]
       Local Work:
         Map Reduce Local Work
 
@@ -378,15 +414,23 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
+tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 0	10	15	NULL
 1	20	25	NULL
 2	NULL	50	NULL
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -428,6 +472,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: rnum (type: int), c1 (type: int), c2 (type: int)
               outputColumnNames: _col0, _col1, _col2
@@ -482,6 +527,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 3
+              includeColumns: [0, 1, 2]
+              dataColumns: rnum:int, c1:int, c2:int
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [string]
       Local Work:
         Map Reduce Local Work
 
@@ -501,15 +552,23 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
+tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 0	10	15	NULL
 1	20	25	NULL
 2	NULL	50	NULL
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -551,6 +610,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: rnum (type: int), c1 (type: int), c2 (type: int)
               outputColumnNames: _col0, _col1, _col2
@@ -605,6 +665,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 3
+              includeColumns: [0, 1, 2]
+              dataColumns: rnum:int, c1:int, c2:int
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [string]
       Local Work:
         Map Reduce Local Work
 
@@ -624,15 +690,23 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
+tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 0	10	15	NULL
 1	20	25	NULL
 2	NULL	50	NULL
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+PREHOOK: Input: default@tjoin1
+PREHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tjoin1
+POSTHOOK: Input: default@tjoin2
+#### A masked pattern was here ####
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -674,6 +748,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: rnum (type: int), c1 (type: int), c2 (type: int)
               outputColumnNames: _col0, _col1, _col2
@@ -728,6 +803,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 3
+              includeColumns: [0, 1, 2]
+              dataColumns: rnum:int, c1:int, c2:int
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [string]
       Local Work:
         Map Reduce Local Work
 
@@ -747,6 +828,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
+tjoin1.rnum	tjoin1.c1	tjoin1.c2	c2j2
 0	10	15	NULL
 1	20	25	NULL
 2	NULL	50	NULL

@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -127,10 +128,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {
       Partish p = partish;
       Map<String, String> parameters = p.getPartParameters();
-      if (p.isTransactionalTable()) {
-        // TODO: this should also happen on any error. Right now this task will just fail.
-        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-      } else if (work.isTargetRewritten()) {
+      if (work.isTargetRewritten()) {
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
       }
 
@@ -148,7 +146,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
             :  partish.getPartition().getSpec().toString();
         LOG.warn("Partition/partfiles is null for: " + spec);
         if (isMissingAcidState) {
-          MetaStoreUtils.clearQuickStats(parameters);
+          MetaStoreServerUtils.clearQuickStats(parameters);
           return p.getOutput();
         }
         return null;
@@ -162,7 +160,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
       }
 
-      MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
+      MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
 
       if (statsAggregator != null) {
         // Update stats for transactional tables (MM, or full ACID with overwrite), even
@@ -207,7 +205,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
     private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters,
         String aggKey) throws HiveException {
-      for (String statType : StatsSetupConst.statsRequireCompute) {
+      for (String statType : StatsSetupConst.STATS_REQUIRE_COMPUTE) {
         String value = statsAggregator.aggregateStats(aggKey, statType);
         if (value != null && !value.isEmpty()) {
           long longValue = Long.parseLong(value);
@@ -266,7 +264,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         if (res == null) {
           return 0;
         }
-        db.alterTable(tableFullName, res, environmentContext);
+        db.alterTable(tableFullName, res, environmentContext, true);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
@@ -334,7 +332,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         }
 
         if (!updates.isEmpty()) {
-          db.alterPartitions(tableFullName, updates, environmentContext);
+          db.alterPartitions(tableFullName, updates, environmentContext, true);
         }
         if (work.isStatsReliable() && updates.size() != processors.size()) {
           LOG.info("Stats should be reliadble...however seems like there were some issue.. => ret 1");
@@ -411,7 +409,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
   private String toString(Map<String, String> parameters) {
     StringBuilder builder = new StringBuilder();
-    for (String statType : StatsSetupConst.supportedStats) {
+    for (String statType : StatsSetupConst.SUPPORTED_STATS) {
       String value = parameters.get(statType);
       if (value != null) {
         if (builder.length() > 0) {

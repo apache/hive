@@ -964,8 +964,24 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	333	11	19
 PREHOOK: query: explain select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_multilevel
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=22
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=11
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_multilevel
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=22
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=11
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1555,8 +1571,24 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	333	11	19
 PREHOOK: query: explain select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_multilevel
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=22
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=11
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
+PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_multilevel
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=22
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=11
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
+POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -269,7 +269,7 @@ public class Registry {
   }
 
   public FunctionInfo registerPermanentFunction(String functionName,
-      String className, boolean registerToSession, FunctionResource... resources) {
+      String className, boolean registerToSession, FunctionResource... resources) throws SemanticException {
     FunctionInfo function = new FunctionInfo(functionName, className, resources);
     // register to session first for backward compatibility
     if (registerToSession) {
@@ -652,7 +652,7 @@ public class Registry {
   }
 
   // should be called after session registry is checked
-  private FunctionInfo registerToSessionRegistry(String qualifiedName, FunctionInfo function) {
+  private FunctionInfo registerToSessionRegistry(String qualifiedName, FunctionInfo function) throws SemanticException {
     FunctionInfo ret = null;
     ClassLoader prev = Utilities.getSessionSpecifiedClassLoader();
     try {
@@ -682,8 +682,14 @@ public class Registry {
       // Lookup of UDf class failed
       LOG.error("Unable to load UDF class: " + e);
       Utilities.restoreSessionSpecifiedClassLoader(prev);
+
+      throw new SemanticException("Unable to load UDF class: " + e +
+              "\nPlease ensure that the JAR file containing this class has been properly installed " +
+              "in the auxiliary directory or was added with ADD JAR command.");
+    }finally {
+      function.shareStateWith(ret);
     }
-    function.shareStateWith(ret);
+
     return ret;
   }
 

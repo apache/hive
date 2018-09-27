@@ -73,7 +73,7 @@ public class DruidSelectQueryRecordReader
   @Override
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
+    DruidWritable value = new DruidWritable(false);
     EventHolder e = values.next();
     value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
     value.getValue().putAll(e.getEvent());

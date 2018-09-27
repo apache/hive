@@ -137,8 +137,36 @@ POSTHOOK: Output: default@bucket_medium@ds=2008-04-08
 Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain extended select count(*) FROM bucket_small_n15 a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big_n15 c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n15
+PREHOOK: Input: default@bucket_big_n15@ds=2008-04-08
+PREHOOK: Input: default@bucket_big_n15@ds=2008-04-09
+PREHOOK: Input: default@bucket_medium
+PREHOOK: Input: default@bucket_medium@ds=2008-04-08
+PREHOOK: Input: default@bucket_small_n15
+PREHOOK: Input: default@bucket_small_n15@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_small_n15 a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big_n15 c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n15
+POSTHOOK: Input: default@bucket_big_n15@ds=2008-04-08
+POSTHOOK: Input: default@bucket_big_n15@ds=2008-04-09
+POSTHOOK: Input: default@bucket_medium
+POSTHOOK: Input: default@bucket_medium@ds=2008-04-08
+POSTHOOK: Input: default@bucket_small_n15
+POSTHOOK: Input: default@bucket_small_n15@ds=2008-04-08
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_big_n15`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_medium`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_small_n15`
+WHERE `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`,
+(SELECT 0 AS `DUMMY`
+FROM `default`.`bucket_medium`) AS `t5`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

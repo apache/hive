@@ -79,11 +79,17 @@ select count(*) from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1_n13 a join tbl2_n12 b on a.key = b.key
 ) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1_n13 a join tbl2_n12 b on a.key = b.key
 ) subq1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -226,6 +232,9 @@ select count(*) from
   group by key
 ) subq2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (
@@ -236,6 +245,9 @@ select count(*) from
   group by key
 ) subq2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -377,6 +389,9 @@ join
 ) src2
 on src1.key = src2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key, src1.cnt1, src2.cnt1 from
 (
@@ -394,6 +409,9 @@ join
 ) src2
 on src1.key = src2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -617,6 +635,9 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2_n12 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1_n13 a where key < 6) subq1 
@@ -624,6 +645,9 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2_n12 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -706,6 +730,9 @@ select count(*) from
   join tbl2_n12 b
   on subq2.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from 
   (
@@ -718,6 +745,9 @@ select count(*) from
   join tbl2_n12 b
   on subq2.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -817,6 +847,8 @@ select count(*) from
   ) subq4
   on subq2.key = subq4.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from 
   (
@@ -836,6 +868,8 @@ select count(*) from
   ) subq4
   on subq2.key = subq4.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -935,6 +969,9 @@ select count(*) from
   (select a.key as key, concat(a.value, a.value) as value from tbl2_n12 a where key < 8) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from 
   (select a.key as key, concat(a.value, a.value) as value from tbl1_n13 a where key < 8) subq1 
@@ -942,6 +979,9 @@ select count(*) from
   (select a.key as key, concat(a.value, a.value) as value from tbl2_n12 a where key < 8) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1019,6 +1059,9 @@ select count(*) from
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n12 a) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from 
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl1_n13 a) subq1 
@@ -1026,6 +1069,9 @@ select count(*) from
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n12 a) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -1100,11 +1146,11 @@ STAGE PLANS:
             0 key (type: int)
             1 key (type: int)
           outputColumnNames: $f1, $f10
-          Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 5 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: ($f1 * $f10) (type: bigint)
             outputColumnNames: $f4
-            Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Group By Operator
               aggregations: $sum0($f4)
               mode: hash
@@ -1211,11 +1257,17 @@ select count(*) from
   (select a.key as key, a.value as value from tbl1_n13 a where key < 6) subq1 
     join tbl2_n12 a on subq1.key = a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1_n13 a where key < 6) subq1 
     join tbl2_n12 a on subq1.key = a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1292,6 +1344,9 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2_n12 a where key < 6) subq3
   on (subq1.key = subq3.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1_n13 a where key < 6) subq1 
@@ -1302,6 +1357,9 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2_n12 a where key < 6) subq3
   on (subq1.key = subq3.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1393,6 +1451,9 @@ select count(*) from (
 join tbl2_n12 b
 on subq2.key = b.key) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from (
   select subq2.key as key, subq2.value as value1, b.value as value2 from
@@ -1406,6 +1467,9 @@ select count(*) from (
 join tbl2_n12 b
 on subq2.key = b.key) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1490,8 +1554,14 @@ POSTHOOK: Input: default@tbl2_n12
 20
 PREHOOK: query: explain select a.key as key, a.value as val1, b.value as val2 from tbl1_n13 a join tbl2_n12 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key as key, a.value as val1, b.value as val2 from tbl1_n13 a join tbl2_n12 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1568,8 +1638,14 @@ POSTHOOK: Input: default@tbl2_n12
 9	val_9	val_9
 PREHOOK: query: explain select a.key as key, a.value as val1, b.value as val2 from tbl1_n13 a join tbl2_n12 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n13
+PREHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key as key, a.value as val1, b.value as val2 from tbl1_n13 a join tbl2_n12 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n13
+POSTHOOK: Input: default@tbl2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

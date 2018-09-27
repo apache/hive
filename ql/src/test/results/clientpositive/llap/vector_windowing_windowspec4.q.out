@@ -37,6 +37,8 @@ collect_set(i) over (partition by type order by i rows between 1 preceding and 7
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
 from smalltable_windowing_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable_windowing_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select type, i,
 max(i) over (partition by type order by i rows between 1 preceding and 7 following),
@@ -49,6 +51,8 @@ collect_set(i) over (partition by type order by i rows between 1 preceding and 7
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
 from smalltable_windowing_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable_windowing_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -80,11 +84,10 @@ STAGE PLANS:
                     Map-reduce partition columns: type (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [1, 0]
+                        keyColumns: 1:string, 0:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [1]
-                        valueColumnNums: []
+                        partitionColumns: 1:string
                     Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -124,7 +127,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col0 ASC NULLS FIRST
+                        order by: _col0 ASC NULLS LAST
                         partition by: _col1
                         raw input shape:
                         window functions:

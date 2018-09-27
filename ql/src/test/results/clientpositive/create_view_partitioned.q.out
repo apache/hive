@@ -83,13 +83,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key, value   	 
+Original Query:     	SELECT key, value   	 
 	                    	FROM src            
 	                    	WHERE key=86        
-View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
+Expanded Query:     	SELECT `src`.`key`, `src`.`value`	 
 	                    	FROM `default`.`src`
 	                    	WHERE `src`.`key`=86
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: SELECT * FROM vp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -283,9 +282,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT * FROM srcpart WHERE key < 10	 
-View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart` WHERE `srcpart`.`key` < 10	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	SELECT * FROM srcpart WHERE key < 10	 
+Expanded Query:     	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart` WHERE `srcpart`.`key` < 10	 
 PREHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@srcpart
@@ -399,13 +397,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key, value   	 
+Original Query:     	SELECT key, value   	 
 	                    	FROM src            
 	                    	WHERE key=86        
-View Expanded Text: 	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
+Expanded Query:     	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
 	                    	FROM `default`.`src`
 	                    	WHERE `src`.`key`=86) `default.vp3`
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: ALTER VIEW vp3
 ADD PARTITION (v='val_86')
 PREHOOK: type: ALTERTABLE_ADDPARTS

@@ -18,10 +18,14 @@ PREHOOK: query: explain
 insert overwrite table dest30
 select count(1) from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tst_dest30
 POSTHOOK: query: explain 
 insert overwrite table dest30
 select count(1) from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tst_dest30
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -128,10 +132,14 @@ PREHOOK: query: explain
 insert overwrite table dest30
 select count(1) from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest30
 POSTHOOK: query: explain
 insert overwrite table dest30
 select count(1) from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest30
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

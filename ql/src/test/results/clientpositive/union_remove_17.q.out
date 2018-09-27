@@ -31,6 +31,8 @@ FROM (
   SELECT key, 2 as `values`, '2' as ds from inputTbl1_n3
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n3
+PREHOOK: Output: default@outputtbl1_n4
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n4 partition (ds)
 SELECT *
@@ -40,6 +42,7 @@ FROM (
   SELECT key, 2 as `values`, '2' as ds from inputTbl1_n3
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
@@ -34,10 +32,6 @@ import com.google.common.base.Preconditions;
  */
 public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDoubleSum.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
   protected boolean isGroupResultNull;
   protected double sum;
 
@@ -47,7 +41,8 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -112,6 +107,12 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
         sum += varSum;
       }
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

@@ -4,12 +4,18 @@ PREHOOK: query: explain
                  from cbo_t3  ws join alltypesorc wr on ws.value = wr.cstring1
                   group by ws.c_boolean ) in_web
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
        select rank() over (order by return_ratio) as return_rank from
        (select sum(wr.cint)/sum(ws.c_int)  as return_ratio
                  from cbo_t3  ws join alltypesorc wr on ws.value = wr.cstring1
                   group by ws.c_boolean ) in_web
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -26,7 +32,7 @@ Stage-0
         Select Operator [SEL_46] (rows=2 width=4)
           Output:["_col0"]
           PTF Operator [PTF_45] (rows=2 width=16)
-            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"(UDFToDouble(_col1) / UDFToDouble(_col2)) ASC NULLS FIRST","partition by:":"0"}]
+            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"(UDFToDouble(_col1) / UDFToDouble(_col2)) ASC NULLS LAST","partition by:":"0"}]
             Select Operator [SEL_44] (rows=2 width=16)
               Output:["_col1","_col2"]
             <-Reducer 3 [SIMPLE_EDGE] vectorized, llap
@@ -41,7 +47,7 @@ Stage-0
                       PartitionCols:_col0
                       Group By Operator [GBY_10] (rows=3 width=20)
                         Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)","sum(_col1)"],keys:_col2
-                        Merge Join Operator [MERGEJOIN_34] (rows=36 width=7)
+                        Merge Join Operator [MERGEJOIN_34] (rows=27 width=7)
                           Conds:RS_37._col0=RS_40._col1(Inner),Output:["_col1","_col2","_col3"]
                         <-Map 1 [SIMPLE_EDGE] vectorized, llap
                           SHUFFLE [RS_37]

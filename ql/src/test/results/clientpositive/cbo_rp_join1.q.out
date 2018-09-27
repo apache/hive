@@ -17,8 +17,12 @@ POSTHOOK: Output: default@myinput1_n0
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n0 a FULL OUTER JOIN myinput1_n0 b on a.key = 40 AND b.key = 40
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n0 a FULL OUTER JOIN myinput1_n0 b on a.key = 40 AND b.key = 40
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -53,7 +57,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           filter predicates:
             0 {(VALUE._col0 = 40)}
             1 {(VALUE._col0 = 40)}
@@ -120,8 +124,12 @@ POSTHOOK: Input: default@myinput1_n0
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n0 a FULL OUTER JOIN myinput1_n0 b on a.key = 40 AND a.value = 40 AND a.key = a.value AND b.key = 40
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n0 a FULL OUTER JOIN myinput1_n0 b on a.key = 40 AND a.value = 40 AND a.key = a.value AND b.key = 40
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -156,7 +164,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           filter predicates:
             0 {(VALUE._col0 = 40)} {(VALUE._col1 = 40)}
             1 {(VALUE._col0 = 40)}
@@ -223,8 +231,12 @@ POSTHOOK: Input: default@myinput1_n0
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n0 a FULL OUTER JOIN myinput1_n0 b on a.key = 40 AND a.key = b.key AND b.key = 40
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n0 a FULL OUTER JOIN myinput1_n0 b on a.key = 40 AND a.key = b.key AND b.key = 40
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -259,7 +271,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           filter predicates:
             0 {(VALUE._col0 = 40)}
             1 {(VALUE._col0 = 40)}
@@ -326,8 +338,12 @@ POSTHOOK: Input: default@myinput1_n0
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n0 a FULL OUTER JOIN myinput1_n0 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n0 a FULL OUTER JOIN myinput1_n0 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -362,7 +378,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           filter predicates:
             0 {(VALUE._col0 > 40)} {(VALUE._col1 > 50)} {(VALUE._col0 = VALUE._col1)}
             1 {(VALUE._col0 > 40)} {(VALUE._col1 > 50)} {(VALUE._col0 = VALUE._col1)}

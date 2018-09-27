@@ -58,6 +58,10 @@ from (
 INSERT OVERWRITE TABLE dest1_n20 select key1, key2
 INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n2
+PREHOOK: Input: default@tbl2_n1
+PREHOOK: Output: default@dest1_n20
+PREHOOK: Output: default@dest2_n4
 POSTHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
@@ -66,6 +70,10 @@ from (
 INSERT OVERWRITE TABLE dest1_n20 select key1, key2
 INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n2
+POSTHOOK: Input: default@tbl2_n1
+POSTHOOK: Output: default@dest1_n20
+POSTHOOK: Output: default@dest2_n4
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -331,6 +339,10 @@ from (
 INSERT OVERWRITE TABLE dest1_n20 select key1, key2
 INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n2
+PREHOOK: Input: default@tbl2_n1
+PREHOOK: Output: default@dest1_n20
+PREHOOK: Output: default@dest2_n4
 POSTHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
@@ -339,6 +351,10 @@ from (
 INSERT OVERWRITE TABLE dest1_n20 select key1, key2
 INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n2
+POSTHOOK: Input: default@tbl2_n1
+POSTHOOK: Output: default@dest1_n20
+POSTHOOK: Output: default@dest2_n4
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -604,6 +620,10 @@ from (
 INSERT OVERWRITE TABLE dest1_n20 select key1, key2
 INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n2
+PREHOOK: Input: default@tbl2_n1
+PREHOOK: Output: default@dest1_n20
+PREHOOK: Output: default@dest2_n4
 POSTHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
@@ -612,6 +632,10 @@ from (
 INSERT OVERWRITE TABLE dest1_n20 select key1, key2
 INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n2
+POSTHOOK: Input: default@tbl2_n1
+POSTHOOK: Output: default@dest1_n20
+POSTHOOK: Output: default@dest2_n4
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2

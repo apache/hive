@@ -14,6 +14,8 @@ USING 'cat' AS (tkey, ten, one, tvalue)
 DISTRIBUTE BY tvalue, tkey
 SORT BY ten DESC, one ASC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n93
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n93
@@ -22,6 +24,8 @@ USING 'cat' AS (tkey, ten, one, tvalue)
 DISTRIBUTE BY tvalue, tkey
 SORT BY ten DESC, one ASC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n93
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

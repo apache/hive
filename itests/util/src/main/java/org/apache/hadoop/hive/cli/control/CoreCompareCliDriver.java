@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -52,8 +53,17 @@ public class CoreCompareCliDriver extends CliAdapter{
     String cleanupScript = cliConfig.getCleanupScript();
     try {
       String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript, false);
+      qt = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(hiveConfDir)
+            .withHadoopVer(hadoopVer)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(false)
+            .build());
 
       // do a one time initialization
       qt.newSession();

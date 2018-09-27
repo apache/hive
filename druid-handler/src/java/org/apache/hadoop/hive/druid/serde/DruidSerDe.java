@@ -19,21 +19,6 @@ package org.apache.hadoop.hive.druid.serde;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Function;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.druid.query.Druids;
@@ -51,7 +36,6 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -99,7 +83,20 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.druid.serde.DruidSerDeUtils.TIMESTAMP_FORMAT;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
 import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
 
 /**
@@ -347,7 +344,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
         break;
       case BOOLEAN:
         res = ((BooleanObjectInspector) fields.get(i).getFieldObjectInspector())
-            .get(values.get(i));
+            .get(values.get(i)) ? 1L : 0L;
         break;
       default:
         throw new SerDeException("Unsupported type: " + types[i].getPrimitiveCategory());
@@ -388,46 +385,28 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
     final DruidWritable input = (DruidWritable) writable;
     final List<Object> output = Lists.newArrayListWithExpectedSize(columns.length);
     for (int i = 0; i < columns.length; i++) {
-      final Object value = input.getValue().get(columns[i]);
+      final Object value = input.isCompacted() ? input.getCompactedValue().get(i) : input.getValue().get(columns[i]);
       if (value == null) {
         output.add(null);
         continue;
       }
       switch (types[i].getPrimitiveCategory()) {
-      case TIMESTAMP:
-        if (value instanceof Number) {
-          output.add(new TimestampWritableV2(Timestamp.valueOf(
-              ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Number) value).longValue()), tsTZTypeInfo.timeZone())
-                  .format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT)))));
-        } else {
-          output.add(new TimestampWritableV2(Timestamp.valueOf((String) value)));
-        }
-
-        break;
-      case TIMESTAMPLOCALTZ:
-        final long numberOfMillis;
-        if (value instanceof Number) {
-          numberOfMillis = ((Number) value).longValue();
-        } else {
-          // it is an extraction fn need to be parsed
-          numberOfMillis = dateOptionalTimeParser().parseDateTime((String) value).getMillis();
-        }
-        output.add(new TimestampLocalTZWritable(new TimestampTZ(ZonedDateTime
-            .ofInstant(Instant.ofEpochMilli(numberOfMillis),
-                ((TimestampLocalTZTypeInfo) types[i]).timeZone()
-            ))));
-        break;
-      case DATE:
-        final DateWritableV2 dateWritable;
-        if (value instanceof Number) {
-          dateWritable = new DateWritableV2(
-              Date.ofEpochMilli((((Number) value).longValue())));
-        } else {
-          // it is an extraction fn need to be parsed
-          dateWritable = new DateWritableV2(
-              Date.ofEpochMilli(dateOptionalTimeParser().parseDateTime((String) value).getMillis()));
-        }
-        output.add(dateWritable);
+        case TIMESTAMP:
+          output.add(new TimestampWritableV2(
+              Timestamp.ofEpochMilli(deserializeToMillis(value))));
+          break;
+        case TIMESTAMPLOCALTZ:
+          output.add(new TimestampLocalTZWritable(
+              new TimestampTZ(
+                  ZonedDateTime
+                      .ofInstant(
+                          Instant.ofEpochMilli(deserializeToMillis(value)),
+                          ((TimestampLocalTZTypeInfo) types[i]).timeZone()
+                      ))));
+          break;
+        case DATE:
+          output.add(new DateWritableV2(
+              Date.ofEpochMilli(deserializeToMillis(value))));
         break;
       case BYTE:
         output.add(new ByteWritable(((Number) value).byteValue()));
@@ -478,12 +457,29 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
     return output;
   }
 
+  private long deserializeToMillis(Object value)
+  {
+    long numberOfMillis;
+    if (value instanceof Number) {
+      numberOfMillis = ((Number) value).longValue();
+    } else {
+      // it is an extraction fn need to be parsed
+      try {
+        numberOfMillis = dateOptionalTimeParser().parseDateTime((String) value).getMillis();
+      } catch (IllegalArgumentException e) {
+        // we may not be able to parse the date if it already comes in Hive format,
+        // we retry and otherwise fail
+        numberOfMillis = Timestamp.valueOf((String) value).toEpochMilli();
+      }
+    }
+    return numberOfMillis;
+  }
+
   @Override public ObjectInspector getObjectInspector() {
     return inspector;
   }
 
   @Override public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
-    // If Druid table is not an external table store the schema in metadata store.
-    return !MetaStoreUtils.isExternal(tableParams);
+    return true;
   }
 }

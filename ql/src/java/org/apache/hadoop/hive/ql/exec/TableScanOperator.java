@@ -122,7 +122,11 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     if (conf != null && conf.isGatherStats()) {
       gatherStats(row);
     }
-    forward(row, inputObjInspectors[tag], vectorized);
+    if (vectorized) {
+      vectorForward((VectorizedRowBatch) row);
+    } else {
+      forward(row, inputObjInspectors[tag]);
+    }
   }
 
   private boolean checkSetDone(Object row, int tag) {
@@ -151,6 +155,10 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   @Override
   public void cleanUpInputFileChangedOp() throws HiveException {
     inputFileChanged = true;
+    updateFileId();
+  }
+
+  private void updateFileId() {
     // If the file name to bucket number mapping is maintained, store the bucket number
     // in the execution context. This is needed for the following scenario:
     // insert overwrite table T1 select * from T2;
@@ -282,6 +290,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
+    if (getExecContext() != null && getExecContext().getFileId() == null) {
+      updateFileId();
+    }
     if (conf != null) {
       if (conf.isGatherStats() && stats.size() != 0) {
         publishStats();
@@ -349,6 +360,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     StatsPublisher statsPublisher = Utilities.getStatsPublisher(jc);
     StatsCollectionContext sc = new StatsCollectionContext(jc);
     sc.setStatsTmpDir(conf.getTmpStatsDir());
+    sc.setContextSuffix(getOperatorId());
     if (!statsPublisher.connect(sc)) {
       // just return, stats gathering should not block the main query.
       if (LOG.isInfoEnabled()) {

@@ -3,10 +3,14 @@ PREHOOK: query: EXPLAIN
 SELECT src1.key, src1.key + 1, src2.value
        FROM srcbucket src1 join srcbucket src2 ON src1.key = src2.key AND src1.key = 86
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.key, src1.key + 1, src2.value
        FROM srcbucket src1 join srcbucket src2 ON src1.key = src2.key AND src1.key = 86
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -74,10 +78,14 @@ PREHOOK: query: EXPLAIN
 SELECT src1.key, src1.key + 1, src2.value
        FROM srcbucket src1 join srcbucket src2 ON src1.key = src2.key AND cast(src1.key as double) = 86
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.key, src1.key + 1, src2.value
        FROM srcbucket src1 join srcbucket src2 ON src1.key = src2.key AND cast(src1.key as double) = 86
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

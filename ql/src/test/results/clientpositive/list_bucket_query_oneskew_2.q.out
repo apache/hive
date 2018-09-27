@@ -132,17 +132,67 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 495	val_484	1
 PREHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `$f0`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Partition Description:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: fact_daily_n5
+            filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
+            Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: (x = 484) (type: boolean)
+              Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
+              Select Operator
+                expressions: 484 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types int
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Execution mode: vectorized
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
           Partition
+            base file name: x=484
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -186,21 +236,14 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily_n5
             name: default.fact_daily_n5
+      Truncated Path -> Alias:
+        /fact_tz/ds=1/x=484 [fact_daily_n5]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
       Processor Tree:
-        TableScan
-          alias: fact_daily_n5
-          filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
-          Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
-          GatherStats: false
-          Filter Operator
-            isSamplingPred: false
-            predicate: (x = 484) (type: boolean)
-            Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: 484 (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
-              ListSink
+        ListSink
 
 PREHOOK: query: select x from (select * from fact_daily_n5 where ds = '1') subq where x = 484
 PREHOOK: type: QUERY
@@ -215,17 +258,67 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 484
 PREHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x1`, `y` AS `y1`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Partition Description:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: fact_daily_n5
+            filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
+            Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: (x = 484) (type: boolean)
+              Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
+              Select Operator
+                expressions: 484 (type: int), y (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Execution mode: vectorized
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
           Partition
+            base file name: x=484
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -269,21 +362,14 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily_n5
             name: default.fact_daily_n5
+      Truncated Path -> Alias:
+        /fact_tz/ds=1/x=484 [fact_daily_n5]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
       Processor Tree:
-        TableScan
-          alias: fact_daily_n5
-          filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
-          Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
-          GatherStats: false
-          Filter Operator
-            isSamplingPred: false
-            predicate: (x = 484) (type: boolean)
-            Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: 484 (type: int), y (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
-              ListSink
+        ListSink
 
 PREHOOK: query: select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
 PREHOOK: type: QUERY
@@ -298,8 +384,18 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 484	val_484
 PREHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `y`, COUNT(*) AS `$f1`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
+GROUP BY `y`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -438,8 +534,18 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 val_484	1
 PREHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `x`, COUNT(*) AS `c`
+FROM `default`.`fact_daily_n5`
+WHERE `ds` = '1' AND `x` = 484
+GROUP BY TRUE
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -461,15 +567,15 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
-                  keys: 484 (type: int)
+                  keys: true (type: boolean)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int)
+                    key expressions: _col0 (type: boolean)
                     null sort order: a
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
+                    Map-reduce partition columns: _col0 (type: boolean)
                     Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
                     tag: -1
                     value expressions: _col1 (type: bigint)
@@ -530,7 +636,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: int)
+          keys: KEY._col0 (type: boolean)
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE

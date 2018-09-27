@@ -18,14 +18,9 @@
 
 package org.apache.hive.service.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +57,6 @@ import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.ServerUtils;
-import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -84,7 +78,7 @@ import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.PolicyProviderContainer;
-import org.apache.hadoop.hive.ql.security.authorization.PrivilegeSynchonizer;
+import org.apache.hadoop.hive.ql.security.authorization.PrivilegeSynchronizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -212,7 +206,8 @@ public class HiveServer2 extends CompositeService {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
     }
 
-    cliService = new CLIService(this);
+    // Do not allow sessions - leader election or initialization will allow them for an active HS2.
+    cliService = new CLIService(this, false);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
     Runnable oomHook = new Runnable() {
@@ -707,6 +702,9 @@ public class HiveServer2 extends CompositeService {
     // If we're supporting dynamic service discovery, we'll add the service uri for this
     // HiveServer2 instance to Zookeeper as a znode.
     HiveConf hiveConf = getHiveConf();
+    if (!serviceDiscovery || !activePassiveHA) {
+      allowClientSessions();
+    }
     if (serviceDiscovery) {
       try {
         if (activePassiveHA) {
@@ -723,9 +721,9 @@ public class HiveServer2 extends CompositeService {
     }
 
     try {
-      startPrivilegeSynchonizer(hiveConf);
+      startPrivilegeSynchronizer(hiveConf);
     } catch (Exception e) {
-      LOG.error("Error starting priviledge synchonizer: ", e);
+      LOG.error("Error starting priviledge synchronizer: ", e);
       throw new ServiceException(e);
     }
 
@@ -739,16 +737,18 @@ public class HiveServer2 extends CompositeService {
       }
     }
 
-    if (!activePassiveHA) {
-      LOG.info("HS2 interactive HA not enabled. Starting tez sessions..");
-      try {
-        startOrReconnectTezSessions();
-      } catch (Exception e) {
-        LOG.error("Error starting  Tez sessions: ", e);
-        throw new ServiceException(e);
+    if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      if (!activePassiveHA) {
+        LOG.info("HS2 interactive HA not enabled. Starting tez sessions..");
+        try {
+          startOrReconnectTezSessions();
+        } catch (Exception e) {
+          LOG.error("Error starting  Tez sessions: ", e);
+          throw new ServiceException(e);
+        }
+      } else {
+        LOG.info("HS2 interactive HA enabled. Tez sessions will be started/reconnected by the leader.");
       }
-    } else {
-      LOG.info("HS2 interactive HA enabled. Tez sessions will be started/reconnected by the leader.");
     }
   }
 
@@ -774,6 +774,7 @@ public class HiveServer2 extends CompositeService {
       }
       hiveServer2.startOrReconnectTezSessions();
       LOG.info("Started/Reconnected tez sessions.");
+      hiveServer2.allowClientSessions();
 
       // resolve futures used for testing
       if (HiveConf.getBoolVar(hiveServer2.getHiveConf(), ConfVars.HIVE_IN_TEST)) {
@@ -786,7 +787,7 @@ public class HiveServer2 extends CompositeService {
     public void notLeader() {
       LOG.info("HS2 instance {} LOST LEADERSHIP. Stopping/Disconnecting tez sessions..", hiveServer2.serviceUri);
       hiveServer2.isLeader.set(false);
-      hiveServer2.closeHiveSessions();
+      hiveServer2.closeAndDisallowHiveSessions();
       hiveServer2.stopOrDisconnectTezSessions();
       LOG.info("Stopped/Disconnected tez sessions.");
 
@@ -821,6 +822,10 @@ public class HiveServer2 extends CompositeService {
     }
     initAndStartTezSessionPoolManager(resourcePlan);
     initAndStartWorkloadManager(resourcePlan);
+  }
+
+  private void allowClientSessions() {
+    cliService.getSessionManager().allowSessions(true);
   }
 
   private void initAndStartTezSessionPoolManager(final WMFullResourcePlan resourcePlan) {
@@ -859,17 +864,18 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
-  private void closeHiveSessions() {
+  private void closeAndDisallowHiveSessions() {
     LOG.info("Closing all open hive sessions.");
-    if (cliService != null && cliService.getSessionManager().getOpenSessionCount() > 0) {
-      try {
-        for (HiveSession session : cliService.getSessionManager().getSessions()) {
-          cliService.getSessionManager().closeSession(session.getSessionHandle());
-        }
-        LOG.info("Closed all open hive sessions");
-      } catch (HiveSQLException e) {
-        LOG.error("Unable to close all open sessions.", e);
+    if (cliService == null) return;
+    cliService.getSessionManager().allowSessions(false);
+    // No sessions can be opened after the above call. Close the existing ones if any.
+    try {
+      for (HiveSession session : cliService.getSessionManager().getSessions()) {
+        cliService.getSessionManager().closeSession(session.getSessionHandle());
       }
+      LOG.info("Closed all open hive sessions");
+    } catch (HiveSQLException e) {
+      LOG.error("Unable to close all open sessions.", e);
     }
   }
 
@@ -978,17 +984,20 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
-  public void startPrivilegeSynchonizer(HiveConf hiveConf) throws Exception {
+  public void startPrivilegeSynchronizer(HiveConf hiveConf) throws Exception {
 
+    if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER)) {
+      return;
+    }
     PolicyProviderContainer policyContainer = new PolicyProviderContainer();
     HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
     if (authorizer.getHivePolicyProvider() != null) {
       policyContainer.addAuthorizer(authorizer);
     }
-    if (hiveConf.get(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname()) != null &&
-        hiveConf.get(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname()).contains(
+    if (MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.PRE_EVENT_LISTENERS) != null &&
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.PRE_EVENT_LISTENERS).contains(
         "org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener") &&
-        hiveConf.get(MetastoreConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.getVarname())!= null) {
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_AUTHORIZATION_MANAGER)!= null) {
       List<HiveMetastoreAuthorizationProvider> providers = HiveUtils.getMetaStoreAuthorizeProviderManagers(
           hiveConf, HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER, SessionState.get().getAuthenticator());
       for (HiveMetastoreAuthorizationProvider provider : providers) {
@@ -1003,14 +1012,15 @@ public class HiveServer2 extends CompositeService {
       String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
       String path = ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
           + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "leader";
-      LeaderLatch privilegeSynchonizerLatch = new LeaderLatch(zKClientForPrivSync, path);
-      privilegeSynchonizerLatch.start();
-      Thread privilegeSynchonizerThread = new Thread(
-          new PrivilegeSynchonizer(privilegeSynchonizerLatch, policyContainer, hiveConf), "PrivilegeSynchonizer");
-      privilegeSynchonizerThread.start();
+      LeaderLatch privilegeSynchronizerLatch = new LeaderLatch(zKClientForPrivSync, path);
+      privilegeSynchronizerLatch.start();
+      LOG.info("Find " + policyContainer.size() + " policy to synchronize, start PrivilegeSynchronizer");
+      Thread privilegeSynchronizerThread = new Thread(
+          new PrivilegeSynchronizer(privilegeSynchronizerLatch, policyContainer, hiveConf), "PrivilegeSynchronizer");
+      privilegeSynchronizerThread.start();
     } else {
       LOG.warn(
-          "No policy provider found, skip creating PrivilegeSynchonizer");
+          "No policy provider found, skip creating PrivilegeSynchronizer");
     }
   }
 
@@ -1209,11 +1219,17 @@ public class HiveServer2 extends CompositeService {
         for (String propKey : confProps.stringPropertyNames()) {
           // save logging message for log4j output latter after log4j initialize properly
           debugMessage.append("Setting " + propKey + "=" + confProps.getProperty(propKey) + ";\n");
-          if (propKey.equalsIgnoreCase("hive.root.logger")) {
-            CommonCliOptions.splitAndSetLogger(propKey, confProps);
-          } else {
-            System.setProperty(propKey, confProps.getProperty(propKey));
+          if ("hive.log.file".equals(propKey) ||
+              "hive.log.dir".equals(propKey) ||
+              "hive.root.logger".equals(propKey)) {
+            throw new IllegalArgumentException("Logs will be split in two "
+                + "files if the commandline argument " + propKey + " is "
+                + "used. To prevent this use to HADOOP_CLIENT_OPTS -D"
+                + propKey + "=" + confProps.getProperty(propKey)
+                + " or use the set the value in the configuration file"
+                + " (see HIVE-19886)");
           }
+          HiveConf.overrides.put(propKey, confProps.getProperty(propKey));
         }
 
         // Process --help

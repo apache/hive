@@ -40,11 +40,15 @@ select age, name, avg(gpa), sum(age) over (partition by name)
 from studentnull100
 group by age, name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studentnull100
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select age, name, avg(gpa), sum(age) over (partition by name)
 from studentnull100
 group by age, name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studentnull100
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -98,11 +102,11 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [0, 1]
+                            keyColumns: 0:string, 1:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [0]
-                            valueColumnNums: [2, 3]
+                            partitionColumns: 0:string
+                            valueColumns: 2:double, 3:bigint
                         Statistics: Num rows: 100 Data size: 18816 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: double), _col3 (type: bigint)
             Execution mode: vectorized, llap

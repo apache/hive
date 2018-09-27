@@ -5,6 +5,9 @@ FROM
 JOIN src yy
 ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key
 FROM
@@ -12,6 +15,9 @@ FROM
 JOIN src yy
 ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -234,6 +240,9 @@ FROM
 JOIN src yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key
 FROM
@@ -241,6 +250,9 @@ FROM
 JOIN src yy
 ON xx.key=yy.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

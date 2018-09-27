@@ -22,9 +22,13 @@ POSTHOOK: Lineage: test_n2.ts SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -99,9 +103,13 @@ POSTHOOK: Input: default@test_n2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -205,9 +213,13 @@ POSTHOOK: Input: default@test_n2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -233,7 +245,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterTimestampColumnInList(col 0:timestamp, values [0001-01-02 16:00:00.0, 0002-02-03 16:00:00.0])
               predicate: (ts) IN (TIMESTAMP'0001-01-01 00:00:00', TIMESTAMP'0002-02-02 00:00:00') (type: boolean)
-              Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ts (type: timestamp)
                 outputColumnNames: _col0
@@ -241,13 +253,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -287,9 +299,13 @@ POSTHOOK: Input: default@test_n2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -393,9 +409,13 @@ POSTHOOK: Input: default@test_n2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

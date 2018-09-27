@@ -7,6 +7,10 @@ SELECT * FROM (
 WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds, A.hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM (
   SELECT X.* FROM SRCPART X WHERE X.key < 100
@@ -16,6 +20,10 @@ SELECT * FROM (
 WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds, A.hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -45,7 +53,7 @@ STAGE PLANS:
                     Statistics: Num rows: 666 Data size: 7074 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string), '2008-04-08' (type: string), _col3 (type: string)
-                      null sort order: aaaa
+                      null sort order: zzzz
                       sort order: ++++
                       Statistics: Num rows: 666 Data size: 7074 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -71,7 +79,7 @@ STAGE PLANS:
                     Statistics: Num rows: 666 Data size: 7074 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string), '2008-04-08' (type: string), _col3 (type: string)
-                      null sort order: aaaa
+                      null sort order: zzzz
                       sort order: ++++
                       Statistics: Num rows: 666 Data size: 7074 Basic stats: COMPLETE Column stats: NONE
                       tag: -1

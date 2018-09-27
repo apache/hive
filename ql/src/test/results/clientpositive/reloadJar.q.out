@@ -8,10 +8,14 @@ PREHOOK: query: EXPLAIN
 SELECT example_iden(key)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT example_iden(key)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

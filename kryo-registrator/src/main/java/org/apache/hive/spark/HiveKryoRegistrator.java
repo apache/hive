@@ -54,7 +54,7 @@ public class HiveKryoRegistrator implements KryoRegistrator {
     }
   }
 
-  private static class BytesWritableSerializer extends Serializer<BytesWritable> {
+  static class BytesWritableSerializer extends Serializer<BytesWritable> {
 
     public void write(Kryo kryo, Output output, BytesWritable object) {
       output.writeVarInt(object.getLength(), true);

@@ -46,14 +46,15 @@ public final class RpcConfiguration {
   private static final Logger LOG = LoggerFactory.getLogger(RpcConfiguration.class);
 
   public static final ImmutableSet<String> HIVE_SPARK_RSC_CONFIGS = ImmutableSet.of(
-    HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT.varname,
-    HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname,
-    HiveConf.ConfVars.SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT.varname,
-    HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname,
-    HiveConf.ConfVars.SPARK_RPC_MAX_MESSAGE_SIZE.varname,
-    HiveConf.ConfVars.SPARK_RPC_MAX_THREADS.varname,
-    HiveConf.ConfVars.SPARK_RPC_SECRET_RANDOM_BITS.varname,
-    HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname
+      HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT.varname,
+      HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname,
+      HiveConf.ConfVars.SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT.varname,
+      HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname,
+      HiveConf.ConfVars.SPARK_RPC_MAX_MESSAGE_SIZE.varname,
+      HiveConf.ConfVars.SPARK_RPC_MAX_THREADS.varname,
+      HiveConf.ConfVars.SPARK_RPC_SECRET_RANDOM_BITS.varname,
+      HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname,
+      HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname
   );
   public static final ImmutableSet<String> HIVE_SPARK_TIME_CONFIGS = ImmutableSet.of(
     HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT.varname,

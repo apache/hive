@@ -21,6 +21,8 @@ GROUP BY cint, cdouble, cdecimal1, cdecimal2
 ORDER BY cint, cdouble, cdecimal1, cdecimal2
 LIMIT 50
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
 WHERE cdecimal1 is not null and cdecimal2 is not null
@@ -28,6 +30,8 @@ GROUP BY cint, cdouble, cdecimal1, cdecimal2
 ORDER BY cint, cdouble, cdecimal1, cdecimal2
 LIMIT 50
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

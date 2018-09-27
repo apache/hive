@@ -1,0 +1,16 @@
+PREHOOK: query: create table realtype (a real, b real)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@realtype
+POSTHOOK: query: create table realtype (a real, b real)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@realtype
+PREHOOK: query: describe realtype
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@realtype
+POSTHOOK: query: describe realtype
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@realtype
+a                   	float               	                    
+b                   	float               	                    

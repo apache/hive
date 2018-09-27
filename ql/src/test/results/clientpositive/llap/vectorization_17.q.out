@@ -22,6 +22,8 @@ WHERE    (((cbigint > -23)
                   OR (cfloat = cdouble))))
 ORDER BY cbigint, cfloat
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT   cfloat,
          cstring1,
@@ -46,6 +48,8 @@ WHERE    (((cbigint > -23)
                   OR (cfloat = cdouble))))
 ORDER BY cbigint, cfloat
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -92,10 +96,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [3, 4]
+                            keyColumns: 3:bigint, 4:float
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [6, 2, 8, 5, 15, 16, 14, 17, 19, 20, 22, 18]
+                            valueColumns: 6:string, 2:int, 8:timestamp, 5:double, 15:double, 16:bigint, 14:double, 17:double, 19:double, 20:double, 22:decimal(11,4), 18:double
                         Statistics: Num rows: 4096 Data size: 1212930 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: timestamp), _col4 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: decimal(11,4)), _col13 (type: double)
             Execution mode: vectorized, llap
@@ -120,7 +124,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false

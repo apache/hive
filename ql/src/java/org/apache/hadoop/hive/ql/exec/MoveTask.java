@@ -139,7 +139,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
         deletePath = createTargetPath(targetPath, tgtFs);
       }
-      Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
+      //For acid table incremental replication, just copy the content of staging directory to destination.
+      //No need to clean it.
+      if (work.isNeedCleanTarget()) {
+        Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
+      }
       // Set isManaged to false as this is not load data operation for which it is needed.
       if (!Hive.moveFile(conf, sourcePath, targetPath, true, false, false)) {
         try {
@@ -318,6 +322,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
         }
       }
+
       // Multi-file load is for dynamic partitions when some partitions do not
       // need to merge and they can simply be moved to the target directory.
       // This is also used for MM table conversion.
@@ -328,6 +333,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         for (int i = 0; i <lmfd.getSourceDirs().size(); ++i) {
           Path srcPath = lmfd.getSourceDirs().get(i);
           Path destPath = lmfd.getTargetDirs().get(i);
+          if (destPath.equals(srcPath)) {
+            continue;
+          }
           String filePrefix = targetPrefixes == null ? null : targetPrefixes.get(i);
           FileSystem destFs = destPath.getFileSystem(conf);
           if (filePrefix == null) {
@@ -478,7 +486,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     db.loadPartition(tbd.getSourcePath(), db.getTable(tbd.getTable().getTableName()),
         tbd.getPartitionSpec(), tbd.getLoadFileType(), tbd.getInheritTableSpecs(),
-        isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
+        tbd.getInheritLocation(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
          work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
          hasFollowingStatsTask(),
@@ -793,7 +801,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     if (updateBucketCols || updateSortCols) {
-      db.alterPartition(table.getDbName(), table.getTableName(), partn, null);
+      db.alterPartition(table.getCatalogName(), table.getDbName(), table.getTableName(),
+          partn, null, true);
     }
   }
 

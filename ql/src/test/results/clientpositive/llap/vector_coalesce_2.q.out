@@ -32,12 +32,16 @@ SELECT
 from str_str_orc
 GROUP BY str2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -168,17 +172,21 @@ GROUP BY str2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
-X	0.02
 NULL	0.0
+X	0.02
 y	0.0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -248,21 +256,25 @@ POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 0
 0
+0
+0
 1
-0
-0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -393,17 +405,21 @@ GROUP BY str2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
-X	0.02
 NULL	0.0
+X	0.02
 y	0.0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -473,6 +489,6 @@ POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 0
 0
+0
+0
 1
-0
-0

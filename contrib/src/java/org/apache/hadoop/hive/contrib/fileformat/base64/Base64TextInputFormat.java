@@ -19,13 +19,12 @@
 package org.apache.hadoop.hive.contrib.fileformat.base64;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -131,15 +130,11 @@ public class Base64TextInputFormat implements
 
     @Override
     public void configure(JobConf job) {
-      try {
-        String signatureString = job.get("base64.text.input.format.signature");
-        if (signatureString != null) {
-          signature = signatureString.getBytes("UTF-8");
-        } else {
-          signature = new byte[0];
-        }
-      } catch (UnsupportedEncodingException e) {
-        e.printStackTrace();
+      String signatureString = job.get("base64.text.input.format.signature");
+      if (signatureString != null) {
+        signature = signatureString.getBytes(StandardCharsets.UTF_8);
+      } else {
+        signature = new byte[0];
       }
     }
 

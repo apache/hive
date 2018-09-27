@@ -35,11 +35,17 @@ INSERT OVERWRITE TABLE test_table2_n18 PARTITION (ds = '1')
 SELECT x.value, x.key from 
 (SELECT a.key, a.value FROM test_table1_n19 a WHERE a.ds = '1')x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n19
+PREHOOK: Input: default@test_table1_n19@ds=1
+PREHOOK: Output: default@test_table2_n18@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n18 PARTITION (ds = '1')
 SELECT x.value, x.key from 
 (SELECT a.key, a.value FROM test_table1_n19 a WHERE a.ds = '1')x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n19
+POSTHOOK: Input: default@test_table1_n19@ds=1
+POSTHOOK: Output: default@test_table2_n18@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -148,11 +154,17 @@ INSERT OVERWRITE TABLE test_table2_n18 PARTITION (ds = '1')
 SELECT x.key, x.value from 
 (SELECT a.key, a.value FROM test_table1_n19 a WHERE a.ds = '1')x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n19
+PREHOOK: Input: default@test_table1_n19@ds=1
+PREHOOK: Output: default@test_table2_n18@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n18 PARTITION (ds = '1')
 SELECT x.key, x.value from 
 (SELECT a.key, a.value FROM test_table1_n19 a WHERE a.ds = '1')x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n19
+POSTHOOK: Input: default@test_table1_n19@ds=1
+POSTHOOK: Output: default@test_table2_n18@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -179,7 +191,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: UDFToString(VALUE._col0) (type: string), UDFToInteger(VALUE._col1) (type: int)
+          expressions: CAST( VALUE._col0 AS STRING) (type: string), UDFToInteger(VALUE._col1) (type: int)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           File Output Operator

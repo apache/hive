@@ -19,11 +19,17 @@ FROM src
 INSERT OVERWRITE TABLE dest_g2_n4 SELECT substr(src.key,1,1), count(DISTINCT src.key) WHERE substr(src.key,1,1) >= 5 GROUP BY substr(src.key,1,1)
 INSERT OVERWRITE TABLE dest_g3_n0 SELECT substr(src.key,1,1), count(DISTINCT src.key), count(src.value) WHERE substr(src.key,1,1) < 5 GROUP BY substr(src.key,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest_g2_n4
+PREHOOK: Output: default@dest_g3_n0
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest_g2_n4 SELECT substr(src.key,1,1), count(DISTINCT src.key) WHERE substr(src.key,1,1) >= 5 GROUP BY substr(src.key,1,1)
 INSERT OVERWRITE TABLE dest_g3_n0 SELECT substr(src.key,1,1), count(DISTINCT src.key), count(src.value) WHERE substr(src.key,1,1) < 5 GROUP BY substr(src.key,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest_g2_n4
+POSTHOOK: Output: default@dest_g3_n0
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

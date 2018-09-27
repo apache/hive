@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -74,6 +74,8 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -103,6 +105,10 @@ public class Table implements Serializable {
   private transient TableSpec tableSpec;
 
   private transient boolean materializedTable;
+
+  /** Note: This is set only for describe table purposes, it cannot be used to verify whether
+   * a materialization is up-to-date or not. */
+  private transient Boolean outdatedForRewritingMaterializedView;
 
   /**
    * Used only for serialization.
@@ -1010,6 +1016,10 @@ public class Table implements Serializable {
     return tTable.isTemporary();
   }
 
+  public void setTemporary(boolean isTemporary) {
+    tTable.setTemporary(isTemporary);
+  }
+
   public static boolean hasMetastoreBasedSchema(HiveConf conf, String serdeLib) {
     return StringUtils.isEmpty(serdeLib) ||
         conf.getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname).contains(serdeLib);
@@ -1064,7 +1074,7 @@ public class Table implements Serializable {
   }
 
   private static String normalize(String colName) throws HiveException {
-    if (!MetaStoreUtils.validateColumnName(colName)) {
+    if (!MetaStoreServerUtils.validateColumnName(colName)) {
       throw new HiveException("Invalid column name '" + colName
           + "' in the table definition");
     }
@@ -1081,5 +1091,19 @@ public class Table implements Serializable {
 
   public boolean hasDeserializer() {
     return deserializer != null;
+  }
+
+  public String getCatalogName() {
+    return this.tTable.getCatName();
+  }
+
+  public void setOutdatedForRewriting(Boolean validForRewritingMaterializedView) {
+    this.outdatedForRewritingMaterializedView = validForRewritingMaterializedView;
+  }
+
+  /** Note: This is set only for describe table purposes, it cannot be used to verify whether
+   * a materialization is up-to-date or not. */
+  public Boolean isOutdatedForRewriting() {
+    return outdatedForRewritingMaterializedView;
   }
 };

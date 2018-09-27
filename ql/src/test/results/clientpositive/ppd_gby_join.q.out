@@ -8,6 +8,8 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
 GROUP BY src1.c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1, count(1) 
 FROM
@@ -18,6 +20,8 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
 GROUP BY src1.c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -274,6 +278,8 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
 GROUP BY src1.c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1, count(1) 
 FROM
@@ -284,6 +290,8 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
 GROUP BY src1.c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

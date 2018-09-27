@@ -96,7 +96,7 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
     return path;
   }
 
-  protected String getNominalPath(Path fpath) {
+  protected Path getNominalPath(Path fpath) {
     Path nominal = null;
     boolean schemaless = fpath.toUri().getScheme() == null;
     for (Path onefile : conf.getPathToAliases().keySet()) {
@@ -119,7 +119,7 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
     if (nominal == null) {
       throw new IllegalStateException("Invalid input path " + fpath);
     }
-    return nominal.toString();
+    return nominal;
   }
 
   public abstract void initEmptyInputChildren(List<Operator<?>> children, Configuration hconf)

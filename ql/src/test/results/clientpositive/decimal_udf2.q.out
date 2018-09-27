@@ -28,10 +28,14 @@ PREHOOK: query: EXPLAIN
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2 WHERE key = 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2 WHERE key = 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -84,6 +88,8 @@ SELECT
   log10(key), sqrt(key)
 FROM DECIMAL_UDF2 WHERE key = 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT
   exp(key), ln(key),
@@ -91,6 +97,8 @@ SELECT
   log10(key), sqrt(key)
 FROM DECIMAL_UDF2 WHERE key = 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

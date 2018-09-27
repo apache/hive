@@ -119,9 +119,17 @@ POSTHOOK: Output: default@empty_n0
 PREHOOK: query: explain
 select count(*) from tab_n4 s1 join empty_n0 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n0
+PREHOOK: Input: default@tab_n4
+PREHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab_n4 s1 join empty_n0 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n0
+POSTHOOK: Input: default@tab_n4
+POSTHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -214,9 +222,17 @@ POSTHOOK: Input: default@tab_n4@ds=2008-04-08
 PREHOOK: query: explain
 select * from tab_n4 s1 left outer join empty_n0 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n0
+PREHOOK: Input: default@tab_n4
+PREHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tab_n4 s1 left outer join empty_n0 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n0
+POSTHOOK: Input: default@tab_n4
+POSTHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -523,9 +539,17 @@ POSTHOOK: Input: default@tab_n4@ds=2008-04-08
 PREHOOK: query: explain
 select count(*) from tab_n4 s1 left outer join tab_n4 s2 on s1.key=s2.key join empty_n0 s3 on s1.key = s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n0
+PREHOOK: Input: default@tab_n4
+PREHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab_n4 s1 left outer join tab_n4 s2 on s1.key=s2.key join empty_n0 s3 on s1.key = s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n0
+POSTHOOK: Input: default@tab_n4
+POSTHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -632,9 +656,17 @@ POSTHOOK: Input: default@tab_n4@ds=2008-04-08
 PREHOOK: query: explain
 select count(*) from tab_n4 s1 left outer join empty_n0 s2 on s1.key=s2.key join tab_n4 s3 on s1.key = s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n0
+PREHOOK: Input: default@tab_n4
+PREHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab_n4 s1 left outer join empty_n0 s2 on s1.key=s2.key join tab_n4 s3 on s1.key = s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n0
+POSTHOOK: Input: default@tab_n4
+POSTHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -741,9 +773,13 @@ POSTHOOK: Input: default@tab_n4@ds=2008-04-08
 PREHOOK: query: explain
 select count(*) from empty_n0 s1 join empty_n0 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from empty_n0 s1 join empty_n0 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -832,9 +868,17 @@ POSTHOOK: Input: default@empty_n0
 PREHOOK: query: explain
 select count(*) from empty_n0 s1 join tab_n4 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_n0
+PREHOOK: Input: default@tab_n4
+PREHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from empty_n0 s1 join tab_n4 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_n0
+POSTHOOK: Input: default@tab_n4
+POSTHOOK: Input: default@tab_n4@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

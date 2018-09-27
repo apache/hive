@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -514,12 +515,22 @@ public class VectorAssignRow {
           }
           break;
         case DECIMAL:
-          if (object instanceof HiveDecimal) {
-            ((DecimalColumnVector) columnVector).set(
-                batchIndex, (HiveDecimal) object);
+          if (columnVector instanceof DecimalColumnVector) {
+            if (object instanceof HiveDecimal) {
+              ((DecimalColumnVector) columnVector).set(
+                  batchIndex, (HiveDecimal) object);
+            } else {
+              ((DecimalColumnVector) columnVector).set(
+                  batchIndex, (HiveDecimalWritable) object);
+            }
           } else {
-            ((DecimalColumnVector) columnVector).set(
-                batchIndex, (HiveDecimalWritable) object);
+            if (object instanceof HiveDecimal) {
+              ((Decimal64ColumnVector) columnVector).set(
+                  batchIndex, (HiveDecimal) object);
+            } else {
+              ((Decimal64ColumnVector) columnVector).set(
+                  batchIndex, (HiveDecimalWritable) object);
+            }
           }
           break;
         case INTERVAL_YEAR_MONTH:
@@ -981,6 +992,17 @@ public class VectorAssignRow {
         assignConvertRowColumn(batch, batchIndex, i, objects[i]);
       } else {
         assignRowColumn(batch, batchIndex, i, objects[i]);
+      }
+    }
+  }
+
+  public void assignRow(VectorizedRowBatch batch, int batchIndex, ArrayList<Object> objectList) {
+    final int count = isConvert.length;
+    for (int i = 0; i < count; i++) {
+      if (isConvert[i]) {
+        assignConvertRowColumn(batch, batchIndex, i, objectList.get(i));
+      } else {
+        assignRowColumn(batch, batchIndex, i, objectList.get(i));
       }
     }
   }

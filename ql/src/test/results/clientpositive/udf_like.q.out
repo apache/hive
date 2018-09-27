@@ -19,12 +19,16 @@ SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_
   '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a','ab' LIKE '','' LIKE ''
 FROM src WHERE src.key = 86
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
   '_%_' LIKE '\%\_%', '%__' LIKE '__\%%', '_%' LIKE '\_\%\_\%%', '_%' LIKE '\_\%_%',
   '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a','ab' LIKE '','' LIKE ''
 FROM src WHERE src.key = 86
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

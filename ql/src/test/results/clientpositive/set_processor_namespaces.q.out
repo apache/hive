@@ -5,8 +5,12 @@ go=5
 raw=${hiveconf:zzz}
 PREHOOK: query: EXPLAIN SELECT * FROM src where key=5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src where key=5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

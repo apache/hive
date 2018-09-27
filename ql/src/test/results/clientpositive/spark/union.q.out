@@ -6,6 +6,8 @@ FROM (
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: target/warehouse/union.out
 POSTHOOK: query: EXPLAIN
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
@@ -14,6 +16,8 @@ FROM (
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: target/warehouse/union.out
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

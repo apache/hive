@@ -2,10 +2,14 @@ PREHOOK: query: explain
 with Q1 as ( select key from sRc where key = '5')
 select CPS.key from Q1 CPS
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with Q1 as ( select key from sRc where key = '5')
 select CPS.key from Q1 CPS
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -45,11 +49,15 @@ with Q1 as ( select key from q2 where key = '5'),
 Q2 as ( select key from sRc where key = '5')
 select CPS.key from Q1 CPS
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with Q1 as ( select key from q2 where key = '5'),
 Q2 as ( select key from sRc where key = '5')
 select CPS.key from Q1 CPS
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

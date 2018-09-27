@@ -2,10 +2,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -81,10 +85,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -160,10 +168,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -230,6 +242,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -249,10 +262,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -318,6 +335,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -337,10 +355,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -407,6 +429,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -426,10 +449,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -495,6 +522,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -514,10 +542,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -593,10 +625,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

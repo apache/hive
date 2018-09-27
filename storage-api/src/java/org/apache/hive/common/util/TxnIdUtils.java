@@ -19,6 +19,8 @@ package org.apache.hive.common.util;
 
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 
+import java.util.*;
+
 public class TxnIdUtils {
 
   /**
@@ -36,8 +38,8 @@ public class TxnIdUtils {
     }
 
     return checkEquivalentCommittedIds(
-        older.getHighWatermark(), older.getInvalidWriteIds(),
-        newer.getHighWatermark(), newer.getInvalidWriteIds());
+            older.getHighWatermark(), older.getInvalidWriteIds(),
+            newer.getHighWatermark(), newer.getInvalidWriteIds());
   }
 
   /**

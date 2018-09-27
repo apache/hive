@@ -94,6 +94,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentUser;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -184,6 +185,10 @@ public abstract class BaseSemanticAnalyzer {
 
   public boolean skipAuthorization() {
     return false;
+  }
+
+  public String getCboInfo() {
+    return ctx.getCboInfo();
   }
 
   class RowFormatParams {
@@ -828,7 +833,8 @@ public abstract class BaseSemanticAnalyzer {
       if(defFunc.getGenericUDF() instanceof GenericUDFOPNull
           || defFunc.getGenericUDF() instanceof GenericUDFCurrentTimestamp
           || defFunc.getGenericUDF() instanceof GenericUDFCurrentDate
-          || defFunc.getGenericUDF() instanceof GenericUDFCurrentUser){
+          || defFunc.getGenericUDF() instanceof GenericUDFCurrentUser
+          || defFunc.getGenericUDF() instanceof GenericUDFSurrogateKey){
         return true;
       }
     }
@@ -998,10 +1004,10 @@ public abstract class BaseSemanticAnalyzer {
     // Default values
     String constraintName = null;
     //by default if user hasn't provided any optional constraint properties
-    // it will be considered ENABLE and NOVALIDATE and RELY=false
+    // it will be considered ENABLE and NOVALIDATE and RELY=true
     boolean enable = true;
     boolean validate = false;
-    boolean rely = false;
+    boolean rely = true;
     String checkOrDefaultValue = null;
     for (int i = 0; i < child.getChildCount(); i++) {
       ASTNode grandChild = (ASTNode) child.getChild(i);
@@ -1018,6 +1024,7 @@ public abstract class BaseSemanticAnalyzer {
         enable = false;
         // validate is false by default if we disable the constraint
         validate = false;
+        rely = false;
       } else if (type == HiveParser.TOK_VALIDATE) {
         validate = true;
       } else if (type == HiveParser.TOK_NOVALIDATE) {
@@ -1327,13 +1334,8 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child = (ASTNode) ast.getChild(i);
       if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
         child = (ASTNode) child.getChild(0);
-        if (child.getToken().getType() == HiveParser.TOK_NULLS_FIRST) {
-          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-              HIVE_COLUMN_ORDER_ASC));
-        } else {
-          throw new SemanticException("create/alter table: "
-                  + "not supported NULLS LAST for ORDER BY in ASC order");
-        }
+        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+            HIVE_COLUMN_ORDER_ASC));
       } else {
         child = (ASTNode) child.getChild(0);
         if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {
@@ -2295,6 +2297,10 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public DDLDescWithWriteId getAcidDdlDesc() {
+    return null;
+  }
+
+  public WriteEntity getAcidAnalyzeTable() {
     return null;
   }
 }

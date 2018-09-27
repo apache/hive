@@ -36,7 +36,11 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,7 +55,14 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.StringUtils;
@@ -110,6 +121,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.StreamPrinter;
 import org.apache.hive.druid.MiniDruidCluster;
 import org.apache.hive.kafka.SingleNodeKafkaCluster;
+import org.apache.hive.kafka.Wikipedia;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
@@ -141,6 +153,7 @@ public class QTestUtil {
   static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
   private final static String defaultInitScript = "q_test_init.sql";
   private final static String defaultCleanupScript = "q_test_cleanup.sql";
+  private static SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
   private final String[] testOnlyCommands = new String[]{"crypto", "erasure"};
 
   public static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
@@ -150,9 +163,9 @@ public class QTestUtil {
   public static final String TEST_HIVE_USER_PROPERTY = "test.hive.user";
 
   /**
-   * The Erasure Coding Policy to use in TestErasureCodingHDFSCliDriver.
+   * The default Erasure Coding Policy to use in Erasure Coding tests.
    */
-  private static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
+  public static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
 
   private String testWarehouse;
   @Deprecated
@@ -421,7 +434,7 @@ public class QTestUtil {
     llap(CoreClusterType.TEZ, FsType.hdfs),
     llap_local(CoreClusterType.TEZ, FsType.local),
     none(CoreClusterType.MR, FsType.local),
-    druid(CoreClusterType.TEZ, FsType.hdfs),
+    druidLocal(CoreClusterType.TEZ, FsType.local),
     druidKafka(CoreClusterType.TEZ, FsType.hdfs),
     kafka(CoreClusterType.TEZ, FsType.hdfs);
 
@@ -458,8 +471,8 @@ public class QTestUtil {
         return llap;
       } else if (type.equals("llap_local")) {
         return llap_local;
-      } else if (type.equals("druid")) {
-        return druid;
+      } else if (type.equals("druidLocal")) {
+        return druidLocal;
       } else if (type.equals("druid-kafka")) {
         return druidKafka;
       }
@@ -479,36 +492,24 @@ public class QTestUtil {
     return "jceks://file" + new Path(keyDir, "test.jks").toUri();
   }
 
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-                   String confDir, String hadoopVer, String initScript, String cleanupScript,
-                   boolean withLlapIo) throws Exception {
-    this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript,
-        withLlapIo, null);
-  }
-
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript, String cleanupScript,
-      boolean withLlapIo, FsType fsType)
-    throws Exception {
+  public QTestUtil(QTestArguments testArgs) throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={}," +
         " hadoopVer={}, initScript={}, cleanupScript={}, withLlapIo={}," +
-            " fsType={}"
-        , outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript,
-        withLlapIo, fsType);
-    Preconditions.checkNotNull(clusterType, "ClusterType cannot be null");
-    if (fsType != null) {
-      this.fsType = fsType;
-    } else {
-      this.fsType = clusterType.getDefaultFsType();
-    }
-    this.outDir = outDir;
-    this.logDir = logDir;
+            " fsType={}",
+        testArgs.getOutDir(), testArgs.getLogDir(), testArgs.getClusterType(), testArgs.getConfDir(), hadoopVer,
+            testArgs.getInitScript(), testArgs.getCleanupScript(), testArgs.isWithLlapIo(), testArgs.getFsType());
+
+    Preconditions.checkNotNull(testArgs.getClusterType(), "ClusterType cannot be null");
+    this.fsType = testArgs.getFsType();
+    this.outDir = testArgs.getOutDir();
+    this.logDir = testArgs.getLogDir();
     this.srcUDFs = getSrcUDFs();
     this.qOutProcessor = new QOutProcessor(fsType);
 
     // HIVE-14443 move this fall-back logic to CliConfigs
-    if (confDir != null && !confDir.isEmpty()) {
-      HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
+    if (testArgs.getConfDir() != null && !testArgs.getConfDir().isEmpty()) {
+      HiveConf.setHiveSiteLocation(new URL(
+              "file://"+ new File(testArgs.getConfDir()).toURI().getPath() + "/hive-site.xml"));
       MetastoreConf.setHiveSiteLocation(HiveConf.getHiveSiteLocation());
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
@@ -525,20 +526,20 @@ public class QTestUtil {
     qMaskStatsQuerySet = new HashSet<String>();
     qMaskDataSizeQuerySet = new HashSet<String>();
     qMaskLineageQuerySet = new HashSet<String>();
-    this.clusterType = clusterType;
+    this.clusterType = testArgs.getClusterType();
 
     HadoopShims shims = ShimLoader.getHadoopShims();
 
     setupFileSystem(shims);
 
-    setup = new QTestSetup();
+    setup = testArgs.getQTestSetup();
     setup.preTest(conf);
 
-    setupMiniCluster(shims, confDir);
+    setupMiniCluster(shims, testArgs.getConfDir());
 
     initConf();
 
-    if (withLlapIo && (clusterType == MiniClusterType.none)) {
+    if (testArgs.isWithLlapIo() && (clusterType == MiniClusterType.none)) {
       LOG.info("initializing llap IO");
       LlapProxy.initializeLlapIo(conf);
     }
@@ -559,8 +560,8 @@ public class QTestUtil {
 
     String scriptsDir = getScriptsDir();
 
-    this.initScript = scriptsDir + File.separator + initScript;
-    this.cleanupScript = scriptsDir + File.separator + cleanupScript;
+    this.initScript = scriptsDir + File.separator + testArgs.getInitScript();
+    this.cleanupScript = scriptsDir + File.separator + testArgs.getCleanupScript();
 
     overWrite = "true".equalsIgnoreCase(System.getProperty("test.output.overwrite"));
 
@@ -632,7 +633,8 @@ public class QTestUtil {
 
     String uriString = fs.getUri().toString();
 
-    if (clusterType == MiniClusterType.druid || clusterType == MiniClusterType.druidKafka) {
+    if (clusterType == MiniClusterType.druidKafka
+        || clusterType == MiniClusterType.druidLocal) {
       final String tempDir = System.getProperty("test.tmp.dir");
       druidCluster = new MiniDruidCluster("mini-druid",
           logDir,
@@ -664,6 +666,7 @@ public class QTestUtil {
           "test-topic",
           new File(getScriptsDir(), "kafka_init_data.json")
       );
+      kafkaCluster.createTopicWithData("wiki_kafka_avro_table", getAvroRows());
     }
 
     if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
@@ -672,15 +675,28 @@ public class QTestUtil {
             + "/tez-site.xml"));
       }
       int numTrackers = 2;
-      if (EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local).contains(clusterType)) {
+      if (EnumSet.of(
+          MiniClusterType.llap,
+          MiniClusterType.llap_local,
+          MiniClusterType.druidLocal,
+          MiniClusterType.druidKafka
+      ).contains(clusterType)) {
         llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, setup.zooKeeperCluster, confDir);
       } else {
       }
-      if (EnumSet.of(MiniClusterType.llap_local, MiniClusterType.tez_local).contains(clusterType)) {
-        mr = shims.getLocalMiniTezCluster(conf, clusterType == MiniClusterType.llap_local);
+      if (EnumSet.of(MiniClusterType.llap_local, MiniClusterType.tez_local, MiniClusterType.druidLocal)
+                 .contains(clusterType)) {
+        mr = shims.getLocalMiniTezCluster(conf,
+                                          clusterType == MiniClusterType.llap_local
+                                          || clusterType == MiniClusterType.druidLocal
+        );
       } else {
-        mr = shims.getMiniTezCluster(conf, numTrackers, uriString,
-            EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local).contains(clusterType));
+        mr = shims.getMiniTezCluster(
+            conf,
+            numTrackers,
+            uriString,
+            EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local, MiniClusterType.druidKafka).contains(clusterType)
+        );
       }
     } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
       mr = shims.getMiniSparkCluster(conf, 2, uriString, 1);
@@ -689,6 +705,48 @@ public class QTestUtil {
     }
   }
 
+  private static List<byte[]> getAvroRows() {
+    int numRows = 10;
+    List<byte[]> events;
+    final DatumWriter<GenericRecord> writer = new SpecificDatumWriter<>(Wikipedia.getClassSchema());
+    events =
+        IntStream.rangeClosed(0, numRows)
+            .mapToObj(i -> Wikipedia.newBuilder()
+                // 1534736225090 -> 08/19/2018 20:37:05
+                .setTimestamp(formatter.format(new Timestamp(1534736225090L + 1000 * 3600 * i)))
+                .setAdded(i * 300)
+                .setDeleted(-i)
+                .setIsrobot(i % 2 == 0)
+                .setChannel("chanel number " + i)
+                .setComment("comment number " + i)
+                .setCommentlength(i)
+                .setDiffurl(String.format("url %s", i))
+                .setFlags("flag")
+                .setIsminor(i % 2 > 0)
+                .setIsanonymous(i % 3 != 0)
+                .setNamespace("namespace")
+                .setIsunpatrolled(new Boolean(i % 3 == 0))
+                .setIsnew(new Boolean(i % 2 > 0))
+                .setPage(String.format("page is %s", i * 100))
+                .setDelta(i)
+                .setDeltabucket(i * 100.4)
+                .setUser("test-user-" + i)
+                .build())
+            .map(genericRecord -> {
+              java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+              BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(out, null);
+              try {
+                writer.write(genericRecord, encoder);
+                encoder.flush();
+                out.close();
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+              return out.toByteArray();
+            })
+            .collect(Collectors.toList());
+    return events;
+  }
 
   public void shutdown() throws Exception {
     if (System.getenv(QTEST_LEAVE_FILES) == null) {
@@ -1816,7 +1874,7 @@ public class QTestUtil {
       if (zooKeeperCluster == null) {
         //create temp dir
         String tmpBaseDir =  System.getProperty(TEST_TMP_DIR_PROPERTY);
-        File tmpDir = Utilities.createTempDir(tmpBaseDir);
+        File tmpDir = Files.createTempDirectory(Paths.get(tmpBaseDir), "tmp_").toFile();
 
         zooKeeperCluster = new MiniZooKeeperCluster();
         zkPort = zooKeeperCluster.startup(tmpDir);
@@ -1907,9 +1965,19 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20",
-        initScript == null ? defaultInitScript : initScript,
-        cleanupScript == null ? defaultCleanupScript : cleanupScript, false);
+
+      qt[i] = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(resDir)
+            .withLogDir(logDir)
+            .withClusterType(MiniClusterType.none)
+            .withConfDir(null)
+            .withHadoopVer("0.20")
+            .withInitScript(initScript == null ? defaultInitScript : initScript)
+            .withCleanupScript(cleanupScript == null ? defaultCleanupScript : cleanupScript)
+            .withLlapIo(false)
+            .build());
+
       qt[i].addFile(qfiles[i], false);
       qt[i].clearTestSideEffects();
     }

@@ -67,8 +67,18 @@ p                   	int
 p                   	int                 	                    
 PREHOOK: query: explain select test_n1.key, test_n1.value from test_n1 join test1 on (test_n1.key = test1.key) order by test_n1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test_n1
+PREHOOK: Input: default@test_n1@p=1
+PREHOOK: Input: default@test_n1@p=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select test_n1.key, test_n1.value from test_n1 join test1 on (test_n1.key = test1.key) order by test_n1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test_n1
+POSTHOOK: Input: default@test_n1@p=1
+POSTHOOK: Input: default@test_n1@p=2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

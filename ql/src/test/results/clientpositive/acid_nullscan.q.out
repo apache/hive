@@ -29,9 +29,16 @@ POSTHOOK: Lineage: acid_vectorized_n1.b SCRIPT []
 PREHOOK: query: explain extended
 select sum(a) from acid_vectorized_n1 where false
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_vectorized_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select sum(a) from acid_vectorized_n1 where false
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_vectorized_n1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT SUM(`a`) AS `$f0`
+FROM `default`.`acid_vectorized_n1`
+WHERE FALSE
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -69,6 +76,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
               bucket_count 2
               bucket_field_name a
               bucketing_version 2
@@ -93,6 +101,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                 bucket_count 2
                 bucket_field_name a
                 bucketing_version 2

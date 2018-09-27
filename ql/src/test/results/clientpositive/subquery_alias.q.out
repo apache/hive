@@ -4,12 +4,16 @@ FROM (
 ) as unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: target/warehouse/union.out
 POSTHOOK: query: EXPLAIN
 FROM (
   FROM src select src.* WHERE src.key < 100
 ) as unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: target/warehouse/union.out
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
@@ -92,12 +96,16 @@ SELECT * FROM
    ( SELECT * FROM src as s ) as src1 
 ) as src2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM
 ( SELECT * FROM 
    ( SELECT * FROM src as s ) as src1 
 ) as src2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

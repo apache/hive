@@ -19,11 +19,17 @@ sales_HIVE_15647 as sales
 join store_HIVE_15647 as store on sales.store_id = store.store_id
 where ((store.salad_bar)) and ((sales.store_number) <=> (sales.customer_id))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sales_hive_15647
+PREHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from
 sales_HIVE_15647 as sales 
 join store_HIVE_15647 as store on sales.store_id = store.store_id
 where ((store.salad_bar)) and ((sales.store_number) <=> (sales.customer_id))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales_hive_15647
+POSTHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -111,11 +117,17 @@ sales_HIVE_15647 as sales
 join store_HIVE_15647 as store on sales.store_id = store.store_id
 where ((store.salad_bar)) and ((sales.store_number) = (sales.customer_id))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sales_hive_15647
+PREHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from
 sales_HIVE_15647 as sales 
 join store_HIVE_15647 as store on sales.store_id = store.store_id
 where ((store.salad_bar)) and ((sales.store_number) = (sales.customer_id))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales_hive_15647
+POSTHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -203,11 +215,17 @@ sales_HIVE_15647 as sales
 join store_HIVE_15647 as store on sales.store_id = store.store_id
 where ((store.salad_bar = true)) and ((sales.store_number) <=> (sales.customer_id))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sales_hive_15647
+PREHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from
 sales_HIVE_15647 as sales 
 join store_HIVE_15647 as store on sales.store_id = store.store_id
 where ((store.salad_bar = true)) and ((sales.store_number) <=> (sales.customer_id))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales_hive_15647
+POSTHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -295,11 +313,17 @@ sales_HIVE_15647 as sales
 join store_HIVE_15647 as store on sales.store_id = store.store_id
 where ((store.salad_bar = false)) and ((sales.store_number) > (sales.customer_id))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sales_hive_15647
+PREHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from
 sales_HIVE_15647 as sales 
 join store_HIVE_15647 as store on sales.store_id = store.store_id
 where ((store.salad_bar = false)) and ((sales.store_number) > (sales.customer_id))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales_hive_15647
+POSTHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

@@ -47,6 +47,7 @@
         <exclude>co.cask.tephra:*</exclude>
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
+        <exclude>org.apache.hive:hive-contrib</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
@@ -56,6 +57,15 @@
       <useStrictFiltering>true</useStrictFiltering>
       <includes>
         <include>org.apache.hive:hive-jdbc:*:standalone</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>contrib/</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive:hive-contrib</include>
       </includes>
     </dependencySet>
     <dependencySet>
@@ -215,13 +225,14 @@
         <include>**/*</include>
       </includes>
       <excludes>
-        <exclude>**/upgrade.order.*</exclude> <!-- pick up upgrade order from standalone metastore-->
+        <!-- pick up upgrade order from standalone metastore, except hive, which does not exist in standalone metastore -->
+        <exclude>%regex[(!hive)/upgrade.order.*]</exclude>
       </excludes>
       <outputDirectory>scripts/metastore/upgrade</outputDirectory>
     </fileSet>
 
     <fileSet>
-      <directory>${project.parent.basedir}/standalone-metastore/src/main/sql</directory>
+      <directory>${project.parent.basedir}/standalone-metastore/metastore-server/src/main/sql</directory>
       <includes>
         <include>**/*</include>
       </includes>

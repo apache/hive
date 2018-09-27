@@ -112,6 +112,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
             i++;
           }
         }
+      } else if (explainOptions == HiveParser.KW_LOCKS) {
+        config.setLocks(true);
+      } else if (explainOptions == HiveParser.KW_AST){
+        config.setAst(true);
+      } else if (explainOptions == HiveParser.KW_DEBUG) {
+        config.setDebug(true);
       } else {
         // UNDONE: UNKNOWN OPTION?
       }
@@ -162,6 +168,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
+    inputs = sem.getInputs();
+    outputs = sem.getOutputs();
 
     ctx.setResFile(ctx.getLocalTmpPath());
     List<Task<?>> tasks = sem.getAllRootTasks();
@@ -204,9 +212,11 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         pCtx,
         tasks,
         fetchTask,
+        input,
         sem,
         config,
-        ctx.getCboInfo());
+        ctx.getCboInfo(),
+        ctx.getOptimizedSql());
 
     work.setAppendTaskType(
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));

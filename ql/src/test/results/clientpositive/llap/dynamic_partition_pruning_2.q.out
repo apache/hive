@@ -138,6 +138,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -147,6 +153,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -307,6 +319,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -316,6 +334,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -457,11 +481,23 @@ FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT d1.label
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -573,12 +609,20 @@ dim_shops d1
 WHERE agg.dim_shops_id = d1.id
 and agg.dim_shops_id = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
 and agg.dim_shops_id = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -681,6 +725,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -690,6 +740,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -846,11 +902,23 @@ SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN 
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1033,12 +1101,24 @@ from srcpart s1,
      srcpart s2
 where s1.ds = s2.ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select count(*)
 from srcpart s1,
      srcpart s2
 where s1.ds = s2.ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

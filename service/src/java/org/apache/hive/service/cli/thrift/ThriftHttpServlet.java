@@ -53,6 +53,7 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
+import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.thrift.TProcessor;
@@ -207,7 +208,11 @@ public class ThriftHttpServlet extends TServlet {
       super.doPost(request, response);
     }
     catch (HttpAuthenticationException e) {
-      LOG.error("Error: ", e);
+      // Ignore HttpEmptyAuthenticationException, it is normal for knox
+      // to send a request with empty header
+      if (!(e instanceof HttpEmptyAuthenticationException)) {
+        LOG.error("Error: ", e);
+      }
       // Send a 401 to the client
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       if(isKerberosAuthMode(authType)) {
@@ -404,6 +409,9 @@ public class ThriftHttpServlet extends TServlet {
     try {
       return serviceUGI.doAs(new HttpKerberosServerAction(request, serviceUGI));
     } catch (Exception e) {
+      if (e.getCause() instanceof HttpEmptyAuthenticationException) {
+        throw (HttpEmptyAuthenticationException)e.getCause();
+      }
       LOG.error("Failed to authenticate with hive/_HOST kerberos principal");
       throw new HttpAuthenticationException(e);
     }
@@ -546,7 +554,7 @@ public class ThriftHttpServlet extends TServlet {
     String authHeader = request.getHeader(HttpAuthUtils.AUTHORIZATION);
     // Each http request must have an Authorization header
     if (authHeader == null || authHeader.isEmpty()) {
-      throw new HttpAuthenticationException("Authorization header received " +
+      throw new HttpEmptyAuthenticationException("Authorization header received " +
           "from the client is empty.");
     }
 

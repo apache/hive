@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cbigint,
          cboolean1,
          cstring1,
@@ -30,7 +30,9 @@ WHERE    (((ctimestamp1 IS NULL)
 GROUP BY cbigint, cboolean1, cstring1, ctimestamp1, cdouble
 ORDER BY ctimestamp1, cdouble, cbigint, cstring1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cbigint,
          cboolean1,
          cstring1,
@@ -62,6 +64,8 @@ WHERE    (((ctimestamp1 IS NULL)
 GROUP BY cbigint, cboolean1, cstring1, ctimestamp1, cdouble
 ORDER BY ctimestamp1, cdouble, cbigint, cstring1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -81,7 +85,6 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
@@ -133,12 +136,6 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
-          rowBatchContext:
-              dataColumnCount: 12
-              includeColumns: [0, 1, 3, 5, 6, 8, 10, 11]
-              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-              partitionColumnCount: 0
-              scratchColumnTypeNames: [double, double, double, double]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -167,7 +164,6 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:_col0:bigint, 1:_col1:boolean, 2:_col2:string, 3:_col3:double, 4:_col4:double, 5:_col5:bigint, 6:_col6:bigint, 7:_col7:bigint, 8:_col8:double, 9:_col9:double, 10:_col10:double, 11:_col11:double, 12:_col12:double, 13:_col13:decimal(22,2), 14:_col14:bigint, 15:_col15:double, 16:_col17:double, 17:_col18:double, 18:_col19:double]
             Reduce Output Operator
               key expressions: _col3 (type: double), _col0 (type: bigint), _col2 (type: string)
               sort order: +++
@@ -188,12 +184,6 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
-          rowBatchContext:
-              dataColumnCount: 19
-              includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
-              dataColumns: _col0:bigint, _col1:boolean, _col2:string, _col3:double, _col4:double, _col5:bigint, _col6:bigint, _col7:bigint, _col8:double, _col9:double, _col10:double, _col11:double, _col12:double, _col13:decimal(22,2), _col14:bigint, _col15:double, _col17:double, _col18:double, _col19:double
-              partitionColumnCount: 0
-              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

@@ -27,6 +27,21 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 public class HiveJoinProjectTransposeRule extends JoinProjectTransposeRule {
 
+  public static final HiveJoinProjectTransposeRule LEFF_PROJECT_BTW_JOIN =
+      new HiveJoinProjectTransposeRule(
+          operand(HiveJoin.class,
+                  operand(HiveProject.class, operand(HiveJoin.class, any())),
+                  operand(RelNode.class, any())),
+          "JoinProjectTransposeRule(Project-Join-Other)",
+          false, HiveRelFactories.HIVE_BUILDER);
+  public static final HiveJoinProjectTransposeRule RIGHT_PROJECT_BTW_JOIN =
+      new HiveJoinProjectTransposeRule(
+          operand(HiveJoin.class,
+                  operand(RelNode.class, any()),
+                  operand(HiveProject.class, operand(HiveJoin.class, any()))),
+          "JoinProjectTransposeRule(Other-Project-Join)",
+          false, HiveRelFactories.HIVE_BUILDER);
+
   public static final HiveJoinProjectTransposeRule BOTH_PROJECT =
       new HiveJoinProjectTransposeRule(
           operand(HiveJoin.class,

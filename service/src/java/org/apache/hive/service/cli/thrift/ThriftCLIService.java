@@ -21,6 +21,7 @@ package org.apache.hive.service.cli.thrift;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.SparkProgressMonitorStatusMapper;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
@@ -427,7 +428,11 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       userName = req.getUsername();
     }
 
-    userName = getShortName(userName);
+    if (cliService.getHiveConf().getBoolVar(ConfVars.HIVE_AUTHORIZATION_KERBEROS_USE_SHORTNAME))
+    {
+      userName = getShortName(userName);
+    }
+
     String effectiveClientUser = getProxyUser(userName, req.getConfiguration(), getIpAddress());
     LOG.debug("Client's username: " + effectiveClientUser);
     return effectiveClientUser;
@@ -707,7 +712,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       if ("tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
         mapper = new TezProgressMonitorStatusMapper();
       }
-
+      if ("spark".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
+        mapper = new SparkProgressMonitorStatusMapper();
+      }
       TJobExecutionStatus executionStatus =
           mapper.forStatus(progressUpdate.status);
       resp.setProgressUpdateResponse(new TProgressUpdateResp(

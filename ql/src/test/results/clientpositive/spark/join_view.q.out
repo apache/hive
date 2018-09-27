@@ -40,8 +40,16 @@ POSTHOOK: Lineage: v.foo SIMPLE [(invites2)invites2.FieldSchema(name:foo, type:i
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from v where ds='2011-09-01'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@invites
+PREHOOK: Input: default@invites2
+PREHOOK: Input: default@v
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from v where ds='2011-09-01'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@invites
+POSTHOOK: Input: default@invites2
+POSTHOOK: Input: default@v
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

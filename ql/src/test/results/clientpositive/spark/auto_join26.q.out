@@ -10,10 +10,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1 
 SELECT x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest_j1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1 
 SELECT x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest_j1
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3

@@ -132,23 +132,29 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
 
   /*
    * Calculate the variance family {VARIANCE, VARIANCE_SAMPLE, STANDARD_DEVIATION, or
-   * STANDARD_DEVIATION_STAMPLE) result when count > 1.  Public so vectorization code can
+   * STANDARD_DEVIATION_SAMPLE) result when count > 1.  Public so vectorization code can
    * use it, etc.
    */
   public static double calculateVarianceFamilyResult(double variance, long count,
       VarianceKind varianceKind) {
+    final double result;
     switch (varianceKind) {
     case VARIANCE:
-      return GenericUDAFVarianceEvaluator.calculateVarianceResult(variance, count);
+      result = GenericUDAFVarianceEvaluator.calculateVarianceResult(variance, count);
+      break;
     case VARIANCE_SAMPLE:
-      return GenericUDAFVarianceSampleEvaluator.calculateVarianceSampleResult(variance, count);
+      result = GenericUDAFVarianceSampleEvaluator.calculateVarianceSampleResult(variance, count);
+      break;
     case STANDARD_DEVIATION:
-      return GenericUDAFStdEvaluator.calculateStdResult(variance, count);
+      result = GenericUDAFStdEvaluator.calculateStdResult(variance, count);
+      break;
     case STANDARD_DEVIATION_SAMPLE:
-      return GenericUDAFStdSampleEvaluator.calculateStdSampleResult(variance, count);
+      result = GenericUDAFStdSampleEvaluator.calculateStdSampleResult(variance, count);
+      break;
     default:
       throw new RuntimeException("Unexpected variance kind " + varianceKind);
     }
+    return result;
   }
 
   @Override
@@ -381,7 +387,8 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
      * Calculate the variance result when count > 1.  Public so vectorization code can use it, etc.
      */
     public static double calculateVarianceResult(double variance, long count) {
-      return variance / count;
+      final double result = variance / count;
+      return result;
     }
 
     @Override

@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -38,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -53,16 +52,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 
 import junit.framework.Assert;
 
@@ -178,7 +173,7 @@ public class TestVectorDateDiff {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
     ExprNodeDesc col1Expr;
     if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
         columnScalarMode == ColumnScalarMode.COLUMN_SCALAR) {
@@ -250,7 +245,8 @@ public class TestVectorDateDiff {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, generationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
 
     Object[][] randomRows = rowSource.randomRows(100000);
@@ -362,12 +358,14 @@ public class TestVectorDateDiff {
       Object[][] randomRows, ColumnScalarMode columnScalarMode,
       ObjectInspector rowInspector, Object[] resultObjects) throws Exception {
 
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo " + dateTimeStringTypeInfo1.toString() +
         " dateTimeStringTypeInfo2 " + dateTimeStringTypeInfo2 +
         " dateDiffTestMode ROW_MODE" +
         " columnScalarMode " + columnScalarMode +
         " exprDesc " + exprDesc.toString());
+    */
 
     HiveConf hiveConf = new HiveConf();
     ExprNodeEvaluator evaluator =
@@ -432,18 +430,32 @@ public class TestVectorDateDiff {
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
 
+    if (dateDiffTestMode == DateDiffTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* dateTimeStringTypeInfo1 " + dateTimeStringTypeInfo1.toString() +
+          " dateTimeStringTypeInfo2 " + dateTimeStringTypeInfo2.toString() +
+          " dateDiffTestMode " + dateDiffTestMode +
+          " columnScalarMode " + columnScalarMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
+
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorExtractRow resultVectorExtractRow = new VectorExtractRow();
     resultVectorExtractRow.init(new TypeInfo[] { TypeInfoFactory.intTypeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo1 " + dateTimeStringTypeInfo1.toString() +
         " dateTimeStringTypeInfo2 " + dateTimeStringTypeInfo2.toString() +
         " dateDiffTestMode " + dateDiffTestMode +
         " columnScalarMode " + columnScalarMode +
         " vectorExpression " + vectorExpression.toString());
+    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;

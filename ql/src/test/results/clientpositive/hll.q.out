@@ -17,8 +17,14 @@ POSTHOOK: Output: default@n
 POSTHOOK: Lineage: n.key EXPRESSION []
 PREHOOK: query: explain analyze table n compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@n
+PREHOOK: Output: default@n
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze table n compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@n
+POSTHOOK: Output: default@n
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -113,8 +119,14 @@ POSTHOOK: Output: default@i
 POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain analyze table i compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@i
+PREHOOK: Output: default@i
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze table i compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

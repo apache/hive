@@ -2,9 +2,13 @@ Warning: Shuffle Join JOIN[9][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'St
 PREHOOK: query: explain
 select src1.key from src src1 join src src2 join src src3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 join src src2 join src src3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -68,9 +72,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select src1.key from src src1 join src src2 on src1.key=src2.key join src src3 on src1.key=src3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 join src src2 on src1.key=src2.key join src src3 on src1.key=src3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -155,9 +163,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select src1.key from src src1 join src src2 join src src3 where src1.key=src2.key and src1.key=src3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 join src src2 join src src3 where src1.key=src2.key and src1.key=src3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -243,9 +255,13 @@ Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'S
 PREHOOK: query: explain
 select src1.key from src src1 join src src2 on 5 = src2.key join src src3 on src1.key=src3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 join src src2 on 5 = src2.key join src src3 on src1.key=src3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -351,9 +367,13 @@ Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAP
 PREHOOK: query: explain
 select src1.key from src src1 left outer join src src2 join src src3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 left outer join src src2 join src src3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -440,9 +460,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select src1.key from src src1 left outer join src src2 on src1.key=src2.key join src src3 on src1.key=src3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 left outer join src src2 on src1.key=src2.key join src src3 on src1.key=src3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

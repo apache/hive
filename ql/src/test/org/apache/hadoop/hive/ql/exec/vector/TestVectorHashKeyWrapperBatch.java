@@ -29,6 +29,8 @@ import org.junit.Test;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromObjectIterables;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -73,8 +75,8 @@ public class TestVectorHashKeyWrapperBatch {
     batch.size = 3;
 
     vhkwb.evaluateBatch(batch);
-    VectorHashKeyWrapper[] vhkwArray = vhkwb.getVectorHashKeyWrappers();
-    VectorHashKeyWrapper vhk = vhkwArray[0];
+    VectorHashKeyWrapperBase[] vhkwArray = vhkwb.getVectorHashKeyWrappers();
+    VectorHashKeyWrapperBase vhk = vhkwArray[0];
     assertTrue(vhk.isNull(0));
     vhk = vhkwArray[1];
     assertFalse(vhk.isNull(0));

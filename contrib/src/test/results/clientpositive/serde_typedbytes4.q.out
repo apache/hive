@@ -22,6 +22,8 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue ORDER by tkey, tvalue
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
 POSTHOOK: query: EXPLAIN
 FROM (
   FROM src
@@ -34,6 +36,8 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue ORDER by tkey, tvalue
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

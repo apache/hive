@@ -1,8 +1,12 @@
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: explain vectorization SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -67,7 +71,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: (_col0 / _col1) (type: double)
+                  expressions: (UDFToDouble(_col0) / _col1) (type: double)
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator

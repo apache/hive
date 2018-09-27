@@ -20,12 +20,18 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_smb_bucket1
+PREHOOK: Input: default@hive_test_smb_bucket2
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 SELECT /*+ MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_smb_bucket1
+POSTHOOK: Input: default@hive_test_smb_bucket2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -105,12 +111,18 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_smb_bucket1
+PREHOOK: Input: default@hive_test_smb_bucket2
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 SELECT /*+ MAPJOIN(a) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_smb_bucket1
+POSTHOOK: Input: default@hive_test_smb_bucket2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -211,6 +223,12 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@hive_test_smb_bucket1
+PREHOOK: Input: default@hive_test_smb_bucket1@ds=2010-10-15
+PREHOOK: Input: default@hive_test_smb_bucket2
+PREHOOK: Input: default@hive_test_smb_bucket2@ds=2010-10-15
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smb_mapjoin9_results
 POSTHOOK: query: explain
 create table smb_mapjoin9_results as
 SELECT /*+ MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
@@ -218,6 +236,12 @@ FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@hive_test_smb_bucket1
+POSTHOOK: Input: default@hive_test_smb_bucket1@ds=2010-10-15
+POSTHOOK: Input: default@hive_test_smb_bucket2
+POSTHOOK: Input: default@hive_test_smb_bucket2@ds=2010-10-15
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smb_mapjoin9_results
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

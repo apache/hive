@@ -13,8 +13,6 @@ set hive.metastore.disallow.incompatible.col.type.changes=false;
 set hive.default.fileformat=orc;
 set hive.llap.io.enabled=true;
 set hive.llap.io.encode.enabled=true;
--- set this to 'decimal_64' after resolving HIVE-19792
-set hive.vectorized.input.format.supports.enabled=none;
 
 -- SORT_QUERY_RESULTS
 --

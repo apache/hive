@@ -22,8 +22,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1_n102
 PREHOOK: query: explain select example_add10(x) as a,example_add10(y) as b from t1_n102 order by a desc,b limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n102
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select example_add10(x) as a,example_add10(y) as b from t1_n102 order by a desc,b limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n102
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

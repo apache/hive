@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorColumnOutputMapping;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnSourceMapping;
 import org.apache.hadoop.hive.ql.exec.vector.VectorCopyRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationOperator;
@@ -55,14 +54,17 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinTabl
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastHashTableLoader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinInfo;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -124,6 +126,10 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   // a mixture of input big table columns and new scratch columns.
   protected VectorizationContext vOutContext;
 
+  protected VectorMapJoinVariation vectorMapJoinVariation;
+  protected HashTableKind hashTableKind;
+  protected HashTableKeyType hashTableKeyType;
+
   // The output column projection of the vectorized row batch.  And, the type infos of the output
   // columns.
   protected int[] outputProjection;
@@ -149,28 +155,70 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   protected String[] bigTableValueColumnNames;
   protected TypeInfo[] bigTableValueTypeInfos;
 
-  // This is a mapping of which big table columns (input and key/value expressions) will be
-  // part of the big table portion of the join output result.
-  protected VectorColumnOutputMapping bigTableRetainedMapping;
+  /*
+   * NOTE:
+   *    The Big Table key columns are from the key expressions.
+   *    The Big Table value columns are from the getExpr(posBigTable) expressions.
+   *    Any calculations needed for those will be scratch columns.
+   *
+   *    The Small Table key and value output columns are scratch columns.
+   *
+   * Big Table Retain Column Map / TypeInfos:
+   *    Any Big Table Batch columns that will be in the output result.
+   *    0, 1, ore more Column Nums and TypeInfos
+   *
+   * Non Outer Small Table Key Mapping:
+   *    For non-[FULL] OUTER MapJoin, when Big Table key columns are not retained for the output
+   *    result but are needed for the Small Table output result, they are put in this mapping
+   *    as they are required for copying rows to the overflow batch.
+   *
+   * Outer Small Table Key Mapping
+   *    For [FULL] OUTER MapJoin, the mapping for any Small Table key columns needed for the
+   *    output result from the Big Table key columns.  The Big Table keys cannot be projected since
+   *    on NOMATCH there must be a physical column present to hold the non-match NULL.
+   *
+   * Full Outer Small Table Key Mapping
+   *    For FULL OUTER MapJoin, the mapping from any needed Small Table key columns to their area
+   *    in the output result.
+   *
+   *    For deserializing a FULL OUTER non-match Small Table key into the output result.
+   *    Can be partial or empty if some or all Small Table key columns are not retained.
+   *
+   * Small Table Value Mapping
+   *    The mapping from Small Table value columns to their area in the output result.
+   *
+   *    For deserializing Small Table value into the output result.
+   *
+   *    It is the Small Table value index to output column numbers and TypeInfos.
+   *    That is, a mapping of the LazyBinary field order to output batch scratch columns for the
+   *       small table portion.
+   *    Or, to use the output column nums for OUTER Small Table value NULLs.
+   *
+   */
+  protected int[] bigTableRetainColumnMap;
+  protected TypeInfo[] bigTableRetainTypeInfos;
 
-  // This is a mapping of which keys will be copied from the big table (input and key expressions)
-  // to the small table result portion of the output for outer join.
-  protected VectorColumnOutputMapping bigTableOuterKeyMapping;
+  protected int[] nonOuterSmallTableKeyColumnMap;
+  protected TypeInfo[] nonOuterSmallTableKeyTypeInfos;
 
-  // This is a mapping of the values in the small table hash table that will be copied to the
-  // small table result portion of the output.  That is, a mapping of the LazyBinary field order
-  // to output batch scratch columns for the small table portion.
-  protected VectorColumnSourceMapping smallTableMapping;
+  protected VectorColumnOutputMapping outerSmallTableKeyMapping;
 
+  protected VectorColumnSourceMapping fullOuterSmallTableKeyMapping;
+
+  protected VectorColumnSourceMapping smallTableValueMapping;
+
+  // The MapJoin output result projection for both the Big Table input batch and the overflow batch.
   protected VectorColumnSourceMapping projectionMapping;
 
   // These are the output columns for the small table and the outer small table keys.
-  protected int[] smallTableOutputVectorColumns;
-  protected int[] bigTableOuterKeyOutputVectorColumns;
+  protected int[] outerSmallTableKeyColumnMap;
+  protected int[] smallTableValueColumnMap;
 
   // These are the columns in the big and small table that are ByteColumnVector columns.
   // We create data buffers for these columns so we can copy strings into those columns by value.
   protected int[] bigTableByteColumnVectorColumns;
+  protected int[] nonOuterSmallTableKeyByteColumnVectorColumns;
+  protected int[] outerSmallTableKeyByteColumnVectorColumns;
   protected int[] smallTableByteColumnVectorColumns;
 
   // The above members are initialized by the constructor and must not be
@@ -186,13 +234,22 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   // portion of the join output.
   protected transient VectorCopyRow bigTableRetainedVectorCopy;
 
+  // This helper object deserializes BinarySortable format small table keys into columns of a row
+  // in a vectorized row batch.
+  protected int[] allSmallTableKeyColumnNums;
+  protected boolean[] allSmallTableKeyColumnIncluded;
+  protected transient VectorDeserializeRow<BinarySortableDeserializeRead> smallTableKeyOuterVectorDeserializeRow;
+
+  protected transient VectorCopyRow nonOuterSmallTableKeyVectorCopy;
+
+  // UNDONE
   // A helper object that efficiently copies the big table key columns (input or key expressions)
-  // that appear in the small table portion of the join output for outer joins.
-  protected transient VectorCopyRow bigTableVectorCopyOuterKeys;
+  // that appear in the small table portion of the join output.
+  protected transient VectorCopyRow outerSmallTableKeyVectorCopy;
 
   // This helper object deserializes LazyBinary format small table values into columns of a row
   // in a vectorized row batch.
-  protected transient VectorDeserializeRow<LazyBinaryDeserializeRead> smallTableVectorDeserializeRow;
+  protected transient VectorDeserializeRow<LazyBinaryDeserializeRead> smallTableValueVectorDeserializeRow;
 
   // This a 2nd batch with the same "column schema" as the big table batch that can be used to
   // build join output results in.  If we can create some join output results in the big table
@@ -207,12 +264,18 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   // Whether the native vectorized map join operator has performed its common setup.
   protected transient boolean needCommonSetup;
 
+  // Whether the native vectorized map join operator has performed its first batch setup.
+  protected transient boolean needFirstBatchSetup;
+
   // Whether the native vectorized map join operator has performed its
   // native vector map join hash table setup.
   protected transient boolean needHashTableSetup;
 
   // The small table hash table for the native vectorized map join operator.
   protected transient VectorMapJoinHashTable vectorMapJoinHashTable;
+
+  protected transient long batchCounter;
+  protected transient long rowCounter;
 
   /** Kryo ctor. */
   protected VectorMapJoinCommonOperator() {
@@ -246,9 +309,9 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     posSingleVectorMapJoinSmallTable = (order[0] == posBigTable ? order[1] : order[0]);
     isOuterJoin = !desc.getNoOuterJoin();
 
-    Map<Byte, List<ExprNodeDesc>> filterExpressions = desc.getFilters();
-    bigTableFilterExpressions = vContext.getVectorExpressions(filterExpressions.get(posBigTable),
-        VectorExpressionDescriptor.Mode.FILTER);
+    vectorMapJoinVariation = this.vectorDesc.getVectorMapJoinVariation();
+    hashTableKind = this.vectorDesc.getHashTableKind();
+    hashTableKeyType = this.vectorDesc.getHashTableKeyType();
 
     bigTableKeyColumnMap = vectorMapJoinInfo.getBigTableKeyColumnMap();
     bigTableKeyColumnNames = vectorMapJoinInfo.getBigTableKeyColumnNames();
@@ -260,11 +323,19 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     bigTableValueTypeInfos = vectorMapJoinInfo.getBigTableValueTypeInfos();
     bigTableValueExpressions = vectorMapJoinInfo.getSlimmedBigTableValueExpressions();
 
-    bigTableRetainedMapping = vectorMapJoinInfo.getBigTableRetainedMapping();
+    bigTableFilterExpressions = vectorMapJoinInfo.getBigTableFilterExpressions();
 
-    bigTableOuterKeyMapping =  vectorMapJoinInfo.getBigTableOuterKeyMapping();
+    bigTableRetainColumnMap = vectorMapJoinInfo.getBigTableRetainColumnMap();
+    bigTableRetainTypeInfos = vectorMapJoinInfo.getBigTableRetainTypeInfos();
 
-    smallTableMapping = vectorMapJoinInfo.getSmallTableMapping();
+    nonOuterSmallTableKeyColumnMap = vectorMapJoinInfo.getNonOuterSmallTableKeyColumnMap();
+    nonOuterSmallTableKeyTypeInfos = vectorMapJoinInfo.getNonOuterSmallTableKeyTypeInfos();
+
+    outerSmallTableKeyMapping = vectorMapJoinInfo.getOuterSmallTableKeyMapping();
+
+    fullOuterSmallTableKeyMapping = vectorMapJoinInfo.getFullOuterSmallTableKeyMapping();
+
+    smallTableValueMapping = vectorMapJoinInfo.getSmallTableValueMapping();
 
     projectionMapping = vectorMapJoinInfo.getProjectionMapping();
 
@@ -273,47 +344,96 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   protected void determineCommonInfo(boolean isOuter) throws HiveException {
 
-    bigTableOuterKeyOutputVectorColumns = bigTableOuterKeyMapping.getOutputColumns();
-    smallTableOutputVectorColumns = smallTableMapping.getOutputColumns();
+    outerSmallTableKeyColumnMap = outerSmallTableKeyMapping.getOutputColumns();
+
+    smallTableValueColumnMap = smallTableValueMapping.getOutputColumns();
 
     // Which big table and small table columns are ByteColumnVector and need have their data buffer
     // to be manually reset for some join result processing?
 
-    bigTableByteColumnVectorColumns = getByteColumnVectorColumns(bigTableOuterKeyMapping);
+    bigTableByteColumnVectorColumns =
+        getByteColumnVectorColumns(bigTableRetainColumnMap, bigTableRetainTypeInfos);
 
-    smallTableByteColumnVectorColumns = getByteColumnVectorColumns(smallTableMapping);
+    nonOuterSmallTableKeyByteColumnVectorColumns =
+        getByteColumnVectorColumns(nonOuterSmallTableKeyColumnMap, nonOuterSmallTableKeyTypeInfos);
+
+    outerSmallTableKeyByteColumnVectorColumns =
+        getByteColumnVectorColumns(outerSmallTableKeyMapping);
+
+    smallTableByteColumnVectorColumns =
+        getByteColumnVectorColumns(smallTableValueMapping);
 
     outputProjection = projectionMapping.getOutputColumns();
     outputTypeInfos = projectionMapping.getTypeInfos();
 
-    if (LOG.isDebugEnabled()) {
+    if (LOG.isInfoEnabled()) {
       int[] orderDisplayable = new int[order.length];
       for (int i = 0; i < order.length; i++) {
         orderDisplayable[i] = (int) order[i];
       }
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor order " + Arrays.toString(orderDisplayable));
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor posBigTable " + (int) posBigTable);
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor posSingleVectorMapJoinSmallTable " + (int) posSingleVectorMapJoinSmallTable);
+      LOG.info(getLoggingPrefix() + " order " +
+          Arrays.toString(orderDisplayable));
+      LOG.info(getLoggingPrefix() + " posBigTable " +
+          (int) posBigTable);
+      LOG.info(getLoggingPrefix() + " posSingleVectorMapJoinSmallTable " +
+          (int) posSingleVectorMapJoinSmallTable);
 
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor bigTableKeyColumnMap " + Arrays.toString(bigTableKeyColumnMap));
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor bigTableKeyColumnNames " + Arrays.toString(bigTableKeyColumnNames));
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor bigTableKeyTypeInfos " + Arrays.toString(bigTableKeyTypeInfos));
+      LOG.info(getLoggingPrefix() + " bigTableKeyColumnMap " +
+          Arrays.toString(bigTableKeyColumnMap));
+      LOG.info(getLoggingPrefix() + " bigTableKeyColumnNames " +
+          Arrays.toString(bigTableKeyColumnNames));
+      LOG.info(getLoggingPrefix() + " bigTableKeyTypeInfos " +
+          Arrays.toString(bigTableKeyTypeInfos));
 
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor bigTableValueColumnMap " + Arrays.toString(bigTableValueColumnMap));
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor bigTableValueColumnNames " + Arrays.toString(bigTableValueColumnNames));
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor bigTableValueTypeNames " + Arrays.toString(bigTableValueTypeInfos));
+      LOG.info(getLoggingPrefix() + " bigTableValueColumnMap " +
+          Arrays.toString(bigTableValueColumnMap));
+      LOG.info(getLoggingPrefix() + " bigTableValueColumnNames " +
+          Arrays.toString(bigTableValueColumnNames));
+      LOG.info(getLoggingPrefix() + " bigTableValueTypeNames " +
+          Arrays.toString(bigTableValueTypeInfos));
 
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor bigTableRetainedMapping " + bigTableRetainedMapping.toString());
+      LOG.info(getLoggingPrefix() + " getBigTableRetainColumnMap " +
+          Arrays.toString(bigTableRetainColumnMap));
+      LOG.info(getLoggingPrefix() + " bigTableRetainTypeInfos " +
+          Arrays.toString(bigTableRetainTypeInfos));
 
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor bigTableOuterKeyMapping " + bigTableOuterKeyMapping.toString());
+      LOG.info(getLoggingPrefix() + " nonOuterSmallTableKeyColumnMap " +
+          Arrays.toString(nonOuterSmallTableKeyColumnMap));
+      LOG.info(getLoggingPrefix() + " nonOuterSmallTableKeyTypeInfos " +
+          Arrays.toString(nonOuterSmallTableKeyTypeInfos));
 
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor smallTableMapping " + smallTableMapping.toString());
+      LOG.info(getLoggingPrefix() + " outerSmallTableKeyMapping " +
+          outerSmallTableKeyMapping.toString());
 
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor bigTableByteColumnVectorColumns " + Arrays.toString(bigTableByteColumnVectorColumns));
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor smallTableByteColumnVectorColumns " + Arrays.toString(smallTableByteColumnVectorColumns));
+      LOG.info(getLoggingPrefix() + " fullOuterSmallTableKeyMapping " +
+          fullOuterSmallTableKeyMapping.toString());
 
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor outputProjection " + Arrays.toString(outputProjection));
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor outputTypeInfos " + Arrays.toString(outputTypeInfos));
+      LOG.info(getLoggingPrefix() + " smallTableValueMapping " +
+          smallTableValueMapping.toString());
+
+      LOG.info(getLoggingPrefix() + " bigTableByteColumnVectorColumns " +
+          Arrays.toString(bigTableByteColumnVectorColumns));
+      LOG.info(getLoggingPrefix() + " smallTableByteColumnVectorColumns " +
+          Arrays.toString(smallTableByteColumnVectorColumns));
+
+      LOG.info(getLoggingPrefix() + " outputProjection " +
+          Arrays.toString(outputProjection));
+      LOG.info(getLoggingPrefix() + " outputTypeInfos " +
+          Arrays.toString(outputTypeInfos));
+
+      LOG.info(getLoggingPrefix() + " mapJoinDesc.getKeysString " +
+          conf.getKeysString());
+      if (conf.getValueIndices() != null) {
+        for (Entry<Byte, int[]> entry : conf.getValueIndices().entrySet()) {
+          LOG.info(getLoggingPrefix() + " mapJoinDesc.getValueIndices +"
+              + (int) entry.getKey() + " " + Arrays.toString(entry.getValue()));
+        }
+      }
+      LOG.info(getLoggingPrefix() + " mapJoinDesc.getExprs " +
+          conf.getExprs().toString());
+      LOG.info(getLoggingPrefix() + " mapJoinDesc.getRetainList " +
+          conf.getRetainList().toString());
+
     }
 
     setupVOutContext(conf.getOutputColumnNames());
@@ -323,11 +443,14 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
    * Determine from a mapping which columns are BytesColumnVector columns.
    */
   private int[] getByteColumnVectorColumns(VectorColumnMapping mapping) {
+    return getByteColumnVectorColumns(mapping.getOutputColumns(), mapping.getTypeInfos());
+  }
+
+  private int[] getByteColumnVectorColumns(int[] outputColumns, TypeInfo[] typeInfos) {
+
     // Search mapping for any strings and return their output columns.
     ArrayList<Integer> list = new ArrayList<Integer>();
-    int count = mapping.getCount();
-    int[] outputColumns = mapping.getOutputColumns();
-    TypeInfo[] typeInfos = mapping.getTypeInfos();
+    final int count = outputColumns.length;
     for (int i = 0; i < count; i++) {
       int outputColumn = outputColumns[i];
       String typeName = typeInfos[i].getTypeName();
@@ -345,10 +468,12 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
    */
   protected void setupVOutContext(List<String> outputColumnNames) {
     if (LOG.isDebugEnabled()) {
-      LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor outputColumnNames " + outputColumnNames);
+      LOG.debug(getLoggingPrefix() + " outputColumnNames " + outputColumnNames);
     }
     if (outputColumnNames.size() != outputProjection.length) {
-      throw new RuntimeException("Output column names " + outputColumnNames + " length and output projection " + Arrays.toString(outputProjection) + " / " + Arrays.toString(outputTypeInfos) + " length mismatch");
+      throw new RuntimeException("Output column names " + outputColumnNames +
+          " length and output projection " + Arrays.toString(outputProjection) +
+          " / " + Arrays.toString(outputTypeInfos) + " length mismatch");
     }
     vOutContext.resetProjectionColumns();
     for (int i = 0; i < outputColumnNames.size(); ++i) {
@@ -357,7 +482,8 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
       vOutContext.addProjectionColumn(columnName, outputColumn);
 
       if (LOG.isDebugEnabled()) {
-        LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor addProjectionColumn " + i + " columnName " + columnName + " outputColumn " + outputColumn);
+        LOG.debug(getLoggingPrefix() + " addProjectionColumn " + i + " columnName " + columnName +
+            " outputColumn " + outputColumn);
       }
     }
   }
@@ -386,9 +512,50 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     return hashTableLoader;
   }
 
+  /*
+   * Do FULL OUTER MapJoin operator initialization.
+   */
+  private void initializeFullOuterObjects() throws HiveException {
+
+    // The Small Table key type jnfo is the same as Big Table's.
+    TypeInfo[] smallTableKeyTypeInfos = bigTableKeyTypeInfos;
+    final int allKeysSize = smallTableKeyTypeInfos.length;
+
+    /*
+     * The VectorMapJoinFullOuter{Long|MultiKey|String}Operator outputs 0, 1, or more
+     * Small Key columns in the join result.
+     */
+    allSmallTableKeyColumnNums = new int[allKeysSize];
+    Arrays.fill(allSmallTableKeyColumnNums, -1);
+    allSmallTableKeyColumnIncluded = new boolean[allKeysSize];
+
+    final int outputKeysSize = fullOuterSmallTableKeyMapping.getCount();
+    int[] outputKeyNums = fullOuterSmallTableKeyMapping.getInputColumns();
+    int[] outputKeyOutputColumns = fullOuterSmallTableKeyMapping.getOutputColumns();
+    for (int i = 0; i < outputKeysSize; i++) {
+      final int outputKeyNum = outputKeyNums[i];
+      allSmallTableKeyColumnNums[outputKeyNum] = outputKeyOutputColumns[i];
+      allSmallTableKeyColumnIncluded[outputKeyNum] = true;
+    }
+
+    if (hashTableKeyType == HashTableKeyType.MULTI_KEY &&
+        outputKeysSize > 0) {
+
+      smallTableKeyOuterVectorDeserializeRow =
+          new VectorDeserializeRow<BinarySortableDeserializeRead>(
+              new BinarySortableDeserializeRead(
+                  smallTableKeyTypeInfos,
+                  /* useExternalBuffer */ true));
+      smallTableKeyOuterVectorDeserializeRow.init(
+          allSmallTableKeyColumnNums, allSmallTableKeyColumnIncluded);
+    }
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
+
     super.initializeOp(hconf);
+
     VectorExpression.doTransientInit(bigTableFilterExpressions);
     VectorExpression.doTransientInit(bigTableKeyExpressions);
     VectorExpression.doTransientInit(bigTableValueExpressions);
@@ -405,23 +572,34 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     /*
      * Create our vectorized copy row and deserialize row helper objects.
      */
-    if (smallTableMapping.getCount() > 0) {
-      smallTableVectorDeserializeRow =
+    if (vectorMapJoinVariation == VectorMapJoinVariation.FULL_OUTER) {
+      initializeFullOuterObjects();
+    }
+
+    if (smallTableValueMapping.getCount() > 0) {
+      smallTableValueVectorDeserializeRow =
           new VectorDeserializeRow<LazyBinaryDeserializeRead>(
               new LazyBinaryDeserializeRead(
-                  smallTableMapping.getTypeInfos(),
+                  smallTableValueMapping.getTypeInfos(),
                   /* useExternalBuffer */ true));
-      smallTableVectorDeserializeRow.init(smallTableMapping.getOutputColumns());
+      smallTableValueVectorDeserializeRow.init(smallTableValueMapping.getOutputColumns());
     }
 
-    if (bigTableRetainedMapping.getCount() > 0) {
+    if (bigTableRetainColumnMap.length > 0) {
       bigTableRetainedVectorCopy = new VectorCopyRow();
-      bigTableRetainedVectorCopy.init(bigTableRetainedMapping);
+      bigTableRetainedVectorCopy.init(
+          bigTableRetainColumnMap, bigTableRetainTypeInfos);
     }
 
-    if (bigTableOuterKeyMapping.getCount() > 0) {
-      bigTableVectorCopyOuterKeys = new VectorCopyRow();
-      bigTableVectorCopyOuterKeys.init(bigTableOuterKeyMapping);
+    if (nonOuterSmallTableKeyColumnMap.length > 0) {
+      nonOuterSmallTableKeyVectorCopy = new VectorCopyRow();
+      nonOuterSmallTableKeyVectorCopy.init(
+          nonOuterSmallTableKeyColumnMap, nonOuterSmallTableKeyTypeInfos);
+    }
+
+    if (outerSmallTableKeyMapping.getCount() > 0) {
+      outerSmallTableKeyVectorCopy = new VectorCopyRow();
+      outerSmallTableKeyVectorCopy.init(outerSmallTableKeyMapping);
     }
 
     /*
@@ -430,6 +608,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     overflowBatch = setupOverflowBatch();
 
     needCommonSetup = true;
+    needFirstBatchSetup = true;
     needHashTableSetup = true;
 
     if (LOG.isDebugEnabled()) {
@@ -553,34 +732,112 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   }
 
   /*
-   * Common one time setup by native vectorized map join operator's processOp.
+   * Common one time setup for Native Vector MapJoin operator.
    */
-  protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
+  protected void commonSetup() throws HiveException {
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("VectorMapJoinInnerCommonOperator commonSetup begin...");
-      displayBatchColumns(batch, "batch");
-      displayBatchColumns(overflowBatch, "overflowBatch");
-    }
-
-    // Make sure big table BytesColumnVectors have room for string values in the overflow batch...
+    /*
+     * Make sure big table BytesColumnVectors have room for string values in the overflow batch...
+     */
     for (int column: bigTableByteColumnVectorColumns) {
       BytesColumnVector bytesColumnVector = (BytesColumnVector) overflowBatch.cols[column];
       bytesColumnVector.initBuffer();
     }
 
+    for (int column : nonOuterSmallTableKeyByteColumnVectorColumns) {
+      BytesColumnVector bytesColumnVector = (BytesColumnVector) overflowBatch.cols[column];
+      bytesColumnVector.initBuffer();
+    }
+
+    for (int column : outerSmallTableKeyByteColumnVectorColumns) {
+      BytesColumnVector bytesColumnVector = (BytesColumnVector) overflowBatch.cols[column];
+      bytesColumnVector.initBuffer();
+    }
+
+    for (int column: smallTableByteColumnVectorColumns) {
+      BytesColumnVector bytesColumnVector = (BytesColumnVector) overflowBatch.cols[column];
+      bytesColumnVector.initBuffer();
+    }
+
+    batchCounter = 0;
+    rowCounter = 0;
+  }
+
+  /*
+   * Common one time setup by native vectorized map join operator's first batch.
+   */
+  public void firstBatchSetup(VectorizedRowBatch batch) throws HiveException {
     // Make sure small table BytesColumnVectors have room for string values in the big table and
     // overflow batchs...
     for (int column: smallTableByteColumnVectorColumns) {
       BytesColumnVector bytesColumnVector = (BytesColumnVector) batch.cols[column];
-      bytesColumnVector.initBuffer();
-      bytesColumnVector = (BytesColumnVector) overflowBatch.cols[column];
       bytesColumnVector.initBuffer();
     }
 
     // Setup a scratch batch that will be used to play back big table rows that were spilled
     // to disk for the Hybrid Grace hash partitioning.
     spillReplayBatch = VectorizedBatchUtil.makeLike(batch);
+  }
+
+  /*
+   * Perform any Native Vector MapJoin operator specific hash table setup.
+   */
+  public void hashTableSetup() throws HiveException {
+  }
+
+  /*
+   * Perform the Native Vector MapJoin operator work.
+   */
+  public abstract void processBatch(VectorizedRowBatch batch) throws HiveException;
+
+  /*
+   * Common process method for all Native Vector MapJoin operators.
+   *
+   * Do common initialization work and invoke the override-able common setup methods.
+   *
+   * Then, invoke the processBatch override method to do the operator work.
+   */
+  @Override
+  public void process(Object row, int tag) throws HiveException {
+
+    VectorizedRowBatch batch = (VectorizedRowBatch) row;
+    alias = (byte) tag;
+
+    if (needCommonSetup) {
+
+      // Our one time process method initialization.
+      commonSetup();
+
+      needCommonSetup = false;
+    }
+
+    if (needFirstBatchSetup) {
+
+      // Our one time first-batch method initialization.
+      firstBatchSetup(batch);
+
+      needFirstBatchSetup = false;
+    }
+
+    if (needHashTableSetup) {
+
+      // Setup our hash table specialization.  It will be the first time the process
+      // method is called, or after a Hybrid Grace reload.
+
+      hashTableSetup();
+
+      needHashTableSetup = false;
+    }
+
+    batchCounter++;
+
+    if (batch.size == 0) {
+      return;
+    }
+
+    rowCounter += batch.size;
+
+    processBatch(batch);
   }
 
   protected void displayBatchColumns(VectorizedRowBatch batch, String batchName) {

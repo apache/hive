@@ -18,11 +18,13 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.Context;
@@ -74,9 +76,19 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     return 0;
   }
   @Override
+  public int getCurrentStmtId() {
+    return  0;
+  }
+  @Override
   public long getTableWriteId(String dbName, String tableName) throws LockException {
     return 0L;
   }
+
+  @Override
+  public long getAllocatedTableWriteId(String dbName, String tableName) throws LockException {
+    return 0L;
+  }
+
   @Override
   public void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
                                              List<TxnToWriteId> srcTxnToWriteIdList) throws LockException {
@@ -220,7 +232,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public void replCommitTxn(String replPolicy, long srcTxnId) throws LockException {
+  public void replCommitTxn(CommitTxnRequest rqst) throws LockException {
     // No-op
   }
 

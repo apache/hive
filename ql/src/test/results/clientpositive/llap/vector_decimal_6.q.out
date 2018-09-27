@@ -109,9 +109,13 @@ POSTHOOK: Lineage: decimal_6_2.value SIMPLE [(decimal_6_2_txt)decimal_6_2_txt.Fi
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_6_1 ORDER BY key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_6_1 ORDER BY key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -149,10 +153,9 @@ STAGE PLANS:
                       sort order: ++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0, 1]
+                          keyColumns: 0:decimal(10,5), 1:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 27 Data size: 2684 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -176,7 +179,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -220,11 +223,6 @@ POSTHOOK: query: SELECT * FROM DECIMAL_6_1 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_6_1
 #### A masked pattern was here ####
-NULL	-1234567890
-NULL	0
-NULL	3
-NULL	4
-NULL	1234567890
 -4400.00000	4400
 -1255.49000	-1255
 -1.12200	-11
@@ -247,12 +245,21 @@ NULL	1234567890
 124.00000	124
 125.20000	125
 23232.23435	2
+NULL	-1234567890
+NULL	0
+NULL	3
+NULL	4
+NULL	1234567890
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_6_2 ORDER BY key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_6_2 ORDER BY key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -290,10 +297,9 @@ STAGE PLANS:
                       sort order: ++
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0, 1]
+                          keyColumns: 0:decimal(17,4), 1:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 27 Data size: 3132 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -317,7 +323,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -361,7 +367,6 @@ POSTHOOK: query: SELECT * FROM DECIMAL_6_2 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_6_2
 #### A masked pattern was here ####
-NULL	0
 -1234567890.1235	-1234567890
 -4400.0000	4400
 -1255.4900	-1255
@@ -388,6 +393,7 @@ NULL	0
 2389432.2375	3
 2389432.2375	4
 1234567890.1235	1234567890
+NULL	0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT T.key from (
   SELECT key, value from DECIMAL_6_1
@@ -395,6 +401,9 @@ SELECT T.key from (
   SELECT key, value from DECIMAL_6_2
 ) T order by T.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_1
+PREHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT T.key from (
   SELECT key, value from DECIMAL_6_1
@@ -402,6 +411,9 @@ SELECT T.key from (
   SELECT key, value from DECIMAL_6_2
 ) T order by T.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_1
+POSTHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -442,10 +454,9 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [3]
+                          keyColumns: 3:decimal(18,5)
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 54 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -486,10 +497,9 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [3]
+                          keyColumns: 3:decimal(18,5)
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 54 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -513,7 +523,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -569,12 +579,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_6_1
 POSTHOOK: Input: default@decimal_6_2
 #### A masked pattern was here ####
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
 -1234567890.12350
 -4400.00000
 -4400.00000
@@ -623,12 +627,24 @@ NULL
 2389432.23750
 2389432.23750
 1234567890.12350
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@decimal_6_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_6_3
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@decimal_6_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_6_3
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -670,10 +686,10 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [4]
+                          keyColumns: 4:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [3]
+                          valueColumns: 3:decimal(11,5)
                       Statistics: Num rows: 27 Data size: 3132 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: decimal(11,5))
             Execution mode: vectorized, llap
@@ -698,7 +714,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -779,11 +795,6 @@ POSTHOOK: query: SELECT * FROM DECIMAL_6_3 ORDER BY k, v
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_6_3
 #### A masked pattern was here ####
-NULL	-695344902
-NULL	0
-NULL	33
-NULL	44
-NULL	695344902
 -4394.50000	48400
 -1249.99000	-13805
 4.37800	-121
@@ -806,3 +817,8 @@ NULL	695344902
 129.50000	1364
 130.70000	1375
 23237.73435	22
+NULL	-695344902
+NULL	0
+NULL	33
+NULL	44
+NULL	695344902

@@ -75,7 +75,7 @@ public class DruidTopNQueryRecordReader
   @Override
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
+    DruidWritable value = new DruidWritable(false);
     value.getValue().put("timestamp",
             current.getTimestamp().getMillis()
     );

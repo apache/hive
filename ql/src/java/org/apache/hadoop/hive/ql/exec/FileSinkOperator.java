@@ -90,10 +90,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import org.apache.hive.common.util.HiveStringUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * File Sink operator implementation.
@@ -321,7 +319,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           // affects some less obscure scenario.
           try {
             FileSystem fpfs = finalPath.getFileSystem(hconf);
-            if (fpfs.exists(finalPath)) throw new RuntimeException(finalPath + " already exists");
+            if (fpfs.exists(finalPath)) {
+              throw new RuntimeException(finalPath + " already exists");
+            }
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
@@ -354,7 +354,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     public Path buildTaskOutputTempPath() {
-      if (taskOutputTempPathRoot == null) return null;
+      if (taskOutputTempPathRoot == null) {
+        return null;
+      }
       assert subdirForTxn == null;
       String pathStr = taskOutputTempPathRoot.toString();
       if (subdirBeforeTxn != null) {
@@ -437,7 +439,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient boolean autoDelete = false;
   protected transient JobConf jc;
   Class<? extends Writable> outputClass;
-  String taskId;
+  String taskId, originalTaskId;
 
   protected boolean filesCreated = false;
 
@@ -457,7 +459,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     // 'Parent'
     boolean isLinked = conf.isLinkedFileSink();
     if (!isLinked) {
-      // Simple case - no union. 
+      // Simple case - no union.
       specPath = conf.getDirName();
       unionPath = null;
     } else {
@@ -502,7 +504,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       lbCtx = conf.getLbCtx();
       fsp = prevFsp = null;
       valToPaths = new HashMap<String, FSPaths>();
-      taskId = Utilities.getTaskId(hconf);
+      taskId = originalTaskId = Utilities.getTaskId(hconf);
       initializeSpecPath();
       fs = specPath.getFileSystem(hconf);
 
@@ -1206,7 +1208,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             } else if (prevFsp.updaters[0] != null) {
               stats = prevFsp.updaters[0].getStats();
             }
-            if (stats != null) {
+            if (stats != null && !conf.isFullAcidTable()) {
                 prevFsp.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
                 prevFsp.addToStat(StatsSetupConst.ROW_COUNT, stats.getRowCount());
             }
@@ -1333,7 +1335,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
       if (conf.isMmTable()) {
-        Utilities.writeMmCommitManifest(commitPaths, specPath, fs, taskId,
+        Utilities.writeMmCommitManifest(commitPaths, specPath, fs, originalTaskId,
                 conf.getTableWriteId(), conf.getStatementId(), unionPath, conf.getInsertOverwrite());
       }
       // Only publish stats if this operator's flag was set to gather stats
@@ -1521,7 +1523,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
     }
-    sContext.setIndexForTezUnion(this.getIndexForTezUnion());
+    sContext.setContextSuffix(getOperatorId());
+
     if (!statsPublisher.closeConnection(sContext)) {
       LOG.error("Failed to close stats");
       // The original exception is lost.

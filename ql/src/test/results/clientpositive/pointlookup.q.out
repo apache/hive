@@ -14,6 +14,8 @@ WHERE
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT key
 FROM src
@@ -30,6 +32,8 @@ WHERE
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -119,6 +123,8 @@ WHERE
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT key
 FROM src
@@ -135,6 +141,8 @@ WHERE
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -149,14 +157,14 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
-              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -224,6 +232,8 @@ WHERE
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT key
 FROM src
@@ -240,6 +250,8 @@ WHERE
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -254,14 +266,14 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
-              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

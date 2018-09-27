@@ -28,6 +28,11 @@ with customer_total_return as
                   ,c_last_review_date,ctr_total_return
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@web_returns
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with customer_total_return as
  (select wr_returning_customer_sk as ctr_customer_sk
@@ -58,6 +63,11 @@ with customer_total_return as
                   ,c_last_review_date,ctr_total_return
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@web_returns
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

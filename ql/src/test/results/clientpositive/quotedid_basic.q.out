@@ -25,8 +25,12 @@ POSTHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -46,8 +50,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -84,8 +92,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -143,9 +155,13 @@ STAGE PLANS:
 PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -215,7 +231,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1 ASC NULLS FIRST
+                  order by: _col1 ASC NULLS LAST
                   partition by: '1'
                   raw input shape:
                   window functions:
@@ -248,9 +264,13 @@ STAGE PLANS:
 PREHOOK: query: explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -320,7 +340,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1 ASC NULLS FIRST
+                  order by: _col1 ASC NULLS LAST
                   partition by: '1'
                   raw input shape:
                   window functions:
