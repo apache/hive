@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class DefaultPartitionExpressionProxy implements PartitionExpressionProxy {
   @Override
-  public String convertExprToFilter(byte[] expr) throws MetaException {
+  public String convertExprToFilter(byte[] expr, String defaultPartitionName) throws MetaException {
     throw new UnsupportedOperationException();
   }
 

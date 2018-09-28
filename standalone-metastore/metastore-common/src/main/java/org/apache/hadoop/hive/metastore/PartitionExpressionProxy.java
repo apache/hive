@@ -34,10 +34,13 @@ public interface PartitionExpressionProxy {
 
   /**
    * Converts serialized Hive expression into filter in the format suitable for Filter.g.
-   * @param expr Serialized expression.
-   * @return The filter string.
+   * The isnull and isnotnull expressions are converted to = and != default partition respectively
+   * for push down to metastore SQL.
+   * @param exprBytes Serialized expression.
+   * @param defaultPartitionName Default partition name.
+   * @return Filter string.
    */
-  public String convertExprToFilter(byte[] expr) throws MetaException;
+  String convertExprToFilter(byte[] exprBytes, String defaultPartitionName) throws MetaException;
 
   /**
    * Filters the partition names via serialized Hive expression.
