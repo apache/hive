@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -112,7 +113,7 @@ public class VectorizedOrcAcidRowBatchReader
   /**
    * for reading "original" files
    */
-  private final OffsetAndBucketProperty syntheticProps;
+  private final OrcSplit.OffsetAndBucketProperty syntheticProps;
   /**
    * To have access to {@link RecordReader#getRowNumber()} in the underlying file which we need to
    * generate synthetic ROW_IDs for original files
@@ -228,6 +229,8 @@ public class VectorizedOrcAcidRowBatchReader
     LOG.info("Read ValidWriteIdList: " + this.validWriteIdList.toString()
             + ":" + orcSplit);
 
+    syntheticProps = orcSplit.getSyntheticAcidProps();
+
     // Clone readerOptions for deleteEvents.
     Reader.Options deleteEventReaderOptions = readerOptions.clone();
     // Set the range on the deleteEventReaderOptions to 0 to INTEGER_MAX because
@@ -257,8 +260,6 @@ public class VectorizedOrcAcidRowBatchReader
     }
     rowIdProjected = areRowIdsProjected(rbCtx);
     rootPath = orcSplit.getRootDir();
-    //why even compute syntheticProps if !isOriginal???
-    syntheticProps = computeOffsetAndBucket(orcSplit, conf, validWriteIdList);
 
     if(conf.getBoolean(ConfVars.OPTIMIZE_ACID_META_COLUMNS.varname, true)) {
       /*figure out if we can skip reading acid metadata columns:
@@ -547,33 +548,20 @@ public class VectorizedOrcAcidRowBatchReader
   }
 
   /**
-   * Used for generating synthetic ROW__IDs for reading "original" files
-   */
-  private static final class OffsetAndBucketProperty {
-    private final long rowIdOffset;
-    private final int bucketProperty;
-    private final long syntheticWriteId;
-    private OffsetAndBucketProperty(long rowIdOffset, int bucketProperty, long syntheticWriteId) {
-      this.rowIdOffset = rowIdOffset;
-      this.bucketProperty = bucketProperty;
-      this.syntheticWriteId = syntheticWriteId;
-    }
-  }
-  /**
    * See {@link #next(NullWritable, VectorizedRowBatch)} first and
    * {@link OrcRawRecordMerger.OriginalReaderPair}.
    * When reading a split of an "original" file and we need to decorate data with ROW__ID.
    * This requires treating multiple files that are part of the same bucket (tranche for unbucketed
    * tables) as a single logical file to number rowids consistently.
-   *
-   * todo: This logic is executed per split of every "original" file.  The computed result is the
-   * same for every split form the same file so this could be optimized by moving it to
-   * before/during split computation and passing the info in the split.  (HIVE-17917)
    */
-  private OffsetAndBucketProperty computeOffsetAndBucket(
-      OrcSplit split, JobConf conf, ValidWriteIdList validWriteIdList) throws IOException {
-    if (!needSyntheticRowIds(split.isOriginal(), !deleteEventRegistry.isEmpty(), rowIdProjected)) {
-      if(split.isOriginal()) {
+  static OrcSplit.OffsetAndBucketProperty computeOffsetAndBucket(
+          FileStatus file, Path rootDir, boolean isOriginal, boolean hasDeletes,
+          Configuration conf) throws IOException {
+
+    VectorizedRowBatchCtx vrbCtx = Utilities.getVectorizedRowBatchCtx(conf);
+
+    if (!needSyntheticRowIds(isOriginal, hasDeletes, areRowIdsProjected(vrbCtx))) {
+      if(isOriginal) {
         /**
          * Even if we don't need to project ROW_IDs, we still need to check the write ID that
          * created the file to see if it's committed.  See more in
@@ -581,16 +569,21 @@ public class VectorizedOrcAcidRowBatchReader
          * filter out base/delta files but this makes fewer dependencies)
          */
         OrcRawRecordMerger.TransactionMetaData syntheticTxnInfo =
-            OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(split.getPath(),
-                    split.getRootDir(), conf);
-        return new OffsetAndBucketProperty(-1,-1, syntheticTxnInfo.syntheticWriteId);
+            OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(file.getPath(),
+                    rootDir, conf);
+        return new OrcSplit.OffsetAndBucketProperty(-1, -1, syntheticTxnInfo.syntheticWriteId);
       }
       return null;
     }
+
+    String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
+    ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() :
+        new ValidReaderWriteIdList(txnString);
+
     long rowIdOffset = 0;
     OrcRawRecordMerger.TransactionMetaData syntheticTxnInfo =
-        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(split.getPath(), split.getRootDir(), conf);
-    int bucketId = AcidUtils.parseBucketId(split.getPath());
+        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(file.getPath(), rootDir, conf);
+    int bucketId = AcidUtils.parseBucketId(file.getPath());
     int bucketProperty = BucketCodec.V1.encode(new AcidOutputFormat.Options(conf)
         //statementId is from directory name (or 0 if there is none)
       .statementId(syntheticTxnInfo.statementId).bucket(bucketId));
@@ -601,7 +594,7 @@ public class VectorizedOrcAcidRowBatchReader
       if (bucketIdFromPath != bucketId) {
         continue;//HIVE-16952
       }
-      if (f.getFileStatus().getPath().equals(split.getPath())) {
+      if (f.getFileStatus().getPath().equals(file.getPath())) {
         //'f' is the file whence this split is
         break;
       }
@@ -609,7 +602,7 @@ public class VectorizedOrcAcidRowBatchReader
         OrcFile.readerOptions(conf));
       rowIdOffset += reader.getNumberOfRows();
     }
-    return new OffsetAndBucketProperty(rowIdOffset, bucketProperty,
+    return new OrcSplit.OffsetAndBucketProperty(rowIdOffset, bucketProperty,
       syntheticTxnInfo.syntheticWriteId);
   }
   /**
@@ -819,8 +812,9 @@ public class VectorizedOrcAcidRowBatchReader
     boolean needSyntheticRowId =
         needSyntheticRowIds(true, !deleteEventRegistry.isEmpty(), rowIdProjected);
     if(needSyntheticRowId) {
-      assert syntheticProps != null && syntheticProps.rowIdOffset >= 0 : "" + syntheticProps;
-      assert syntheticProps != null && syntheticProps.bucketProperty >= 0 : "" + syntheticProps;
+      assert syntheticProps != null : "" + syntheticProps;
+      assert syntheticProps.getRowIdOffset() >= 0 : "" + syntheticProps;
+      assert syntheticProps.getBucketProperty() >= 0 : "" + syntheticProps;
       if(innerReader == null) {
         throw new IllegalStateException(getClass().getName() + " requires " +
           org.apache.orc.RecordReader.class +
@@ -831,14 +825,14 @@ public class VectorizedOrcAcidRowBatchReader
        */
       recordIdColumnVector.fields[0].noNulls = true;
       recordIdColumnVector.fields[0].isRepeating = true;
-      ((LongColumnVector)recordIdColumnVector.fields[0]).vector[0] = syntheticProps.syntheticWriteId;
+      ((LongColumnVector)recordIdColumnVector.fields[0]).vector[0] = syntheticProps.getSyntheticWriteId();
       /**
        * This is {@link RecordIdentifier#getBucketProperty()}
        * Also see {@link BucketCodec}
        */
       recordIdColumnVector.fields[1].noNulls = true;
       recordIdColumnVector.fields[1].isRepeating = true;
-      ((LongColumnVector)recordIdColumnVector.fields[1]).vector[0] = syntheticProps.bucketProperty;
+      ((LongColumnVector)recordIdColumnVector.fields[1]).vector[0] = syntheticProps.getBucketProperty();
       /**
        * {@link RecordIdentifier#getRowId()}
        */
@@ -847,7 +841,7 @@ public class VectorizedOrcAcidRowBatchReader
       long[] rowIdVector = ((LongColumnVector)recordIdColumnVector.fields[2]).vector;
       for(int i = 0; i < vectorizedRowBatchBase.size; i++) {
         //baseReader.getRowNumber() seems to point at the start of the batch todo: validate
-        rowIdVector[i] = syntheticProps.rowIdOffset + innerReader.getRowNumber() + i;
+        rowIdVector[i] = syntheticProps.getRowIdOffset() + innerReader.getRowNumber() + i;
       }
       //Now populate a structure to use to apply delete events
       innerRecordIdColumnVector = new ColumnVector[OrcRecordUpdater.FIELDS];
@@ -857,7 +851,7 @@ public class VectorizedOrcAcidRowBatchReader
       //these are insert events so (original txn == current) txn for all rows
       innerRecordIdColumnVector[OrcRecordUpdater.CURRENT_WRITEID] = recordIdColumnVector.fields[0];
     }
-    if(syntheticProps.syntheticWriteId > 0) {
+    if(syntheticProps.getSyntheticWriteId() > 0) {
       //"originals" (written before table was converted to acid) is considered written by
       // writeid:0 which is always committed so there is no need to check wrt invalid write Ids
       //But originals written by Load Data for example can be in base_x or delta_x_x so we must
@@ -871,7 +865,7 @@ public class VectorizedOrcAcidRowBatchReader
         * reader (transactions) is concerned.  Since here we are reading 'original' schema file,
         * all rows in it have been created by the same txn, namely 'syntheticProps.syntheticWriteId'
         */
-        if (!validWriteIdList.isWriteIdValid(syntheticProps.syntheticWriteId)) {
+        if (!validWriteIdList.isWriteIdValid(syntheticProps.getSyntheticWriteId())) {
           selectedBitSet.clear(0, vectorizedRowBatchBase.size);
         }
       }

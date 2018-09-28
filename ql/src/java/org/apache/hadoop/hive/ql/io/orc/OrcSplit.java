@@ -64,6 +64,12 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   private transient Object fileKey;
   private long fileLen;
 
+  /**
+   * This contains the synthetic ROW__ID offset and bucket properties for original file splits in an ACID table.
+   */
+  private OffsetAndBucketProperty syntheticAcidProps;
+
+  static final int HAS_SYNTHETIC_ACID_PROPS_FLAG = 32;
   static final int HAS_SYNTHETIC_FILEID_FLAG = 16;
   static final int HAS_LONG_FILEID_FLAG = 8;
   static final int BASE_FLAG = 4;
@@ -79,7 +85,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
 
   public OrcSplit(Path path, Object fileId, long offset, long length, String[] hosts,
       OrcTail orcTail, boolean isOriginal, boolean hasBase,
-      List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize, long fileLen, Path rootDir) {
+      List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize, long fileLen, Path rootDir,
+      OffsetAndBucketProperty syntheticAcidProps) {
     super(path, offset, length, hosts);
     // For HDFS, we could avoid serializing file ID and just replace the path with inode-based
     // path. However, that breaks bunch of stuff because Hive later looks up things by split path.
@@ -93,6 +100,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     this.projColsUncompressedSize = projectedDataSize <= 0 ? length : projectedDataSize;
     // setting file length to Long.MAX_VALUE will let orc reader read file length from file system
     this.fileLen = fileLen <= 0 ? Long.MAX_VALUE : fileLen;
+    this.syntheticAcidProps = syntheticAcidProps;
   }
 
   @Override
@@ -120,7 +128,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
         (isOriginal ? ORIGINAL_FLAG : 0) |
         (hasFooter ? FOOTER_FLAG : 0) |
         (isFileIdLong ? HAS_LONG_FILEID_FLAG : 0) |
-        (isFileIdWritable ? HAS_SYNTHETIC_FILEID_FLAG : 0);
+        (isFileIdWritable ? HAS_SYNTHETIC_FILEID_FLAG : 0) |
+        (syntheticAcidProps != null? HAS_SYNTHETIC_ACID_PROPS_FLAG : 0);
     out.writeByte(flags);
     out.writeInt(deltas.size());
     for(AcidInputFormat.DeltaMetaData delta: deltas) {
@@ -140,6 +149,11 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     }
     out.writeLong(fileLen);
     out.writeUTF(rootDir.toString());
+    if (syntheticAcidProps != null) {
+      out.writeLong(syntheticAcidProps.rowIdOffset);
+      out.writeInt(syntheticAcidProps.bucketProperty);
+      out.writeLong(syntheticAcidProps.syntheticWriteId);
+    }
   }
 
   @Override
@@ -152,7 +166,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     isOriginal = (ORIGINAL_FLAG & flags) != 0;
     hasBase = (BASE_FLAG & flags) != 0;
     boolean hasLongFileId = (HAS_LONG_FILEID_FLAG & flags) != 0,
-        hasWritableFileId = (HAS_SYNTHETIC_FILEID_FLAG & flags) != 0;
+        hasWritableFileId = (HAS_SYNTHETIC_FILEID_FLAG & flags) != 0,
+        hasSyntheticProps = (HAS_SYNTHETIC_ACID_PROPS_FLAG & flags) != 0;
     if (hasLongFileId && hasWritableFileId) {
       throw new IOException("Invalid split - both file ID types present");
     }
@@ -180,6 +195,14 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     }
     fileLen = in.readLong();
     rootDir = new Path(in.readUTF());
+
+    if (hasSyntheticProps) {
+      long rowId = in.readLong();
+      int bucket = in.readInt();
+      long writeId = in.readLong();
+
+      syntheticAcidProps = new OffsetAndBucketProperty(rowId, bucket, writeId);
+    }
   }
 
   public OrcTail getOrcTail() {
@@ -234,6 +257,10 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     return fileKey;
   }
 
+  public OffsetAndBucketProperty getSyntheticAcidProps() {
+    return syntheticAcidProps;
+  }
+
   @Override
   public long getColumnarProjectionSize() {
     return projColsUncompressedSize;
@@ -273,6 +300,32 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
       }
     }
     return false;
+  }
+
+  /**
+   * Used for generating synthetic ROW__IDs for reading "original" files.
+   */
+  static final class OffsetAndBucketProperty {
+    private final long rowIdOffset;
+    private final int bucketProperty;
+    private final long syntheticWriteId;
+    OffsetAndBucketProperty(long rowIdOffset, int bucketProperty, long syntheticWriteId) {
+      this.rowIdOffset = rowIdOffset;
+      this.bucketProperty = bucketProperty;
+      this.syntheticWriteId = syntheticWriteId;
+    }
+
+    public long getRowIdOffset() {
+      return rowIdOffset;
+    }
+
+    public int getBucketProperty() {
+      return bucketProperty;
+    }
+
+    public long getSyntheticWriteId() {
+      return syntheticWriteId;
+    }
   }
 
   @Override

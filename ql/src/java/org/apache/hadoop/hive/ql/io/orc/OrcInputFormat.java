@@ -1036,6 +1036,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final Path dir;
     private final boolean allowSyntheticFileIds;
     private final boolean isDefaultFs;
+    private final Configuration conf;
 
     /**
      * @param dir - root of partition dir
@@ -1051,12 +1052,21 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       this.dir = dir;
       this.allowSyntheticFileIds = allowSyntheticFileIds;
       this.isDefaultFs = isDefaultFs;
+      this.conf = context.conf;
     }
 
     @Override
     public List<OrcSplit> getSplits() throws IOException {
       List<OrcSplit> splits = Lists.newArrayList();
+      boolean isAcid = AcidUtils.isFullAcidScan(conf);
+      boolean vectorMode = Utilities.getIsVectorized(conf);
+      OrcSplit.OffsetAndBucketProperty offsetAndBucket = null;
       for (HdfsFileStatusWithId file : fileStatuses) {
+        if (isOriginal && isAcid && vectorMode) {
+          offsetAndBucket = VectorizedOrcAcidRowBatchReader.computeOffsetAndBucket(file.getFileStatus(), dir,
+              isOriginal, !deltas.isEmpty(), conf);
+        }
+
         FileStatus fileStatus = file.getFileStatus();
         long logicalLen = AcidUtils.getLogicalLength(fs, fileStatus);
         if (logicalLen != 0) {
@@ -1072,7 +1082,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             }
             OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), fileKey, entry.getKey(),
                 entry.getValue().getLength(), entry.getValue().getHosts(), null, isOriginal, true,
-                deltas, -1, logicalLen, dir);
+                deltas, -1, logicalLen, dir, offsetAndBucket);
             splits.add(orcSplit);
           }
         }
@@ -1352,6 +1362,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private SchemaEvolution evolution;
     //this is the root of the partition in which the 'file' is located
     private final Path rootDir;
+    OrcSplit.OffsetAndBucketProperty offsetAndBucket = null;
 
     public SplitGenerator(SplitInfo splitInfo, UserGroupInformation ugi,
         boolean allowSyntheticFileIds, boolean isDefaultFs) throws IOException {
@@ -1480,7 +1491,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         fileKey = new SyntheticFileId(file);
       }
       return new OrcSplit(file.getPath(), fileKey, offset, length, hosts,
-          orcTail, isOriginal, hasBase, deltas, scaledProjSize, fileLen, rootDir);
+          orcTail, isOriginal, hasBase, deltas, scaledProjSize, fileLen, rootDir, offsetAndBucket);
     }
 
     private static final class OffsetAndLength { // Java cruft; pair of long.
@@ -1519,6 +1530,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private List<OrcSplit> callInternal() throws IOException {
+      boolean isAcid = AcidUtils.isFullAcidScan(context.conf);
+      boolean vectorMode = Utilities.getIsVectorized(context.conf);
+
+      if (isOriginal && isAcid && vectorMode) {
+        offsetAndBucket = VectorizedOrcAcidRowBatchReader.computeOffsetAndBucket(file, rootDir, isOriginal,
+            !deltas.isEmpty(), context.conf);
+      }
+
       // Figure out which stripes we need to read.
       if (ppdResult != null) {
         assert deltaSplits.isEmpty();
