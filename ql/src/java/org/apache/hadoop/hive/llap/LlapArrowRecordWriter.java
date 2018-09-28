@@ -77,7 +77,7 @@ public class LlapArrowRecordWriter<K extends Writable, V extends Writable>
     ArrowWrapperWritable arrowWrapperWritable = (ArrowWrapperWritable) value;
     if (arrowStreamWriter == null) {
       VectorSchemaRoot vectorSchemaRoot = arrowWrapperWritable.getVectorSchemaRoot();
-      arrowStreamWriter = new ArrowStreamWriter(vectorSchemaRoot, arrowWrapperWritable.getDictionaryProvider(), out);
+      arrowStreamWriter = new ArrowStreamWriter(vectorSchemaRoot, null, out);
       allocator = arrowWrapperWritable.getAllocator();
       this.out.setAllocator(allocator);
       rootVector = arrowWrapperWritable.getRootVector();
