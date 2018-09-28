@@ -22,36 +22,32 @@ import java.io.Serializable;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.arrow.ArrowSerializer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorFileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.hive.llap.LlapOutputFormatService;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import java.util.List;
 import java.util.ArrayList;
-import org.apache.hadoop.hive.ql.io.arrow.Serializer;
+
 import static org.apache.hadoop.hive.llap.LlapOutputFormat.LLAP_OF_ID_KEY;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.logging.log4j.core.layout.AbstractStringLayout;
 
 /**
  * Native Vectorized File Sink operator implementation for Arrow.
@@ -70,7 +66,7 @@ public class VectorFileSinkArrowOperator extends TerminalOperator<FileSinkDesc>
   // transient.
   //---------------------------------------------------------------------------
   
-  private transient Serializer converter;
+  private transient ArrowSerializer converter;
   private transient RecordWriter recordWriter;
   private transient boolean wroteData;
   private transient String attemptId;
@@ -115,7 +111,7 @@ public class VectorFileSinkArrowOperator extends TerminalOperator<FileSinkDesc>
         typeInfos.add(typeInfo);
       }
       //Initialize an Arrow serializer
-      converter = new Serializer(hconf, attemptId, typeInfos, fieldNames);
+      converter = new ArrowSerializer(hconf, attemptId, typeInfos, fieldNames, true);
     } catch (Exception e) {
       LOG.error("Unable to initialize VectorFileSinkArrowOperator");
       throw new RuntimeException(e);
@@ -132,7 +128,7 @@ public class VectorFileSinkArrowOperator extends TerminalOperator<FileSinkDesc>
         recordWriter = LlapOutputFormatService.get().getWriter(this.attemptId);
       }
       //Convert the VectorizedRowBatch to a handle for the Arrow batch
-      ArrowWrapperWritable writable = converter.serializeBatch(batch, true);
+      ArrowWrapperWritable writable = converter.serializeBatch(batch);
       //Pass the handle to the LlapOutputFormatService recordWriter
       recordWriter.write(null, writable);
       this.wroteData = true;

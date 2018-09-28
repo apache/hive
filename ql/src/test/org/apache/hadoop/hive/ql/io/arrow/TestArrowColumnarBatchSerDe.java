@@ -487,6 +487,27 @@ public class TestArrowColumnarBatchSerDe {
   }
 
   @Test
+  public void testPrimitiveEncodeString() throws SerDeException {
+    String[][] schema = {
+        {"string1", "string"},
+    };
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ARROW_ENCODE, true);
+
+    final Object[][] rows = {
+        {text("")},
+        {text("Hello")},
+        {text("Hello")},
+        {text("world!")},
+        {text("Hello")},
+        {text("world!")},
+        {text("world")},
+        {null},
+    };
+    initAndSerializeAndDeserialize(schema, rows);
+  }
+
+  @Test
   public void testPrimitiveDTI() throws SerDeException {
     String[][] schema = {
         {"date1", "date"},
@@ -612,6 +633,27 @@ public class TestArrowColumnarBatchSerDe {
     };
 
     initAndSerializeAndDeserialize(schema, toList(STRING_ROWS));
+  }
+
+  @Test
+  public void testListEncodeString() throws SerDeException {
+    String[][] schema = {
+        {"string1", "array<string>"},
+    };
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ARROW_ENCODE, true);
+
+    final Object[][] rows = {
+        {text("")},
+        {text("Hello")},
+        {text("Hello")},
+        {text("world!")},
+        {text("Hello")},
+        {text("world!")},
+        {text("world")},
+        {null},
+    };
+    initAndSerializeAndDeserialize(schema, toList(rows));
   }
 
   @Test

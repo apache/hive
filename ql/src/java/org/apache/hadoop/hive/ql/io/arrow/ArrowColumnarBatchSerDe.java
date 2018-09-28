@@ -97,8 +97,8 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   StructObjectInspector rowObjectInspector;
   Configuration conf;
 
-  private Serializer serializer;
-  private Deserializer deserializer;
+  private ArrowSerializer arrowSerializer;
+  private ArrowDeserializer arrowDeserializer;
 
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
@@ -254,16 +254,16 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
 
   @Override
   public ArrowWrapperWritable serialize(Object obj, ObjectInspector objInspector) {
-    if(serializer == null) {
+    if(arrowSerializer == null) {
       try {
         rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf);
-        serializer = new Serializer(this);
+        arrowSerializer = new ArrowSerializer(this, false);
       } catch(Exception e) {
-        LOG.error("Unable to initialize serializer for ArrowColumnarBatchSerDe");
+        LOG.error("Unable to initialize arrowSerializer for ArrowColumnarBatchSerDe");
         throw new RuntimeException(e);
       }
     }
-    return serializer.serialize(obj, objInspector);
+    return arrowSerializer.serialize(obj, objInspector);
   }
 
   @Override
@@ -273,15 +273,15 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
 
   @Override
   public Object deserialize(Writable writable) {
-    if(deserializer == null) {
+    if(arrowDeserializer == null) {
       try {
         rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf);
-        deserializer = new Deserializer(this);
+        arrowDeserializer = new ArrowDeserializer(this);
       } catch(Exception e) {
         throw new RuntimeException(e);
       }
     }
-    return deserializer.deserialize(writable);
+    return arrowDeserializer.deserialize(writable);
   }
 
   @Override
