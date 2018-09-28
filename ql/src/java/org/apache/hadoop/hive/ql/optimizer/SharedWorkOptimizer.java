@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -508,6 +509,58 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
+    if(pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
+      // Try to reuse cache for broadcast side in mapjoin operators that
+      // share same input.
+      // First we group together all the mapjoin operators that share same
+      // reduce sink operator.
+      final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators =
+          ArrayListMultimap.create();
+      final Set<Operator<?>> visitedOperators = new HashSet<>();
+      for (Entry<Operator<?>, Collection<Operator<?>>> e :
+          optimizerCache.operatorToWorkOperators.asMap().entrySet()) {
+        if (visitedOperators.contains(e.getKey())) {
+          // Already visited this work, we move on
+          continue;
+        }
+        for (Operator<?> op : e.getValue()) {
+          if (op instanceof MapJoinOperator) {
+            MapJoinOperator mapJoinOp = (MapJoinOperator) op;
+            // Only allowed for mapjoin operator
+            if (!mapJoinOp.getConf().isBucketMapJoin() &&
+                !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
+              parentToMapJoinOperators.put(
+                  obtainBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
+            }
+          }
+          visitedOperators.add(op);
+        }
+      }
+      // For each group, set the cache key accordingly if there is more than one operator
+      // and input RS operator are equal
+      for (Collection<MapJoinOperator> c : parentToMapJoinOperators.asMap().values()) {
+        Map<ReduceSinkOperator, String> rsOpToCacheKey = new HashMap<>();
+        for (MapJoinOperator mapJoinOp : c) {
+          ReduceSinkOperator rsOp = obtainBroadcastInput(mapJoinOp);
+          String cacheKey = null;
+          for (Entry<ReduceSinkOperator, String> e: rsOpToCacheKey.entrySet()) {
+            if (compareOperator(pctx, rsOp, e.getKey())) {
+              cacheKey = e.getValue();
+              break;
+            }
+          }
+          if (cacheKey == null) {
+            // Either it is the first map join operator or there was no equivalent RS,
+            // hence generate cache key
+            cacheKey = MapJoinDesc.generateCacheKey(mapJoinOp.getOperatorId());
+            rsOpToCacheKey.put(rsOp, cacheKey);
+          }
+          // Set in the conf of the map join operator
+          mapJoinOp.getConf().setCacheKey(cacheKey);
+        }
+      }
+    }
+
     // If we are running tests, we are going to verify that the contents of the cache
     // correspond with the contents of the plan, and otherwise we fail.
     // This check always run when we are running in test mode, independently on whether
@@ -532,6 +585,15 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     return pctx;
+  }
+
+  /**
+   * Obtain the RS input for a mapjoin operator.
+   */
+  private static ReduceSinkOperator obtainBroadcastInput(MapJoinOperator mapJoinOp) {
+    return mapJoinOp.getParentOperators().get(0) instanceof ReduceSinkOperator ?
+        (ReduceSinkOperator) mapJoinOp.getParentOperators().get(0) :
+        (ReduceSinkOperator) mapJoinOp.getParentOperators().get(1);
   }
 
   /**
