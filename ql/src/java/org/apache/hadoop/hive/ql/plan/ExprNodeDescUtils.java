@@ -161,7 +161,7 @@ public class ExprNodeDescUtils {
     // Found an expression for function "isnull" or "isnotnull"
     if (fnName != null) {
       List<ExprNodeDesc> children = origin.getChildren();
-      assert((children.size() == 1) && (children.get(0) instanceof ExprNodeColumnDesc));
+      assert(children.size() == 1);
       ExprNodeConstantDesc defaultPartition = new ExprNodeConstantDesc(defaultPartitionName);
       children.add(defaultPartition);
       ((ExprNodeGenericFuncDesc) origin).setChildren(children);
