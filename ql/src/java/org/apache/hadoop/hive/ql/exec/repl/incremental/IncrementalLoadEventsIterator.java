@@ -44,7 +44,9 @@ public class IncrementalLoadEventsIterator implements Iterator<FileStatus> {
     FileSystem fs = eventPath.getFileSystem(conf);
     eventDirs = fs.listStatus(eventPath, EximUtil.getDirectoryFilter(fs));
     if ((eventDirs == null) || (eventDirs.length == 0)) {
-      throw new IllegalArgumentException("No data to load in path " + loadPath);
+      currentIndex = 0;
+      numEvents = 0;
+      return;
     }
     // For event dump, each sub-dir is an individual event dump.
     // We need to guarantee that the directory listing we got is in order of event id.
