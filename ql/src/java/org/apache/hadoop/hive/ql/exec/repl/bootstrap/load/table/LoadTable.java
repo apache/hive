@@ -234,7 +234,7 @@ public class LoadTable {
 
     LOG.debug("adding dependent CopyWork/AddPart/MoveWork for table "
             + table.getCompleteName() + " with source location: "
-            + dataPath.toString() + " and target location " + tgtPath.toString());
+            + dataPath.toString() + " and target location " + tmpPath.toString());
 
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf,
             false, false);
