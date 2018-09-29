@@ -4,12 +4,16 @@ FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -107,6 +111,8 @@ JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.key, f.value
 ORDER BY f.value, g.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT g.key, f.value
 FROM src f
@@ -114,6 +120,8 @@ JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.key, f.value
 ORDER BY f.value, g.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -218,6 +226,8 @@ JOIN (
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM src f
@@ -228,6 +238,8 @@ JOIN (
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -356,6 +368,8 @@ JOIN (
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM (
@@ -369,6 +383,8 @@ JOIN (
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -523,6 +539,8 @@ JOIN (
 GROUP BY g.value, f.key
 ORDER BY f.key desc, g.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM (
@@ -536,6 +554,8 @@ JOIN (
 GROUP BY g.value, f.key
 ORDER BY f.key desc, g.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -698,6 +718,8 @@ UNION ALL
 ) x
 ORDER BY x.value desc, x.key desc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM (
@@ -727,6 +749,8 @@ UNION ALL
 ) x
 ORDER BY x.value desc, x.key desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

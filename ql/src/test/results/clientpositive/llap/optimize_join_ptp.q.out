@@ -37,9 +37,15 @@ POSTHOOK: Lineage: t2_n60.v SCRIPT []
 PREHOOK: query: explain
 select * from t1_n97 where t1_n97.k in (select t2_n60.k from t2_n60 where t2_n60.v='people') and t1_n97.k<15
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n97
+PREHOOK: Input: default@t2_n60
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from t1_n97 where t1_n97.k in (select t2_n60.k from t2_n60 where t2_n60.v='people') and t1_n97.k<15
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n97
+POSTHOOK: Input: default@t2_n60
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

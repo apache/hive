@@ -805,11 +805,15 @@ year(date_c), month(date_c),day(date_c),
 year(timestamp_c), month(timestamp_c),day(timestamp_c), hour(timestamp_c), minute (timestamp_c), second (timestamp_c)
 from druid_test_extract_from_string_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_test_extract_from_string_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select
 year(date_c), month(date_c),day(date_c),
 year(timestamp_c), month(timestamp_c),day(timestamp_c), hour(timestamp_c), minute (timestamp_c), second (timestamp_c)
 from druid_test_extract_from_string_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_test_extract_from_string_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

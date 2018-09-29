@@ -24,8 +24,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into5b
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into5a SELECT 1, 'one' FROM src LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into5a
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into5a SELECT 1, 'one' FROM src LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into5a
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -149,8 +153,12 @@ POSTHOOK: Input: default@insert_into5a
 481928560
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into5a SELECT * FROM insert_into5a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into5a
+PREHOOK: Output: default@insert_into5a
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into5a SELECT * FROM insert_into5a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into5a
+POSTHOOK: Output: default@insert_into5a
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -290,9 +298,13 @@ POSTHOOK: Input: default@insert_into5a
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into5b PARTITION (ds='1') 
   SELECT * FROM insert_into5a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into5a
+PREHOOK: Output: default@insert_into5b@ds=1
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into5b PARTITION (ds='1') 
   SELECT * FROM insert_into5a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into5a
+POSTHOOK: Output: default@insert_into5b@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -444,9 +456,15 @@ POSTHOOK: Input: default@insert_into5b@ds=1
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into5b PARTITION (ds='1')
   SELECT key, value FROM insert_into5b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into5b
+PREHOOK: Input: default@insert_into5b@ds=1
+PREHOOK: Output: default@insert_into5b@ds=1
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into5b PARTITION (ds='1')
   SELECT key, value FROM insert_into5b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into5b
+POSTHOOK: Input: default@insert_into5b@ds=1
+POSTHOOK: Output: default@insert_into5b@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

@@ -63,8 +63,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t\":\"true\",\"u\":\"true\",\"v\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain select * from decimal_1_n1 order by t limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from decimal_1_n1 order by t limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

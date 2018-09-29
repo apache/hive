@@ -44,9 +44,15 @@ POSTHOOK: Lineage: udf_tb2.month SCRIPT []
 PREHOOK: query: explain
 select unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@udf_tb1
+PREHOOK: Input: default@udf_tb2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@udf_tb1
+POSTHOOK: Input: default@udf_tb2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

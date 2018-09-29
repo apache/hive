@@ -21,6 +21,8 @@ WHERE  (((csmallint >= cint)
             AND ((ctinyint != cbigint)
                  OR (-3728 >= cdouble))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT SUM(cint),
        (SUM(cint) * -563),
@@ -44,6 +46,8 @@ WHERE  (((csmallint >= cint)
             AND ((ctinyint != cbigint)
                  OR (-3728 >= cdouble))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

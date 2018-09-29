@@ -61,9 +61,15 @@ POSTHOOK: Output: default@acid1
 PREHOOK: query: explain
 select count(*) from acid1 join acid2 on acid1.key = acid2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid1
+PREHOOK: Input: default@acid2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from acid1 join acid2 on acid1.key = acid2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid1
+POSTHOOK: Input: default@acid2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5

@@ -54,8 +54,12 @@ POSTHOOK: Lineage: loc_orc_n2.year SIMPLE [(loc_staging_n2)loc_staging_n2.FieldS
 POSTHOOK: Lineage: loc_orc_n2.zip SIMPLE [(loc_staging_n2)loc_staging_n2.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: explain select * from loc_orc_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -90,6 +94,8 @@ from ( select state as a, locid as b, count(*) as c
      ) sq1
 group by a,c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a, c, min(b)
 from ( select state as a, locid as b, count(*) as c
        from loc_orc_n2
@@ -97,6 +103,8 @@ from ( select state as a, locid as b, count(*) as c
      ) sq1
 group by a,c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -190,8 +198,12 @@ POSTHOOK: Output: default@loc_orc_n2
 #### A masked pattern was here ####
 PREHOOK: query: explain select year from loc_orc_n2 group by year
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select year from loc_orc_n2 group by year
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -240,8 +252,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -290,8 +306,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -341,8 +361,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -392,8 +416,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by rollup( state,locid )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by rollup( state,locid )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -443,8 +471,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -494,8 +526,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state),(locid))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state),(locid))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -545,8 +581,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state),(locid),())
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state),(locid),())
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -596,8 +636,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state,locid),(state),(locid),())
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state,locid),(state),(locid),())
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -647,8 +691,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select year from loc_orc_n2 group by year
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select year from loc_orc_n2 group by year
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -697,8 +745,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -748,8 +800,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,zip from loc_orc_n2 group by state,zip
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,zip from loc_orc_n2 group by state,zip
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -798,8 +854,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -849,8 +909,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -900,8 +964,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by rollup (state,locid)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by rollup (state,locid)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -951,8 +1019,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1002,8 +1074,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state),(locid))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state),(locid))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1053,8 +1129,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state),(locid),())
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state),(locid),())
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1104,8 +1184,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state,locid),(state),(locid),())
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid grouping sets((state,locid),(state),(locid),())
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1155,8 +1239,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select year from loc_orc_n2 group by year
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select year from loc_orc_n2 group by year
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1205,8 +1293,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n2 group by state,locid with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

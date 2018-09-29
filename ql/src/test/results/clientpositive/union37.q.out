@@ -49,6 +49,9 @@ select
     trans_date
 from l_test2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@l_test1
+PREHOOK: Input: default@l_test2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     id,
@@ -62,6 +65,9 @@ select
     trans_date
 from l_test2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l_test1
+POSTHOOK: Input: default@l_test2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -156,6 +162,9 @@ select
     trans_date
 from l_test2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@l_test1
+PREHOOK: Input: default@l_test2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     id,
@@ -171,6 +180,9 @@ select
     trans_date
 from l_test2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l_test1
+POSTHOOK: Input: default@l_test2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -279,6 +291,9 @@ select
     trans_date
 from l_test2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@l_test1
+PREHOOK: Input: default@l_test2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     id,
@@ -296,6 +311,9 @@ select
     trans_date
 from l_test2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l_test1
+POSTHOOK: Input: default@l_test2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -408,6 +426,9 @@ select
     trans_date
 from l_test2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@l_test1
+PREHOOK: Input: default@l_test2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     id,
@@ -425,6 +446,9 @@ select
     trans_date
 from l_test2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l_test1
+POSTHOOK: Input: default@l_test2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

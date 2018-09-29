@@ -144,8 +144,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test4
 PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test1_n11 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test1_n11 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -359,8 +363,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2_n7 L join test2_n7 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2_n7 L join test2_n7 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2_n7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -574,8 +582,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test1_n11 R on L.key+L.key=R.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n11
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test1_n11 R on L.key+L.key=R.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -778,8 +790,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test2_n7 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n11
+PREHOOK: Input: default@test2_n7
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test2_n7 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n11
+POSTHOOK: Input: default@test2_n7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -982,8 +1000,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test3 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n11
+PREHOOK: Input: default@test3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test3 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n11
+POSTHOOK: Input: default@test3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1186,8 +1210,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test4 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n11
+PREHOOK: Input: default@test4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1_n11 L join test4 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n11
+POSTHOOK: Input: default@test4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1390,8 +1420,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2_n7 L join test3 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2_n7
+PREHOOK: Input: default@test3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2_n7 L join test3 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2_n7
+POSTHOOK: Input: default@test3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1594,8 +1630,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2_n7 L join test4 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2_n7
+PREHOOK: Input: default@test4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2_n7 L join test4 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2_n7
+POSTHOOK: Input: default@test4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1798,8 +1840,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test3 L join test4 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test3
+PREHOOK: Input: default@test4
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test3 L join test4 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test3
+POSTHOOK: Input: default@test4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

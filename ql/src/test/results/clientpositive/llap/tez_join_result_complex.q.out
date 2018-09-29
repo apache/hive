@@ -133,6 +133,10 @@ inner join
 service_request_clean b
 on a.contact_event_id = b.cnctevn_id
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ct_events_clean
+PREHOOK: Input: default@service_request_clean
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ct_events1_test
 POSTHOOK: query: explain extended
 create table ct_events1_test
 as select  a.*,
@@ -148,6 +152,10 @@ inner join
 service_request_clean b
 on a.contact_event_id = b.cnctevn_id
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ct_events_clean
+POSTHOOK: Input: default@service_request_clean
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ct_events1_test
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1122,6 +1130,10 @@ inner join
 service_request_clean b
 on a.contact_event_id = b.cnctevn_id
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ct_events_clean
+PREHOOK: Input: default@service_request_clean
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ct_events1_test
 POSTHOOK: query: explain extended
 create table ct_events1_test
 as select  a.*,
@@ -1137,6 +1149,10 @@ inner join
 service_request_clean b
 on a.contact_event_id = b.cnctevn_id
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ct_events_clean
+POSTHOOK: Input: default@service_request_clean
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ct_events1_test
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

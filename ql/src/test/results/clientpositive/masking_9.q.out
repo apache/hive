@@ -14,8 +14,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test
 PREHOOK: query: explain select ROW__ID from masking_test
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test
+#### A masked pattern was here ####
 POSTHOOK: query: explain select ROW__ID from masking_test
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

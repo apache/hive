@@ -132,10 +132,16 @@ PREHOOK: query: explain vectorization only summary
 
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -159,9 +165,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only summary
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -187,9 +199,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only summary
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -207,9 +225,15 @@ POSTHOOK: Input: default@t4_n19
 PREHOOK: query: explain vectorization only summary
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -238,9 +262,15 @@ val_9
 PREHOOK: query: explain vectorization only summary
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -261,9 +291,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only summary
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -284,9 +320,15 @@ val_9
 PREHOOK: query: explain vectorization only summary
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -304,9 +346,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only summary
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -329,9 +377,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only summary
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -368,9 +422,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only summary
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -392,9 +452,17 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only summary
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -428,9 +496,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only summary
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -462,9 +536,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only summary
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -498,9 +580,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -546,9 +636,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only summary
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -597,9 +695,17 @@ NULL
 PREHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -648,9 +754,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -701,9 +815,17 @@ NULL
 PREHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -765,9 +887,17 @@ NULL
 PREHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -822,9 +952,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -842,9 +978,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization summary
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -950,9 +1092,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization summary
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -1060,9 +1208,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization summary
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -1162,9 +1316,15 @@ POSTHOOK: Input: default@t4_n19
 PREHOOK: query: explain vectorization summary
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -1279,9 +1439,15 @@ val_9
 PREHOOK: query: explain vectorization summary
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -1384,9 +1550,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization summary
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -1493,9 +1665,15 @@ val_9
 PREHOOK: query: explain vectorization summary
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -1599,9 +1777,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization summary
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -1706,9 +1890,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization summary
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -1827,9 +2017,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization summary
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -1933,9 +2129,17 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization summary
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -2075,9 +2279,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization summary
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -2191,9 +2401,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization summary
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -2336,9 +2554,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -2475,9 +2701,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization summary
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -2622,9 +2856,17 @@ NULL
 PREHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -2769,9 +3011,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -2918,9 +3168,17 @@ NULL
 PREHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -3078,9 +3336,17 @@ NULL
 PREHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -3239,9 +3505,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization summary
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
@@ -3333,9 +3605,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only operator
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3446,9 +3724,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only operator
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3561,9 +3845,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only operator
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3668,9 +3958,15 @@ POSTHOOK: Input: default@t4_n19
 PREHOOK: query: explain vectorization only operator
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3789,9 +4085,15 @@ val_9
 PREHOOK: query: explain vectorization only operator
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3899,9 +4201,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only operator
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4012,9 +4320,15 @@ val_9
 PREHOOK: query: explain vectorization only operator
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4122,9 +4436,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only operator
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4234,9 +4554,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only operator
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4360,9 +4686,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only operator
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4471,9 +4803,17 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization only operator
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4619,9 +4959,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only operator
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4740,9 +5086,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only operator
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4893,9 +5247,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5041,9 +5403,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only operator
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5188,9 +5558,17 @@ NULL
 PREHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5335,9 +5713,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5484,9 +5870,17 @@ NULL
 PREHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5644,9 +6038,17 @@ NULL
 PREHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5812,9 +6214,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only operator
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5905,9 +6313,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6107,9 +6521,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6311,9 +6731,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6507,9 +6933,15 @@ POSTHOOK: Input: default@t4_n19
 PREHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6722,9 +7154,15 @@ val_9
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6921,9 +7359,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7128,9 +7572,15 @@ val_9
 PREHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7332,9 +7782,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7533,9 +7989,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7748,9 +8210,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7949,9 +8417,17 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -8217,9 +8693,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -8427,9 +8909,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -8705,9 +9195,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -8954,9 +9452,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -9204,9 +9710,17 @@ NULL
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -9454,9 +9968,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -9706,9 +10228,17 @@ NULL
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -9969,9 +10499,17 @@ NULL
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -10255,9 +10793,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -10424,9 +10968,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -10627,9 +11177,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -10832,9 +11388,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -11029,9 +11591,15 @@ POSTHOOK: Input: default@t4_n19
 PREHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -11245,9 +11813,15 @@ val_9
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -11445,9 +12019,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -11653,9 +12233,15 @@ val_9
 PREHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -11858,9 +12444,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -12060,9 +12652,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -12276,9 +12874,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -12478,9 +13082,17 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -12746,9 +13358,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -12957,9 +13575,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -13235,9 +13861,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -13484,9 +14118,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -13734,9 +14376,17 @@ NULL
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -13984,9 +14634,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -14236,9 +14894,17 @@ NULL
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -14499,9 +15165,17 @@ NULL
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -14787,9 +15461,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -14957,9 +15637,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -15160,9 +15846,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join t1_n148 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -15365,9 +16057,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t4_n19 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t4_n19
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -15562,9 +16260,15 @@ POSTHOOK: Input: default@t4_n19
 PREHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join t3_n35 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -15778,9 +16482,15 @@ val_9
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -15978,9 +16688,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key from t3_n35 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -16186,9 +16902,15 @@ val_9
 PREHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.value from t1_n148 a left semi join (select key , value from t2_n87 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -16391,9 +17113,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t2_n87 a left semi join (select key , value from t1_n148 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -16593,9 +17321,15 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select /*+ mapjoin(b) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -16809,9 +17543,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a left semi join t2_n87 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -17011,9 +17751,17 @@ POSTHOOK: Input: default@t2_n87
 PREHOOK: query: explain vectorization detail
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t1_n148 a join t2_n87 b on a.key = b.key left semi join t3_n35 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -17279,9 +18027,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from t3_n35 a left semi join t1_n148 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -17490,9 +18244,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select /*+ mapjoin(b, c) */ a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key left semi join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -17768,9 +18530,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left outer join t1_n148 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -18017,9 +18787,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t1_n148 a full outer join t3_n35 b on a.key = b.key left semi join t2_n87 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -18267,9 +19045,17 @@ NULL
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -18517,9 +19303,17 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key right outer join t1_n148 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -18769,9 +19563,17 @@ NULL
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t1_n148 b on a.key = b.key full outer join t2_n87 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -19032,9 +19834,17 @@ NULL
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n148
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.key = b.key left outer join t1_n148 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n148
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -19320,9 +20130,15 @@ POSTHOOK: Input: default@t3_n35
 PREHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n87
+PREHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select a.key from t3_n35 a left semi join t2_n87 b on a.value = b.value where a.key > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n87
+POSTHOOK: Input: default@t3_n35
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

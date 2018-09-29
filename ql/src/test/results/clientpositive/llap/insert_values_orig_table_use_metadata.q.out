@@ -187,8 +187,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -393,8 +397,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -526,8 +534,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -655,8 +667,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -805,8 +821,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -888,8 +908,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from sp where ds="2008-04-08" and hr="11"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sp
+PREHOOK: Input: default@sp@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from sp where ds="2008-04-08" and hr="11"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sp
+POSTHOOK: Input: default@sp@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1054,8 +1080,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from sp where ds="2008-04-08" and hr="11"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sp
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from sp where ds="2008-04-08" and hr="11"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sp
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

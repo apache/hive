@@ -10,10 +10,14 @@ PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest4_sequencefile
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest4_sequencefile
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

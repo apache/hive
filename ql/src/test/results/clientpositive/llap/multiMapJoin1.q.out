@@ -166,6 +166,10 @@ select count(*) FROM
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bigtbl
+PREHOOK: Input: default@smalltbl1
+PREHOOK: Input: default@smalltbl2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -175,6 +179,10 @@ select count(*) FROM
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bigtbl
+POSTHOOK: Input: default@smalltbl1
+POSTHOOK: Input: default@smalltbl2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -329,6 +337,10 @@ select count(*) FROM
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bigtbl
+PREHOOK: Input: default@smalltbl1
+PREHOOK: Input: default@smalltbl2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -338,6 +350,10 @@ select count(*) FROM
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bigtbl
+POSTHOOK: Input: default@smalltbl1
+POSTHOOK: Input: default@smalltbl2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -493,6 +509,10 @@ JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 group by smallTbl2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bigtbl
+PREHOOK: Input: default@smalltbl1
+PREHOOK: Input: default@smalltbl2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -503,6 +523,10 @@ JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 group by smallTbl2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bigtbl
+POSTHOOK: Input: default@smalltbl1
+POSTHOOK: Input: default@smalltbl2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -775,6 +799,12 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bigtbl
+PREHOOK: Input: default@smalltbl1
+PREHOOK: Input: default@smalltbl2
+PREHOOK: Input: default@smalltbl3
+PREHOOK: Input: default@smalltbl4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -808,6 +838,12 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bigtbl
+POSTHOOK: Input: default@smalltbl1
+POSTHOOK: Input: default@smalltbl2
+POSTHOOK: Input: default@smalltbl3
+POSTHOOK: Input: default@smalltbl4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1110,6 +1146,12 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bigtbl
+PREHOOK: Input: default@smalltbl1
+PREHOOK: Input: default@smalltbl2
+PREHOOK: Input: default@smalltbl3
+PREHOOK: Input: default@smalltbl4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -1143,6 +1185,12 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bigtbl
+POSTHOOK: Input: default@smalltbl1
+POSTHOOK: Input: default@smalltbl2
+POSTHOOK: Input: default@smalltbl3
+POSTHOOK: Input: default@smalltbl4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1445,6 +1493,12 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bigtbl
+PREHOOK: Input: default@smalltbl1
+PREHOOK: Input: default@smalltbl2
+PREHOOK: Input: default@smalltbl3
+PREHOOK: Input: default@smalltbl4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -1478,6 +1532,12 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bigtbl
+POSTHOOK: Input: default@smalltbl1
+POSTHOOK: Input: default@smalltbl2
+POSTHOOK: Input: default@smalltbl3
+POSTHOOK: Input: default@smalltbl4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1811,6 +1871,12 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bigtbl
+PREHOOK: Input: default@smalltbl1
+PREHOOK: Input: default@smalltbl2
+PREHOOK: Input: default@smalltbl3
+PREHOOK: Input: default@smalltbl4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -1844,6 +1910,12 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bigtbl
+POSTHOOK: Input: default@smalltbl1
+POSTHOOK: Input: default@smalltbl2
+POSTHOOK: Input: default@smalltbl3
+POSTHOOK: Input: default@smalltbl4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

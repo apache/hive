@@ -40,9 +40,13 @@ POSTHOOK: Input: default@nzhang_test1
 PREHOOK: query: explain
 select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_test1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_test1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -112,9 +116,13 @@ POSTHOOK: Input: default@nzhang_test1
 PREHOOK: query: explain
 select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_test1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_test1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

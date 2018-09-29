@@ -31,8 +31,12 @@ POSTHOOK: Input: default@abcd_n2
 NULL	35	23	6
 PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -101,8 +105,12 @@ POSTHOOK: Input: default@abcd_n2
 NULL	1	1	6
 PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -170,8 +178,12 @@ POSTHOOK: Input: default@abcd_n2
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
 PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -235,8 +247,12 @@ POSTHOOK: Input: default@abcd_n2
 NULL	1	1	6
 PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -298,8 +314,12 @@ POSTHOOK: Input: default@abcd_n2
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
 PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -367,8 +387,12 @@ POSTHOOK: Input: default@abcd_n2
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
 PREHOOK: query: explain select count(distinct b) from abcd_n2 group by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(distinct b) from abcd_n2 group by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -451,8 +475,12 @@ POSTHOOK: Input: default@abcd_n2
 2
 PREHOOK: query: explain select count(distinct b) from abcd_n2 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(distinct b) from abcd_n2 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -534,8 +562,12 @@ POSTHOOK: Input: default@abcd_n2
 1
 PREHOOK: query: explain select count(distinct b) from abcd_n2 group by c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(distinct b) from abcd_n2 group by c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -621,8 +653,12 @@ POSTHOOK: Input: default@abcd_n2
 1
 PREHOOK: query: explain select count(b), count(distinct c) from abcd_n2 group by d
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(b), count(distinct c) from abcd_n2 group by d
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -693,8 +729,12 @@ POSTHOOK: Input: default@abcd_n2
 1	1
 PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd_n2 group by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd_n2 group by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -758,8 +798,12 @@ POSTHOOK: Input: default@abcd_n2
 NULL	1	1	6	12	18	35	23	NULL	NULL	35
 PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd_n2 group by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd_n2 group by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -823,8 +867,12 @@ POSTHOOK: Input: default@abcd_n2
 NULL	1	1	6	23
 PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -16,6 +16,8 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex
 POSTHOOK: query: EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
@@ -34,6 +36,8 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@serde_regex
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

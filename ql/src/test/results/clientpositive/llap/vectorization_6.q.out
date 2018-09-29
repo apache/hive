@@ -19,6 +19,8 @@ WHERE  ((ctinyint != 0)
               AND ((cstring2 LIKE '%a')
                    OR (cfloat <= -257))))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cboolean1,
        cfloat,
@@ -40,6 +42,8 @@ WHERE  ((ctinyint != 0)
               AND ((cstring2 LIKE '%a')
                    OR (cfloat <= -257))))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

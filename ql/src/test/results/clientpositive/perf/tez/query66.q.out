@@ -219,6 +219,13 @@ select
  order by w_warehouse_name
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@ship_mode
+PREHOOK: Input: default@time_dim
+PREHOOK: Input: default@warehouse
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select   
          w_warehouse_name
@@ -440,6 +447,13 @@ select
  order by w_warehouse_name
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@ship_mode
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

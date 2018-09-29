@@ -16,8 +16,12 @@ Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount
 Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT count(key) FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(key) FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -39,8 +43,12 @@ POSTHOOK: Input: default@src
 500
 PREHOOK: query: EXPLAIN SELECT count(DISTINCT key) FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(DISTINCT key) FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -126,8 +134,12 @@ POSTHOOK: Input: default@src
 309
 PREHOOK: query: EXPLAIN SELECT count(DISTINCT key, value) FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(DISTINCT key, value) FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -184,8 +196,12 @@ POSTHOOK: Input: default@src
 309
 PREHOOK: query: EXPLAIN SELECT count(*) FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -207,8 +223,12 @@ POSTHOOK: Input: default@src
 500
 PREHOOK: query: EXPLAIN SELECT count(1) FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(1) FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

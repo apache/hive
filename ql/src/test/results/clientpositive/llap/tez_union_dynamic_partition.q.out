@@ -38,12 +38,15 @@ select 1 as id1, '2014' as part1 from dummy_n2
 union all 
 select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy_n2
+PREHOOK: Output: default@partunion1
 POSTHOOK: query: explain insert into table partunion1 partition(part1)
 select temps.* from (
 select 1 as id1, '2014' as part1 from dummy_n2 
 union all 
 select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy_n2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

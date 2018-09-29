@@ -18,10 +18,14 @@ PREHOOK: query: explain
 insert overwrite table dest31
 select count(1) from srcbucket
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@tst_dest31
 POSTHOOK: query: explain 
 insert overwrite table dest31
 select count(1) from srcbucket
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@tst_dest31
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

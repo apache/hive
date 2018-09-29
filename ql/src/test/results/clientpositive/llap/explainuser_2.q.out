@@ -175,11 +175,21 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -257,6 +267,17 @@ order by
 ss_n1.k1,sr.k2,cs.k3
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cs
+PREHOOK: Input: default@sr
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@ss_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 select 
 ss_n1.k1,sr.k2,cs.k3,count(ss_n1.v1),count(sr.v2),count(cs.v3)
@@ -285,6 +306,17 @@ order by
 ss_n1.k1,sr.k2,cs.k3
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cs
+POSTHOOK: Input: default@sr
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@ss_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -431,6 +463,9 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
@@ -440,6 +475,9 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -592,6 +630,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
@@ -605,6 +646,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -874,11 +918,21 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -949,6 +1003,17 @@ order by
 ss_n1.k1,sr.k2,cs.k3
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cs
+PREHOOK: Input: default@sr
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@ss_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 select 
 ss_n1.k1,sr.k2,cs.k3,count(ss_n1.v1),count(sr.v2),count(cs.v3)
@@ -977,6 +1042,17 @@ order by
 ss_n1.k1,sr.k2,cs.k3
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cs
+POSTHOOK: Input: default@sr
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@ss_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1101,6 +1177,9 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
@@ -1110,6 +1189,9 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1253,6 +1335,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
@@ -1266,6 +1351,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1652,9 +1740,15 @@ POSTHOOK: Lineage: tab2_n7 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_map
 PREHOOK: query: explain 
 select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n15
+PREHOOK: Input: default@tab_n15@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain 
 select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n15
+POSTHOOK: Input: default@tab_n15@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -1681,9 +1775,15 @@ Stage-0
 PREHOOK: query: explain 
 select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key join tab_n15 s2 on s1.value=s2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n15
+PREHOOK: Input: default@tab_n15@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain 
 select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key join tab_n15 s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n15
+POSTHOOK: Input: default@tab_n15@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1727,9 +1827,19 @@ Stage-0
 PREHOOK: query: explain 
 select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab2_n7
+PREHOOK: Input: default@tab2_n7@ds=2008-04-08
+PREHOOK: Input: default@tab_n15
+PREHOOK: Input: default@tab_n15@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain 
 select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab2_n7
+POSTHOOK: Input: default@tab2_n7@ds=2008-04-08
+POSTHOOK: Input: default@tab_n15
+POSTHOOK: Input: default@tab_n15@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -1756,9 +1866,19 @@ Stage-0
 PREHOOK: query: explain 
 select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key join tab2_n7 s2 on s1.value=s2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab2_n7
+PREHOOK: Input: default@tab2_n7@ds=2008-04-08
+PREHOOK: Input: default@tab_n15
+PREHOOK: Input: default@tab_n15@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain 
 select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key join tab2_n7 s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab2_n7
+POSTHOOK: Input: default@tab2_n7@ds=2008-04-08
+POSTHOOK: Input: default@tab_n15
+POSTHOOK: Input: default@tab_n15@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1805,12 +1925,22 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab_n15 s2
 ) a_n19 join tab_part_n14 b_n15 on (a_n19.key = b_n15.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n15
+PREHOOK: Input: default@tab_n15@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n14
+PREHOOK: Input: default@tab_part_n14@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select count(*) from (select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key
 UNION  ALL
 select s2.key as key, s2.value as value from tab_n15 s2
 ) a_n19 join tab_part_n14 b_n15 on (a_n19.key = b_n15.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n15
+POSTHOOK: Input: default@tab_n15@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n14
+POSTHOOK: Input: default@tab_part_n14@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1876,12 +2006,22 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab_n15 s2
 ) a_n19 join tab_part_n14 b_n15 on (a_n19.key = b_n15.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n15
+PREHOOK: Input: default@tab_n15@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n14
+PREHOOK: Input: default@tab_part_n14@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select count(*) from (select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key join tab_n15 s2 on s1.value=s2.value
 UNION  ALL
 select s2.key as key, s2.value as value from tab_n15 s2
 ) a_n19 join tab_part_n14 b_n15 on (a_n19.key = b_n15.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n15
+POSTHOOK: Input: default@tab_n15@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n14
+POSTHOOK: Input: default@tab_part_n14@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1968,6 +2108,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src1 y ON (x.key = y.key) 
 JOIN (select key, value from src1 union all select key, value from src union all select key, value from src union all select key, value from src)z ON (x.value = z.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
@@ -1981,6 +2124,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src1 y ON (x.key = y.key) 
 JOIN (select key, value from src1 union all select key, value from src union all select key, value from src union all select key, value from src)z ON (x.value = z.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -2194,6 +2340,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src1 y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
@@ -2207,6 +2356,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src1 y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -2528,6 +2680,11 @@ INSERT OVERWRITE TABLE a_n19 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE b_n15 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE c_n4 SELECT tmp.key, tmp.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@a_n19
+PREHOOK: Output: default@b_n15
+PREHOOK: Output: default@c_n4
 POSTHOOK: query: explain
 from
 (
@@ -2547,6 +2704,11 @@ INSERT OVERWRITE TABLE a_n19 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE b_n15 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE c_n4 SELECT tmp.key, tmp.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@a_n19
+POSTHOOK: Output: default@b_n15
+POSTHOOK: Output: default@c_n4
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -2946,6 +3108,11 @@ INSERT OVERWRITE TABLE a_n19 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE b_n15 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE c_n4 SELECT tmp.key, tmp.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@a_n19
+PREHOOK: Output: default@b_n15
+PREHOOK: Output: default@c_n4
 POSTHOOK: query: explain
 FROM
 ( 
@@ -2962,6 +3129,11 @@ INSERT OVERWRITE TABLE a_n19 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE b_n15 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE c_n4 SELECT tmp.key, tmp.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@a_n19
+POSTHOOK: Output: default@b_n15
+POSTHOOK: Output: default@c_n4
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -3312,6 +3484,9 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key
 INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key, unionsrc_n4.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n172
+PREHOOK: Output: default@dest2_n43
 POSTHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -3319,6 +3494,9 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key
 INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key, unionsrc_n4.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n172
+POSTHOOK: Output: default@dest2_n43
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -3411,8 +3589,24 @@ Stage-5
 
 PREHOOK: query: EXPLAIN FROM UNIQUEJOIN PRESERVE src a_n19 (a_n19.key), PRESERVE src1 b_n15 (b_n15.key), PRESERVE srcpart c_n4 (c_n4.key) SELECT a_n19.key, b_n15.key, c_n4.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN FROM UNIQUEJOIN PRESERVE src a_n19 (a_n19.key), PRESERVE src1 b_n15 (b_n15.key), PRESERVE srcpart c_n4 (c_n4.key) SELECT a_n19.key, b_n15.key, c_n4.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan not optimized by CBO due to missing feature [Unique_join].
 
 Vertex dependency in root stage
@@ -3450,12 +3644,18 @@ TRANSFORM(a_n19.key, a_n19.value) USING 'cat' AS (tkey, tvalue)
 FROM src a_n19 join src b_n15
 on a_n19.key = b_n15.key
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT 
 TRANSFORM(a_n19.key, a_n19.value) USING 'cat' AS (tkey, tvalue)
 FROM src a_n19 join src b_n15
 on a_n19.key = b_n15.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan not optimized by CBO.
 
 Vertex dependency in root stage
@@ -3499,6 +3699,9 @@ INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(
 INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) 
 GROUP BY unionsrc_n4.key, unionsrc_n4.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n172
+PREHOOK: Output: default@dest2_n43
 POSTHOOK: query: explain
 FROM (
       select key, value from (
@@ -3512,6 +3715,9 @@ INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(
 INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) 
 GROUP BY unionsrc_n4.key, unionsrc_n4.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n172
+POSTHOOK: Output: default@dest2_n43
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -3633,6 +3839,9 @@ INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(
 INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) 
 GROUP BY unionsrc_n4.key, unionsrc_n4.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n172
+PREHOOK: Output: default@dest2_n43
 POSTHOOK: query: explain
 FROM (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
@@ -3643,6 +3852,9 @@ INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(
 INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) 
 GROUP BY unionsrc_n4.key, unionsrc_n4.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n172
+POSTHOOK: Output: default@dest2_n43
 Plan optimized by CBO.
 
 Vertex dependency in root stage

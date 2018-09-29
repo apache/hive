@@ -222,12 +222,16 @@ from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cint = c.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cint = c.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -364,12 +368,16 @@ from small_alltypesorc_a c
 left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select c.ctinyint 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -595,6 +603,8 @@ left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*), sum(t1.c_ctinyint) from (select c.ctinyint as c_ctinyint
 from small_alltypesorc_a c
@@ -604,6 +614,8 @@ left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

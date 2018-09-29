@@ -12,8 +12,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@druid_table_1_n3
 PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` >= '2010-01-01 00:00:00 UTC' AND  `__time` <= '2012-03-01 00:00:00 UTC' OR  added <= 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` >= '2010-01-01 00:00:00 UTC' AND  `__time` <= '2012-03-01 00:00:00 UTC' OR  added <= 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -38,8 +42,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` <= '2010-01-01 00:00:00 UTC'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` <= '2010-01-01 00:00:00 UTC'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -66,10 +74,14 @@ PREHOOK: query: EXPLAIN
 SELECT max(added), sum(variation)
 FROM druid_table_1_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT max(added), sum(variation)
 FROM druid_table_1_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -97,11 +109,15 @@ SELECT `__time`, max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY `__time`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT `__time`, max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY `__time`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -129,11 +145,15 @@ SELECT floor_year(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_year(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -161,11 +181,15 @@ SELECT floor_quarter(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_quarter(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_quarter(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_quarter(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -224,11 +248,15 @@ SELECT floor_month(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_month(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_month(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_month(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -256,11 +284,15 @@ SELECT floor_week(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_week(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_week(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_week(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -288,11 +320,15 @@ SELECT floor_day(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_day(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_day(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_day(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -320,11 +356,15 @@ SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_hour(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_hour(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -352,11 +392,15 @@ SELECT floor_minute(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_minute(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_minute(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_minute(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -384,11 +428,15 @@ SELECT floor_second(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_second(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_second(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 GROUP BY floor_second(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -417,12 +465,16 @@ FROM druid_table_1_n3
 WHERE robot='1'
 GROUP BY floor_hour(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
 WHERE robot='1'
 GROUP BY floor_hour(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -453,6 +505,8 @@ WHERE floor_hour(`__time`)
         AND CAST('2014-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
 GROUP BY floor_hour(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1_n3
@@ -461,6 +515,8 @@ WHERE floor_hour(`__time`)
         AND CAST('2014-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
 GROUP BY floor_hour(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -494,6 +550,8 @@ FROM
 WHERE subq.h BETWEEN CAST('2010-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
         AND CAST('2014-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT subq.h, subq.m, subq.s
 FROM
@@ -505,6 +563,8 @@ FROM
 WHERE subq.h BETWEEN CAST('2010-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
         AND CAST('2014-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -529,8 +589,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -555,8 +619,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` <= '2010-01-01 00:00:00 UTC'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` <= '2010-01-01 00:00:00 UTC'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -581,8 +649,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` >= '2010-01-01 00:00:00'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` >= '2010-01-01 00:00:00'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -607,8 +679,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` <= '2010-01-01 00:00:00' OR  `__time` <= '2012-03-01 00:00:00'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1_n3 where `__time` <= '2010-01-01 00:00:00' OR  `__time` <= '2012-03-01 00:00:00'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

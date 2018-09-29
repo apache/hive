@@ -115,8 +115,12 @@ POSTHOOK: Input: default@orc_pred
 62430
 PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -173,8 +177,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -300,11 +308,15 @@ PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   AND t < 0
   AND t > -2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -367,11 +379,15 @@ PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   AND t < 0
   AND t > -2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -467,11 +483,15 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND s IS NOT NULL
   AND s LIKE 'bob%'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -494,11 +514,15 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND s IS NOT NULL
   AND s LIKE 'bob%'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -566,6 +590,8 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t BETWEEN 25 AND 30
   SORT BY t,s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE s IS NOT NULL
   AND s LIKE 'bob%'
@@ -573,6 +599,8 @@ POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t BETWEEN 25 AND 30
   SORT BY t,s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -631,6 +659,8 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t BETWEEN 25 AND 30
   SORT BY t,s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE s IS NOT NULL
   AND s LIKE 'bob%'
@@ -638,6 +668,8 @@ POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t BETWEEN 25 AND 30
   SORT BY t,s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -759,6 +791,8 @@ PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   ORDER BY s DESC
   LIMIT 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
   AND d < 12
@@ -770,6 +804,8 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   ORDER BY s DESC
   LIMIT 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -837,6 +873,8 @@ PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   ORDER BY s DESC
   LIMIT 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
   AND d < 12
@@ -848,6 +886,8 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   ORDER BY s DESC
   LIMIT 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -980,6 +1020,8 @@ PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   SORT BY s DESC
   LIMIT 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
   AND t <> 101
@@ -993,6 +1035,8 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   SORT BY s DESC
   LIMIT 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1079,6 +1123,8 @@ PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   SORT BY s DESC
   LIMIT 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
   AND t <> 101
@@ -1092,6 +1138,8 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   SORT BY s DESC
   LIMIT 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

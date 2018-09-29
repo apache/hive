@@ -6,6 +6,10 @@ SELECT * FROM (
 ) A
 SORT BY A.key, A.value, A.ds, A.hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM (
   SELECT X.* FROM SRCPART X WHERE X.ds = '2008-04-08' and X.key < 100
@@ -14,6 +18,10 @@ SELECT * FROM (
 ) A
 SORT BY A.key, A.value, A.ds, A.hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

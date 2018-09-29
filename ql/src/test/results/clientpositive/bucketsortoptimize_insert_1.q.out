@@ -37,6 +37,9 @@ SELECT x.key, x.value from
 SELECT a.key, a.value FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n5
+PREHOOK: Input: default@test_table1_n5@ds=1
+PREHOOK: Output: default@test_table2_n5@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n5 PARTITION (ds = '1')
 SELECT x.key, x.value from 
@@ -44,6 +47,9 @@ SELECT x.key, x.value from
 SELECT a.key, a.value FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n5
+POSTHOOK: Input: default@test_table1_n5@ds=1
+POSTHOOK: Output: default@test_table2_n5@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -147,6 +153,9 @@ SELECT * from
 SELECT a.key, a.value FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n5
+PREHOOK: Input: default@test_table1_n5@ds=1
+PREHOOK: Output: default@test_table2_n5@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n5 PARTITION (ds = '1')
 SELECT * from 
@@ -154,6 +163,9 @@ SELECT * from
 SELECT a.key, a.value FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n5
+POSTHOOK: Input: default@test_table1_n5@ds=1
+POSTHOOK: Output: default@test_table2_n5@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -257,6 +269,9 @@ SELECT x.key, concat(x.value, x.value) from
 SELECT a.key, a.value FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n5
+PREHOOK: Input: default@test_table1_n5@ds=1
+PREHOOK: Output: default@test_table2_n5@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n5 PARTITION (ds = '1')
 SELECT x.key, concat(x.value, x.value) from 
@@ -264,6 +279,9 @@ SELECT x.key, concat(x.value, x.value) from
 SELECT a.key, a.value FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n5
+POSTHOOK: Input: default@test_table1_n5@ds=1
+POSTHOOK: Output: default@test_table2_n5@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -316,6 +334,9 @@ SELECT x.key+x.key, x.value from
 SELECT a.key, a.value FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n5
+PREHOOK: Input: default@test_table1_n5@ds=1
+PREHOOK: Output: default@test_table2_n5@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n5 PARTITION (ds = '1')
 SELECT x.key+x.key, x.value from 
@@ -323,6 +344,9 @@ SELECT x.key+x.key, x.value from
 SELECT a.key, a.value FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n5
+POSTHOOK: Input: default@test_table1_n5@ds=1
+POSTHOOK: Output: default@test_table2_n5@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -432,6 +456,9 @@ SELECT x.k1, concat(x.v1, x.v1) from
 SELECT a.key as k1, a.value as v1 FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n5
+PREHOOK: Input: default@test_table1_n5@ds=1
+PREHOOK: Output: default@test_table2_n5@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n5 PARTITION (ds = '1')
 SELECT x.k1, concat(x.v1, x.v1) from 
@@ -439,6 +466,9 @@ SELECT x.k1, concat(x.v1, x.v1) from
 SELECT a.key as k1, a.value as v1 FROM test_table1_n5 a WHERE a.ds = '1'
 )x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n5
+POSTHOOK: Input: default@test_table1_n5@ds=1
+POSTHOOK: Output: default@test_table2_n5@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

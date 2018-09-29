@@ -25,6 +25,9 @@ select key, count(*)
 where src.value in ('val_400', 'val_500') AND key in (400, 450)
 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
 POSTHOOK: query: explain
 from src
 insert overwrite table e1_n1
@@ -36,6 +39,9 @@ select key, count(*)
 where src.value in ('val_400', 'val_500') AND key in (400, 450)
 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -279,6 +285,9 @@ select value, count(*)
 where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
 group by value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
 POSTHOOK: query: explain
 from src
 insert overwrite table e1_n1
@@ -290,6 +299,9 @@ select value, count(*)
 where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
 group by value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -534,6 +546,9 @@ select key, count(*)
 where src.value in ('val_400', 'val_500') AND key in (400, 450)
 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
 POSTHOOK: query: explain
 from src
 insert overwrite table e1_n1
@@ -545,6 +560,9 @@ select key, count(*)
 where src.value in ('val_400', 'val_500') AND key in (400, 450)
 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -788,6 +806,9 @@ select value, count(*)
 where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
 group by value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
 POSTHOOK: query: explain
 from src
 insert overwrite table e1_n1
@@ -799,6 +820,9 @@ select value, count(*)
 where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
 group by value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

@@ -119,9 +119,13 @@ POSTHOOK: Output: default@orc_create_complex
 PREHOOK: query: EXPLAIN VECTORIZATION
 INSERT INTO TABLE orc_create_complex SELECT str,mp,lst,NAMED_STRUCT('A',strct.A,'B',strct.B,'C','c'),0 FROM orc_create_staging
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_staging
+PREHOOK: Output: default@orc_create_complex
 POSTHOOK: query: EXPLAIN VECTORIZATION
 INSERT INTO TABLE orc_create_complex SELECT str,mp,lst,NAMED_STRUCT('A',strct.A,'B',strct.B,'C','c'),0 FROM orc_create_staging
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Output: default@orc_create_complex
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -202,9 +206,13 @@ Found 2 items
 PREHOOK: query: EXPLAIN VECTORIZATION
 select sum(hash(*)) from orc_create_complex
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 select sum(hash(*)) from orc_create_complex
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

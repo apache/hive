@@ -19,11 +19,15 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -101,11 +105,15 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -189,12 +197,16 @@ from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value
 from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -274,6 +286,8 @@ group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, grouping(key)+grouping(value) as x
 from T1_n64
@@ -281,6 +295,8 @@ group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -386,11 +402,15 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -468,11 +488,15 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -556,12 +580,16 @@ from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value
 from T1_n64
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -638,6 +666,8 @@ group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, grouping(key)+grouping(value) as x
 from T1_n64
@@ -645,6 +675,8 @@ group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -750,11 +782,15 @@ select key, value, grouping(key), grouping(value)
 from T1_n64
 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, grouping(key), grouping(value)
 from T1_n64
 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -827,11 +863,15 @@ select key, value, grouping(value)
 from T1_n64
 group by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, grouping(value)
 from T1_n64
 group by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -905,12 +945,16 @@ from T1_n64
 group by key, value
 having grouping(key) = 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value
 from T1_n64
 group by key, value
 having grouping(key) = 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -981,11 +1025,15 @@ select key, value, `grouping__id`, grouping(key, value)
 from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key, value)
 from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1068,11 +1116,15 @@ select key, value, `grouping__id`, grouping(value, key)
 from T1_n64
 group by cube(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(value, key)
 from T1_n64
 group by cube(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1155,11 +1207,15 @@ select key, value, `grouping__id`, grouping(key, value)
 from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(key, value)
 from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1237,11 +1293,15 @@ select key, value, `grouping__id`, grouping(value, key)
 from T1_n64
 group by rollup(key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, `grouping__id`, grouping(value, key)
 from T1_n64
 group by rollup(key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n64
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

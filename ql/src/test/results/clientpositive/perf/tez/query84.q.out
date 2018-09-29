@@ -18,6 +18,13 @@ select  c_customer_id as customer_id
  order by c_customer_id
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@income_band
+PREHOOK: Input: default@store_returns
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select  c_customer_id as customer_id
        ,c_last_name || ', ' || c_first_name as customername
@@ -38,6 +45,13 @@ select  c_customer_id as customer_id
  order by c_customer_id
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@income_band
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

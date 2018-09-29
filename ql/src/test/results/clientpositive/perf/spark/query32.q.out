@@ -25,6 +25,10 @@ and cs_ext_discount_amt
       ) 
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  sum(cs_ext_discount_amt)  as `excess discount amount` 
 from 
@@ -52,6 +56,10 @@ and cs_ext_discount_amt
       ) 
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2

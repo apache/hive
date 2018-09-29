@@ -29,6 +29,9 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
@@ -38,6 +41,9 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -208,6 +214,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
@@ -221,6 +230,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -598,9 +610,15 @@ POSTHOOK: Input: default@tab_n6@ds=2008-04-08
 PREHOOK: query: explain analyze 
 select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n6
+PREHOOK: Input: default@tab_n6@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze 
 select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n6
+POSTHOOK: Input: default@tab_n6@ds=2008-04-08
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -637,9 +655,15 @@ POSTHOOK: Input: default@tab_n6@ds=2008-04-08
 PREHOOK: query: explain analyze 
 select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key join tab_n6 s2 on s1.value=s2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n6
+PREHOOK: Input: default@tab_n6@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze 
 select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key join tab_n6 s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n6
+POSTHOOK: Input: default@tab_n6@ds=2008-04-08
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -704,9 +728,19 @@ POSTHOOK: Input: default@tab_n6@ds=2008-04-08
 PREHOOK: query: explain analyze 
 select s1.key as key, s1.value as value from tab_n6 s1 join tab2_n3 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab2_n3
+PREHOOK: Input: default@tab2_n3@ds=2008-04-08
+PREHOOK: Input: default@tab_n6
+PREHOOK: Input: default@tab_n6@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze 
 select s1.key as key, s1.value as value from tab_n6 s1 join tab2_n3 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab2_n3
+POSTHOOK: Input: default@tab2_n3@ds=2008-04-08
+POSTHOOK: Input: default@tab_n6
+POSTHOOK: Input: default@tab_n6@ds=2008-04-08
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Stage-0
@@ -747,9 +781,19 @@ POSTHOOK: Input: default@tab_n6@ds=2008-04-08
 PREHOOK: query: explain analyze 
 select s1.key as key, s1.value as value from tab_n6 s1 join tab2_n3 s3 on s1.key=s3.key join tab2_n3 s2 on s1.value=s2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab2_n3
+PREHOOK: Input: default@tab2_n3@ds=2008-04-08
+PREHOOK: Input: default@tab_n6
+PREHOOK: Input: default@tab_n6@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze 
 select s1.key as key, s1.value as value from tab_n6 s1 join tab2_n3 s3 on s1.key=s3.key join tab2_n3 s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab2_n3
+POSTHOOK: Input: default@tab2_n3@ds=2008-04-08
+POSTHOOK: Input: default@tab_n6
+POSTHOOK: Input: default@tab_n6@ds=2008-04-08
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -823,12 +867,22 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab_n6 s2
 ) a_n14 join tab_part_n7 b_n10 on (a_n14.key = b_n10.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n6
+PREHOOK: Input: default@tab_n6@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n7
+PREHOOK: Input: default@tab_part_n7@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 select count(*) from (select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key
 UNION  ALL
 select s2.key as key, s2.value as value from tab_n6 s2
 ) a_n14 join tab_part_n7 b_n10 on (a_n14.key = b_n10.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n6
+POSTHOOK: Input: default@tab_n6@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n7
+POSTHOOK: Input: default@tab_part_n7@ds=2008-04-08
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -912,12 +966,22 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab_n6 s2
 ) a_n14 join tab_part_n7 b_n10 on (a_n14.key = b_n10.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n6
+PREHOOK: Input: default@tab_n6@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n7
+PREHOOK: Input: default@tab_part_n7@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 select count(*) from (select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key join tab_n6 s2 on s1.value=s2.value
 UNION  ALL
 select s2.key as key, s2.value as value from tab_n6 s2
 ) a_n14 join tab_part_n7 b_n10 on (a_n14.key = b_n10.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n6
+POSTHOOK: Input: default@tab_n6@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n7
+POSTHOOK: Input: default@tab_part_n7@ds=2008-04-08
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1085,6 +1149,11 @@ INSERT OVERWRITE TABLE a_n14 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE b_n10 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE c_n3 SELECT tmp.key, tmp.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@a_n14
+PREHOOK: Output: default@b_n10
+PREHOOK: Output: default@c_n3
 POSTHOOK: query: explain analyze
 from
 (
@@ -1104,6 +1173,11 @@ INSERT OVERWRITE TABLE a_n14 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE b_n10 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE c_n3 SELECT tmp.key, tmp.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@a_n14
+POSTHOOK: Output: default@b_n10
+POSTHOOK: Output: default@c_n3
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1440,6 +1514,11 @@ INSERT OVERWRITE TABLE a_n14 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE b_n10 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE c_n3 SELECT tmp.key, tmp.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@a_n14
+PREHOOK: Output: default@b_n10
+PREHOOK: Output: default@c_n3
 POSTHOOK: query: explain analyze
 FROM
 ( 
@@ -1456,6 +1535,11 @@ INSERT OVERWRITE TABLE a_n14 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE b_n10 SELECT tmp.key, tmp.value
 INSERT OVERWRITE TABLE c_n3 SELECT tmp.key, tmp.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@a_n14
+POSTHOOK: Output: default@b_n10
+POSTHOOK: Output: default@c_n3
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1796,6 +1880,9 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
 INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key, unionsrc_n3.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n105
+PREHOOK: Output: default@dest2_n29
 POSTHOOK: query: explain analyze 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -1803,6 +1890,9 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
 INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key, unionsrc_n3.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n105
+POSTHOOK: Output: default@dest2_n29
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -1903,8 +1993,24 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze FROM UNIQUEJOIN PRESERVE src a_n14 (a_n14.key), PRESERVE src1 b_n10 (b_n10.key), PRESERVE srcpart c_n3 (c_n3.key) SELECT a_n14.key, b_n10.key, c_n3.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze FROM UNIQUEJOIN PRESERVE src a_n14 (a_n14.key), PRESERVE src1 b_n10 (b_n10.key), PRESERVE srcpart c_n3 (c_n3.key) SELECT a_n14.key, b_n10.key, c_n3.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 Plan not optimized by CBO due to missing feature [Unique_join].
 
 Vertex dependency in root stage
@@ -1979,6 +2085,9 @@ INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(
 INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n105
+PREHOOK: Output: default@dest2_n29
 POSTHOOK: query: explain analyze
 FROM (
       select key, value from (
@@ -1992,6 +2101,9 @@ INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(
 INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n105
+POSTHOOK: Output: default@dest2_n29
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -2119,6 +2231,9 @@ INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(
 INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n105
+PREHOOK: Output: default@dest2_n29
 POSTHOOK: query: explain analyze
 FROM (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
@@ -2129,6 +2244,9 @@ INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(
 INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n105
+POSTHOOK: Output: default@dest2_n29
 Plan optimized by CBO.
 
 Vertex dependency in root stage

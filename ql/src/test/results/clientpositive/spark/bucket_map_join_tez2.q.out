@@ -166,8 +166,14 @@ POSTHOOK: Output: default@tab_part_n11@ds=2008-04-08
 #### A masked pattern was here ####
 PREHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -282,8 +288,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -432,10 +444,16 @@ PREHOOK: query: explain
 select a.key, a.value, b.value
 from tab1_n5 a join src b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tab1_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, a.value, b.value
 from tab1_n5 a join src b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tab1_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -517,10 +535,16 @@ PREHOOK: query: explain
 select a.key, a.value, b.value
 from tab1_n5 a join src b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tab1_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, a.value, b.value
 from tab1_n5 a join src b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tab1_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -601,9 +625,15 @@ STAGE PLANS:
 PREHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -680,9 +710,15 @@ STAGE PLANS:
 PREHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -759,9 +795,15 @@ STAGE PLANS:
 PREHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -838,9 +880,15 @@ STAGE PLANS:
 PREHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -917,9 +965,15 @@ STAGE PLANS:
 PREHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -996,9 +1050,15 @@ STAGE PLANS:
 PREHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1074,8 +1134,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n10
+PREHOOK: Input: default@tab_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n10
+POSTHOOK: Input: default@tab_n10@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1167,8 +1233,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n10
+PREHOOK: Input: default@tab_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n10
+POSTHOOK: Input: default@tab_n10@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1260,8 +1332,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n10
+PREHOOK: Input: default@tab_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n10
+POSTHOOK: Input: default@tab_n10@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1357,8 +1435,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n10
+PREHOOK: Input: default@tab_n10@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n10
+POSTHOOK: Input: default@tab_n10@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1493,11 +1577,21 @@ select count(*)
 from
 (select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n10
+PREHOOK: Input: default@tab_n10@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*)
 from
 (select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n10
+POSTHOOK: Input: default@tab_n10@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1609,11 +1703,21 @@ select count(*)
 from
 (select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_n10
+PREHOOK: Input: default@tab_n10@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*)
 from
 (select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_n10
+POSTHOOK: Input: default@tab_n10@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1765,8 +1869,18 @@ POSTHOOK: Output: default@big@k=2
 POSTHOOK: Lineage: big PARTITION(k=2).i SCRIPT []
 PREHOOK: query: explain select small.i, big.i from small,big where small.i=big.i
 PREHOOK: type: QUERY
+PREHOOK: Input: default@big
+PREHOOK: Input: default@big@k=1
+PREHOOK: Input: default@big@k=2
+PREHOOK: Input: default@small
+#### A masked pattern was here ####
 POSTHOOK: query: explain select small.i, big.i from small,big where small.i=big.i
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@big
+POSTHOOK: Input: default@big@k=1
+POSTHOOK: Input: default@big@k=2
+POSTHOOK: Input: default@small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1899,8 +2013,14 @@ POSTHOOK: Output: default@tab_part_ext@ds=2008-04-08
 test.comment=Bucket map join should work here
 PREHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2016,8 +2136,14 @@ STAGE PLANS:
 test.comment=External tables, bucket map join should be disabled
 PREHOOK: query: explain select a.key, b.key from tab_part_ext a join tab_part_ext c on a.key = c.key join tab_part_ext b on a.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_part_ext
+PREHOOK: Input: default@tab_part_ext@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, b.key from tab_part_ext a join tab_part_ext c on a.key = c.key join tab_part_ext b on a.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_part_ext
+POSTHOOK: Input: default@tab_part_ext@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

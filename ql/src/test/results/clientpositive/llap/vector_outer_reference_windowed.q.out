@@ -243,9 +243,13 @@ _c0	_c1
 PREHOOK: query: explain vectorization detail
 select sum(sum(c1)) over() from e011_01_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(c1)) over() from e011_01_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -457,12 +461,16 @@ select sum(sum(c1)) over(
   from e011_01_n0
   group by e011_01_n0.c1, e011_01_n0.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(c1)) over(
   partition by c2 order by c1)
   from e011_01_n0
   group by e011_01_n0.c1, e011_01_n0.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -691,6 +699,9 @@ select sum(sum(e011_01_n0.c1)) over(
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_01_n0.c1, e011_01_n0.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_n0
+PREHOOK: Input: default@e011_03_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(e011_01_n0.c1)) over(
   partition by e011_01_n0.c2 order by e011_01_n0.c1) 
@@ -698,6 +709,9 @@ select sum(sum(e011_01_n0.c1)) over(
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_01_n0.c1, e011_01_n0.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_n0
+POSTHOOK: Input: default@e011_03_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -998,6 +1012,9 @@ select sum(sum(e011_01_n0.c1)) over(
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_03_n0.c1, e011_03_n0.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_n0
+PREHOOK: Input: default@e011_03_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(e011_01_n0.c1)) over(
   partition by e011_03_n0.c2 order by e011_03_n0.c1)
@@ -1005,6 +1022,9 @@ select sum(sum(e011_01_n0.c1)) over(
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_03_n0.c1, e011_03_n0.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_n0
+POSTHOOK: Input: default@e011_03_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1305,6 +1325,9 @@ select sum(corr(e011_01_n0.c1, e011_03_n0.c1))
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_03_n0.c2, e011_01_n0.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_n0
+PREHOOK: Input: default@e011_03_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(corr(e011_01_n0.c1, e011_03_n0.c1))
   over(partition by e011_01_n0.c2 order by e011_03_n0.c2)
@@ -1312,6 +1335,9 @@ select sum(corr(e011_01_n0.c1, e011_03_n0.c1))
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_03_n0.c2, e011_01_n0.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_n0
+POSTHOOK: Input: default@e011_03_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1535,9 +1561,13 @@ NULL
 PREHOOK: query: explain vectorization detail
 select sum(sum(c1)) over() from e011_01_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(c1)) over() from e011_01_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1749,12 +1779,16 @@ select sum(sum(c1)) over(
   from e011_01_small
   group by e011_01_small.c1, e011_01_small.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(c1)) over(
   partition by c2 order by c1)
   from e011_01_small
   group by e011_01_small.c1, e011_01_small.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1983,6 +2017,9 @@ select sum(sum(e011_01_small.c1)) over(
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_01_small.c1, e011_01_small.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+PREHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(e011_01_small.c1)) over(
   partition by e011_01_small.c2 order by e011_01_small.c1)
@@ -1990,6 +2027,9 @@ select sum(sum(e011_01_small.c1)) over(
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_01_small.c1, e011_01_small.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2290,6 +2330,9 @@ select sum(sum(e011_01_small.c1)) over(
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_03_small.c1, e011_03_small.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+PREHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(e011_01_small.c1)) over(
   partition by e011_03_small.c2 order by e011_03_small.c1)
@@ -2297,6 +2340,9 @@ select sum(sum(e011_01_small.c1)) over(
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_03_small.c1, e011_03_small.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2597,6 +2643,9 @@ select sum(corr(e011_01_small.c1, e011_03_small.c1))
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_03_small.c2, e011_01_small.c2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+PREHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(corr(e011_01_small.c1, e011_03_small.c1))
   over(partition by e011_01_small.c2 order by e011_03_small.c2)
@@ -2604,6 +2653,9 @@ select sum(corr(e011_01_small.c1, e011_03_small.c1))
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_03_small.c2, e011_01_small.c2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

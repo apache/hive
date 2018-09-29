@@ -66,9 +66,15 @@ comment             	from deserializer
 PREHOOK: query: explain
 analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@uservisits_web_text_none_n0
+PREHOOK: Output: default@uservisits_web_text_none_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: Output: default@uservisits_web_text_none_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -118,9 +124,15 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@uservisits_web_text_none_n0
+PREHOOK: Output: default@uservisits_web_text_none_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: Output: default@uservisits_web_text_none_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -352,9 +364,15 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"
 PREHOOK: query: explain
 analyze table empty_tab_n0 compute statistics for columns a,b,c,d,e
 PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@empty_tab_n0
+PREHOOK: Output: default@empty_tab_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 analyze table empty_tab_n0 compute statistics for columns a,b,c,d,e
 POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@empty_tab_n0
+POSTHOOK: Output: default@empty_tab_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

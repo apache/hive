@@ -58,6 +58,8 @@ select
   interval '1 2:3:4' day to second, interval_day_time(str2)
 from vector_interval_1 order by str1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   str1,
@@ -65,6 +67,8 @@ select
   interval '1 2:3:4' day to second, interval_day_time(str2)
 from vector_interval_1 order by str1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -165,6 +169,8 @@ select
   interval '1-2' year to month - interval_year_month(str1)
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -176,6 +182,8 @@ select
   interval '1-2' year to month - interval_year_month(str1)
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -284,6 +292,8 @@ select
   interval '1 2:3:4' day to second - interval_day_time(str2)
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -295,6 +305,8 @@ select
   interval '1 2:3:4' day to second - interval_day_time(str2)
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -409,6 +421,8 @@ select
   dt - interval_day_time(str2)
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -426,6 +440,8 @@ select
   dt - interval_day_time(str2)
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -552,6 +568,8 @@ select
   ts - interval_day_time(str2)
 from vector_interval_1 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   ts,
@@ -569,6 +587,8 @@ select
   ts - interval_day_time(str2)
 from vector_interval_1 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -686,6 +706,8 @@ select
   ts - timestamp '2001-01-01 01:02:03'
 from vector_interval_1 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   ts,
@@ -694,6 +716,8 @@ select
   ts - timestamp '2001-01-01 01:02:03'
 from vector_interval_1 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -793,6 +817,8 @@ select
   dt - date '2001-01-01'
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -801,6 +827,8 @@ select
   dt - date '2001-01-01'
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -903,6 +931,8 @@ select
   date '2001-01-01' - ts
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -914,6 +944,8 @@ select
   date '2001-01-01' - ts
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

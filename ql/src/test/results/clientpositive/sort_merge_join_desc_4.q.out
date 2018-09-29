@@ -50,10 +50,16 @@ PREHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key and a.value=b.value where a.key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_desc1
+PREHOOK: Input: default@table_desc2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key and a.value=b.value where a.key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_desc1
+POSTHOOK: Input: default@table_desc2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3

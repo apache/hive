@@ -35,6 +35,8 @@ SELECT in_file(str_val, "../../data/files/test2.dat"),
        in_file(CAST(NULL AS STRING), "../../data/files/test2.dat")
 FROM value_src LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@value_src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT in_file(str_val, "../../data/files/test2.dat"),
        in_file(ch_val, "../../data/files/test2.dat"),
@@ -47,6 +49,8 @@ SELECT in_file(str_val, "../../data/files/test2.dat"),
        in_file(CAST(NULL AS STRING), "../../data/files/test2.dat")
 FROM value_src LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@value_src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

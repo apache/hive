@@ -40,6 +40,10 @@ select u.* from
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl
+PREHOOK: Input: default@tstparttbl2
+PREHOOK: Input: default@tstparttbl2@ds=2009-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select u.* from
 (
@@ -48,6 +52,10 @@ select u.* from
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl
+POSTHOOK: Input: default@tstparttbl2
+POSTHOOK: Input: default@tstparttbl2@ds=2009-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

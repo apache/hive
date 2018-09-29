@@ -6,6 +6,8 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 SORT BY k1, v1, k2, v2
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
@@ -14,6 +16,8 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 SORT BY k1, v1, k2, v2
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

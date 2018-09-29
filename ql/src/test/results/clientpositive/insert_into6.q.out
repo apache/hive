@@ -25,9 +25,13 @@ POSTHOOK: Output: default@insert_into6b
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into6a PARTITION (ds='1') 
     SELECT * FROM src LIMIT 150
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into6a@ds=1
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into6a PARTITION (ds='1') 
     SELECT * FROM src LIMIT 150
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into6a@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -180,9 +184,16 @@ POSTHOOK: Input: default@insert_into6a@ds=2
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into6b PARTITION (ds) 
     SELECT * FROM insert_into6a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into6a
+PREHOOK: Input: default@insert_into6a@ds=1
+PREHOOK: Input: default@insert_into6a@ds=2
+PREHOOK: Output: default@insert_into6b
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into6b PARTITION (ds) 
     SELECT * FROM insert_into6a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into6a
+POSTHOOK: Input: default@insert_into6a@ds=1
+POSTHOOK: Input: default@insert_into6a@ds=2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

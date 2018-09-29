@@ -20,9 +20,13 @@ test.comment="Cached entry should be expired - query should not use cache"
 PREHOOK: query: explain
 select count(*) from src a join src b on (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from src a join src b on (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

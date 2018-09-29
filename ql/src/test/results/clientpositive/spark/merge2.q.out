@@ -10,10 +10,14 @@ PREHOOK: query: explain
 insert overwrite table test1_n10
 select key, count(1) from src group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test1_n10
 POSTHOOK: query: explain
 insert overwrite table test1_n10
 select key, count(1) from src group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test1_n10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -510,9 +514,17 @@ POSTHOOK: Lineage: test_src_n0 PARTITION(ds=102).value SIMPLE [(src)src.FieldSch
 PREHOOK: query: explain 
 insert overwrite table test1_n10 select key from test_src_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_src_n0
+PREHOOK: Input: default@test_src_n0@ds=101
+PREHOOK: Input: default@test_src_n0@ds=102
+PREHOOK: Output: default@test1_n10
 POSTHOOK: query: explain 
 insert overwrite table test1_n10 select key from test_src_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_src_n0
+POSTHOOK: Input: default@test_src_n0@ds=101
+POSTHOOK: Input: default@test_src_n0@ds=102
+POSTHOOK: Output: default@test1_n10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -622,9 +634,17 @@ POSTHOOK: Lineage: test1_n10.key SIMPLE [(test_src_n0)test_src_n0.FieldSchema(na
 PREHOOK: query: explain
 insert overwrite table test1_n10 select key from test_src_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_src_n0
+PREHOOK: Input: default@test_src_n0@ds=101
+PREHOOK: Input: default@test_src_n0@ds=102
+PREHOOK: Output: default@test1_n10
 POSTHOOK: query: explain
 insert overwrite table test1_n10 select key from test_src_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_src_n0
+POSTHOOK: Input: default@test_src_n0@ds=101
+POSTHOOK: Input: default@test_src_n0@ds=102
+POSTHOOK: Output: default@test1_n10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

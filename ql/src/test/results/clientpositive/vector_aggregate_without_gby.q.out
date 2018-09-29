@@ -36,9 +36,13 @@ POSTHOOK: Lineage: testvec.id SCRIPT []
 PREHOOK: query: explain vectorization detail
 select max(dt), max(greg_dt) from testvec where id=5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@testvec
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select max(dt), max(greg_dt) from testvec where id=5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testvec
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

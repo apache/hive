@@ -28,8 +28,12 @@ POSTHOOK: Lineage: myinput1.key SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(n
 POSTHOOK: Lineage: myinput1.value SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -156,8 +160,12 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -326,8 +334,12 @@ POSTHOOK: Input: default@myinput1
 100	100	100	100	100	100
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -503,8 +515,12 @@ NULL	NULL	NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -672,8 +688,12 @@ POSTHOOK: Input: default@myinput1
 NULL	10	10	NULL	NULL	10
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -921,8 +941,12 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1049,8 +1073,12 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1219,8 +1247,12 @@ POSTHOOK: Input: default@myinput1
 100	100	100	100	100	100
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1396,8 +1428,12 @@ NULL	NULL	NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1565,8 +1601,12 @@ POSTHOOK: Input: default@myinput1
 NULL	10	10	NULL	NULL	10
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

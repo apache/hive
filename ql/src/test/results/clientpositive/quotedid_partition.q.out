@@ -27,10 +27,16 @@ PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q`
 from src_p where `!@#$%^&*()_q` = 'a' and `x+1`='10'
 group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = 'a'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_p
+PREHOOK: Input: default@src_p@!@%23$%25%5E&%2A()_q=a
+#### A masked pattern was here ####
 POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` 
 from src_p where `!@#$%^&*()_q` = 'a' and `x+1`='10'
 group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = 'a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_p
+POSTHOOK: Input: default@src_p@!@%23$%25%5E&%2A()_q=a
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
