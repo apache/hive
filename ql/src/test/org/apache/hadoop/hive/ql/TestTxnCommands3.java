@@ -1,3 +1,20 @@
+/*
+  * Licensed to the Apache Software Foundation (ASF) under one
+  * or more contributor license agreements.  See the NOTICE file
+  * distributed with this work for additional information
+  * regarding copyright ownership.  The ASF licenses this file
+  * to you under the Apache License, Version 2.0 (the
+  * "License"); you may not use this file except in compliance
+  * with the License.  You may obtain a copy of the License at
+  *
+  *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -158,5 +175,51 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
             "warehouse/t/base_0000002/bucket_00000"}};
     checkResult(expected2, testQuery, isVectorized, "after compaction", LOG);
+  }
+  /**
+   * HIVE-19985
+   */
+  @Test
+  public void testAcidMetaColumsDecode() throws Exception {
+    //this only applies in vectorized mode
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    hiveConf.set(MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID.getVarname(), "true");
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("create table T (a int, b int) stored as orc");
+    int[][] data1 = {{1, 2}, {3, 4}};
+    runStatementOnDriver("insert into T" + makeValuesClause(data1));
+    int[][] data2 = {{5, 6}, {7, 8}};
+    runStatementOnDriver("insert into T" + makeValuesClause(data2));
+    int[][] dataAll = {{1, 2}, {3, 4}, {5, 6}, {7, 8}};
+
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.OPTIMIZE_ACID_META_COLUMNS, true);
+    List<String> rs = runStatementOnDriver("select a, b from T order by a, b");
+    Assert.assertEquals(stringifyValues(dataAll), rs);
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.OPTIMIZE_ACID_META_COLUMNS, false);
+    rs = runStatementOnDriver("select a, b from T order by a, b");
+    Assert.assertEquals(stringifyValues(dataAll), rs);
+
+    runStatementOnDriver("alter table T compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    //check status of compaction job
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history",
+        1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state",
+        TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+    Assert.assertTrue(
+        resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.OPTIMIZE_ACID_META_COLUMNS, true);
+    rs = runStatementOnDriver("select a, b from T order by a, b");
+    Assert.assertEquals(stringifyValues(dataAll), rs);
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.OPTIMIZE_ACID_META_COLUMNS, false);
+    rs = runStatementOnDriver("select a, b from T order by a, b");
+    Assert.assertEquals(stringifyValues(dataAll), rs);
   }
 }

@@ -918,6 +918,11 @@ public class AcidUtils {
     return results.toArray(new Path[results.size()]);
   }
 
+  /**
+   * This will look at a footer of one of the files in the delta to see if the
+   * file is in Acid format, i.e. has acid metadata columns.  The assumption is
+   * that for any dir, either all files are acid or all are not.
+   */
   public static ParsedDelta parsedDelta(Path deltaDir, FileSystem fs) throws IOException {
     String deltaDirName = deltaDir.getName();
     if (deltaDirName.startsWith(DELETE_DELTA_PREFIX)) {
@@ -941,21 +946,39 @@ public class AcidUtils {
     if (filename.startsWith(deltaPrefix)) {
       //small optimization - delete delta can't be in raw format
       boolean isRawFormat = !isDeleteDelta && MetaDataFile.isRawFormat(deltaDir, fs);
-      String rest = filename.substring(deltaPrefix.length());
-      int split = rest.indexOf('_');
-      int split2 = rest.indexOf('_', split + 1);//may be -1 if no statementId
-      long min = Long.parseLong(rest.substring(0, split));
-      long max = split2 == -1 ?
-        Long.parseLong(rest.substring(split + 1)) :
-        Long.parseLong(rest.substring(split + 1, split2));
-      if(split2 == -1) {
-        return new ParsedDelta(min, max, null, isDeleteDelta, isRawFormat);
-      }
-      int statementId = Integer.parseInt(rest.substring(split2 + 1));
-      return new ParsedDelta(min, max, null, statementId, isDeleteDelta, isRawFormat);
+      return parsedDelta(deltaDir, isRawFormat);
     }
     throw new IllegalArgumentException(deltaDir + " does not start with " +
                                        deltaPrefix);
+  }
+
+  /**
+   * This method just parses the file name.  It relies on caller to figure if
+   * the file is in Acid format (i.e. has acid metadata columns) or not.
+   * {@link #parsedDelta(Path, FileSystem)}
+   */
+  public static ParsedDelta parsedDelta(Path deltaDir, boolean isRawFormat) {
+    String filename = deltaDir.getName();
+    boolean isDeleteDelta = filename.startsWith(DELETE_DELTA_PREFIX);
+    //make sure it's null for delete delta no matter what was passed in - this
+    //doesn't apply to delete deltas
+    isRawFormat = isDeleteDelta ? false : isRawFormat;
+    String rest = filename.substring((isDeleteDelta ?
+        DELETE_DELTA_PREFIX : DELTA_PREFIX).length());
+    int split = rest.indexOf('_');
+    //may be -1 if no statementId
+    int split2 = rest.indexOf('_', split + 1);
+    long min = Long.parseLong(rest.substring(0, split));
+    long max = split2 == -1 ?
+        Long.parseLong(rest.substring(split + 1)) :
+        Long.parseLong(rest.substring(split + 1, split2));
+    if(split2 == -1) {
+      return new ParsedDelta(min, max, null, isDeleteDelta, isRawFormat);
+    }
+    int statementId = Integer.parseInt(rest.substring(split2 + 1));
+    return new ParsedDelta(min, max, null, statementId, isDeleteDelta,
+        isRawFormat);
+
   }
 
   /**

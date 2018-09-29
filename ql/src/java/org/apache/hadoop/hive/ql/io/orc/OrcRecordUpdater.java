@@ -82,7 +82,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static int BUCKET = 2;
   final static int ROW_ID = 3;
   final static int CURRENT_WRITEID = 4;
-  final static int ROW = 5;
+  public static final int ROW = 5;
   /**
    * total number of fields (above)
    */
