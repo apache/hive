@@ -359,21 +359,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         LOG.debug("{} contains an bootstrap dump", loadPath);
       }
 
-      if ((!evDump) && (tblNameOrPattern != null) && !(tblNameOrPattern.isEmpty())) {
-        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-                tblNameOrPattern, queryState.getLineageState(), false);
-        rootTasks.add(TaskFactory.get(replLoadWork, conf));
-        return;
-      }
-
-      FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(fs, loadPath);
-      if (srcs == null || (srcs.length == 0)) {
-        LOG.warn("Nothing to load at {}", loadPath.toUri().toString());
-        return;
-      }
-
       ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-              tblNameOrPattern, queryState.getLineageState(), evDump);
+              tblNameOrPattern, queryState.getLineageState(), evDump, dmd.getEventTo());
       rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
