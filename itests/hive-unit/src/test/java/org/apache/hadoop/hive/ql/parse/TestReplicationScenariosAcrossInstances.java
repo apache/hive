@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuild
 import org.junit.Assert;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -1393,7 +1394,7 @@ public class TestReplicationScenariosAcrossInstances {
             .run("insert overwrite table t1 select * from t2")
             .dump(primaryDbName, tuple.lastReplicationId);
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "INSERT", tuple);
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION", tuple);
   }
 
   @Test
