@@ -3,11 +3,15 @@ SELECT key, randum123
 FROM (SELECT *, cast(rand() as double) AS randum123 FROM src WHERE key = 100) a
 WHERE randum123 <=0.1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, randum123
 FROM (SELECT *, cast(rand() as double) AS randum123 FROM src WHERE key = 100) a
 WHERE randum123 <=0.1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -51,6 +55,8 @@ SELECT key, randum123
 FROM (SELECT *, cast(rand() as double) AS randum123 FROM src WHERE key = 100) a
 WHERE randum123 <=0.1)s WHERE s.randum123>0.1 LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN 
 SELECT * FROM
 (
@@ -58,6 +64,8 @@ SELECT key, randum123
 FROM (SELECT *, cast(rand() as double) AS randum123 FROM src WHERE key = 100) a
 WHERE randum123 <=0.1)s WHERE s.randum123>0.1 LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -99,11 +107,15 @@ SELECT key,randum123, h4
 FROM (SELECT *, cast(rand() as double) AS randum123, hex(4) AS h4 FROM src WHERE key = 100) a
 WHERE a.h4 <= 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key,randum123, h4
 FROM (SELECT *, cast(rand() as double) AS randum123, hex(4) AS h4 FROM src WHERE key = 100) a
 WHERE a.h4 <= 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -142,11 +154,15 @@ SELECT key,randum123, v10
 FROM (SELECT *, cast(rand() as double) AS randum123, value*10 AS v10 FROM src WHERE key = 100) a
 WHERE a.v10 <= 200
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key,randum123, v10
 FROM (SELECT *, cast(rand() as double) AS randum123, value*10 AS v10 FROM src WHERE key = 100) a
 WHERE a.v10 <= 200
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -185,11 +201,15 @@ SELECT key, randum123
 FROM (SELECT *, cast(rand() as double) AS randum123 FROM src WHERE key = 100) a
 WHERE randum123 <=0.1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, randum123
 FROM (SELECT *, cast(rand() as double) AS randum123 FROM src WHERE key = 100) a
 WHERE randum123 <=0.1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -233,6 +253,8 @@ SELECT key, randum123
 FROM (SELECT *, cast(rand() as double) AS randum123 FROM src WHERE key = 100) a
 WHERE randum123 <=0.1)s WHERE s.randum123>0.1 LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN 
 SELECT * FROM
 (
@@ -240,6 +262,8 @@ SELECT key, randum123
 FROM (SELECT *, cast(rand() as double) AS randum123 FROM src WHERE key = 100) a
 WHERE randum123 <=0.1)s WHERE s.randum123>0.1 LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -281,11 +305,15 @@ SELECT key,randum123, h4
 FROM (SELECT *, cast(rand() as double) AS randum123, hex(4) AS h4 FROM src WHERE key = 100) a
 WHERE a.h4 <= 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key,randum123, h4
 FROM (SELECT *, cast(rand() as double) AS randum123, hex(4) AS h4 FROM src WHERE key = 100) a
 WHERE a.h4 <= 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -324,11 +352,15 @@ SELECT key,randum123, v10
 FROM (SELECT *, cast(rand() as double) AS randum123, value*10 AS v10 FROM src WHERE key = 100) a
 WHERE a.v10 <= 200
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key,randum123, v10
 FROM (SELECT *, cast(rand() as double) AS randum123, value*10 AS v10 FROM src WHERE key = 100) a
 WHERE a.v10 <= 200
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

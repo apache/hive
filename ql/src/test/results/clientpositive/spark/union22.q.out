@@ -57,6 +57,11 @@ where a.k1 > 20
 )
 subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dst_union22
+PREHOOK: Input: default@dst_union22@ds=1
+PREHOOK: Input: default@dst_union22_delta
+PREHOOK: Input: default@dst_union22_delta@ds=1
+PREHOOK: Output: default@dst_union22@ds=2
 POSTHOOK: query: explain extended
 insert overwrite table dst_union22 partition (ds='2')
 select * from
@@ -70,6 +75,11 @@ where a.k1 > 20
 )
 subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dst_union22
+POSTHOOK: Input: default@dst_union22@ds=1
+POSTHOOK: Input: default@dst_union22_delta
+POSTHOOK: Input: default@dst_union22_delta@ds=1
+POSTHOOK: Output: default@dst_union22@ds=2
 OPTIMIZED SQL: SELECT `k1`, `k2`, `k3`, `k4`
 FROM `default`.`dst_union22_delta`
 WHERE `ds` = '1' AND `k0` <= 50

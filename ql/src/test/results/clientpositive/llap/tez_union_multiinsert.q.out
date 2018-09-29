@@ -27,6 +27,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: explain
 FROM (
       select key, value from (
@@ -40,6 +43,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -1003,6 +1009,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: explain
 FROM (
       select key, value from src s0
@@ -1015,6 +1024,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -1975,6 +1987,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: explain
 FROM (
       select key, value from src s0
@@ -1986,6 +2001,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -2941,6 +2959,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION all 
@@ -2949,6 +2970,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -3864,6 +3888,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: explain
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION distinct 
@@ -3872,6 +3899,9 @@ INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(uni
 INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2

@@ -22,8 +22,12 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_udf0
 PREHOOK: query: EXPLAIN SELECT test_udf0(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT test_udf0(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -84,9 +88,13 @@ POSTHOOK: Output: default.test_udf4
 PREHOOK: query: EXPLAIN
 SELECT test_udf2(cast(key as string)), test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT test_udf2(cast(key as string)), test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -124,9 +132,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -171,9 +183,13 @@ POSTHOOK: Output: default.test_udf2
 PREHOOK: query: EXPLAIN
 SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -219,9 +235,13 @@ POSTHOOK: Output: default.test_udf4
 PREHOOK: query: EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -258,9 +278,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN
 SELECT test_udf3(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT test_udf3(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

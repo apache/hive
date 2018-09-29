@@ -6,6 +6,8 @@ JOIN src tab
 ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
 where tab.value < 200
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT sum(hash(subq.key, tab.value)) 
 FROM 
@@ -14,6 +16,8 @@ JOIN src tab
 ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
 where tab.value < 200
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5

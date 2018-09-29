@@ -17,9 +17,13 @@ POSTHOOK: Output: default@t1_n141
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n141 group by a, b with cube LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n141 group by a, b with cube LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -99,9 +103,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -181,9 +189,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -263,9 +275,13 @@ POSTHOOK: Input: default@t1_n141
 PREHOOK: query: EXPLAIN
 SELECT a FROM T1_n141 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a FROM T1_n141 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -342,9 +358,13 @@ NULL
 PREHOOK: query: EXPLAIN
 SELECT a FROM T1_n141 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a FROM T1_n141 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -411,9 +431,13 @@ POSTHOOK: Input: default@t1_n141
 PREHOOK: query: EXPLAIN
 SELECT a + b, count(*) FROM T1_n141 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a + b, count(*) FROM T1_n141 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n141
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

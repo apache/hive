@@ -82,6 +82,8 @@ SELECT
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
    ctimestamp1,
@@ -114,6 +116,8 @@ SELECT
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -318,6 +322,8 @@ SELECT
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
    ctimestamp1,
@@ -350,6 +356,8 @@ SELECT
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -577,6 +585,8 @@ SELECT
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
    ctimestamp1,
@@ -609,6 +619,8 @@ SELECT
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

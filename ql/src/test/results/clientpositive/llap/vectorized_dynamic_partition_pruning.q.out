@@ -36,8 +36,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 12
 PREHOOK: query: EXPLAIN VECTORIZATION create table srcpart_date_n8 as select ds as ds, ds as `date` from srcpart group by ds
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_date_n8
 POSTHOOK: query: EXPLAIN VECTORIZATION create table srcpart_date_n8 as select ds as ds, ds as `date` from srcpart group by ds
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcpart_date_n8
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -220,8 +234,22 @@ POSTHOOK: Lineage: srcpart_double_hour_n2.hour SIMPLE [(srcpart)srcpart.FieldSch
 POSTHOOK: Lineage: srcpart_double_hour_n2.hr EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -377,8 +405,22 @@ POSTHOOK: Input: default@srcpart_date_n8
 1000
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -533,9 +575,25 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -757,9 +815,25 @@ POSTHOOK: Input: default@srcpart_hour_n2
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -962,8 +1036,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 500
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1133,8 +1221,22 @@ POSTHOOK: Input: default@srcpart_date_hour_n2
 500
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1286,8 +1388,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 500
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1443,8 +1559,22 @@ POSTHOOK: Input: default@srcpart_date_n8
 0
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1594,8 +1724,22 @@ POSTHOOK: Input: default@srcpart
 0
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1751,8 +1895,22 @@ POSTHOOK: Input: default@srcpart_double_hour_n2
 1000
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1908,8 +2066,22 @@ POSTHOOK: Input: default@srcpart_double_hour_n2
 1000
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2050,8 +2222,22 @@ POSTHOOK: Input: default@srcpart_double_hour_n2
 1000
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2205,8 +2391,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 1000
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour_n2.hr as string)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour_n2.hr as string)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2376,8 +2576,16 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2524,8 +2732,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour_n2 where (srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11) and (srcpart.ds = srcpart_date_hour_n2.ds or srcpart.hr = srcpart_date_hour_n2.hr)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour_n2 where (srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11) and (srcpart.ds = srcpart_date_hour_n2.ds or srcpart.hr = srcpart_date_hour_n2.hr)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2668,8 +2890,22 @@ POSTHOOK: Input: default@srcpart_date_hour_n2
 1500
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour_n2 where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11 and srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour_n2 where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11 and srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2839,8 +3075,22 @@ POSTHOOK: Input: default@srcpart_date_hour_n2
 500
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2977,8 +3227,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date_n8 left join srcpart on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date_n8 left join srcpart on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3114,8 +3378,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3252,9 +3530,21 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3472,9 +3762,17 @@ POSTHOOK: Input: default@srcpart_hour_n2
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3659,8 +3957,20 @@ POSTHOOK: Input: default@srcpart_hour_n2
 0
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3916,8 +4226,20 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 2000
 PREHOOK: query: EXPLAIN VECTORIZATION select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4176,8 +4498,20 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 2008-04-08
 PREHOOK: query: EXPLAIN VECTORIZATION select ds from (select distinct(ds) as ds from srcpart union all select distinct(ds) as ds from srcpart) s where s.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select ds from (select distinct(ds) as ds from srcpart union all select distinct(ds) as ds from srcpart) s where s.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4513,8 +4847,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 2008-04-09
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4678,9 +5026,25 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4898,8 +5262,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 500
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5074,8 +5452,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 500
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5225,8 +5617,22 @@ POSTHOOK: Input: default@srcpart_date_n8
 0
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5376,8 +5782,22 @@ POSTHOOK: Input: default@srcpart_double_hour_n2
 1000
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5541,8 +5961,16 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5688,8 +6116,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 1000
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5820,8 +6262,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date_n8 left join srcpart on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date_n8 left join srcpart on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5936,8 +6392,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6053,9 +6523,21 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6259,9 +6741,17 @@ POSTHOOK: Input: default@srcpart_hour_n2
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
 where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6434,8 +6924,20 @@ POSTHOOK: Input: default@srcpart_hour_n2
 0
 PREHOOK: query: EXPLAIN VECTORIZATION select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6723,8 +7225,22 @@ POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-09,hr=12).key EXPRESSION 
 POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_orc_n0 join srcpart_date_hour_n2 on (srcpart_orc_n0.ds = srcpart_date_hour_n2.ds and srcpart_orc_n0.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.hour = 11 and (srcpart_date_hour_n2.`date` = '2008-04-08' or srcpart_date_hour_n2.`date` = '2008-04-09')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_hour_n2
+PREHOOK: Input: default@srcpart_orc_n0
+PREHOOK: Input: default@srcpart_orc_n0@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_orc_n0@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_orc_n0@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_orc_n0@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_orc_n0 join srcpart_date_hour_n2 on (srcpart_orc_n0.ds = srcpart_date_hour_n2.ds and srcpart_orc_n0.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.hour = 11 and (srcpart_date_hour_n2.`date` = '2008-04-08' or srcpart_date_hour_n2.`date` = '2008-04-09')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_hour_n2
+POSTHOOK: Input: default@srcpart_orc_n0
+POSTHOOK: Input: default@srcpart_orc_n0@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_orc_n0@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_orc_n0@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_orc_n0@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: false
   enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]

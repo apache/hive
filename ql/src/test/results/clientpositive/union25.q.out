@@ -38,6 +38,12 @@ FROM
   ) master_table
 ) a GROUP BY key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@tmp_srcpart
+PREHOOK: Input: default@tmp_srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_unionall
 POSTHOOK: query: explain
 create table tmp_unionall as
 SELECT count(1) as counts, key, value
@@ -56,6 +62,12 @@ FROM
   ) master_table
 ) a GROUP BY key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@tmp_srcpart
+POSTHOOK: Input: default@tmp_srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_unionall
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-2 depends on stages: Stage-4

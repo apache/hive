@@ -5,6 +5,8 @@ dense_rank() over(distribute by p_mfgr sort by p_name) as dr,
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s1
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over(distribute by p_mfgr sort by p_name) as r,
@@ -12,6 +14,8 @@ dense_rank() over(distribute by p_mfgr sort by p_name) as dr,
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s1
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -216,6 +220,8 @@ p_size, p_size - lag(p_size,1,p_size) over(distribute by p_mfgr sort by p_name) 
 from part
 group by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 min(p_retailprice),
@@ -225,6 +231,8 @@ p_size, p_size - lag(p_size,1,p_size) over(distribute by p_mfgr sort by p_name) 
 from part
 group by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -466,6 +474,8 @@ from part
 group by p_mfgr, p_name, p_size
 having p_size > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, min(p_retailprice),
 rank() over(distribute by p_mfgr sort by p_name) as r,
@@ -475,6 +485,8 @@ from part
 group by p_mfgr, p_name, p_size
 having p_size > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -711,11 +723,15 @@ select p_mfgr, p_name,
 count(p_size) over(distribute by p_mfgr sort by p_name) as cd 
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as cd 
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -901,6 +917,8 @@ p_retailprice, round(sum(p_retailprice) over (distribute by p_mfgr sort by p_nam
 p_size, p_size - lag(p_size,1,p_size) over(distribute by p_mfgr sort by p_name) as deltaSz 
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, 
 rank() over(distribute by p_mfgr sort by p_name) as r, 
@@ -910,6 +928,8 @@ p_retailprice, round(sum(p_retailprice) over (distribute by p_mfgr sort by p_nam
 p_size, p_size - lag(p_size,1,p_size) over(distribute by p_mfgr sort by p_name) as deltaSz 
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1100,6 +1120,8 @@ p_size, p_size - lag(p_size,1,p_size) over(distribute by p_mfgr sort by p_name) 
 from part 
 ) sub1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sub1.r, sub1.dr, sub1.cd, sub1.s1, sub1.deltaSz 
 from (select p_mfgr, p_name, 
@@ -1111,6 +1133,8 @@ p_size, p_size - lag(p_size,1,p_size) over(distribute by p_mfgr sort by p_name) 
 from part 
 ) sub1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1305,6 +1329,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select abc.p_mfgr, abc.p_name, 
 rank() over(distribute by abc.p_mfgr sort by abc.p_name) as r, 
@@ -1316,6 +1342,8 @@ partition by p_mfgr
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1598,11 +1626,15 @@ select p_mfgr, p_name, p_size,
 rank() over(distribute by p_mfgr sort by p_name, p_size desc) as R
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name, p_size desc) as R
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1786,6 +1818,8 @@ dense_rank() over(distribute by p_mfgr sort by p_name) as dr,
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2)  as s1
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name) as r, 
@@ -1793,6 +1827,8 @@ dense_rank() over(distribute by p_mfgr sort by p_name) as dr,
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2)  as s1
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1995,6 +2031,8 @@ dense_rank() over(distribute by p_mfgr sort by p_name) as dr,
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s1
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name) as r, 
@@ -2002,6 +2040,8 @@ dense_rank() over(distribute by p_mfgr sort by p_name) as dr,
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s1
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2205,6 +2245,8 @@ last_value(p_size, false) over w1  as l
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size, 
 sum(p_size) over (distribute by p_mfgr sort by p_name rows between current row and current row) as s2, 
@@ -2213,6 +2255,8 @@ last_value(p_size, false) over w1  as l
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2385,6 +2429,8 @@ from part
 where p_mfgr = 'Manufacturer#3'  
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name) as r, 
@@ -2395,6 +2441,8 @@ from part
 where p_mfgr = 'Manufacturer#3'  
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2562,6 +2610,8 @@ sum(p_size) over (distribute by p_mfgr  sort by p_name rows between current row 
 from part 
 window w1 as (distribute by p_mfgr  sort by p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size,  
 sum(p_size) over w1 as s1, 
@@ -2569,6 +2619,8 @@ sum(p_size) over (distribute by p_mfgr  sort by p_name rows between current row 
 from part 
 window w1 as (distribute by p_mfgr  sort by p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2729,12 +2781,16 @@ rank() over(distribute by p_mfgr sort by p_name) as r, dense_rank() over(distrib
 from part  
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name) as r, dense_rank() over(distribute by p_mfgr sort by p_name) as dr 
 from part  
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -2937,6 +2993,8 @@ first_value(p_size) over w1  as fvW1
 from part 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size,  
 rank() over(distribute by p_mfgr sort by p_name) as r,  
@@ -2953,6 +3011,8 @@ first_value(p_size) over w1  as fvW1
 from part 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3232,6 +3292,8 @@ first_value(p_size) over w1  as fv1
 from part 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size,  
   rank() over(distribute by p_mfgr sort by p_name) as r, 
@@ -3243,6 +3305,8 @@ first_value(p_size) over w1  as fv1
 from part 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3514,6 +3578,8 @@ first_value(p_size) over w1  as fvW1
 from part 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size,
 count(*) over(distribute by p_mfgr sort by p_name ) as c, 
@@ -3522,6 +3588,8 @@ first_value(p_size) over w1  as fvW1
 from part 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3766,6 +3834,8 @@ round(avg(p_retailprice) over w1,2) as ag
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size, 
 round(sum(p_retailprice) over w1,2) as s,
@@ -3775,6 +3845,8 @@ round(avg(p_retailprice) over w1,2) as ag
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -3955,6 +4027,8 @@ from part
 group by p_mfgr,p_name, p_size, p_retailprice
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size, p_retailprice, 
 round(sum(p_retailprice) over w1,2) as s,
@@ -3965,6 +4039,8 @@ from part
 group by p_mfgr,p_name, p_size, p_retailprice
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4201,6 +4277,8 @@ covar_pop(p_size, p_retailprice) over w1 as covarp
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size, 
 stddev(p_retailprice) over w1 as sdev, 
@@ -4212,6 +4290,8 @@ covar_pop(p_size, p_retailprice) over w1 as covarp
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4400,6 +4480,8 @@ row_number() over(distribute by p_mfgr sort by p_mfgr, p_name) as rn
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size, 
 histogram_numeric(p_retailprice, 5) over w1 as hist, 
@@ -4408,6 +4490,8 @@ row_number() over(distribute by p_mfgr sort by p_mfgr, p_name) as rn
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4577,6 +4661,9 @@ round(sum(p_retailprice),2) as s
 from part 
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mfgr_price_view_n2
 POSTHOOK: query: explain vectorization detail
 create view IF NOT EXISTS mfgr_price_view_n2 as 
 select p_mfgr, p_brand, 
@@ -4584,6 +4671,9 @@ round(sum(p_retailprice),2) as s
 from part 
 group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mfgr_price_view_n2
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4640,6 +4730,9 @@ window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mfgr_price_view_n2
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * 
 from (
@@ -4650,6 +4743,9 @@ window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mfgr_price_view_n2
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4895,6 +4991,9 @@ round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row)
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mfgr_brand_price_view_n0
 POSTHOOK: query: explain vectorization detail
 create view IF NOT EXISTS mfgr_brand_price_view_n0 as 
 select p_mfgr, p_brand, 
@@ -4902,6 +5001,9 @@ round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row)
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mfgr_brand_price_view_n0
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -4951,9 +5053,15 @@ p_mfgr	p_brand	s
 PREHOOK: query: explain vectorization detail
 select * from mfgr_brand_price_view_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mfgr_brand_price_view_n0
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from mfgr_brand_price_view_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mfgr_brand_price_view_n0
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5105,6 +5213,8 @@ from (select p_mfgr, p_name, p_size, array(1,2,3) arr from part) p
 lateral view explode(arr) part_lv as lv_col
 window w1 as (distribute by p_mfgr sort by p_size, lv_col rows between 2 preceding and current row)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, 
 lv_col, p_size, sum(p_size) over w1   as s
@@ -5112,6 +5222,8 @@ from (select p_mfgr, p_name, p_size, array(1,2,3) arr from part) p
 lateral view explode(arr) part_lv as lv_col
 window w1 as (distribute by p_mfgr sort by p_size, lv_col rows between 2 preceding and current row)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -5408,6 +5520,10 @@ count(p_size) over(distribute by p_mfgr sort by p_name) as ca,
 first_value(p_size) over w1  as fv
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Output: default@part_1_n0
+PREHOOK: Output: default@part_2_n0
+PREHOOK: Output: default@part_3_n0
 POSTHOOK: query: explain vectorization detail
 from part 
 INSERT OVERWRITE TABLE part_1_n0 
@@ -5430,6 +5546,10 @@ count(p_size) over(distribute by p_mfgr sort by p_name) as ca,
 first_value(p_size) over w1  as fv
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Output: default@part_1_n0
+POSTHOOK: Output: default@part_2_n0
+POSTHOOK: Output: default@part_3_n0
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6196,6 +6316,8 @@ from part
 group by p_mfgr, p_name, p_size
 having p_size > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, min(p_retailprice) as mi,
 rank() over(distribute by p_mfgr sort by p_name) as r,
@@ -6205,6 +6327,8 @@ from part
 group by p_mfgr, p_name, p_size
 having p_size > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6443,6 +6567,8 @@ sum(p_size) over (distribute by p_mfgr sort by p_size range between current row 
 from part  
 window w1 as (rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select  p_mfgr,p_name, p_size, 
 sum(p_size) over (distribute by p_mfgr sort by p_size range between 10 preceding and current row) as s2, 
@@ -6450,6 +6576,8 @@ sum(p_size) over (distribute by p_mfgr sort by p_size range between current row 
 from part  
 window w1 as (rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6609,11 +6737,15 @@ select p_mfgr, p_name, p_size,
 sum(p_size) over (partition by p_mfgr  order by p_name  rows between 2 preceding and 2 following) as s
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 sum(p_size) over (partition by p_mfgr  order by p_name  rows between 2 preceding and 2 following) as s
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6764,12 +6896,16 @@ sum(p_size) over w1 as s
 from part
 window w1 as (partition by p_mfgr  order by p_name  rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 sum(p_size) over w1 as s
 from part
 window w1 as (partition by p_mfgr  order by p_name  rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -6924,6 +7060,8 @@ from part
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following),
        w2 as (partition by p_mfgr order by p_name)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 sum(p_size) over w1 as s,
@@ -6932,6 +7070,8 @@ from part
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following),
        w2 as (partition by p_mfgr order by p_name)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -7096,6 +7236,8 @@ from part
 window w1 as (partition by p_mfgr order by p_name range between 2 preceding and 2 following), 
        w2 as w1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 sum(p_size) over w1 as s1, 
@@ -7104,6 +7246,8 @@ from part
 window w1 as (partition by p_mfgr order by p_name range between 2 preceding and 2 following), 
        w2 as w1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -7262,6 +7406,8 @@ from part
 window w1 as (partition by p_mfgr order by p_name range between 2 preceding and 2 following), 
        w2 as (w1 rows between unbounded preceding and current row)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 sum(p_size) over w1 as s1, 
@@ -7270,6 +7416,8 @@ from part
 window w1 as (partition by p_mfgr order by p_name range between 2 preceding and 2 following), 
        w2 as (w1 rows between unbounded preceding and current row)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -7436,6 +7584,8 @@ window w1 as (distribute by p_mfgr sort by p_name range between 2 preceding and 
        w2 as w3,
        w3 as (distribute by p_mfgr sort by p_name range between unbounded preceding and current row)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 sum(p_size) over w1 as s1, 
@@ -7446,6 +7596,8 @@ window w1 as (distribute by p_mfgr sort by p_name range between 2 preceding and 
        w2 as w3,
        w3 as (distribute by p_mfgr sort by p_name range between unbounded preceding and current row)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -7616,6 +7768,8 @@ window w1 as (distribute by p_mfgr sort by p_name range between 2 preceding and 
        w2 as w3,
        w3 as (distribute by p_mfgr sort by p_name range between unbounded preceding and current row)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 sum(p_size) over w1 as s1, 
@@ -7626,6 +7780,8 @@ window w1 as (distribute by p_mfgr sort by p_name range between 2 preceding and 
        w2 as w3,
        w3 as (distribute by p_mfgr sort by p_name range between unbounded preceding and current row)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -7798,12 +7954,16 @@ sum(p_size) over w1 as s
 from part
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select DISTINCT p_mfgr, p_name, p_size,
 sum(p_size) over w1 as s
 from part
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -7997,11 +8157,15 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name )  as r
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name )  as r
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -8188,6 +8352,8 @@ round(avg(p_retailprice) over (distribute by p_mfgr),2) as s4,
 count(p_retailprice) over (cluster by p_mfgr ) as s5
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr,
 round(sum(p_retailprice) over (partition by p_mfgr order by p_mfgr),2) as s1,
@@ -8197,6 +8363,8 @@ round(avg(p_retailprice) over (distribute by p_mfgr),2) as s4,
 count(p_retailprice) over (cluster by p_mfgr ) as s5
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -8412,6 +8580,8 @@ min(p_retailprice) over (distribute by p_mfgr, p_name sort by p_mfgr, p_name row
 max(p_retailprice) over (partition by p_mfgr, p_name order by p_name) as s3
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
 round(sum(p_retailprice) over (partition by p_mfgr, p_name order by p_mfgr, p_name rows between unbounded preceding and current row),2) as s1,
@@ -8419,6 +8589,8 @@ min(p_retailprice) over (distribute by p_mfgr, p_name sort by p_mfgr, p_name row
 max(p_retailprice) over (partition by p_mfgr, p_name order by p_name) as s3
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -8689,11 +8861,15 @@ select p_mfgr, p_type, substr(p_type, 2) as short_ptype,
 rank() over (partition by p_mfgr order by substr(p_type, 2))  as r
 from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_type, substr(p_type, 2) as short_ptype,
 rank() over (partition by p_mfgr order by substr(p_type, 2))  as r
 from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -8878,11 +9054,15 @@ select p_mfgr, p_name, p_size,
     round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows unbounded preceding),2) as s1
      from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
     round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows unbounded preceding),2) as s1
      from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -9065,11 +9245,15 @@ select p_mfgr, p_name, p_size,
     round(sum(p_retailprice) over (distribute by p_mfgr sort by p_size range unbounded preceding),2) as s1
      from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
     round(sum(p_retailprice) over (distribute by p_mfgr sort by p_size range unbounded preceding),2) as s1
      from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -9252,11 +9436,15 @@ select p_mfgr, p_name, p_size,
     round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between current row and unbounded following),2) as s1
     from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
     round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between current row and unbounded following),2) as s1
     from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -9406,11 +9594,15 @@ select p_mfgr, p_name, p_size,
     round(sum(p_retailprice) over (distribute by p_mfgr sort by p_size range between current row and unbounded following),2) as s1
     from part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_size,
     round(sum(p_retailprice) over (distribute by p_mfgr sort by p_size range between current row and unbounded following),2) as s1
     from part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -9561,12 +9753,16 @@ round(avg(p_retailprice) over(),2)
 from part
 order by p_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_name, p_retailprice,
 round(avg(p_retailprice) over(),2)
 from part
 order by p_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -9788,12 +9984,16 @@ select p_mfgr,
 from part 
 where p_mfgr = 'Manufacturer#6'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, 
   sum(p_size) over (partition by p_mfgr order by p_size rows between unbounded preceding and current row) 
 from part 
 where p_mfgr = 'Manufacturer#6'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -9960,12 +10160,16 @@ round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between 
 from part 
 where p_mfgr='Manufacturer#1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select p_retailprice, round(avg(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following),2),
 round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following),2)
 from part 
 where p_mfgr='Manufacturer#1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -10110,10 +10314,14 @@ PREHOOK: query: explain vectorization detail
 select sum(p_size) over (partition by p_mfgr )
 from part where p_mfgr = 'm1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(p_size) over (partition by p_mfgr )
 from part where p_mfgr = 'm1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

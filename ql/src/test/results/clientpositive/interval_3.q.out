@@ -124,6 +124,8 @@ PREHOOK: query: EXPLAIN SELECT
     		+ INTERVAL '9' second
     	AND Cast(d3.d_date AS date) < Cast(d1.d_date AS date) + INTERVAL '1-2' YEAR TO MONTH
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_d1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
            d1.d_week_seq
     FROM
@@ -139,6 +141,8 @@ POSTHOOK: query: EXPLAIN SELECT
     		+ INTERVAL '9' second
     	AND Cast(d3.d_date AS date) < Cast(d1.d_date AS date) + INTERVAL '1-2' YEAR TO MONTH
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_d1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

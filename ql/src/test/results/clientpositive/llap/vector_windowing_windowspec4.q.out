@@ -37,6 +37,8 @@ collect_set(i) over (partition by type order by i rows between 1 preceding and 7
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
 from smalltable_windowing_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable_windowing_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select type, i,
 max(i) over (partition by type order by i rows between 1 preceding and 7 following),
@@ -49,6 +51,8 @@ collect_set(i) over (partition by type order by i rows between 1 preceding and 7
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
 from smalltable_windowing_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable_windowing_n0
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

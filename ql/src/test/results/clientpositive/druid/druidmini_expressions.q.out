@@ -1422,8 +1422,12 @@ POSTHOOK: Lineage: druid_table_n1.datetime1 SCRIPT []
 POSTHOOK: Lineage: druid_table_n1.time1 SCRIPT []
 PREHOOK: query: EXPLAIN SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

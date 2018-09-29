@@ -35,9 +35,13 @@ POSTHOOK: Lineage: listtable_orc_n0.l SIMPLE [(listtable_n0)listtable_n0.FieldSc
 PREHOOK: query: explain vectorization expression
 select size(l) from listtable_orc_n0 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@listtable_orc_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select size(l) from listtable_orc_n0 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@listtable_orc_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -32,6 +32,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n25 group by key
 ) subq2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n25
+PREHOOK: Output: default@outputtbl1_n34
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n34
 SELECT *
@@ -42,6 +44,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n25 group by key
 ) subq2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n25
+POSTHOOK: Output: default@outputtbl1_n34
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

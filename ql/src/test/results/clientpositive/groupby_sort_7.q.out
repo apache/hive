@@ -41,10 +41,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n26
 SELECT key, val, count(1) FROM T1_n104 where ds = '1' GROUP BY key, val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n104
+PREHOOK: Input: default@t1_n104@ds=1
+PREHOOK: Output: default@outputtbl1_n26
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n26
 SELECT key, val, count(1) FROM T1_n104 where ds = '1' GROUP BY key, val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n104
+POSTHOOK: Input: default@t1_n104@ds=1
+POSTHOOK: Output: default@outputtbl1_n26
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

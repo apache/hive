@@ -9,9 +9,13 @@ POSTHOOK: Output: default@bucket_nr
 PREHOOK: query: explain extended insert overwrite table bucket_nr
   select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucket_nr
 POSTHOOK: query: explain extended insert overwrite table bucket_nr
   select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucket_nr
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`src`
 STAGE DEPENDENCIES:

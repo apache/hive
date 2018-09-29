@@ -104,6 +104,13 @@ WHERE
   L.id = 4436
   and acct.brn is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n11
+PREHOOK: Input: default@acct
+PREHOOK: Input: default@fr
+PREHOOK: Input: default@l
+PREHOOK: Input: default@la_n11
+PREHOOK: Input: default@pi
+#### A masked pattern was here ####
 POSTHOOK: query: explain select
   acct.ACC_N,
   acct.brn
@@ -117,6 +124,13 @@ WHERE
   L.id = 4436
   and acct.brn is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n11
+POSTHOOK: Input: default@acct
+POSTHOOK: Input: default@fr
+POSTHOOK: Input: default@l
+POSTHOOK: Input: default@la_n11
+POSTHOOK: Input: default@pi
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-6

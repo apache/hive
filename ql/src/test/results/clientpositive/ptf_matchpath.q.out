@@ -45,6 +45,8 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
@@ -56,6 +58,8 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -163,6 +167,8 @@ from matchpath(on
    )
 where fl_num = 1142
 PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
@@ -174,6 +180,8 @@ from matchpath(on
    )
 where fl_num = 1142
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -272,6 +280,8 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
    )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
@@ -282,6 +292,8 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
    )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

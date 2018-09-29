@@ -34,6 +34,9 @@ left semi join
   where key = 0) t2_n37
 on 1 = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n59
+PREHOOK: Input: default@t2_n37
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1)
 from
@@ -46,6 +49,9 @@ left semi join
   where key = 0) t2_n37
 on 1 = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n59
+POSTHOOK: Input: default@t2_n37
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

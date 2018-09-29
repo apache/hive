@@ -410,8 +410,12 @@ POSTHOOK: Input: default@over10k_orc_bucketed
 POSTHOOK: Output: default@over10k_orc_bucketed
 PREHOOK: query: explain select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by t, si, i
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_orc_bucketed
+#### A masked pattern was here ####
 POSTHOOK: query: explain select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by t, si, i
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_orc_bucketed
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -480,8 +484,12 @@ POSTHOOK: Input: default@over10k_orc_bucketed
 35	463	65646
 PREHOOK: query: explain select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_orc_bucketed
+#### A masked pattern was here ####
 POSTHOOK: query: explain select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_orc_bucketed
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -551,8 +559,12 @@ POSTHOOK: Input: default@over10k_orc_bucketed
 {"writeid":0,"bucketid":537067520,"rowid":406}	35	463	65646
 PREHOOK: query: explain update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_orc_bucketed
+PREHOOK: Output: default@over10k_orc_bucketed
 POSTHOOK: query: explain update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_orc_bucketed
+POSTHOOK: Output: default@over10k_orc_bucketed
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -647,8 +659,12 @@ POSTHOOK: Input: default@over10k_orc_bucketed
 {"writeid":### Masked writeid ###,"bucketid":537067520,"rowid":1}	35	463	0
 PREHOOK: query: explain select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_orc_bucketed
+#### A masked pattern was here ####
 POSTHOOK: query: explain select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_orc_bucketed
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -10,10 +10,14 @@ PREHOOK: query: explain extended
 insert overwrite table bucket2_1_n0
 select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucket2_1_n0
 POSTHOOK: query: explain extended
 insert overwrite table bucket2_1_n0
 select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucket2_1_n0
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
@@ -197,9 +201,13 @@ POSTHOOK: Lineage: bucket2_1_n0.value SIMPLE [(src)src.FieldSchema(name:value, t
 PREHOOK: query: explain
 select * from bucket2_1_n0 tablesample (bucket 1 out of 2) s order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket2_1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select * from bucket2_1_n0 tablesample (bucket 1 out of 2) s order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket2_1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

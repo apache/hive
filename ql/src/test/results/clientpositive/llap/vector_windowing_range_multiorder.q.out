@@ -47,9 +47,13 @@ POSTHOOK: Output: default@over10k_n5
 PREHOOK: query: explain vectorization detail
 select first_value(t) over ( partition by si order by i, b ) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select first_value(t) over ( partition by si order by i, b ) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -305,9 +309,13 @@ first_value_window_0
 PREHOOK: query: explain vectorization detail
 select last_value(i) over (partition by si, bo order by i, f desc range current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select last_value(i) over (partition by si, bo order by i, f desc range current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -527,9 +535,13 @@ last_value_window_0
 PREHOOK: query: explain vectorization detail
 select row_number() over (partition by si, bo order by i, f desc range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select row_number() over (partition by si, bo order by i, f desc range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -749,9 +761,13 @@ row_number_window_0
 PREHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s range between unbounded preceding and current row) from over10k_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s range between unbounded preceding and current row) from over10k_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -10898,9 +10914,13 @@ zach zipper	487	65676	65663.61111111111
 PREHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s order by si, i range between unbounded preceding and current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s order by si, i range between unbounded preceding and current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11155,9 +11175,13 @@ alice hernandez	323	65727	65679.6
 PREHOOK: query: explain vectorization detail
 select s, si, i, min(i) over (partition by s order by si, i range between unbounded preceding and current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, i, min(i) over (partition by s order by si, i range between unbounded preceding and current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11412,9 +11436,13 @@ alice hernandez	323	65727	65569
 PREHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s order by si, i desc range between unbounded preceding and current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, si, i, avg(i) over (partition by s order by si, i desc range between unbounded preceding and current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11669,9 +11697,13 @@ alice hernandez	323	65727	65679.6
 PREHOOK: query: explain vectorization detail
 select si, bo, i, f, max(i) over (partition by si, bo order by i, f desc range between unbounded preceding and current row) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select si, bo, i, f, max(i) over (partition by si, bo order by i, f desc range between unbounded preceding and current row) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -11926,9 +11958,13 @@ si	bo	i	f	max_window_0
 PREHOOK: query: explain vectorization detail
 select bo, rank() over (partition by i order by bo nulls first, b nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select bo, rank() over (partition by i order by bo nulls first, b nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -12149,9 +12185,13 @@ true	20
 PREHOOK: query: explain vectorization detail
 select CAST(s as CHAR(12)), rank() over (partition by i order by CAST(s as CHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select CAST(s as CHAR(12)), rank() over (partition by i order by CAST(s as CHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -12374,9 +12414,13 @@ rachel young	20
 PREHOOK: query: explain vectorization detail
 select CAST(s as VARCHAR(12)), rank() over (partition by i order by CAST(s as VARCHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select CAST(s as VARCHAR(12)), rank() over (partition by i order by CAST(s as VARCHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k_n5 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n5
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

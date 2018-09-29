@@ -10,10 +10,14 @@ PREHOOK: query: EXPLAIN
 FROM src1
 INSERT OVERWRITE TABLE dest1_n35 SELECT src1.key, src1.value WHERE src1.key is null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest1_n35
 POSTHOOK: query: EXPLAIN
 FROM src1
 INSERT OVERWRITE TABLE dest1_n35 SELECT src1.key, src1.value WHERE src1.key is null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest1_n35
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

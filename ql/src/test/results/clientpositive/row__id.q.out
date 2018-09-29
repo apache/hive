@@ -49,9 +49,19 @@ POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).value SCRIPT []
 PREHOOK: query: explain
 select tid from (select row__id.writeid as tid from hello_acid) sub order by tid
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hello_acid
+PREHOOK: Input: default@hello_acid@load_date=2016-03-01
+PREHOOK: Input: default@hello_acid@load_date=2016-03-02
+PREHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select tid from (select row__id.writeid as tid from hello_acid) sub order by tid
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hello_acid
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -111,9 +121,19 @@ POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
 PREHOOK: query: explain
 select tid from (select row__id.writeid as tid from hello_acid) sub where tid = 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hello_acid
+PREHOOK: Input: default@hello_acid@load_date=2016-03-01
+PREHOOK: Input: default@hello_acid@load_date=2016-03-02
+PREHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select tid from (select row__id.writeid as tid from hello_acid) sub where tid = 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hello_acid
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

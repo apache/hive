@@ -162,8 +162,22 @@ POSTHOOK: Lineage: srccc.key SIMPLE [(src)src.FieldSchema(name:key, type:string,
 POSTHOOK: Lineage: srccc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -289,8 +303,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -389,8 +417,24 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -554,8 +598,24 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -703,8 +763,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -830,8 +904,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -932,10 +1020,24 @@ PREHOOK: query: explain select /*+ semi(k, str, s, 5000)*/ count(*) from srcpart
         union all
         select /*+ semi(v, key1, d, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(k, str, s, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
         union all
         select /*+ semi(v, key1, d, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1164,8 +1266,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1289,8 +1405,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1387,8 +1517,24 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1550,8 +1696,24 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1697,8 +1859,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1822,8 +1998,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1922,10 +2112,24 @@ PREHOOK: query: explain select /*+ semi(k, str, s, 5000)*/ count(*) from srcpart
         union all
         select /*+ semi(v, key1, d, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(k, str, s, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
         union all
         select /*+ semi(v, key1, d, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2138,8 +2342,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2255,8 +2473,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2345,8 +2577,24 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2496,8 +2744,24 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_int
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_int
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2631,8 +2895,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2748,8 +3026,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_small@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2857,11 +3149,23 @@ WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtbl
+PREHOOK: Input: default@nonacidorctbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: explain merge into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtbl
+POSTHOOK: Input: default@nonacidorctbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@merge_tmp_table
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-5 depends on stages: Stage-4
@@ -3206,11 +3510,23 @@ WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtbl
+PREHOOK: Input: default@nonacidorctbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@acidtbl
+PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: explain merge  /*+ semi(s, a, t, 1000)*/  into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtbl
+POSTHOOK: Input: default@nonacidorctbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@acidtbl
+POSTHOOK: Output: default@merge_tmp_table
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-5 depends on stages: Stage-4

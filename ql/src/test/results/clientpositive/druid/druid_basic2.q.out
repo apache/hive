@@ -63,9 +63,13 @@ Storage Desc Params:
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT robot FROM druid_table_1_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT robot FROM druid_table_1_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -90,9 +94,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT delta FROM druid_table_1_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT delta FROM druid_table_1_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -119,11 +127,15 @@ SELECT robot
 FROM druid_table_1_n2
 WHERE language = 'en'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT robot
 FROM druid_table_1_n2
 WHERE language = 'en'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -150,11 +162,15 @@ SELECT DISTINCT robot
 FROM druid_table_1_n2
 WHERE language = 'en'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT DISTINCT robot
 FROM druid_table_1_n2
 WHERE language = 'en'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -188,6 +204,8 @@ FROM
   ON a.language = b.language
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT a.robot, b.language
 FROM
@@ -200,6 +218,8 @@ FROM
   ON a.language = b.language
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -454,6 +474,8 @@ FROM
   ON a.language = b.language
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT a.robot, b.language
 FROM
@@ -467,6 +489,8 @@ FROM
   ON a.language = b.language
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -710,6 +734,8 @@ GROUP BY robot, language, floor_day(`__time`)
 ORDER BY CAST(robot AS INTEGER) ASC, m DESC
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT robot, floor_day(`__time`), max(added) as m, sum(delta) as s
 FROM druid_table_1_n2
@@ -717,6 +743,8 @@ GROUP BY robot, language, floor_day(`__time`)
 ORDER BY CAST(robot AS INTEGER) ASC, m DESC
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -742,10 +770,14 @@ PREHOOK: query: EXPLAIN
 SELECT substring(namespace, CAST(deleted AS INT), 4)
 FROM druid_table_1_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT substring(namespace, CAST(deleted AS INT), 4)
 FROM druid_table_1_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -774,6 +806,8 @@ GROUP BY robot, floor_day(`__time`)
 ORDER BY robot
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_day(`__time`)
 FROM druid_table_1_n2
@@ -782,6 +816,8 @@ GROUP BY robot, floor_day(`__time`)
 ORDER BY robot
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -810,6 +846,8 @@ GROUP BY robot, `__time`
 ORDER BY robot
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT robot, `__time`
 FROM druid_table_1_n2
@@ -818,6 +856,8 @@ GROUP BY robot, `__time`
 ORDER BY robot
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -846,6 +886,8 @@ GROUP BY robot, floor_day(`__time`)
 ORDER BY robot
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_day(`__time`)
 FROM druid_table_1_n2
@@ -854,6 +896,8 @@ GROUP BY robot, floor_day(`__time`)
 ORDER BY robot
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -881,6 +925,8 @@ GROUP BY robot, language, floor_day(`__time`)
 ORDER BY CAST(robot AS INTEGER) ASC, m DESC
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT robot, floor_day(`__time`), max(added) as m, sum(delta) as s
 FROM druid_table_1_n2
@@ -888,6 +934,8 @@ GROUP BY robot, language, floor_day(`__time`)
 ORDER BY CAST(robot AS INTEGER) ASC, m DESC
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

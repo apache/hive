@@ -31,9 +31,13 @@ t1_text_n3.a	t1_text_n3.b	t1_text_n3.c
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n69 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n69
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n69 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n69
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -212,9 +216,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n69 group by cube(a, b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n69
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) from T1_n69 group by cube(a, b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n69
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -417,9 +425,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, sum(c) from T1_n69 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n69
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, sum(c) from T1_n69 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n69
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -615,9 +627,13 @@ _col0	_col1	_col2	_col3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, sum(c+d) from T2_n42 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n42
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, sum(c+d) from T2_n42 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n42
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

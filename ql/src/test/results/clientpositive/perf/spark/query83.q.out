@@ -64,6 +64,12 @@ with sr_items as
          ,sr_item_qty
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@web_returns
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with sr_items as
  (select i_item_id item_id,
@@ -130,6 +136,12 @@ with sr_items as
          ,sr_item_qty
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@web_returns
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

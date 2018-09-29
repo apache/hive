@@ -48,8 +48,16 @@ POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(allt
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: explain vectorization select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_part
+PREHOOK: Input: default@alltypesorc_part@ds=2011
+PREHOOK: Input: default@alltypesorc_part@ds=2012
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_part
+POSTHOOK: Input: default@alltypesorc_part@ds=2011
+POSTHOOK: Input: default@alltypesorc_part@ds=2012
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

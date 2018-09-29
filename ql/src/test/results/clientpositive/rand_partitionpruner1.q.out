@@ -1,7 +1,11 @@
 PREHOOK: query: explain extended select * from src where rand(1) < 0.1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from src where rand(1) < 0.1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`src`
 WHERE RAND(1) < 0.1

@@ -24,6 +24,8 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze
 select
   *
@@ -32,6 +34,8 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -120,6 +124,8 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze
 select
   count(*)
@@ -127,6 +133,8 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -210,6 +218,8 @@ where
 group by a.csmallint
 order by c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze
 select
   a.csmallint, count(*) c1
@@ -219,6 +229,8 @@ where
 group by a.csmallint
 order by c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -313,6 +325,8 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze
 select
   *
@@ -321,6 +335,8 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -409,6 +425,8 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze
 select
   count(*)
@@ -416,6 +434,8 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -499,6 +519,8 @@ where
 group by a.csmallint
 order by c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze
 select
   a.csmallint, count(*) c1
@@ -508,6 +530,8 @@ where
 group by a.csmallint
 order by c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

@@ -89,6 +89,10 @@ JOIN store ON store_sales.ss_store_sk = store.s_store_sk
 JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization 
 select store.s_city, ss_net_profit
 from store_sales
@@ -96,6 +100,10 @@ JOIN store ON store_sales.ss_store_sk = store.s_store_sk
 JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

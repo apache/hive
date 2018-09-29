@@ -41,9 +41,15 @@ POSTHOOK: Lineage: table_desc.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: explain 
 select /*+mapjoin(a)*/ * from table_asc a join table_desc b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_asc
+PREHOOK: Input: default@table_desc
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select /*+mapjoin(a)*/ * from table_asc a join table_desc b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_asc
+POSTHOOK: Input: default@table_desc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3

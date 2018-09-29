@@ -5,12 +5,16 @@ select a.key
 from q1 a join q1 b
 on a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1 as (select * from src where key= '5')
 select a.key
 from q1 a join q1 b
 on a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -29,9 +29,13 @@ POSTHOOK: Output: default@map_txt
 PREHOOK: query: explain vectorization expression
 select * from map_txt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@map_txt
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from map_txt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@map_txt
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -100,9 +104,13 @@ POSTHOOK: Input: default@map_txt
 PREHOOK: query: explain vectorization expression
 select id, map_keys(content) from map_txt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@map_txt
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select id, map_keys(content) from map_txt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@map_txt
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -76,10 +76,20 @@ PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_acid_fast
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_acid_fast
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -219,9 +229,23 @@ POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cint SCRIPT []
 PREHOOK: query: explain vectorization only detail
 update orc_llap_acid_fast set cbigint = 2 where cint = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_acid_fast
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+PREHOOK: Output: default@orc_llap_acid_fast@csmallint=1
+PREHOOK: Output: default@orc_llap_acid_fast@csmallint=2
+PREHOOK: Output: default@orc_llap_acid_fast@csmallint=3
 POSTHOOK: query: explain vectorization only detail
 update orc_llap_acid_fast set cbigint = 2 where cint = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_acid_fast
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=1
+POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=2
+POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=3
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -330,10 +354,20 @@ PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_acid_fast
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_acid_fast
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

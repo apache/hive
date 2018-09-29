@@ -22,8 +22,12 @@ POSTHOOK: Lineage: test_1_n4.id SCRIPT []
 POSTHOOK: Lineage: test_1_n4.id2 SCRIPT []
 PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -68,8 +72,12 @@ true
 false
 PREHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -114,8 +122,12 @@ true
 false
 PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -160,8 +172,12 @@ false
 true
 PREHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -206,8 +222,12 @@ false
 true
 PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -252,8 +272,12 @@ true
 false
 PREHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -298,8 +322,12 @@ true
 false
 PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -344,8 +372,12 @@ false
 true
 PREHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

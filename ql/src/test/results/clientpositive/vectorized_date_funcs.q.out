@@ -220,6 +220,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   datediff(fl_time, timestamp "2007-03-14 08:21:59")
 FROM date_udf_flight_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   fl_time,
   to_unix_timestamp(fl_time),
@@ -243,6 +245,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   datediff(fl_time, timestamp "2007-03-14 08:21:59")
 FROM date_udf_flight_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -508,6 +512,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   datediff(fl_date, timestamp "2007-03-14 08:21:59")
 FROM date_udf_flight_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   fl_date,
   to_unix_timestamp(fl_date),
@@ -531,6 +537,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   datediff(fl_date, timestamp "2007-03-14 08:21:59")
 FROM date_udf_flight_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -798,6 +806,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   datediff(fl_date, "2007-03-14") = datediff(fl_date, date "2007-03-14")
 FROM date_udf_flight_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   fl_time,
   fl_date,
@@ -823,6 +833,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   datediff(fl_date, "2007-03-14") = datediff(fl_date, date "2007-03-14")
 FROM date_udf_flight_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1078,6 +1090,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   datediff(date_add(fl_date, 2), date_sub(fl_date, 2)) 
 FROM date_udf_flight_orc LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT 
   fl_date, 
   to_date(date_add(fl_date, 2)), 
@@ -1087,6 +1101,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   datediff(date_add(fl_date, 2), date_sub(fl_date, 2)) 
 FROM date_udf_flight_orc LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -1198,6 +1214,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM date_udf_flight_orc
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   min(fl_date) AS c1,
   max(fl_date),
@@ -1206,6 +1224,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM date_udf_flight_orc
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_flight_orc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

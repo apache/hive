@@ -442,6 +442,8 @@ FROM parquet_types_n1
 GROUP BY ctinyint
 ORDER BY ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
@@ -452,6 +454,8 @@ FROM parquet_types_n1
 GROUP BY ctinyint
 ORDER BY ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -810,8 +814,12 @@ POSTHOOK: Input: default@parquet_types_n1
 127	1255	255	1	76.5	0.0
 PREHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types_n1 GROUP BY cfloat ORDER BY cfloat
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types_n1 GROUP BY cfloat ORDER BY cfloat
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1194,8 +1202,12 @@ POSTHOOK: Input: default@parquet_types_n1
 89.7	1
 PREHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types_n1 GROUP BY cchar ORDER BY cchar
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types_n1 GROUP BY cchar ORDER BY cchar
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1578,8 +1590,12 @@ y    	1
 z    	1
 PREHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types_n1 GROUP BY cvarchar ORDER BY cvarchar
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types_n1 GROUP BY cvarchar ORDER BY cvarchar
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1962,8 +1978,12 @@ y	1
 z	1
 PREHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types_n1 GROUP BY cstring1 ORDER BY cstring1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types_n1 GROUP BY cstring1 ORDER BY cstring1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2346,8 +2366,12 @@ y	1
 z	1
 PREHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types_n1 GROUP BY cbinary
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types_n1 GROUP BY cbinary
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

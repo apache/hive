@@ -26,8 +26,14 @@ POSTHOOK: Lineage: dsrv_small.key_str SIMPLE [(src)src.FieldSchema(name:key, typ
 POSTHOOK: Lineage: dsrv_small.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv_big
+PREHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv_big
+POSTHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -260,8 +266,14 @@ POSTHOOK: Input: default@dsrv_small
 84
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv_big
+PREHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv_big
+POSTHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -494,8 +506,14 @@ POSTHOOK: Input: default@dsrv_small
 84
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv_big
+PREHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv_big
+POSTHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -728,8 +746,14 @@ POSTHOOK: Input: default@dsrv_small
 84
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv_big
+PREHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv_big
+POSTHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1065,8 +1089,14 @@ POSTHOOK: Input: default@dsrv_small
 84
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv_big
+PREHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv_big
+POSTHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1357,8 +1387,14 @@ POSTHOOK: Input: default@dsrv_small
 84
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv_big
+PREHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv_big
+POSTHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1609,8 +1645,14 @@ POSTHOOK: Output: default@dsrv_small
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv_big
+PREHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv_big
+POSTHOOK: Input: default@dsrv_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

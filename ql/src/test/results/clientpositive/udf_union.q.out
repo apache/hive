@@ -18,11 +18,15 @@ SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
 create_union(1, "a", struct(2, "b"))
 FROM src tablesample (2 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
 create_union(1, "a", struct(2, "b"))
 FROM src tablesample (2 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

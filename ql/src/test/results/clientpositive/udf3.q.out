@@ -10,10 +10,14 @@ PREHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest1_n104 SELECT count(CAST('' AS INT)), sum(CAST('' AS INT)), avg(CAST('' AS INT)), 
 min(CAST('' AS INT)), max(CAST('' AS INT))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n104
 POSTHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest1_n104 SELECT count(CAST('' AS INT)), sum(CAST('' AS INT)), avg(CAST('' AS INT)), 
 min(CAST('' AS INT)), max(CAST('' AS INT))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n104
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

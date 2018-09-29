@@ -127,10 +127,17 @@ PREHOOK: query: explain
 insert overwrite table merge_dynamic_part_n3 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 2 == 0, 'a1', 'b1') as hr from srcpart_merge_dp_rc_n1 where ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_merge_dp_rc_n1
+PREHOOK: Input: default@srcpart_merge_dp_rc_n1@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_merge_dp_rc_n1@ds=2008-04-08/hr=12
+PREHOOK: Output: default@merge_dynamic_part_n3@ds=2008-04-08
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part_n3 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 2 == 0, 'a1', 'b1') as hr from srcpart_merge_dp_rc_n1 where ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_merge_dp_rc_n1
+POSTHOOK: Input: default@srcpart_merge_dp_rc_n1@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_merge_dp_rc_n1@ds=2008-04-08/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

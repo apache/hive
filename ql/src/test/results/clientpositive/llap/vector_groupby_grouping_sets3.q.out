@@ -39,9 +39,13 @@ t1_text_n7.a	t1_text_n7.b	t1_text_n7.c
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -148,9 +152,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by cube(a, b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by cube(a, b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -282,9 +290,13 @@ NULL	NULL	3.8333333333333335	12
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

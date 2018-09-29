@@ -35,6 +35,8 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 
 limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN FROM src
 
 SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',
@@ -48,6 +50,8 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 
 limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -119,6 +123,8 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 
 FROM src WHERE key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
 
 dboutput('jdbc:derby:../build/test_dboutput_db','','',
@@ -126,6 +132,8 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 
 FROM src WHERE key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

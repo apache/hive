@@ -32,6 +32,8 @@ select a.key as key, cast(b.val as bigint) as `values`
 FROM inputTbl1_n11 a join inputTbl1_n11 b on a.key=b.key
 )c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n11
+PREHOOK: Output: default@outputtbl1_n16
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n16
 SELECT * FROM
@@ -42,6 +44,8 @@ select a.key as key, cast(b.val as bigint) as `values`
 FROM inputTbl1_n11 a join inputTbl1_n11 b on a.key=b.key
 )c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n11
+POSTHOOK: Output: default@outputtbl1_n16
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1, Stage-9 , consists of Stage-3, Stage-2, Stage-4

@@ -661,6 +661,10 @@ where
     and lo_discount between 1 and 3
     and lo_quantity < 25
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     sum(lo_extendedprice*lo_discount) as revenue
@@ -672,6 +676,10 @@ where
     and lo_discount between 1 and 3
     and lo_quantity < 25
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -740,6 +748,10 @@ where
     and lo_discount between 4 and 6
     and lo_quantity between 26 and 35
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     sum(lo_extendedprice*lo_discount) as revenue
@@ -751,6 +763,10 @@ where
     and lo_discount between 4 and 6
     and lo_quantity between 26 and 35
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -820,6 +836,10 @@ where
     and lo_discount between 5 and 7
     and lo_quantity between 26 and 35
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     sum(lo_extendedprice*lo_discount) as revenue
@@ -832,6 +852,10 @@ where
     and lo_discount between 5 and 7
     and lo_quantity between 26 and 35
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -905,6 +929,12 @@ group by
 order by 
     d_year, p_brand1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@ssb_part_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     sum(lo_revenue) as lo_revenue, d_year, p_brand1
@@ -921,6 +951,12 @@ group by
 order by 
     d_year, p_brand1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@ssb_part_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1015,6 +1051,12 @@ group by
 order by 
     d_year, p_brand1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@ssb_part_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     sum(lo_revenue) as lo_revenue, d_year, p_brand1
@@ -1031,6 +1073,12 @@ group by
 order by 
     d_year, p_brand1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@ssb_part_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1125,6 +1173,12 @@ group by
 order by 
     d_year, p_brand1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@ssb_part_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     sum(lo_revenue) as lo_revenue, d_year, p_brand1
@@ -1141,6 +1195,12 @@ group by
 order by 
     d_year, p_brand1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@ssb_part_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1237,6 +1297,12 @@ group by
 order by 
     d_year asc, lo_revenue desc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n1
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     c_nation, s_nation, d_year,
@@ -1255,6 +1321,12 @@ group by
 order by 
     d_year asc, lo_revenue desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n1
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1350,6 +1422,12 @@ group by
 order by 
     d_year asc, lo_revenue desc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n1
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
@@ -1367,6 +1445,12 @@ group by
 order by 
     d_year asc, lo_revenue desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n1
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1462,6 +1546,12 @@ group by
 order by 
     d_year asc, lo_revenue desc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n1
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
@@ -1479,6 +1569,12 @@ group by
 order by 
     d_year asc, lo_revenue desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n1
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1570,6 +1666,12 @@ group by
 order by 
     d_year asc, lo_revenue desc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n1
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
@@ -1587,6 +1689,12 @@ group by
 order by 
     d_year asc, lo_revenue desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n1
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1684,6 +1792,13 @@ group by
 order by 
     d_year, c_nation
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n1
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@ssb_part_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     d_year, c_nation,
@@ -1703,6 +1818,13 @@ group by
 order by 
     d_year, c_nation
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n1
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@ssb_part_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1797,6 +1919,13 @@ group by
 order by 
     d_year, s_nation, p_category
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n1
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@ssb_part_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     d_year, s_nation, p_category,
@@ -1817,6 +1946,13 @@ group by
 order by 
     d_year, s_nation, p_category
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n1
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@ssb_part_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1911,6 +2047,13 @@ group by
 order by 
     d_year, s_city, p_brand1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_n1
+PREHOOK: Input: default@dates_n0
+PREHOOK: Input: default@lineorder_n0
+PREHOOK: Input: default@ssb_mv_n0
+PREHOOK: Input: default@ssb_part_n0
+PREHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select 
     d_year, s_city, p_brand1,
@@ -1931,6 +2074,13 @@ group by
 order by 
     d_year, s_city, p_brand1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_n1
+POSTHOOK: Input: default@dates_n0
+POSTHOOK: Input: default@lineorder_n0
+POSTHOOK: Input: default@ssb_mv_n0
+POSTHOOK: Input: default@ssb_part_n0
+POSTHOOK: Input: default@supplier_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -1,9 +1,13 @@
 PREHOOK: query: explain
 select ctimestamp1, unix_timestamp(ctimestamp1), to_unix_timestamp(ctimestamp1) from alltypesorc limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select ctimestamp1, unix_timestamp(ctimestamp1), to_unix_timestamp(ctimestamp1) from alltypesorc limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -59,9 +63,13 @@ POSTHOOK: Output: default@src1orc
 PREHOOK: query: explain
 select from_unixtime(to_unix_timestamp(ctimestamp1), 'EEEE') from alltypesorc limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select from_unixtime(to_unix_timestamp(ctimestamp1), 'EEEE') from alltypesorc limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -107,9 +115,13 @@ Wednesday
 PREHOOK: query: explain
 select from_unixtime(unix_timestamp(ctimestamp1), 'EEEE') from alltypesorc limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select from_unixtime(unix_timestamp(ctimestamp1), 'EEEE') from alltypesorc limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

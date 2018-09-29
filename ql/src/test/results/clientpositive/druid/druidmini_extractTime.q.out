@@ -66,10 +66,14 @@ PREHOOK: query: EXPLAIN SELECT EXTRACT(SECOND from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(SECOND from `__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(SECOND from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(SECOND from `__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -108,10 +112,14 @@ PREHOOK: query: EXPLAIN SELECT EXTRACT(MINUTE from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(MINUTE from `__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(MINUTE from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(MINUTE from `__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -150,10 +158,14 @@ PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(HOUR from `__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(HOUR from `__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -191,10 +203,14 @@ PREHOOK: query: EXPLAIN SELECT EXTRACT(DAY from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(DAY from `__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(DAY from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(DAY from `__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -232,10 +248,14 @@ PREHOOK: query: EXPLAIN SELECT EXTRACT(WEEK from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(WEEK from `__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(WEEK from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(WEEK from `__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -273,10 +293,14 @@ PREHOOK: query: EXPLAIN SELECT EXTRACT(MONTH from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(MONTH from `__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(MONTH from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(MONTH from `__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -314,10 +338,14 @@ PREHOOK: query: EXPLAIN SELECT EXTRACT(QUARTER from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(QUARTER from `__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(QUARTER from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(QUARTER from `__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -355,10 +383,14 @@ PREHOOK: query: EXPLAIN SELECT EXTRACT(YEAR from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(YEAR from `__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(YEAR from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(YEAR from `__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -381,8 +413,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT EXTRACT(SECOND from `__time`) FROM druid_table WHERE EXTRACT(SECOND from `__time`) = 0  LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(SECOND from `__time`) FROM druid_table WHERE EXTRACT(SECOND from `__time`) = 0  LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -415,9 +451,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT EXTRACT(MINUTE from `__time`) FROM druid_table
 WHERE  EXTRACT(MINUTE from `__time`) >= 0 LIMIT 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(MINUTE from `__time`) FROM druid_table
 WHERE  EXTRACT(MINUTE from `__time`) >= 0 LIMIT 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -454,10 +494,14 @@ PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR from `__time`) FROM druid_table
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -494,9 +538,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT EXTRACT(DAY from `__time`), EXTRACT(DAY from `__time`) DIV 7 AS WEEK, SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2) AS day_str
 FROM druid_table WHERE SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2)  = 31 LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(DAY from `__time`), EXTRACT(DAY from `__time`) DIV 7 AS WEEK, SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2) AS day_str
 FROM druid_table WHERE SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2)  = 31 LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -531,9 +579,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT EXTRACT(WEEK from `__time`) FROM druid_table WHERE EXTRACT(WEEK from `__time`) >= 1
 AND  EXTRACT(WEEK from `__time`) DIV 4 + 1 = 1 LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(WEEK from `__time`) FROM druid_table WHERE EXTRACT(WEEK from `__time`) >= 1
 AND  EXTRACT(WEEK from `__time`) DIV 4 + 1 = 1 LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -568,9 +620,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT EXTRACT(MONTH FROM  `__time`) / 4 + 1, EXTRACT(MONTH FROM  `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 6, 2) as month_str FROM druid_table
 WHERE EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 AND EXTRACT(MONTH FROM  `__time`) BETWEEN 11 AND 12 LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(MONTH FROM  `__time`) / 4 + 1, EXTRACT(MONTH FROM  `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 6, 2) as month_str FROM druid_table
 WHERE EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 AND EXTRACT(MONTH FROM  `__time`) BETWEEN 11 AND 12 LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -605,9 +661,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT EXTRACT(QUARTER from `__time`),  EXTRACT(MONTH FROM  `__time`) / 4 + 1 as q_number FROM druid_table WHERE EXTRACT(QUARTER from `__time`) >= 4
           AND EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(QUARTER from `__time`),  EXTRACT(MONTH FROM  `__time`) / 4 + 1 as q_number FROM druid_table WHERE EXTRACT(QUARTER from `__time`) >= 4
           AND EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -642,9 +702,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT EXTRACT(YEAR from `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 1, 4) AS year_str FROM druid_table WHERE EXTRACT(YEAR from `__time`) >= 1969
 AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(YEAR from `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 1, 4) AS year_str FROM druid_table WHERE EXTRACT(YEAR from `__time`) >= 1969
 AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -678,8 +742,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969	1969
 PREHOOK: query: explain SELECT CAST(`__time` AS TIMESTAMP) AS `x_time`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS TIMESTAMP) ORDER BY `x_time` LIMIT 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT CAST(`__time` AS TIMESTAMP) AS `x_time`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS TIMESTAMP) ORDER BY `x_time` LIMIT 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -712,8 +780,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 16:00:00	-35057.677050709724
 PREHOOK: query: explain SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS DATE) ORDER BY `x_date` LIMIT 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS DATE) ORDER BY `x_date` LIMIT 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -805,11 +877,15 @@ year(date_c), month(date_c),day(date_c),
 year(timestamp_c), month(timestamp_c),day(timestamp_c), hour(timestamp_c), minute (timestamp_c), second (timestamp_c)
 from druid_test_extract_from_string_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_test_extract_from_string_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select
 year(date_c), month(date_c),day(date_c),
 year(timestamp_c), month(timestamp_c),day(timestamp_c), hour(timestamp_c), minute (timestamp_c), second (timestamp_c)
 from druid_test_extract_from_string_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_test_extract_from_string_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

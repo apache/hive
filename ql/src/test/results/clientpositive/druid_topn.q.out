@@ -67,6 +67,8 @@ GROUP BY robot
 ORDER BY m DESC
 LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT robot, max(added) as m, sum(variation)
 FROM druid_table_1_n1
@@ -74,6 +76,8 @@ GROUP BY robot
 ORDER BY m DESC
 LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -103,6 +107,8 @@ GROUP BY robot, `__time`
 ORDER BY s DESC
 LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT robot, `__time`, max(added), sum(variation) as s
 FROM druid_table_1_n1
@@ -110,6 +116,8 @@ GROUP BY robot, `__time`
 ORDER BY s DESC
 LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -139,6 +147,8 @@ GROUP BY robot, floor_year(`__time`)
 ORDER BY s DESC
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
 FROM druid_table_1_n1
@@ -146,6 +156,8 @@ GROUP BY robot, floor_year(`__time`)
 ORDER BY s DESC
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -175,6 +187,8 @@ GROUP BY robot, floor_month(`__time`)
 ORDER BY s
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added), sum(variation) as s
 FROM druid_table_1_n1
@@ -182,6 +196,8 @@ GROUP BY robot, floor_month(`__time`)
 ORDER BY s
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -211,6 +227,8 @@ GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY s DESC, m DESC
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
 FROM druid_table_1_n1
@@ -218,6 +236,8 @@ GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY s DESC, m DESC
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -247,6 +267,8 @@ GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY robot ASC, m DESC
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
 FROM druid_table_1_n1
@@ -254,6 +276,8 @@ GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY robot ASC, m DESC
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -284,6 +308,8 @@ GROUP BY robot, floor_year(`__time`)
 ORDER BY s
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
 FROM druid_table_1_n1
@@ -292,6 +318,8 @@ GROUP BY robot, floor_year(`__time`)
 ORDER BY s
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -324,6 +352,8 @@ GROUP BY robot, floor_hour(`__time`)
 ORDER BY m
 LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_hour(`__time`), max(added) as m, sum(variation)
 FROM druid_table_1_n1
@@ -334,6 +364,8 @@ GROUP BY robot, floor_hour(`__time`)
 ORDER BY m
 LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_1_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

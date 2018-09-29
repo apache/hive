@@ -33,6 +33,9 @@ where asceding.rnk = descending.rnk
 order by asceding.rnk
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select  asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing
 from(select *
@@ -67,6 +70,9 @@ where asceding.rnk = descending.rnk
 order by asceding.rnk
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage

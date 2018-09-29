@@ -92,12 +92,20 @@ merge into lineitem2 using
 	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
 	when matched then delete
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem2
+PREHOOK: Input: default@lineitem_stage
+PREHOOK: Output: default@lineitem2
+PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: explain reoptimization
 merge into lineitem2 using
 	(select * from lineitem_stage) sub
 	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
 	when matched then delete
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem2
+POSTHOOK: Input: default@lineitem_stage
+POSTHOOK: Output: default@lineitem2
+POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(lineitem2)lineitem2.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
 Vertex dependency in root stage
 Map 2 <- Map 1 (BROADCAST_EDGE)

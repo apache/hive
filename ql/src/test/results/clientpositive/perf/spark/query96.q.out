@@ -13,6 +13,11 @@ where ss_sold_time_sk = time_dim.t_time_sk
 order by count(*)
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@time_dim
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  count(*) 
 from store_sales
@@ -28,6 +33,11 @@ where ss_sold_time_sk = time_dim.t_time_sk
 order by count(*)
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@time_dim
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

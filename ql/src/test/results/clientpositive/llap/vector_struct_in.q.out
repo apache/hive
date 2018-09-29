@@ -30,6 +30,8 @@ struct('nine','1'),
 struct('ten','1')
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
@@ -44,6 +46,8 @@ struct('nine','1'),
 struct('ten','1')
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -153,6 +157,8 @@ struct('nine','1'),
 struct('ten','1')
 ) as b from test_1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -167,6 +173,8 @@ struct('nine','1'),
 struct('ten','1')
 ) as b from test_1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -288,6 +296,8 @@ struct(9,1),
 struct(10,1)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
@@ -302,6 +312,8 @@ struct(9,1),
 struct(10,1)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -411,6 +423,8 @@ struct(9,1),
 struct(10,1)
 ) as b from test_2_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -425,6 +439,8 @@ struct(9,1),
 struct(10,1)
 ) as b from test_2_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -546,6 +562,8 @@ struct('nine',1),
 struct('ten',1)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from test_3 where struct(`id`, `lineid`)
 IN (
@@ -560,6 +578,8 @@ struct('nine',1),
 struct('ten',1)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -669,6 +689,8 @@ struct('nine',1),
 struct('ten',1)
 ) as b from test_3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -683,6 +705,8 @@ struct('nine',1),
 struct('ten',1)
 ) as b from test_3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -806,6 +830,8 @@ struct(1L, "a", 0.5D),
 struct(3L, "b", 1.5D)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
@@ -821,6 +847,8 @@ struct(1L, "a", 0.5D),
 struct(3L, "b", 1.5D)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -932,6 +960,8 @@ struct(1L, "a", 0.5D),
 struct(3L, "b", 1.5D)
 ) as b from test_4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select `my_bigint`, `my_string`, `my_double`, struct(`my_bigint`, `my_string`, `my_double`)
 IN (
@@ -947,6 +977,8 @@ struct(1L, "a", 0.5D),
 struct(3L, "b", 1.5D)
 ) as b from test_4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -35,6 +35,8 @@ WHERE  ((762 = cbigint)
                     AND ((79.553 != cint)
                          AND (cboolean2 != cboolean1)))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(cint),
        (AVG(cint) + -3728),
@@ -72,6 +74,8 @@ WHERE  ((762 = cbigint)
                     AND ((79.553 != cint)
                          AND (cboolean2 != cboolean1)))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -242,6 +246,8 @@ WHERE  ((762 = cbigint)
                     AND ((79.553 != cint)
                          AND (cboolean2 != cboolean1)))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(cint),
        (AVG(cint) + -3728),
@@ -279,6 +285,8 @@ WHERE  ((762 = cbigint)
                     AND ((79.553 != cint)
                          AND (cboolean2 != cboolean1)))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

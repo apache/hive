@@ -13,6 +13,9 @@ FROM (
 ) union_output
 GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT key, count(1)
 FROM (
@@ -28,6 +31,9 @@ FROM (
 ) union_output
 GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

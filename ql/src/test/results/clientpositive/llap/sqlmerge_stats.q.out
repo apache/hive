@@ -112,10 +112,20 @@ PREHOOK: query: explain merge into t as t using upd_t as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 99
 WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Input: default@upd_t
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@t
+PREHOOK: Output: default@t
 POSTHOOK: query: explain merge into t as t using upd_t as u ON t.a = u.a 
 WHEN MATCHED THEN UPDATE SET b = 99
 WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Input: default@upd_t
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@t
+POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-4 depends on stages: Stage-3

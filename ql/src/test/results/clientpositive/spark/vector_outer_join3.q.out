@@ -235,6 +235,8 @@ left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.cstring1 
 from small_alltypesorc_a_n1 c
@@ -244,6 +246,8 @@ left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a_n1 c
@@ -275,6 +279,8 @@ left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.cstring1 
 from small_alltypesorc_a_n1 c
@@ -284,6 +290,8 @@ left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a_n1 c
@@ -315,6 +323,8 @@ left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1 and hd.cint = c.cint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.cstring1 
 from small_alltypesorc_a_n1 c
@@ -324,6 +334,8 @@ left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1 and hd.cint = c.cint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a_n1 c
