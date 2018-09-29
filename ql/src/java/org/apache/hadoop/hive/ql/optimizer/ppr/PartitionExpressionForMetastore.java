@@ -48,8 +48,17 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExpressionForMetastore.class);
 
   @Override
-  public String convertExprToFilter(byte[] exprBytes) throws MetaException {
-    return deserializeExpr(exprBytes).getExprString();
+  public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName) throws MetaException {
+    ExprNodeGenericFuncDesc expr = deserializeExpr(exprBytes);
+    if ((defaultPartitionName != null) && (!defaultPartitionName.isEmpty())) {
+      try {
+        ExprNodeDescUtils.replaceNullFiltersWithDefaultPartition(expr, defaultPartitionName);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to replace \"is null\" and \"is not null\" expression with default partition", ex);
+        throw new MetaException(ex.getMessage());
+      }
+    }
+    return expr.getExprString();
   }
 
   @Override

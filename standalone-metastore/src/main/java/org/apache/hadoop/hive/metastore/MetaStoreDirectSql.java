@@ -493,11 +493,17 @@ class MetaStoreDirectSql {
 
   public boolean generateSqlFilterForPushdown(
       Table table, ExpressionTree tree, SqlFilterForPushdown result) throws MetaException {
+    return generateSqlFilterForPushdown(table, tree, null, result);
+  }
+
+  public boolean generateSqlFilterForPushdown(Table table, ExpressionTree tree, String defaultPartitionName,
+                                              SqlFilterForPushdown result) throws MetaException {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
     boolean dbHasJoinCastBug = DatabaseProduct.hasJoinOperationOrderBug(dbType);
     result.table = table;
     result.filter = PartitionFilterGenerator.generateSqlFilter(table, tree, result.params,
-        result.joins, dbHasJoinCastBug, defaultPartName, dbType, schema);
+            result.joins, dbHasJoinCastBug, ((defaultPartitionName == null) ? defaultPartName : defaultPartitionName),
+            dbType, schema);
     return result.filter != null;
   }
 
@@ -1277,7 +1283,8 @@ class MetaStoreDirectSql {
         nodeValue = MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(nodeValue);
       }
 
-      if (colType != valType) {
+      boolean isDefaultPartition = (valType == FilterType.String) && defaultPartName.equals(nodeValue);
+      if ((colType != valType) && (!isDefaultPartition)) {
         // It's not clear how filtering for e.g. "stringCol > 5" should work (which side is
         // to be coerced?). Let the expression evaluation sort this one out, not metastore.
         filterBuffer.setError("Cannot push down filter for "
@@ -1307,7 +1314,7 @@ class MetaStoreDirectSql {
         params.add(nodeValue);
       }
       String tableColumn = tableValue;
-      if (colType != FilterType.String) {
+      if ((colType != FilterType.String) && (!isDefaultPartition)) {
         // The underlying database field is varchar, we need to compare numbers.
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";

@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -47,7 +49,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import com.google.common.collect.Lists;
 
 public class ExprNodeDescUtils {
 
@@ -140,6 +141,37 @@ public class ExprNodeDescUtils {
       if (origin.getChildren() != null) {
         for (ExprNodeDesc child : origin.getChildren()) {
           replaceEqualDefaultPartition(child, defaultPartitionName);
+        }
+      }
+    }
+  }
+
+  public static void replaceNullFiltersWithDefaultPartition(ExprNodeDesc origin,
+                                            String defaultPartitionName) throws SemanticException {
+    // Convert "ptn_col isnull" to "ptn_col = default_partition" and
+    // "ptn_col isnotnull" to "ptn_col <> default_partition"
+    String fnName = null;
+    if (origin instanceof ExprNodeGenericFuncDesc) {
+      if (((ExprNodeGenericFuncDesc) origin).getGenericUDF() instanceof GenericUDFOPNull) {
+        fnName = "=";
+      } else if (((ExprNodeGenericFuncDesc) origin).getGenericUDF() instanceof GenericUDFOPNotNull) {
+        fnName = "<>";
+      }
+    }
+    // Found an expression for function "isnull" or "isnotnull"
+    if (fnName != null) {
+      List<ExprNodeDesc> children = origin.getChildren();
+      assert(children.size() == 1);
+      ExprNodeConstantDesc defaultPartition = new ExprNodeConstantDesc(defaultPartitionName);
+      children.add(defaultPartition);
+      ((ExprNodeGenericFuncDesc) origin).setChildren(children);
+
+      ((ExprNodeGenericFuncDesc) origin).setGenericUDF(
+              FunctionRegistry.getFunctionInfo(fnName).getGenericUDF());
+    } else {
+      if (origin.getChildren() != null) {
+        for (ExprNodeDesc child : origin.getChildren()) {
+          replaceNullFiltersWithDefaultPartition(child, defaultPartitionName);
         }
       }
     }
