@@ -878,6 +878,46 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
+  public void testIncrementalDumpEmptyDumpDirectory() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId);
+
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId);
+
+    // create events for some other database and then dump the primaryDbName to dump an empty directory.
+    String testDbName = primaryDbName + "_test";
+    tuple = primary.run(" create database " + testDbName)
+            .run("create table " + testDbName + ".tbl (fld int)")
+            .dump(primaryDbName, tuple.lastReplicationId);
+
+    // Incremental load to existing database with empty dump directory should set the repl id to the last event at src.
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId);
+
+    // Incremental load to non existing db should return database not exist error.
+    tuple = primary.dump("someJunkDB", tuple.lastReplicationId);
+    CommandProcessorResponse response = replica.runCommand("REPL LOAD someJunkDB from " + tuple.dumpLocation);
+    response.getErrorMessage().toLowerCase().contains("org.apache.hadoop.hive.ql.metadata.hiveException: " +
+            "database does not exist");
+
+    // Bootstrap load from an empty dump directory should return empty load directory error.
+    tuple = primary.dump("someJunkDB", null);
+    response = replica.runCommand("REPL LOAD someJunkDB from " + tuple.dumpLocation);
+    response.getErrorMessage().toLowerCase().contains("org.apache.hadoop.hive.ql.parse.semanticException:" +
+            " no data to load in path");
+
+    primary.run(" drop database if exists " + testDbName + " cascade");
+  }
+
+  @Test
   public void testIncrementalDumpMultiIteration() throws Throwable {
     WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
 
