@@ -90,11 +90,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentDate;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentTimestamp;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentUser;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -672,15 +667,6 @@ public abstract class BaseSemanticAnalyzer {
     final String defaultValue;
 
     ConstraintInfo(String colName, String constraintName,
-        boolean enable, boolean validate, boolean rely) {
-      this.colName = colName;
-      this.constraintName = constraintName;
-      this.enable = enable;
-      this.validate = validate;
-      this.rely = rely;
-      this.defaultValue = null;
-    }
-    ConstraintInfo(String colName, String constraintName,
                    boolean enable, boolean validate, boolean rely, String defaultValue) {
       this.colName = colName;
       this.constraintName = constraintName;
@@ -821,26 +807,26 @@ public abstract class BaseSemanticAnalyzer {
     generateConstraintInfos(child, columnNames.build(), cstrInfos, null, null);
   }
 
-  private static boolean isDefaultValueAllowed(final ExprNodeDesc defaultValExpr) {
+  private static boolean isDefaultValueAllowed(ExprNodeDesc defaultValExpr) {
+    while (FunctionRegistry.isOpCast(defaultValExpr)) {
+      defaultValExpr = defaultValExpr.getChildren().get(0);
+    }
+
     if(defaultValExpr instanceof ExprNodeConstantDesc) {
       return true;
     }
-    else if(FunctionRegistry.isOpCast(defaultValExpr)) {
-      return isDefaultValueAllowed(defaultValExpr.getChildren().get(0));
-    }
-    else if(defaultValExpr instanceof ExprNodeGenericFuncDesc){
-      ExprNodeGenericFuncDesc defFunc = (ExprNodeGenericFuncDesc)defaultValExpr;
-      if(defFunc.getGenericUDF() instanceof GenericUDFOPNull
-          || defFunc.getGenericUDF() instanceof GenericUDFCurrentTimestamp
-          || defFunc.getGenericUDF() instanceof GenericUDFCurrentDate
-          || defFunc.getGenericUDF() instanceof GenericUDFCurrentUser
-          || defFunc.getGenericUDF() instanceof GenericUDFSurrogateKey){
-        return true;
+
+    if(defaultValExpr instanceof ExprNodeGenericFuncDesc){
+      for (ExprNodeDesc argument : defaultValExpr.getChildren()) {
+        if (!isDefaultValueAllowed(argument)) {
+          return false;
+        }
       }
+      return true;
     }
+
     return false;
   }
-
 
   // given an ast node this method recursively goes over checkExpr ast. If it finds a node of type TOK_SUBQUERY_EXPR
   // it throws an error.
@@ -1833,18 +1819,9 @@ public abstract class BaseSemanticAnalyzer {
     return transactionalInQuery;
   }
 
-  /**
-   * Construct list bucketing context.
-   *
-   * @param skewedColNames
-   * @param skewedValues
-   * @param skewedColValueLocationMaps
-   * @param isStoredAsSubDirectories
-   * @return
-   */
   protected ListBucketingCtx constructListBucketingCtx(List<String> skewedColNames,
       List<List<String>> skewedValues, Map<List<String>, String> skewedColValueLocationMaps,
-      boolean isStoredAsSubDirectories, HiveConf conf) {
+      boolean isStoredAsSubDirectories) {
     ListBucketingCtx lbCtx = new ListBucketingCtx();
     lbCtx.setSkewedColNames(skewedColNames);
     lbCtx.setSkewedColValues(skewedValues);
@@ -2086,7 +2063,7 @@ public abstract class BaseSemanticAnalyzer {
     }
     String normalizedColSpec = originalColSpec;
     if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
-      normalizedColSpec = normalizeDateCol(colValue, originalColSpec);
+      normalizedColSpec = normalizeDateCol(colValue);
     }
     if (!normalizedColSpec.equals(originalColSpec)) {
       STATIC_LOG.warn("Normalizing partition spec - " + colName + " from "
@@ -2095,8 +2072,7 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  private static String normalizeDateCol(
-      Object colValue, String originalColSpec) throws SemanticException {
+  private static String normalizeDateCol(Object colValue) throws SemanticException {
     Date value;
     if (colValue instanceof DateWritableV2) {
       value = ((DateWritableV2) colValue).get(); // Time doesn't matter.
@@ -2145,10 +2121,6 @@ public abstract class BaseSemanticAnalyzer {
     } catch (Exception e) {
       throw new SemanticException(e);
     }
-  }
-
-  private Path tryQualifyPath(Path path) throws IOException {
-    return tryQualifyPath(path,conf);
   }
 
   public static Path tryQualifyPath(Path path, HiveConf conf) throws IOException {
