@@ -170,7 +170,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         ? work.dbNameOrPattern
         : "?";
     replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(),
-            evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName));
+            evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
+                    work.maxEventLimit()));
     replLogger.startLog();
     while (evIter.hasNext()) {
       NotificationEvent ev = evIter.next();

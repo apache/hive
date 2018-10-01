@@ -10254,14 +10254,46 @@ public class ObjectStore implements RawStore, Configurable {
       long fromEventId = rqst.getFromEventId();
       String inputDbName = rqst.getDbName();
       String catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
-      String queryStr = "select count(eventId) from " + MNotificationLog.class.getName()
-                + " where eventId > fromEventId && dbName == inputDbName && catalogName == catName";
+      long toEventId;
+      String paramSpecs;
+      List<Object> paramVals = new ArrayList<Object>();
+
+      // Build the query to count events, part by part
+      String queryStr = "select count(eventId) from " + MNotificationLog.class.getName();
+      // count fromEventId onwards events
+      queryStr = queryStr + " where eventId > fromEventId";
+      paramSpecs = "java.lang.Long fromEventId";
+      paramVals.add(new Long(fromEventId));
+
+      // dbName and catalogName could be NULL in case of transaction related events. These events
+      // are required to be processed for transaction consistency.
+      queryStr = queryStr + " && (dbName == inputDbName || dbName == null)";
+      paramSpecs = paramSpecs + ", java.lang.String inputDbName";
+      paramVals.add(inputDbName);
+
+      queryStr = queryStr + " && (catalogName == catName || catalogName == null)";
+      paramSpecs = paramSpecs +", java.lang.String catName";
+      paramVals.add(catName);
+
+      // count events upto toEventId if specified
+      if (rqst.isSetToEventId()) {
+        toEventId = rqst.getToEventId();
+        queryStr = queryStr + " && eventId <= toEventId";
+        paramSpecs = paramSpecs + ", java.lang.Long toEventId";
+        paramVals.add(new Long(toEventId));
+      }
+
       query = pm.newQuery(queryStr);
-      query.declareParameters("java.lang.Long fromEventId, java.lang.String inputDbName," +
-          " java.lang.String catName");
-      result = (Long) query.execute(fromEventId, inputDbName, catName);
+      query.declareParameters(paramSpecs);
+      result = (Long) query.executeWithArray(paramVals.toArray());
       commited = commitTransaction();
-      return new NotificationEventsCountResponse(result.longValue());
+
+      // Cap the event count by limit if specified.
+      long  eventCount = result.longValue();
+      if (rqst.isSetLimit() && eventCount > rqst.getLimit())
+        eventCount = rqst.getLimit();
+
+      return new NotificationEventsCountResponse(eventCount);
     } finally {
       rollbackAndCleanup(commited, query);
     }

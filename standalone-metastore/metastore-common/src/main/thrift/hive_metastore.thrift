@@ -1147,7 +1147,9 @@ struct CurrentNotificationEventId {
 struct NotificationEventsCountRequest {
     1: required i64 fromEventId,
     2: required string dbName,
-    3: optional string catName
+    3: optional string catName,
+    4: optional i64 toEventId,
+    5: optional i64 limit
 }
 
 struct NotificationEventsCountResponse {
