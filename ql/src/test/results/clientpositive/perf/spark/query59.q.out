@@ -224,16 +224,16 @@ STAGE PLANS:
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d_month_seq BETWEEN 1197 AND 1208 and d_week_seq is not null) (type: boolean)
-                    Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_week_seq (type: int)
                       outputColumnNames: _col1
-                      Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 7 
             Map Operator Tree:
@@ -261,16 +261,16 @@ STAGE PLANS:
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d_month_seq BETWEEN 1185 AND 1196 and d_week_seq is not null) (type: boolean)
-                    Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_week_seq (type: int)
                       outputColumnNames: _col1
-                      Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Reducer 11 
             Reduce Operator Tree:

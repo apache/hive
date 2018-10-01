@@ -620,15 +620,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1049 Data size: 105941 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((not (t) IN (-1, -2, -3)) and (s like 'bob%') and s is not null and t BETWEEN 25 AND 30) (type: boolean)
-                    Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t (type: tinyint), s (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: string)
                         sort order: ++
-                        Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -637,10 +637,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -690,15 +690,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1049 Data size: 105941 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((not (t) IN (-1, -2, -3)) and (s like 'bob%') and s is not null and t BETWEEN 25 AND 30) (type: boolean)
-                    Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t (type: tinyint), s (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint), _col1 (type: string)
                         sort order: ++
-                        Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -707,10 +707,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 56 Data size: 5656 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 24 Data size: 2424 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -825,15 +825,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1049 Data size: 118521 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d < 12.0D) and (d >= 10.0D) and (not (s like '%car%')) and (s like '%son') and (t > 0Y) and UDFToInteger(si) BETWEEN 300 AND 400) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
                         sort order: -
-                        Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
@@ -844,13 +844,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 3
-                  Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -908,15 +908,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1049 Data size: 118521 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d < 12.0D) and (d >= 10.0D) and (not (s like '%car%')) and (s like '%son') and (t > 0Y) and UDFToInteger(si) BETWEEN 300 AND 400) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
                         sort order: -
-                        Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
@@ -927,13 +927,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 565 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 3
-                  Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1057,15 +1057,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1049 Data size: 118521 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d < 12.0D) and (d >= 10) and (not (s like '%car%')) and (s like '%son') and (t <> 101Y) and (t > 0Y) and (t > 10Y) and si BETWEEN 300 AND 400) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
                         sort order: -
-                        Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
@@ -1076,14 +1076,14 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 3
-                  Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col3 (type: string)
                     sort order: -
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
         Reducer 3 
@@ -1092,13 +1092,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 3
-                  Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1161,15 +1161,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1049 Data size: 118521 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d < 12.0D) and (d >= 10) and (not (s like '%car%')) and (s like '%son') and (t <> 101Y) and (t > 0Y) and (t > 10Y) and si BETWEEN 300 AND 400) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col3 (type: string)
                         sort order: -
-                        Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
             Execution mode: llap
@@ -1180,14 +1180,14 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 3
-                  Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col3 (type: string)
                     sort order: -
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: double)
         Reducer 3 
@@ -1196,13 +1196,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: double), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 3
-                  Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 339 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

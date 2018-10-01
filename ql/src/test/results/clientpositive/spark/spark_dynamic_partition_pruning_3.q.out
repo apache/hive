@@ -983,11 +983,11 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (col1 is not null and col2 BETWEEN 1 AND 3) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col1 (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
@@ -995,15 +995,15 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
                             Target Columns: [Map 2 -> [part_col:int (part_col)]]
-                            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 

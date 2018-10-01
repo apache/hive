@@ -71,11 +71,11 @@ STAGE PLANS:
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (s_number_employees BETWEEN 200 AND 295 and s_store_sk is not null) (type: boolean)
-                    Statistics: Num rows: 189 Data size: 361171 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int), s_city (type: string)
                       outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 189 Data size: 361171 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col4 (type: int)

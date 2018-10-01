@@ -1584,7 +1584,7 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 262 Data size: 69430 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 262 Data size: 46723 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: UDFToInteger(_col0) (type: int), CAST( _col2 AS decimal(5,2)) (type: decimal(5,2)), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2

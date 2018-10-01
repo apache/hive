@@ -70,6 +70,7 @@
         <include>dev-support/**/*</include>
         <include>druid-handler/**/*</include>
         <include>jdbc-handler/**/*</include>
+        <include>kafka-handler/**/*</include>
         <include>find-bugs/**/*</include>
         <include>hbase-handler/**/*</include>
         <include>hcatalog/**/*</include>

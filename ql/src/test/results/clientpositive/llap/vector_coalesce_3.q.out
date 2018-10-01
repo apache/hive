@@ -116,7 +116,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col2
                       input vertices:
                         1 Map 2
-                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: bigint), CASE WHEN ((COALESCE(_col2,5) > 1)) THEN (_col2) ELSE (null) END (type: bigint)
                         outputColumnNames: _col0, _col1

@@ -146,16 +146,16 @@ Stage-0
                     PARTITION_ONLY_SHUFFLE [RS_139]
                       Group By Operator [GBY_138] (rows=1 width=232)
                         Output:["_col0","_col1","_col2"],aggregations:["sum(_col1)","count(_col2)","count(_col0)"]
-                        Group By Operator [GBY_137] (rows=21333171 width=88)
+                        Group By Operator [GBY_137] (rows=191998545 width=88)
                           Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
                         <-Map 1 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_116]
                             PartitionCols:_col0
-                            Group By Operator [GBY_110] (rows=21333171 width=88)
+                            Group By Operator [GBY_110] (rows=191998545 width=88)
                               Output:["_col0","_col1","_col2"],aggregations:["sum(ss_list_price)","count(ss_list_price)"],keys:ss_list_price
-                              Select Operator [SEL_104] (rows=21333171 width=88)
+                              Select Operator [SEL_104] (rows=191998545 width=88)
                                 Output:["ss_list_price"]
-                                Filter Operator [FIL_98] (rows=21333171 width=88)
+                                Filter Operator [FIL_98] (rows=191998545 width=88)
                                   predicate:((ss_list_price BETWEEN 142 AND 152 or ss_coupon_amt BETWEEN 3054 AND 4054 or ss_wholesale_cost BETWEEN 80 AND 100) and ss_quantity BETWEEN 16 AND 20)
                                   TableScan [TS_0] (rows=575995635 width=88)
                                     default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_wholesale_cost","ss_list_price","ss_coupon_amt"]
@@ -169,16 +169,16 @@ Stage-0
                     PARTITION_ONLY_SHUFFLE [RS_145]
                       Group By Operator [GBY_144] (rows=1 width=232)
                         Output:["_col0","_col1","_col2"],aggregations:["sum(_col1)","count(_col2)","count(_col0)"]
-                        Group By Operator [GBY_143] (rows=21333171 width=88)
+                        Group By Operator [GBY_143] (rows=191998545 width=88)
                           Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
                         <-Map 1 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_117]
                             PartitionCols:_col0
-                            Group By Operator [GBY_111] (rows=21333171 width=88)
+                            Group By Operator [GBY_111] (rows=191998545 width=88)
                               Output:["_col0","_col1","_col2"],aggregations:["sum(ss_list_price)","count(ss_list_price)"],keys:ss_list_price
-                              Select Operator [SEL_105] (rows=21333171 width=88)
+                              Select Operator [SEL_105] (rows=191998545 width=88)
                                 Output:["ss_list_price"]
-                                Filter Operator [FIL_99] (rows=21333171 width=88)
+                                Filter Operator [FIL_99] (rows=191998545 width=88)
                                   predicate:((ss_list_price BETWEEN 66 AND 76 or ss_coupon_amt BETWEEN 920 AND 1920 or ss_wholesale_cost BETWEEN 4 AND 24) and ss_quantity BETWEEN 11 AND 15)
                                    Please refer to the previous TableScan [TS_0]
             <-Reducer 14 [CUSTOM_SIMPLE_EDGE] vectorized
@@ -191,16 +191,16 @@ Stage-0
                     PARTITION_ONLY_SHUFFLE [RS_151]
                       Group By Operator [GBY_150] (rows=1 width=232)
                         Output:["_col0","_col1","_col2"],aggregations:["sum(_col1)","count(_col2)","count(_col0)"]
-                        Group By Operator [GBY_149] (rows=21333171 width=88)
+                        Group By Operator [GBY_149] (rows=191998545 width=88)
                           Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
                         <-Map 1 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_118]
                             PartitionCols:_col0
-                            Group By Operator [GBY_112] (rows=21333171 width=88)
+                            Group By Operator [GBY_112] (rows=191998545 width=88)
                               Output:["_col0","_col1","_col2"],aggregations:["sum(ss_list_price)","count(ss_list_price)"],keys:ss_list_price
-                              Select Operator [SEL_106] (rows=21333171 width=88)
+                              Select Operator [SEL_106] (rows=191998545 width=88)
                                 Output:["ss_list_price"]
-                                Filter Operator [FIL_100] (rows=21333171 width=88)
+                                Filter Operator [FIL_100] (rows=191998545 width=88)
                                   predicate:((ss_list_price BETWEEN 91 AND 101 or ss_coupon_amt BETWEEN 1430 AND 2430 or ss_wholesale_cost BETWEEN 32 AND 52) and ss_quantity BETWEEN 6 AND 10)
                                    Please refer to the previous TableScan [TS_0]
             <-Reducer 3 [CUSTOM_SIMPLE_EDGE] vectorized
@@ -213,16 +213,16 @@ Stage-0
                     PARTITION_ONLY_SHUFFLE [RS_121]
                       Group By Operator [GBY_120] (rows=1 width=232)
                         Output:["_col0","_col1","_col2"],aggregations:["sum(_col1)","count(_col2)","count(_col0)"]
-                        Group By Operator [GBY_119] (rows=21333171 width=88)
+                        Group By Operator [GBY_119] (rows=191998545 width=88)
                           Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
                         <-Map 1 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_113]
                             PartitionCols:_col0
-                            Group By Operator [GBY_107] (rows=21333171 width=88)
+                            Group By Operator [GBY_107] (rows=191998545 width=88)
                               Output:["_col0","_col1","_col2"],aggregations:["sum(ss_list_price)","count(ss_list_price)"],keys:ss_list_price
-                              Select Operator [SEL_101] (rows=21333171 width=88)
+                              Select Operator [SEL_101] (rows=191998545 width=88)
                                 Output:["ss_list_price"]
-                                Filter Operator [FIL_95] (rows=21333171 width=88)
+                                Filter Operator [FIL_95] (rows=191998545 width=88)
                                   predicate:((ss_list_price BETWEEN 11 AND 21 or ss_coupon_amt BETWEEN 460 AND 1460 or ss_wholesale_cost BETWEEN 14 AND 34) and ss_quantity BETWEEN 0 AND 5)
                                    Please refer to the previous TableScan [TS_0]
             <-Reducer 6 [CUSTOM_SIMPLE_EDGE] vectorized
@@ -235,16 +235,16 @@ Stage-0
                     PARTITION_ONLY_SHUFFLE [RS_127]
                       Group By Operator [GBY_126] (rows=1 width=232)
                         Output:["_col0","_col1","_col2"],aggregations:["sum(_col1)","count(_col2)","count(_col0)"]
-                        Group By Operator [GBY_125] (rows=21333171 width=88)
+                        Group By Operator [GBY_125] (rows=191998545 width=88)
                           Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
                         <-Map 1 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_114]
                             PartitionCols:_col0
-                            Group By Operator [GBY_108] (rows=21333171 width=88)
+                            Group By Operator [GBY_108] (rows=191998545 width=88)
                               Output:["_col0","_col1","_col2"],aggregations:["sum(ss_list_price)","count(ss_list_price)"],keys:ss_list_price
-                              Select Operator [SEL_102] (rows=21333171 width=88)
+                              Select Operator [SEL_102] (rows=191998545 width=88)
                                 Output:["ss_list_price"]
-                                Filter Operator [FIL_96] (rows=21333171 width=88)
+                                Filter Operator [FIL_96] (rows=191998545 width=88)
                                   predicate:((ss_list_price BETWEEN 28 AND 38 or ss_coupon_amt BETWEEN 2513 AND 3513 or ss_wholesale_cost BETWEEN 42 AND 62) and ss_quantity BETWEEN 26 AND 30)
                                    Please refer to the previous TableScan [TS_0]
             <-Reducer 8 [CUSTOM_SIMPLE_EDGE] vectorized
@@ -257,16 +257,16 @@ Stage-0
                     PARTITION_ONLY_SHUFFLE [RS_133]
                       Group By Operator [GBY_132] (rows=1 width=232)
                         Output:["_col0","_col1","_col2"],aggregations:["sum(_col1)","count(_col2)","count(_col0)"]
-                        Group By Operator [GBY_131] (rows=21333171 width=88)
+                        Group By Operator [GBY_131] (rows=191998545 width=88)
                           Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
                         <-Map 1 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_115]
                             PartitionCols:_col0
-                            Group By Operator [GBY_109] (rows=21333171 width=88)
+                            Group By Operator [GBY_109] (rows=191998545 width=88)
                               Output:["_col0","_col1","_col2"],aggregations:["sum(ss_list_price)","count(ss_list_price)"],keys:ss_list_price
-                              Select Operator [SEL_103] (rows=21333171 width=88)
+                              Select Operator [SEL_103] (rows=191998545 width=88)
                                 Output:["ss_list_price"]
-                                Filter Operator [FIL_97] (rows=21333171 width=88)
+                                Filter Operator [FIL_97] (rows=191998545 width=88)
                                   predicate:((ss_list_price BETWEEN 135 AND 145 or ss_coupon_amt BETWEEN 14180 AND 15180 or ss_wholesale_cost BETWEEN 38 AND 58) and ss_quantity BETWEEN 21 AND 25)
                                    Please refer to the previous TableScan [TS_0]
 

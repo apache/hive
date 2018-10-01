@@ -4209,10 +4209,10 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col1, _col2, _col4
-                Statistics: Num rows: 500 Data size: 50028 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 50216 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 500 Data size: 50028 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 50216 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string), _col2 (type: bigint), _col4 (type: boolean)
         Reducer 4 
             Execution mode: llap
@@ -4224,12 +4224,12 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col1, _col2, _col4, _col5
-                Statistics: Num rows: 500 Data size: 52028 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 52216 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col4 is not null and (_col2 <> 0L)) or _col1 is not null or _col5 is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 52028 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 52216 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 500 Data size: 52028 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 52216 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash

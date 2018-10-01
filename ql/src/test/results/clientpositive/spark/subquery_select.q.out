@@ -3843,9 +3843,9 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_size BETWEEN 1 AND 20 (type: boolean)
-                    Statistics: Num rows: 2 Data size: 242 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 2 Data size: 242 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -3863,7 +3863,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_partkey BETWEEN 1 AND 20 (type: boolean)
-                    Statistics: Num rows: 2 Data size: 242 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(p_partkey), count(p_partkey)
                       mode: hash

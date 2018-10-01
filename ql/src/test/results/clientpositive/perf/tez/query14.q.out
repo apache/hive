@@ -340,9 +340,9 @@ Stage-0
                                                     <-Map 21 [SIMPLE_EDGE] vectorized
                                                       SHUFFLE [RS_1184]
                                                         PartitionCols:_col0
-                                                        Select Operator [SEL_1181] (rows=8116 width=1119)
+                                                        Select Operator [SEL_1181] (rows=73049 width=1119)
                                                           Output:["_col0"]
-                                                          Filter Operator [FIL_1180] (rows=8116 width=1119)
+                                                          Filter Operator [FIL_1180] (rows=73049 width=1119)
                                                             predicate:(d_date_sk is not null and d_year BETWEEN 1998 AND 2000)
                                                             TableScan [TS_13] (rows=73049 width=1119)
                                                               default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
@@ -368,9 +368,9 @@ Stage-0
                                                     <-Map 35 [SIMPLE_EDGE] vectorized
                                                       SHUFFLE [RS_1202]
                                                         PartitionCols:_col0
-                                                        Select Operator [SEL_1199] (rows=8116 width=1119)
+                                                        Select Operator [SEL_1199] (rows=73049 width=1119)
                                                           Output:["_col0"]
-                                                          Filter Operator [FIL_1198] (rows=8116 width=1119)
+                                                          Filter Operator [FIL_1198] (rows=73049 width=1119)
                                                             predicate:(d_date_sk is not null and d_year BETWEEN 1998 AND 2000)
                                                             TableScan [TS_24] (rows=73049 width=1119)
                                                               default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
@@ -396,9 +396,9 @@ Stage-0
                                                     <-Map 86 [SIMPLE_EDGE] vectorized
                                                       SHUFFLE [RS_1070]
                                                         PartitionCols:_col0
-                                                        Select Operator [SEL_1064] (rows=8116 width=1119)
+                                                        Select Operator [SEL_1064] (rows=73049 width=1119)
                                                           Output:["_col0"]
-                                                          Filter Operator [FIL_1063] (rows=8116 width=1119)
+                                                          Filter Operator [FIL_1063] (rows=73049 width=1119)
                                                             predicate:(d_date_sk is not null and d_year BETWEEN 1999 AND 2001)
                                                             TableScan [TS_97] (rows=73049 width=1119)
                                                               default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
