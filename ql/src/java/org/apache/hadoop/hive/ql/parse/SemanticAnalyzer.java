@@ -726,17 +726,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private static List<String> getDefaultConstraints(Table tbl, List<String> targetSchema) throws SemanticException{
-    Map<String, String> colNameToDefaultVal =  null;
-    try {
-      DefaultConstraint dc = Hive.get().getEnabledDefaultConstraints(tbl.getDbName(), tbl.getTableName());
-      colNameToDefaultVal = dc.getColNameToDefaultValueMap();
-    } catch (Exception e) {
-      if (e instanceof SemanticException) {
-        throw (SemanticException) e;
-      } else {
-        throw (new RuntimeException(e));
-      }
-    }
+    Map<String, String> colNameToDefaultVal = getColNameToDefaultValueMap(tbl);
     List<String> defaultConstraints = new ArrayList<>();
     if(targetSchema != null) {
       for (String colName : targetSchema) {
@@ -749,6 +739,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return defaultConstraints;
+  }
+
+  protected static Map<String, String> getColNameToDefaultValueMap(Table tbl) throws SemanticException {
+    Map<String, String> colNameToDefaultVal = null;
+    try {
+      DefaultConstraint dc = Hive.get().getEnabledDefaultConstraints(tbl.getDbName(), tbl.getTableName());
+      colNameToDefaultVal = dc.getColNameToDefaultValueMap();
+    } catch (Exception e) {
+      if (e instanceof SemanticException) {
+        throw (SemanticException) e;
+      } else {
+        throw (new RuntimeException(e));
+      }
+    }
+    return colNameToDefaultVal;
   }
 
   /**
@@ -770,28 +775,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return newNode;
-  }
-
-  public static String replaceDefaultKeywordForMerge(String valueClause,Table targetTable)
-      throws SemanticException {
-    List<String> defaultConstraints = null;
-    String[] values = valueClause.trim().split(",");
-    StringBuilder newValueClause = new StringBuilder();
-    for (int i = 0; i < values.length; i++) {
-      if (values[i].trim().toLowerCase().equals("`default`")) {
-        if (defaultConstraints == null) {
-          defaultConstraints = getDefaultConstraints(targetTable, null);
-        }
-        newValueClause.append(defaultConstraints.get(i));
-      }
-      else {
-        newValueClause.append(values[i]);
-      }
-      if(i != values.length-1) {
-        newValueClause.append(",");
-      }
-    }
-    return newValueClause.toString();
   }
 
   /**
@@ -4634,17 +4617,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // see if we need to fetch default constraints from metastore
     if(targetCol2Projection.size() < targetTableColNames.size()) {
-      try {
-          DefaultConstraint dc = Hive.get().getEnabledDefaultConstraints(target.getDbName(), target.getTableName());
-          colNameToDefaultVal = dc.getColNameToDefaultValueMap();
-      } catch (Exception e) {
-        if (e instanceof SemanticException) {
-          throw (SemanticException) e;
-        } else {
-          throw (new RuntimeException(e));
-        }
-      }
-
+      colNameToDefaultVal = getColNameToDefaultValueMap(target);
     }
     for (int i = 0; i < targetTableColNames.size(); i++) {
       String f = targetTableColNames.get(i);
@@ -6396,7 +6369,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       ASTNode value = entry.getValue();
-      ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
       // 0 is the function name
       for (int i = 1; i < value.getChildCount(); i++) {
         ASTNode paraExpr = (ASTNode) value.getChild(i);
