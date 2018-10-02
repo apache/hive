@@ -2815,7 +2815,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // 4. Build operator
         if (tableType == TableType.DRUID ||
-                (tableType == TableType.JDBC && tabMetaData.getProperty("hive.sql.table") != null)) {
+                (tableType == TableType.JDBC && tabMetaData.getProperty(Constants.JDBC_TABLE) != null)) {
           // Create case sensitive columns list
           List<String> originalColumnNames =
                   ((StandardStructObjectInspector)rowObjectInspector).getOriginalColumnNames();
@@ -2890,16 +2890,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   getAliasId(tableAlias, qb),
                   HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP),
                   qb.isInsideView() || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
-            LOG.debug("JDBC is running");
-            final String dataBaseType = tabMetaData.getProperty("hive.sql.database.type");
-            final String url = tabMetaData.getProperty("hive.sql.jdbc.url");
-            final String driver = tabMetaData.getProperty("hive.sql.jdbc.driver");
-            final String user = tabMetaData.getProperty("hive.sql.dbcp.username");
-            final String pswd = tabMetaData.getProperty("hive.sql.dbcp.password");
-            //final String query = tabMetaData.getProperty("hive.sql.query");
-            final String tableName = tabMetaData.getProperty("hive.sql.table");
 
-            final DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
+            final String dataBaseType = tabMetaData.getProperty(Constants.JDBC_DATABASE_TYPE);
+            final String url = tabMetaData.getProperty(Constants.JDBC_URL);
+            final String driver = tabMetaData.getProperty(Constants.JDBC_DRIVER);
+            final String user = tabMetaData.getProperty(Constants.JDBC_USERNAME);
+            final String pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
+            final String tableName = tabMetaData.getProperty(Constants.JDBC_TABLE);
+
+            DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
             SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.INSTANCE, ds);
             JdbcConvention jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
             JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, null/*catalog */, null/*schema */);
@@ -2910,7 +2909,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             JdbcHiveTableScan jdbcTableRel = new JdbcHiveTableScan(cluster, optTable, jt, jc, hts);
             tableRel = new HiveJdbcConverter(cluster, jdbcTableRel.getTraitSet().replace(HiveRelNode.CONVENTION),
-                    jdbcTableRel, jc);
+                    jdbcTableRel, jc, url, user);
           }
         } else {
           // Build row type from field <type, name>

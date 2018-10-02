@@ -31,20 +31,25 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
 
 
   public JdbcInputSplit() {
-    super((Path) null, 0, 0, EMPTY_ARRAY);
-
+    super(null, 0, 0, EMPTY_ARRAY);
+    this.limit = -1;
+    this.offset = 0;
   }
 
-
-  public JdbcInputSplit(long start, long end, Path dummyPath) {
+  public JdbcInputSplit(Path dummyPath) {
     super(dummyPath, 0, 0, EMPTY_ARRAY);
-    this.setLimit((int) start);
-    this.setOffset((int) end);
+    this.limit = -1;
+    this.offset = 0;
   }
 
+  public JdbcInputSplit(int limit, int offset, Path dummyPath) {
+    super(dummyPath, 0, 0, EMPTY_ARRAY);
+    this.limit = limit;
+    this.offset = offset;
+  }
 
   public JdbcInputSplit(int limit, int offset) {
-    super((Path) null, 0, 0, EMPTY_ARRAY);
+    super(null, 0, 0, EMPTY_ARRAY);
     this.limit = limit;
     this.offset = offset;
   }
