@@ -98,12 +98,12 @@ STAGE PLANS:
         TableScan
           alias: ext_simple_derby_table
           properties:
-            hive.sql.generated.query SELECT *
+            hive.sql.query SELECT "kkey"
 FROM "SIMPLE_DERBY_TABLE"
 WHERE 100 < "kkey"
-            hive.sql.query SELECT *
-FROM "SIMPLE_DERBY_TABLE"
-WHERE 100 < "kkey"
+            hive.sql.query.fieldNames kkey
+            hive.sql.query.fieldTypes int
+            hive.sql.query.split true
           Select Operator
             expressions: kkey (type: int)
             outputColumnNames: _col0

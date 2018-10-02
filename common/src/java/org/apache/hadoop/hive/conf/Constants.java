@@ -57,10 +57,19 @@ public class Constants {
   /* Kafka Ingestion state - valid values - START/STOP/RESET */
   public static final String DRUID_KAFKA_INGESTION = "druid.kafka.ingestion";
 
-  public static final String HIVE_JDBC_QUERY = "hive.sql.generated.query";
-  public static final String JDBC_QUERY = "hive.sql.query";
   public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
       "org.apache.hive.storage.jdbc.JdbcStorageHandler";
+  public static final String JDBC_CONFIG_PREFIX = "hive.sql";
+  public static final String JDBC_TABLE = JDBC_CONFIG_PREFIX + ".table";
+  public static final String JDBC_DATABASE_TYPE = JDBC_CONFIG_PREFIX + ".database.type";
+  public static final String JDBC_URL = JDBC_CONFIG_PREFIX + ".jdbc.url";
+  public static final String JDBC_DRIVER = JDBC_CONFIG_PREFIX + ".jdbc.driver";
+  public static final String JDBC_USERNAME = JDBC_CONFIG_PREFIX + ".dbcp.username";
+  public static final String JDBC_PASSWORD = JDBC_CONFIG_PREFIX + ".dbcp.password";
+  public static final String JDBC_QUERY = JDBC_CONFIG_PREFIX + ".query";
+  public static final String JDBC_QUERY_FIELD_NAMES = JDBC_CONFIG_PREFIX + ".query.fieldNames";
+  public static final String JDBC_QUERY_FIELD_TYPES = JDBC_CONFIG_PREFIX + ".query.fieldTypes";
+  public static final String JDBC_SPLIT_QUERY = JDBC_CONFIG_PREFIX + ".query.split";
 
   public static final String HIVE_SERVER2_JOB_CREDSTORE_PASSWORD_ENVVAR = "HIVE_JOB_CREDSTORE_PASSWORD";
   public static final String HADOOP_CREDENTIAL_PASSWORD_ENVVAR = "HADOOP_CREDSTORE_PASSWORD";

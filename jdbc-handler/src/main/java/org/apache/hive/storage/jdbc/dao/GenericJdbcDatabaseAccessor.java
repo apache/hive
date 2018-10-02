@@ -16,6 +16,7 @@ package org.apache.hive.storage.jdbc.dao;
 
 import org.apache.commons.dbcp.BasicDataSourceFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
@@ -47,7 +48,7 @@ import java.util.Properties;
  */
 public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
-  protected static final String DBCP_CONFIG_PREFIX = JdbcStorageConfigManager.CONFIG_PREFIX + ".dbcp";
+  protected static final String DBCP_CONFIG_PREFIX = Constants.JDBC_CONFIG_PREFIX + ".dbcp";
   protected static final int DEFAULT_FETCH_SIZE = 1000;
   protected static final Logger LOGGER = LoggerFactory.getLogger(GenericJdbcDatabaseAccessor.class);
   protected DataSource dbcpDataSource = null;
@@ -237,9 +238,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   protected String addLimitAndOffsetToQuery(String sql, int limit, int offset) {
     if (offset == 0) {
       return addLimitToQuery(sql, limit);
-    }
-    else {
+    } else if (limit != -1) {
       return sql + " {LIMIT " + limit + " OFFSET " + offset + "}";
+    } else {
+      return sql + " {OFFSET " + offset + "}";
     }
   }
 
@@ -248,6 +250,9 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
    * Uses generic JDBC escape functions to add a limit clause to a query string
    */
   protected String addLimitToQuery(String sql, int limit) {
+    if (limit == -1) {
+      return sql;
+    }
     return sql + " {LIMIT " + limit + "}";
   }
 
