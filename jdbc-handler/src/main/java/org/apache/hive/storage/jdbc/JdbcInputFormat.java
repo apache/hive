@@ -16,6 +16,7 @@
 package org.apache.hive.storage.jdbc;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
@@ -60,6 +61,15 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     try {
 
+      if (!job.getBoolean(Constants.JDBC_SPLIT_QUERY, true)) {
+        // We will not split this query
+        LOGGER.debug("Creating 1 input splits");
+        InputSplit[] splits = new InputSplit[1];
+        splits[0] = new JdbcInputSplit(FileInputFormat.getInputPaths(job)[0]);
+        return splits;
+      }
+
+      // We will split this query into n splits
       LOGGER.debug("Creating {} input splits", numSplits);
 
       if (dbAccessor == null) {

@@ -15,11 +15,11 @@
 package org.apache.hive.storage.jdbc.conf;
 
 import java.io.IOException;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.storage.jdbc.conf.DatabaseType;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -39,9 +39,8 @@ import java.util.Properties;
 public class JdbcStorageConfigManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStorageConfigManager.class);
-  public static final String CONFIG_PREFIX = "hive.sql";
-  public static final String CONFIG_PWD = CONFIG_PREFIX + ".dbcp.password";
-  public static final String CONFIG_USERNAME = CONFIG_PREFIX + ".dbcp.username";
+  public static final String CONFIG_USERNAME = Constants.JDBC_USERNAME;
+  public static final String CONFIG_PWD = Constants.JDBC_PASSWORD;
   private static final EnumSet<JdbcStorageConfig> DEFAULT_REQUIRED_PROPERTIES =
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
                JdbcStorageConfig.JDBC_URL,
@@ -118,12 +117,15 @@ public class JdbcStorageConfigManager {
 
 
   public static String getQueryToExecute(Configuration config) {
-    String query = config.get(JdbcStorageConfig.QUERY.getPropertyName());
-
-    if (query == null) {
-      String tableName = config.get(JdbcStorageConfig.TABLE.getPropertyName());
-      query = "select * from " + tableName;
+    String query = config.get(Constants.JDBC_QUERY);
+    if (query != null) {
+      // Already defined query, we return it
+      return query;
     }
+
+    // We generate query as select *
+    String tableName = config.get(JdbcStorageConfig.TABLE.getPropertyName());
+    query = "select * from " + tableName;
 
     String hiveFilterCondition = QueryConditionBuilder.getInstance().buildCondition(config);
     if ((hiveFilterCondition != null) && (!hiveFilterCondition.trim().isEmpty())) {
