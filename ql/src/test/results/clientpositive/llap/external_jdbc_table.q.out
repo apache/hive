@@ -233,7 +233,7 @@ POSTHOOK: Input: default@ext_simple_derby_table1
 20.0	20	20.0	20
 20.0	20	20.0	20
 74.0	100	65.0	15
-330.76	44	455.454	53
+330.76	44	455.4540100097656	53
 PREHOOK: query: select count(*) from ext_simple_derby_table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ext_simple_derby_table1
@@ -304,12 +304,12 @@ STAGE PLANS:
         TableScan
           alias: ext_simple_derby_table1
           properties:
-            hive.sql.generated.query SELECT "bkey"
-FROM "SIMPLE_DERBY_TABLE1"
-WHERE 100 < "ikey"
             hive.sql.query SELECT "bkey"
 FROM "SIMPLE_DERBY_TABLE1"
 WHERE 100 < "ikey"
+            hive.sql.query.fieldNames bkey
+            hive.sql.query.fieldTypes bigint
+            hive.sql.query.split true
           Select Operator
             expressions: bkey (type: bigint)
             outputColumnNames: _col0
@@ -381,13 +381,6 @@ STAGE PLANS:
         TableScan
           alias: ext_simple_derby_table1
           properties:
-            hive.sql.generated.query SELECT "t"."fkey", "t0"."dkey"
-FROM (SELECT *
-FROM "SIMPLE_DERBY_TABLE1"
-WHERE "ikey" IS NOT NULL) AS "t"
-INNER JOIN (SELECT *
-FROM "SIMPLE_DERBY_TABLE2"
-WHERE "ikey" IS NOT NULL) AS "t0" ON "t"."ikey" = "t0"."ikey"
             hive.sql.query SELECT "t"."fkey", "t0"."dkey"
 FROM (SELECT *
 FROM "SIMPLE_DERBY_TABLE1"
@@ -395,6 +388,9 @@ WHERE "ikey" IS NOT NULL) AS "t"
 INNER JOIN (SELECT *
 FROM "SIMPLE_DERBY_TABLE2"
 WHERE "ikey" IS NOT NULL) AS "t0" ON "t"."ikey" = "t0"."ikey"
+            hive.sql.query.fieldNames fkey,dkey
+            hive.sql.query.fieldTypes float,double
+            hive.sql.query.split false
           Select Operator
             expressions: fkey (type: float), dkey (type: double)
             outputColumnNames: _col0, _col1
@@ -464,12 +460,12 @@ STAGE PLANS:
                 TableScan
                   alias: ext_simple_derby_table2
                   properties:
-                    hive.sql.generated.query SELECT *
+                    hive.sql.query SELECT "ikey", "bkey", "fkey", "dkey"
 FROM "SIMPLE_DERBY_TABLE2"
 WHERE "ikey" IS NOT NULL
-                    hive.sql.query SELECT *
-FROM "SIMPLE_DERBY_TABLE2"
-WHERE "ikey" IS NOT NULL
+                    hive.sql.query.fieldNames ikey,bkey,fkey,dkey
+                    hive.sql.query.fieldTypes int,bigint,float,double
+                    hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: ikey (type: int)
