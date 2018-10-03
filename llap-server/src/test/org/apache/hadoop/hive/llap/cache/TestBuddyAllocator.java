@@ -87,7 +87,7 @@ public class TestBuddyAllocator {
     int min = 3, max = 8, maxAlloc = 1 << max;
     BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc,
         maxAlloc, 0, tmpDir, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"), null);
+        LlapDaemonCacheMetrics.create("test", "1"), null, true);
     for (int i = max; i >= min; --i) {
       allocSameSize(a, 1 << (max - i), i);
     }
@@ -98,7 +98,7 @@ public class TestBuddyAllocator {
     int max = 8, maxAlloc = 1 << max, allocLog2 = max - 1, arenaCount = 5;
     BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << 3, maxAlloc, maxAlloc,
         maxAlloc * arenaCount, 0, tmpDir, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"), null);
+        LlapDaemonCacheMetrics.create("test", "1"), null, true);
     allocSameSize(a, arenaCount * 2, allocLog2);
   }
 
@@ -107,7 +107,7 @@ public class TestBuddyAllocator {
     final int min = 3, max = 8, maxAlloc = 1 << max, allocsPerSize = 3;
     final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc,
         maxAlloc * 8, maxAlloc * 24, 0, tmpDir, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"), null);
+        LlapDaemonCacheMetrics.create("test", "1"), null, true);
     ExecutorService executor = Executors.newFixedThreadPool(3);
     final CountDownLatch cdlIn = new CountDownLatch(3), cdlOut = new CountDownLatch(1);
     FutureTask<Void> upTask = new FutureTask<Void>(new Callable<Void>() {
@@ -152,7 +152,7 @@ public class TestBuddyAllocator {
     final int min = 3, max = 4, maxAlloc = 1 << max, minAllocCount = 2048, threadCount = 4;
     final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc,
         (1 << min) * minAllocCount, 0, tmpDir, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"), null);
+        LlapDaemonCacheMetrics.create("test", "1"), null, true);
     ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     final CountDownLatch cdlIn = new CountDownLatch(threadCount), cdlOut = new CountDownLatch(1);
     Callable<Void> testCallable = new Callable<Void>() {
@@ -183,7 +183,7 @@ public class TestBuddyAllocator {
   public void testCachedirCreated() throws Exception {
     int min = 3, max = 8, maxAlloc = 1 << max;
     new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc, maxAlloc, 0, tmpDir + "/testifcreated",
-        new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"), null);
+        new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"), null, false);
   }
 
   static void syncThreadStart(final CountDownLatch cdlIn, final CountDownLatch cdlOut) {
@@ -200,7 +200,7 @@ public class TestBuddyAllocator {
     int min = 3, max = 8, maxAlloc = 1 << max, arenaSize = maxAlloc * arenaSizeMult;
     BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, arenaSize,
         arenaSize * arenaCount, 0, tmpDir, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"), null);
+        LlapDaemonCacheMetrics.create("test", "1"), null, true);
     allocateUp(a, min, max, allocCount, true);
     allocateDown(a, min, max, allocCount, true);
     allocateDown(a, min, max, allocCount, false);
