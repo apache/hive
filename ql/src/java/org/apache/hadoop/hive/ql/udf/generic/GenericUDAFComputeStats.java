@@ -84,6 +84,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     case INT:
     case LONG:
     case TIMESTAMP:
+    case TIMESTAMPLOCALTZ:
       return new GenericUDAFLongStatsEvaluator();
     case FLOAT:
     case DOUBLE:

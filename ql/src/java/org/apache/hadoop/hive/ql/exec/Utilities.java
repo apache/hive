@@ -2133,9 +2133,19 @@ public final class Utilities {
   public static List<String> getColumnNames(Properties props) {
     List<String> names = new ArrayList<String>();
     String colNames = props.getProperty(serdeConstants.LIST_COLUMNS);
+    return splitColNames(names, colNames);
+  }
+
+  public static List<String> getColumnNames(Configuration conf) {
+    List<String> names = new ArrayList<String>();
+    String colNames = conf.get(serdeConstants.LIST_COLUMNS);
+    return splitColNames(names, colNames);
+  }
+
+  private static List<String> splitColNames(List<String> names, String colNames) {
     String[] cols = colNames.trim().split(",");
-    for (String col : cols) {
-      if (StringUtils.isNotBlank(col)) {
+    for(String col : cols) {
+      if(StringUtils.isNotBlank(col)) {
         names.add(col);
       }
     }
