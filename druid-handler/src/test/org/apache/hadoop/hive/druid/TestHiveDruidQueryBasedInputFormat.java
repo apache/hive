@@ -49,7 +49,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "\"granularity\":\"DAY\","
           + "\"aggregations\":[],"
           + "\"postAggregations\":[],"
-          + "\"context\":null}, [localhost:8082]}]";
+          + "\"context\":{\"queryId\":\"\"}}, [localhost:8082]}]";
 
   private static final String TOPN_QUERY =
       "{  \"queryType\": \"topN\", "
@@ -86,7 +86,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "\"aggregations\":[{\"type\":\"longSum\",\"name\":\"count\",\"fieldName\":\"count\",\"expression\":null},"
           + "{\"type\":\"doubleSum\",\"name\":\"some_metric\",\"fieldName\":\"some_metric\",\"expression\":null}],"
           + "\"postAggregations\":[],"
-          + "\"context\":null,"
+          + "\"context\":{\"queryId\":\"\"},"
           + "\"descending\":false}, [localhost:8082]}]";
 
   private static final String GROUP_BY_QUERY =
@@ -119,7 +119,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "\"having\":null,"
           + "\"limitSpec\":{\"type\":\"default\",\"columns\":[{\"dimension\":\"country\",\"direction\":\"ascending\",\"dimensionOrder\":{\"type\":\"lexicographic\"}},"
           + "{\"dimension\":\"data_transfer\",\"direction\":\"ascending\",\"dimensionOrder\":{\"type\":\"lexicographic\"}}],\"limit\":5000},"
-          + "\"context\":null,"
+          + "\"context\":{\"queryId\":\"\"},"
           + "\"descending\":false}, [localhost:8082]}]";
 
   private static final String SELECT_QUERY =
@@ -149,7 +149,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "\"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],"
           + "\"virtualColumns\":[],"
           + "\"pagingSpec\":{\"pagingIdentifiers\":{},\"threshold\":5,\"fromNext\":false},"
-          + "\"context\":{\"druid.query.fetch\":true}}, [localhost:8082]}]";
+          + "\"context\":{\"druid.query.fetch\":true,\"queryId\":\"\"}}, [localhost:8082]}]";
 
   @Test
   public void testTimeZone() throws Exception {
