@@ -2267,8 +2267,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     boolean checkDefaultFs = HiveConf.getBoolVar(
         context.conf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID);
-    boolean isDefaultFs = (!checkDefaultFs) || ((fs instanceof DistributedFileSystem)
-            && HdfsUtils.isDefaultFs((DistributedFileSystem) fs));
+    boolean forceSynthetic =
+        !HiveConf.getBoolVar(context.conf, ConfVars.LLAP_IO_USE_FILEID_PATH);
+    // if forceSynthetic == true, then assume it is not a defaultFS
+    boolean isDefaultFs = (forceSynthetic == false) && ((!checkDefaultFs) || ((fs instanceof DistributedFileSystem)
+            && HdfsUtils.isDefaultFs((DistributedFileSystem) fs)));
 
     if (baseFiles.isEmpty()) {
       assert false : "acid 2.0 no base?!: " + dir;
