@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.druid.io;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Lists;
 import io.druid.java.util.http.client.Request;
 import io.druid.query.BaseQuery;
@@ -111,6 +109,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     String address = HiveConf.getVar(conf,
             HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS
     );
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
     if (StringUtils.isEmpty(address)) {
       throw new IOException("Druid broker address not specified in configuration");
     }
@@ -137,6 +136,11 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       }
     }
 
+    // Add Hive Query ID to Druid Query
+    if (queryId != null) {
+      druidQuery = withQueryId(druidQuery, queryId);
+    }
+
     // hive depends on FileSplits
     Job job = new Job(conf);
     JobContext jobContext = ShimLoader.getHadoopShims().newJobContext(job);
@@ -149,8 +153,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       case Query.TIMESERIES:
       case Query.TOPN:
       case Query.GROUP_BY:
-        return new HiveDruidSplit[] { new HiveDruidSplit(deserializeSerialize(druidQuery),
-                paths[0], new String[] {address}) };
+        return new HiveDruidSplit[] {
+            new HiveDruidSplit(druidQuery, paths[0], new String[] { address }) };
       case Query.SELECT:
         SelectQuery selectQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(
                 druidQuery, SelectQuery.class);
@@ -271,11 +275,10 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     return segmentDescriptors;
   }
 
-  private static String deserializeSerialize(String druidQuery)
-          throws JsonParseException, JsonMappingException, IOException {
-    BaseQuery<?> deserializedQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(
-            druidQuery, BaseQuery.class);
-    return DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(deserializedQuery);
+  private static String withQueryId(String druidQuery, String queryId) throws IOException {
+    Query<?> queryWithId =
+        DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, BaseQuery.class).withId(queryId);
+    return DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(queryWithId);
   }
 
   @Override
