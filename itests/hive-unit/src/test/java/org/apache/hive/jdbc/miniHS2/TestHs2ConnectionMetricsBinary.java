@@ -19,6 +19,8 @@ package org.apache.hive.jdbc.miniHS2;
 
 import java.io.IOException;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -58,13 +60,18 @@ public class TestHs2ConnectionMetricsBinary extends Hs2ConnectionMetrics {
         "-e", "show tables;"};
     BeeLine beeLine = openBeeLineConnection(beelineArgs);
 
+    // wait a couple of sec to make sure the connection is open
+    TimeUnit.SECONDS.sleep(3);
     verifyConnectionMetrics(metrics.dumpJson(), 1, 1);
     beeLine.close();
+    TimeUnit.SECONDS.sleep(3);
     verifyConnectionMetrics(metrics.dumpJson(), 0, 1);
 
     beeLine = openBeeLineConnection(beelineArgs);
+    TimeUnit.SECONDS.sleep(3);
     verifyConnectionMetrics(metrics.dumpJson(), 1, 2);
     beeLine.close();
+    TimeUnit.SECONDS.sleep(3);
     verifyConnectionMetrics(metrics.dumpJson(), 0, 2);
 
 
