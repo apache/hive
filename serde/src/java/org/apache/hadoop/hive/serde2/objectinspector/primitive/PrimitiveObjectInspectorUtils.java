@@ -805,6 +805,10 @@ public final class PrimitiveObjectInspectorUtils {
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
           .getSeconds();
       break;
+    case TIMESTAMPLOCALTZ:
+      result = ((TimestampLocalTZObjectInspector) oi).getPrimitiveWritableObject(o)
+                .getSeconds();
+      break;
     case DECIMAL:
       {
         HiveDecimal dec = ((HiveDecimalObjectInspector) oi)

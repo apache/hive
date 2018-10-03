@@ -672,13 +672,14 @@ public final class DruidStorageHandlerUtils {
     );
   }
 
-  public static String createScanAllQuery(String dataSourceName) throws JsonProcessingException {
+  public static String createScanAllQuery(String dataSourceName, List<String> columns) throws JsonProcessingException {
     final ScanQuery.ScanQueryBuilder scanQueryBuilder = ScanQuery.newScanQueryBuilder();
     final List<Interval> intervals = Arrays.asList(DEFAULT_INTERVAL);
     ScanQuery scanQuery = scanQueryBuilder
         .dataSource(dataSourceName)
         .resultFormat(ScanQuery.RESULT_FORMAT_COMPACTED_LIST)
         .intervals(new MultipleIntervalSegmentSpec(intervals))
+        .columns(columns)
         .build();
     return JSON_MAPPER.writeValueAsString(scanQuery);
   }
