@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.thrift.TException;
 
@@ -70,7 +71,7 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
     this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
         tableObj.getTableType(), partitionKeyValues, timestamp);
     try {
-      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
+      this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
@@ -117,7 +118,7 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
 
   @Override
   public Table getTableObj() throws Exception {
-    return (Table) JSONMessageFactory.getTObj(tableObjJson, Table.class);
+    return (Table) MessageBuilder.getTObj(tableObjJson, Table.class);
   }
 
   public String getTableObjJson() {

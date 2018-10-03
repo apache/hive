@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,7 +56,7 @@ public class JSONAddPrimaryKeyMessage extends AddPrimaryKeyMessage {
     this.primaryKeyListJson = new ArrayList<>();
     try {
       for (SQLPrimaryKey pk : pks) {
-        primaryKeyListJson.add(JSONMessageFactory.createPrimaryKeyObjJson(pk));
+        primaryKeyListJson.add(MessageBuilder.createPrimaryKeyObjJson(pk));
       }
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
@@ -86,7 +87,7 @@ public class JSONAddPrimaryKeyMessage extends AddPrimaryKeyMessage {
   public List<SQLPrimaryKey> getPrimaryKeys() throws Exception {
     List<SQLPrimaryKey> pks = new ArrayList<>();
     for (String pkJson : primaryKeyListJson) {
-      pks.add((SQLPrimaryKey)JSONMessageFactory.getTObj(pkJson, SQLPrimaryKey.class));
+      pks.add((SQLPrimaryKey) MessageBuilder.getTObj(pkJson, SQLPrimaryKey.class));
     }
     return pks;
   }

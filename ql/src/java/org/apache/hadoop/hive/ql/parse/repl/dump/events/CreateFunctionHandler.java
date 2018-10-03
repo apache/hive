@@ -27,21 +27,24 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 
-class CreateFunctionHandler extends AbstractEventHandler {
+class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> {
   CreateFunctionHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  CreateFunctionMessage eventMessage(String stringRepresentation) {
+    return deserializer.getCreateFunctionMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    CreateFunctionMessage createFunctionMessage =
-        deserializer.getCreateFunctionMessage(event.getMessage());
-    LOG.info("Processing#{} CREATE_MESSAGE message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} CREATE_MESSAGE message : {}", fromEventId(), eventMessageAsJSON);
     Path metadataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     FileSystem fileSystem = metadataPath.getFileSystem(withinContext.hiveConf);
 
     try (JsonWriter jsonWriter = new JsonWriter(fileSystem, metadataPath)) {
-      new FunctionSerializer(createFunctionMessage.getFunctionObj(), withinContext.hiveConf)
+      new FunctionSerializer(eventMessage.getFunctionObj(), withinContext.hiveConf)
           .writeTo(jsonWriter, withinContext.replicationSpec);
     }
     withinContext.createDmd(this).write();
