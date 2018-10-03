@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,8 +56,8 @@ public class JSONAlterTableMessage extends AlterTableMessage {
     this.timestamp = timestamp;
     this.writeId = writeId;
     try {
-      this.tableObjBeforeJson = JSONMessageFactory.createTableObjJson(tableObjBefore);
-      this.tableObjAfterJson = JSONMessageFactory.createTableObjJson(tableObjAfter);
+      this.tableObjBeforeJson = MessageBuilder.createTableObjJson(tableObjBefore);
+      this.tableObjAfterJson = MessageBuilder.createTableObjJson(tableObjAfter);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
@@ -102,12 +103,12 @@ public class JSONAlterTableMessage extends AlterTableMessage {
 
   @Override
   public Table getTableObjBefore() throws Exception {
-    return (Table) JSONMessageFactory.getTObj(tableObjBeforeJson,Table.class);
+    return (Table) MessageBuilder.getTObj(tableObjBeforeJson,Table.class);
   }
 
   @Override
   public Table getTableObjAfter() throws Exception {
-    return (Table) JSONMessageFactory.getTObj(tableObjAfterJson,Table.class);
+    return (Table) MessageBuilder.getTObj(tableObjAfterJson,Table.class);
   }
 
   public String getTableObjBeforeJson() {
