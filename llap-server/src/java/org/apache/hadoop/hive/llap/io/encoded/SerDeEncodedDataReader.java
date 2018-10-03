@@ -216,7 +216,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     fs = split.getPath().getFileSystem(daemonConf);
     fileKey = determineFileId(fs, split,
         HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
-        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID));
+        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
+        !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH));
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
         ? LlapUtil.getDbAndTableNameForMetrics(split.getPath(), true) : null;
     this.sourceInputFormat = sourceInputFormat;
@@ -1698,12 +1699,12 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private static Object determineFileId(FileSystem fs, FileSplit split,
-      boolean allowSynthetic, boolean checkDefaultFs) throws IOException {
+      boolean allowSynthetic, boolean checkDefaultFs, boolean forceSynthetic) throws IOException {
     /* TODO: support this optionally? this is not OrcSplit, but we could add a custom split.
       Object fileKey = ((OrcSplit)split).getFileKey();
       if (fileKey != null) return fileKey; */
     LlapIoImpl.LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic, checkDefaultFs);
+    return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic, checkDefaultFs, forceSynthetic);
   }
 
   @Override
