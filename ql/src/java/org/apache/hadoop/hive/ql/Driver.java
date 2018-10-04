@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -89,6 +88,8 @@ import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lock.CompileLock;
+import org.apache.hadoop.hive.ql.lock.CompileLockFactory;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -148,7 +149,6 @@ public class Driver implements IDriver {
   ByteStream.Output bos = new ByteStream.Output();
 
   private final HiveConf conf;
-  private final boolean isParallelEnabled;
   private DataInput resStream;
   private Context ctx;
   private DriverContext driverCxt;
@@ -430,8 +430,6 @@ public class Driver implements IDriver {
   public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
-    isParallelEnabled = (conf != null)
-        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
     this.userName = userName;
     this.hookRunner = new HookRunner(conf, console);
     this.queryInfo = queryInfo;
@@ -483,7 +481,8 @@ public class Driver implements IDriver {
   // deferClose indicates if the close/destroy should be deferred when the process has been
   // interrupted, it should be set to true if the compile is called within another method like
   // runInternal, which defers the close to the called in that method.
-  private void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorResponse {
+  @VisibleForTesting
+  void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorResponse {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
     lDrvState.stateLock.lock();
@@ -1465,8 +1464,6 @@ public class Driver implements IDriver {
     }
   }
 
-  private static final ReentrantLock globalCompileLock = new ReentrantLock();
-
   private void compileInternal(String command, boolean deferClose) throws CommandProcessorResponse {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
@@ -1475,94 +1472,36 @@ public class Driver implements IDriver {
 
     PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.WAIT_COMPILE);
-    final ReentrantLock compileLock = tryAcquireCompileLock(isParallelEnabled,
-      command);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.WAIT_COMPILE);
-    if (metrics != null) {
-      metrics.decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
-    }
 
-    if (compileLock == null) {
-      throw createProcessorResponse(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode());
-    }
+    try (CompileLock compileLock = CompileLockFactory.newInstance(conf, command)) {
+      boolean success = compileLock.tryAcquire();
 
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.WAIT_COMPILE);
 
-    try {
-      compile(command, true, deferClose);
-    } catch (CommandProcessorResponse cpr) {
-      try {
-        releaseLocksAndCommitOrRollback(false);
-      } catch (LockException e) {
-        LOG.warn("Exception in releasing locks. " + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      if (metrics != null) {
+        metrics.decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
       }
-      throw cpr;
-    } finally {
-      compileLock.unlock();
+      if (!success) {
+        errorMessage = ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg();
+        throw createProcessorResponse(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode());
+      }
+
+      try {
+        compile(command, true, deferClose);
+      } catch (CommandProcessorResponse cpr) {
+        try {
+          releaseLocksAndCommitOrRollback(false);
+        } catch (LockException e) {
+          LOG.warn("Exception in releasing locks. " + org.apache.hadoop.util.StringUtils.stringifyException(e));
+        }
+        throw cpr;
+      }
     }
     //Save compile-time PerfLogging for WebUI.
     //Execution-time Perf logs are done by either another thread's PerfLogger
     //or a reset PerfLogger.
     queryDisplay.setPerfLogStarts(QueryDisplay.Phase.COMPILATION, perfLogger.getStartTimes());
     queryDisplay.setPerfLogEnds(QueryDisplay.Phase.COMPILATION, perfLogger.getEndTimes());
-  }
-
-  /**
-   * Acquires the compile lock. If the compile lock wait timeout is configured,
-   * it will acquire the lock if it is not held by another thread within the given
-   * waiting time.
-   * @return the ReentrantLock object if the lock was successfully acquired,
-   *         or {@code null} if compile lock wait timeout is configured and
-   *         either the waiting time elapsed before the lock could be acquired
-   *         or if the current thread is interrupted.
-   */
-  private ReentrantLock tryAcquireCompileLock(boolean isParallelEnabled,
-    String command) {
-    final ReentrantLock compileLock = isParallelEnabled ?
-        SessionState.get().getCompileLock() : globalCompileLock;
-    long maxCompileLockWaitTime = HiveConf.getTimeVar(
-      this.conf, ConfVars.HIVE_SERVER2_COMPILE_LOCK_TIMEOUT,
-      TimeUnit.SECONDS);
-
-    final String lockAcquiredMsg = "Acquired the compile lock.";
-    // First shot without waiting.
-    try {
-      if (compileLock.tryLock(0, TimeUnit.SECONDS)) {
-        LOG.debug(lockAcquiredMsg);
-        return compileLock;
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Interrupted Exception ignored", e);
-      }
-      return null;
-    }
-
-    // If the first shot fails, then we log the waiting messages.
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Waiting to acquire compile lock: " + command);
-    }
-
-    if (maxCompileLockWaitTime > 0) {
-      try {
-        if(!compileLock.tryLock(maxCompileLockWaitTime, TimeUnit.SECONDS)) {
-          errorMessage = ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg();
-          LOG.error(errorMessage + ": " + command);
-          return null;
-        }
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Interrupted Exception ignored", e);
-        }
-        return null;
-      }
-    } else {
-      compileLock.lock();
-    }
-
-    LOG.debug(lockAcquiredMsg);
-    return compileLock;
   }
 
   private void runInternal(String command, boolean alreadyCompiled) throws CommandProcessorResponse {
