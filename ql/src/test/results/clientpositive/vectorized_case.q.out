@@ -627,8 +627,8 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [8]
-                  selectExpressions: IfExprDecimal64ScalarDecimal64Column(col 6:boolean, decimal64Val 1, decimalVal 1, col 7:decimal(1,0)/DECIMAL_64)(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 6:boolean, Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 7:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)/DECIMAL_64
+                  projectedOutputColumnNums: [9]
+                  selectExpressions: IfExprDecimalColumnColumn(col 6:boolean, col 7:decimal(11,0)col 10:decimal(11,0))(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 6:boolean, ConstantVectorExpression(val 1) -> 7:decimal(11,0), ConvertDecimal64ToDecimal(col 8:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 8:decimal(11,0)/DECIMAL_64) -> 10:decimal(11,0)) -> 9:decimal(11,0)
               Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -655,7 +655,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: member:decimal(10,0)/DECIMAL_64, attr:decimal(10,0)/DECIMAL_64
               partitionColumnCount: 0
-              scratchColumnTypeNames: [bigint, decimal(1,0), decimal(11,0)/DECIMAL_64, bigint, decimal(11,0)/DECIMAL_64, decimal(11,0)/DECIMAL_64]
+              scratchColumnTypeNames: [bigint, decimal(11,0), decimal(11,0)/DECIMAL_64, bigint, decimal(11,0), decimal(11,0)/DECIMAL_64, decimal(11,0), decimal(11,0)]
 
   Stage: Stage-0
     Fetch Operator
@@ -708,8 +708,8 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [8]
-                  selectExpressions: IfExprDecimal64ColumnDecimal64Scalar(col 6:boolean, col 7:decimal(11,0)/DECIMAL_64, decimal64Val 2, decimalVal 2)(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 6:boolean, Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 7:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)/DECIMAL_64
+                  projectedOutputColumnNums: [9]
+                  selectExpressions: IfExprDecimalColumnColumn(col 6:boolean, col 10:decimal(11,0)col 8:decimal(11,0))(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 6:boolean, ConvertDecimal64ToDecimal(col 7:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 7:decimal(11,0)/DECIMAL_64) -> 10:decimal(11,0), ConstantVectorExpression(val 2) -> 8:decimal(11,0)) -> 9:decimal(11,0)
               Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -736,7 +736,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: member:decimal(10,0)/DECIMAL_64, attr:decimal(10,0)/DECIMAL_64
               partitionColumnCount: 0
-              scratchColumnTypeNames: [bigint, decimal(11,0)/DECIMAL_64, decimal(1,0), bigint, decimal(11,0)/DECIMAL_64, decimal(11,0)/DECIMAL_64]
+              scratchColumnTypeNames: [bigint, decimal(11,0)/DECIMAL_64, decimal(11,0), bigint, decimal(11,0)/DECIMAL_64, decimal(11,0), decimal(11,0), decimal(11,0)]
 
   Stage: Stage-0
     Fetch Operator
