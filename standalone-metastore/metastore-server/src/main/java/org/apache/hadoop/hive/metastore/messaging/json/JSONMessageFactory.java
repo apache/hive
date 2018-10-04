@@ -19,16 +19,20 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.regex.PatternSyntaxException;
 
 import javax.annotation.Nullable;
 
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -37,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
@@ -66,6 +71,7 @@ import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
 import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
@@ -83,6 +89,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.filterMapkeys;
+
 /**
  * The JSON implementation of the MessageFactory. Constructs JSON implementations of each
  * message-type.
@@ -92,6 +100,23 @@ public class JSONMessageFactory extends MessageFactory {
   private static final Logger LOG = LoggerFactory.getLogger(JSONMessageFactory.class.getName());
 
   private static JSONMessageDeserializer deserializer = new JSONMessageDeserializer();
+
+  private static List<Predicate<String>> paramsFilter;
+
+  @Override
+  public void init() throws MetaException {
+    super.init();
+
+    List<String> excludePatterns = Arrays.asList(MetastoreConf
+        .getTrimmedStringsVar(conf, MetastoreConf.ConfVars.EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS));
+    try {
+      paramsFilter = MetaStoreUtils.compilePatternsToPredicates(excludePatterns);
+    } catch (PatternSyntaxException e) {
+      LOG.error("Regex pattern compilation failed. Verify that "
+          + "metastore.notification.parameters.exclude.patterns has valid patterns.");
+      throw new MetaException("Regex pattern compilation failed. " + e.getMessage());
+    }
+  }
 
   @Override
   public MessageDeserializer getDeserializer() {
@@ -295,11 +320,17 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   static String createTableObjJson(Table tableObj) throws TException {
+    //Note: The parameters of the Table object will be removed in the filter if it matches
+    // any pattern provided through EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS
+    filterMapkeys(tableObj.getParameters(), paramsFilter);
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     return serializer.toString(tableObj, "UTF-8");
   }
 
   static String createPartitionObjJson(Partition partitionObj) throws TException {
+    //Note: The parameters of the Partition object will be removed in the filter if it matches
+    // any pattern provided through EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS
+    filterMapkeys(partitionObj.getParameters(), paramsFilter);
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     return serializer.toString(partitionObj, "UTF-8");
   }
