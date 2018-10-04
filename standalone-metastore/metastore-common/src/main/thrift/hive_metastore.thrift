@@ -424,26 +424,28 @@ struct StorageDescriptor {
 
 // table information
 struct Table {
-  1: string tableName,                // name of the table
-  2: string dbName,                   // database name ('default')
-  3: string owner,                    // owner of this table
-  4: i32    createTime,               // creation time of the table
-  5: i32    lastAccessTime,           // last access time (usually this will be filled from HDFS and shouldn't be relied on)
-  6: i32    retention,                // retention time
-  7: StorageDescriptor sd,            // storage descriptor of the table
-  8: list<FieldSchema> partitionKeys, // partition keys of the table. only primitive types are supported
-  9: map<string, string> parameters,   // to store comments or any other user level parameters
-  10: string viewOriginalText,         // original view text, null for non-view
-  11: string viewExpandedText,         // expanded view text, null for non-view
-  12: string tableType,                // table type enum, e.g. EXTERNAL_TABLE
-  13: optional PrincipalPrivilegeSet privileges,
-  14: optional bool temporary=false,
-  15: optional bool rewriteEnabled,     // rewrite enabled or not
-  16: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
-  17: optional string catName,          // Name of the catalog the table is in
-  18: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
-  19: optional i64 writeId=-1,
-  20: optional bool isStatsCompliant
+  1: optional i64 id,                 // id of the table. It will be ignored if set. It's only for
+                                      // read purposed
+  2: string tableName,                // name of the table
+  3: string dbName,                   // database name ('default')
+  4: string owner,                    // owner of this table
+  5: i32    createTime,               // creation time of the table
+  6: i32    lastAccessTime,           // last access time (usually this will be filled from HDFS and shouldn't be relied on)
+  7: i32    retention,                // retention time
+  8: StorageDescriptor sd,            // storage descriptor of the table
+  9: list<FieldSchema> partitionKeys, // partition keys of the table. only primitive types are supported
+  10: map<string, string> parameters,   // to store comments or any other user level parameters
+  11: string viewOriginalText,         // original view text, null for non-view
+  12: string viewExpandedText,         // expanded view text, null for non-view
+  13: string tableType,                // table type enum, e.g. EXTERNAL_TABLE
+  14: optional PrincipalPrivilegeSet privileges,
+  15: optional bool temporary=false,
+  16: optional bool rewriteEnabled,     // rewrite enabled or not
+  17: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
+  18: optional string catName,          // Name of the catalog the table is in
+  19: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
+  20: optional i64 writeId=-1,
+  21: optional bool isStatsCompliant
 }
 
 struct Partition {

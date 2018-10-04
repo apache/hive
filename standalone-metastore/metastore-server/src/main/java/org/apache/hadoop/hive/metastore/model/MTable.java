@@ -23,7 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MTable {
-  
+
+  private long id;
   private String tableName;
   private MDatabase database;
   private MStorageDescriptor sd;
@@ -279,5 +280,12 @@ public class MTable {
 
   public void setWriteId(long writeId) {
     this.writeId = writeId;
+  }
+
+  /**
+   * @return the id.
+   */
+  public long getId() {
+    return id;
   }
 }

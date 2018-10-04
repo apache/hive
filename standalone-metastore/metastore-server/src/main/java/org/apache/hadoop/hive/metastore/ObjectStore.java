@@ -1209,6 +1209,7 @@ public class ObjectStore implements RawStore, Configurable {
         MCreationMetadata mcm = convertToMCreationMetadata(tbl.getCreationMetadata());
         pm.makePersistent(mcm);
       }
+      tbl.setId(mtbl.getId());
 
       PrincipalPrivilegeSet principalPrivs = tbl.getPrivileges();
       List<Object> toPersistPrivObjs = new ArrayList<>();
@@ -1932,6 +1933,7 @@ public class ObjectStore implements RawStore, Configurable {
       t.setOwnerType(PrincipalType.valueOf(mtbl.getOwnerType()));
     }
 
+    t.setId(mtbl.getId());
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
     t.setCatName(mtbl.getDatabase().getCatalogName());
     t.setWriteId(mtbl.getWriteId());
