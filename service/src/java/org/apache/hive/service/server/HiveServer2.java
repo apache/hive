@@ -1043,6 +1043,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Find " + policyContainer.size() + " policy to synchronize, start PrivilegeSynchonizer");
       Thread privilegeSynchonizerThread = new Thread(
           new PrivilegeSynchonizer(privilegeSynchonizerLatch, policyContainer, hiveConf), "PrivilegeSynchonizer");
+      privilegeSynchonizerThread.setDaemon(true);
       privilegeSynchonizerThread.start();
     } else {
       LOG.warn(
