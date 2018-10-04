@@ -732,9 +732,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
     writeLock.lock();
     try {
-      scheduledLoggingExecutor.schedule(new Callable<Void>() {
+      scheduledLoggingExecutor.scheduleAtFixedRate(new Runnable() {
         @Override
-        public Void call() throws Exception {
+        public void run() {
           readLock.lock();
           try {
             if (dagRunning) {
@@ -743,9 +743,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           } finally {
             readLock.unlock();
           }
-          return null;
         }
-      }, 10000L, TimeUnit.MILLISECONDS);
+      }, 0, 10000L, TimeUnit.MILLISECONDS);
 
       nodeEnablerFuture = nodeEnabledExecutor.submit(nodeEnablerCallable);
       Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG));
