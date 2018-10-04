@@ -151,6 +151,89 @@ public class TestQueryDisplay {
     }
   }
 
+  /**
+   * Test for the HiveConf options HIVE_SERVER2_WEBUI_SHOW_GRAPH,
+   * HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE.
+   */
+  @Test
+  public void checkWebuiShowGraph() throws Exception {
+    // WebUI-related boolean confs must be set before build, since the implementation of
+    // QueryProfileTmpl.jamon depends on them.
+    // They depend on HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT being set to true.
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH, true);
+
+    HiveSession session = sessionManager
+        .createSession(new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8),
+            TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8, "testuser", "", "",
+            new HashMap<String, String>(), false, "");
+    SessionState.start(conf);
+
+    session.getSessionConf()
+        .setIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE, 0);
+    testGraphDDL(session, true);
+    session.getSessionConf()
+        .setIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE, 40);
+    testGraphDDL(session, false);
+
+    session.close();
+    resetConfToDefaults();
+  }
+
+  private void testGraphDDL(HiveSession session, boolean exceedMaxGraphSize) throws Exception {
+    OperationHandle opHandleGraph = session.executeStatement("show tables", null);
+    session.closeOperation(opHandleGraph);
+
+    // Check for a query plan. If the graph size exceeds the max allowed, none should appear.
+    verifyDDLHtml("Query information not available.",
+        opHandleGraph.getHandleIdentifier().toString(), exceedMaxGraphSize);
+    verifyDDLHtml("STAGE DEPENDENCIES",
+        opHandleGraph.getHandleIdentifier().toString(), !exceedMaxGraphSize);
+    // Check that if plan Json is there, it is not empty
+    verifyDDLHtml("jsonPlan = {}", opHandleGraph.getHandleIdentifier().toString(), false);
+  }
+
+  /**
+   * Test for the HiveConf option HIVE_SERVER2_WEBUI_SHOW_STATS, which is available for MapReduce
+   * jobs only.
+   */
+  @Test
+  public void checkWebUIShowStats() throws Exception {
+    // WebUI-related boolean confs must be set before build. HIVE_SERVER2_WEBUI_SHOW_STATS depends
+    // on HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT and HIVE_SERVER2_WEBUI_SHOW_GRAPH being set to true.
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH, true);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE, 40);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_STATS, true);
+
+    HiveSession session = sessionManager
+        .createSession(new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8),
+            TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8, "testuser", "", "",
+            new HashMap<String, String>(), false, "");
+    SessionState.start(conf);
+
+    OperationHandle opHandleSetup =
+        session.executeStatement("CREATE TABLE statsTable (i int)", null);
+    session.closeOperation(opHandleSetup);
+    OperationHandle opHandleMrQuery =
+        session.executeStatement("INSERT INTO statsTable VALUES (0)", null);
+    session.closeOperation(opHandleMrQuery);
+
+    // INSERT queries include  a MapReduce task.
+    verifyDDLHtml("Counters", opHandleMrQuery.getHandleIdentifier().toString(), true);
+
+    session.close();
+    resetConfToDefaults();
+  }
+
+  private void resetConfToDefaults() {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_STATS, false);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE, 25);
+  }
+
   private void verifyDDL(QueryInfo queryInfo, String stmt, String handle, boolean finished) {
 
     Assert.assertEquals(queryInfo.getUserName(), "testuser");

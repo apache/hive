@@ -3231,6 +3231,17 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT("hive.server2.webui.explain.output", false,
         "When set to true, the EXPLAIN output for every query is displayed"
             + " in the HS2 WebUI / Drilldown / Query Plan tab.\n"),
+    HIVE_SERVER2_WEBUI_SHOW_GRAPH("hive.server2.webui.show.graph", false,
+        "Set this to true to to display query plan as a graph instead of text in the WebUI. " +
+        "Only works with hive.server2.webui.explain.output set to true."),
+    HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE("hive.server2.webui.max.graph.size", 25,
+        "Max number of stages graph can display. If number of stages exceeds this, no query" +
+        "plan will be shown. Only works when hive.server2.webui.show.graph and " +
+        "hive.server2.webui.explain.output set to true."),
+    HIVE_SERVER2_WEBUI_SHOW_STATS("hive.server2.webui.show.stats", false,
+        "Set this to true to to display statistics for MapReduce tasks in the WebUI. " +
+        "Only works when hive.server2.webui.show.graph and hive.server2.webui.explain.output " +
+        "set to true."),
     HIVE_SERVER2_WEBUI_ENABLE_CORS("hive.server2.webui.enable.cors", false,
       "Whether to enable cross origin requests (CORS)\n"),
     HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS("hive.server2.webui.cors.allowed.origins", "*",

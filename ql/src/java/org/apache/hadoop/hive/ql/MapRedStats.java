@@ -30,13 +30,13 @@ import org.apache.hadoop.mapred.Counters.Counter;
  *
  */
 public class MapRedStats {
-  int numMap;
-  int numReduce;
-  long cpuMSec;
-  Counters counters = null;
-  boolean success;
+  private int numMap;
+  private int numReduce;
+  private long cpuMSec;
+  private Counters counters = null;
+  private boolean success;
 
-  String jobId;
+  private String jobId;
 
   private long numModifiedRows;
 
