@@ -562,14 +562,14 @@ public class MapOperator extends AbstractMapOperator {
         }
         if (row == null) {
           deserialize_error_count.set(deserialize_error_count.get() + 1);
-          LOG.debug("Hive Runtime Error while processing writable " + message);
+          LOG.trace("Hive Runtime Error while processing writable " + message);
           throw new HiveException("Hive Runtime Error while processing writable", e);
         }
 
         // Log the contents of the row that caused exception so that it's available for debugging. But
         // when exposed through an error message it can leak sensitive information, even to the
         // client application.
-        LOG.debug("Hive Runtime Error while processing row " + message);
+        LOG.trace("Hive Runtime Error while processing row " + message);
         throw new HiveException("Hive Runtime Error while processing row", e);
       }
     }

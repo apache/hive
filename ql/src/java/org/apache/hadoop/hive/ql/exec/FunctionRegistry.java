@@ -1117,7 +1117,7 @@ public final class FunctionRegistry {
 
       // Log the arguments into a debug message for the ease of debugging. But when exposed through
       // an error message they can leak sensitive information, even to the client application.
-      LOG.debug("Unable to execute method " + m + " with arguments "
+      LOG.trace("Unable to execute method " + m + " with arguments "
               + argumentString);
       throw new HiveException("Unable to execute method " + m + ":" + detailedMsg, e);
     }
