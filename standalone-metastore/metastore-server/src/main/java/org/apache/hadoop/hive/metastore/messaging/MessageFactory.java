@@ -92,22 +92,23 @@ public abstract class MessageFactory {
   protected static final String MS_SERVICE_PRINCIPAL =
       MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL, "");
 
+
   /**
    * Getter for MessageFactory instance.
    */
   public static MessageFactory getInstance() {
     if (instance == null) {
-      instance =
-          getInstance(MetastoreConf.getVar(conf, ConfVars.EVENT_MESSAGE_FACTORY));
+      instance = getInstance(MetastoreConf.getVar(conf, ConfVars.EVENT_MESSAGE_FACTORY));
     }
     return instance;
   }
 
   private static MessageFactory getInstance(String className) {
     try {
-      return JavaUtils.newInstance(JavaUtils.getClass(className, MessageFactory.class));
-    }
-    catch (MetaException e) {
+      MessageFactory factory = JavaUtils.newInstance(JavaUtils.getClass(className, MessageFactory.class));
+      factory.init();
+      return factory;
+    } catch (MetaException e) {
       throw new IllegalStateException("Could not construct MessageFactory implementation: ", e);
     }
   }
@@ -132,6 +133,8 @@ public abstract class MessageFactory {
     // this use jdbc-like semantics that each MessageFactory made available register
     // itself for discoverability? Might be worth pursuing.
   }
+
+  public void init() throws MetaException {}
 
   public abstract MessageDeserializer getDeserializer();
 

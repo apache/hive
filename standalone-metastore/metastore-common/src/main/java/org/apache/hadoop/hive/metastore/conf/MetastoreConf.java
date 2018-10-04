@@ -516,6 +516,12 @@ public class MetastoreConf {
         "hive.metastore.event.message.factory",
         "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageFactory",
         "Factory class for making encoding and decoding messages in the events generated."),
+    EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS("metastore.notification.parameters.exclude.patterns",
+        "hive.metastore.notification.parameters.exclude.patterns", "",
+        "List of comma-separated regexes that are used to reduced the size of HMS Notification messages."
+            + " The regexes are matched against each key of parameters map in Table or Partition object"
+            + "present in HMS Notification. Any key-value pair whose key is matched with any regex will"
+            +" be removed from Parameters map during Serialization of Table/Partition object."),
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
         "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
         "time after which events will be removed from the database listener queue"),
@@ -1407,6 +1413,28 @@ public class MetastoreConf {
     assert var.defaultVal.getClass() == Boolean.class;
     String val = conf.get(var.varname);
     return val == null ? conf.getBoolean(var.hiveName, (Boolean)var.defaultVal) : Boolean.valueOf(val);
+  }
+
+  /**
+   * Get values from comma-separated config, to an array after extracting individual values.
+   * @param conf Configuration to retrieve it from
+   * @param var variable to retrieve
+   * @return Array of String, containing each value from the comma-separated config,
+   *  or default value if value not in config file
+   */
+  public static String[] getTrimmedStringsVar(Configuration conf, ConfVars var) {
+    assert var.defaultVal.getClass() == String.class;
+    String[] result = conf.getTrimmedStrings(var.varname, (String[]) null);
+    if (result != null) {
+      return result;
+    }
+    if (var.hiveName != null) {
+      result = conf.getTrimmedStrings(var.hiveName, (String[]) null);
+      if (result != null) {
+        return result;
+      }
+    }
+    return org.apache.hadoop.util.StringUtils.getTrimmedStrings((String) var.getDefaultVal());
   }
 
   /**
