@@ -82,6 +82,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1997,32 +1998,7 @@ public class BeeLine implements Closeable {
 
 
   static String xmlattrencode(String str) {
-    str = replace(str, "\"", "&quot;");
-    str = replace(str, "<", "&lt;");
-    return str;
-  }
-
-
-  static String replace(String source, String from, String to) {
-    if (source == null) {
-      return null;
-    }
-
-    if (from.equals(to)) {
-      return source;
-    }
-
-    StringBuilder replaced = new StringBuilder();
-
-    int index = -1;
-    while ((index = source.indexOf(from)) != -1) {
-      replaced.append(source.substring(0, index));
-      replaced.append(to);
-      source = source.substring(index + from.length());
-    }
-    replaced.append(source);
-
-    return replaced.toString();
+    return StringEscapeUtils.escapeXml(str);
   }
 
 

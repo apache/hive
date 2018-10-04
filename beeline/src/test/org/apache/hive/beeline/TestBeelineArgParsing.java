@@ -18,27 +18,22 @@
 
 package org.apache.hive.beeline;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -96,6 +91,92 @@ public class TestBeelineArgParsing {
       return getCommands().addlocaldriverjar(line);
     }
   }
+
+  /**
+   * Attempts to execute a simple script file with the -f option to SqlLine.
+   * Tests for presence of an expected pattern in the output (stdout or stderr).
+   *
+   * @param scriptText    Script text
+   * @param flag          Command flag (--run or -f)
+   * @param statusMatcher Checks whether status is as expected
+   * @param outputMatcher Checks whether output is as expected
+   * @throws Exception on command execution error
+   */
+  private void checkScriptFile(String scriptText, boolean flag,
+                               Matcher<Integer> statusMatcher,
+                               Matcher<String> outputMatcher) throws Throwable {
+    // Put the script content in a temp file
+    File scriptFile = File.createTempFile("foo", "temp");
+    scriptFile.deleteOnExit();
+    PrintStream os = new PrintStream(new FileOutputStream(scriptFile));
+    os.print(scriptText);
+    os.close();
+
+    Pair pair = runScript(scriptFile, flag);
+
+    // Check output before status. It gives a better clue what went wrong.
+    assertThat(toLinux(pair.output), outputMatcher);
+    assertThat(pair.status, statusMatcher);
+    final boolean delete = scriptFile.delete();
+    assertThat(delete, is(true));
+  }
+
+  private static Pair runScript(File scriptFile,
+                                boolean flag) throws Throwable {
+    List<String> args = new ArrayList<>();
+    Collections.addAll(args,
+        "-d", "driver",
+        "-u", "url",
+        "-n", "username",
+        "-p", "password");
+    if (flag) {
+      args.add("-f");
+      args.add(scriptFile.getAbsolutePath());
+    } else {
+      args.add("--run=" + scriptFile.getAbsolutePath());
+    }
+    return run(args.toArray(new String[args.size()]));
+  }
+
+  /**
+   * Result of executing sqlline: status code and output.
+   */
+  static class Pair {
+    final int status;
+    final String output;
+
+    Pair(int status, String output) {
+      this.status = status;
+      this.output = output;
+    }
+  }
+
+  /**
+   * Execute a script with "beeline -f".
+   *
+   * @param args Script arguments
+   * @return The stderr and stdout from running the script
+   * @throws java.lang.Throwable On error
+   */
+  private static Pair run(String... args) throws Throwable {
+    BeeLine beeLine = new BeeLine();
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    PrintStream beelineOutputStream = new PrintStream(os);
+    beeLine.setOutputStream(beelineOutputStream);
+    beeLine.setErrorStream(beelineOutputStream);
+    final InputStream is = new ByteArrayInputStream(new byte[0]);
+    int status = beeLine.begin(args, is, false);
+    return new Pair(status, os.toString("UTF8"));
+  }
+
+  /**
+   * Windows line separators in a string into Linux line separators;
+   * a Linux string is unchanged.
+   */
+  private static String toLinux(String s) {
+    return s.replaceAll("\r\n", "\n");
+  }
+
 
   @Parameters(name="{1}")
   public static Collection<Object[]> data() throws IOException, InterruptedException {
@@ -353,4 +434,35 @@ public class TestBeelineArgParsing {
     Assert.assertTrue(bl.getOpts().getMaxHistoryRows() == 100);
     bl.close();
   }
+
+  @Test
+  public void testSelectXmlAttributes() throws Throwable {
+    final String script = "!set outputformat xmlattr\n"
+        + "values (1, -1.5, 1 = 1, date '1969-07-20', null, ']]> 1''2\"3\t<>&4');\n";
+    checkScriptFile(script, true, equalTo(0),
+        allOf(
+            containsString("<resultset>"),
+            containsString("<result C1=\"1\" C2=\"-1.5\" C3=\"TRUE\" "
+                + "C4=\"1969-07-20\" C5=\"null\" "
+                + "C6=\"]]&gt; 1&apos;2&quot;3\t&lt;&gt;&amp;4\"/>")));
+  }
+
+  @Test
+  public void testSelectXmlElements() throws Throwable {
+    final String script = "!set outputformat xmlelements\n"
+        + "values (1, -1.5, 1 = 1, date '1969-07-20', null, ' ]]>1''2\"3\t<>&4');\n";
+    checkScriptFile(script, true, equalTo(0),
+        allOf(
+            containsString("<resultset>"),
+            containsString("<result>"),
+            containsString("<C1>1</C1>"),
+            containsString("<C2>-1.5</C2>"),
+            containsString("<C3>TRUE</C3>"),
+            containsString("<C4>1969-07-20</C4>"),
+            containsString("<C5>null</C5>"),
+            containsString("<C6> ]]&gt;1&apos;2\"3\t&lt;&gt;&amp;4</C6>"),
+            containsString("</result>"),
+            containsString("</resultset>")));
+  }
+
 }
