@@ -346,9 +346,13 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     tKill.start();
     tExecute.join();
     tKill.join();
-    stmt.close();
-    con2.close();
-    con.close();
+    try {
+      stmt.close();
+      con2.close();
+      con.close();
+    } catch (Exception e) {
+      // ignore error
+    }
 
     assertNotNull("tExecute", tExecuteHolder.throwable);
     assertNull("tCancel", tKillHolder.throwable);
