@@ -225,6 +225,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     // Try to create a table with all of the parameters set
     Table table = getTableWithAllParametersSet();
     client.createTable(table);
+    table.unsetId();
+
     Table createdTable = client.getTable(table.getDbName(), table.getTableName());
     // The createTime will be set on the server side, so the comparison should skip it
     table.setCreateTime(createdTable.getCreateTime());
@@ -238,6 +240,9 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     table.setParameters(createdTable.getParameters());
     table.setCreationMetadata(createdTable.getCreationMetadata());
     table.setWriteId(createdTable.getWriteId());
+
+    Assert.assertTrue(createdTable.isSetId());
+    createdTable.unsetId();
     Assert.assertEquals("create/get table data", table, createdTable);
 
     // Check that the directory is created
@@ -457,6 +462,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   @Test(expected = AlreadyExistsException.class)
   public void testCreateTableAlreadyExists() throws Exception {
     Table table = testTables[0];
+    table.unsetId();
 
     client.createTable(table);
   }
@@ -524,6 +530,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
       // Expected exception
     }
 
+    table.unsetId();
     // Test in mixed case
     client.createTable(table);
     client.dropTable("DeFaUlt", "TeST_tAbLE");
@@ -546,6 +553,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Assert.assertFalse("Table path should be removed",
         metaStore.isPathExists(new Path(table.getSd().getLocation())));
 
+    table.unsetId();
     client.createTable(table);
     client.dropTable(table.getDbName(), table.getTableName(), false, false);
 
@@ -705,6 +713,9 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     newTable.setCreateTime(alteredTable.getCreateTime());
     newTable.setCreationMetadata(alteredTable.getCreationMetadata());
     newTable.setWriteId(alteredTable.getWriteId());
+
+    Assert.assertTrue(alteredTable.isSetId());
+    alteredTable.unsetId();
     Assert.assertEquals("The table data should be the same", newTable, alteredTable);
   }
 

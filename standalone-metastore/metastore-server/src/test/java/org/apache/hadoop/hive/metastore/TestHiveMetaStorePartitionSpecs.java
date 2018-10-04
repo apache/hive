@@ -222,6 +222,8 @@ public class TestHiveMetaStorePartitionSpecs {
       clearAndRecreateDB(hmsc);
       createTable(hmsc, true);
       Table table = hmsc.getTable(dbName, tableName);
+      Assert.assertTrue(table.isSetId());
+      table.unsetId();
       populatePartitions(hmsc, table, Arrays.asList("isLocatedInTablePath", "isLocatedOutsideTablePath"));
 
       // Clone the table,

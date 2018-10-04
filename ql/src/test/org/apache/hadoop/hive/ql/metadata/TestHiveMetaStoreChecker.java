@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.thrift.TException;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -136,6 +137,8 @@ public class TestHiveMetaStoreChecker {
     table.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
 
     hive.createTable(table);
+    Assert.assertTrue(table.getTTable().isSetId());
+    table.getTTable().unsetId();
     // now we've got a table, check that it works
     // first check all (1) tables
     result = new CheckResult();
@@ -276,6 +279,8 @@ public class TestHiveMetaStoreChecker {
 
     hive.createTable(table);
     table = hive.getTable(dbName, tableName);
+    Assert.assertTrue(table.getTTable().isSetId());
+    table.getTTable().unsetId();
 
     for (Map<String, String> partSpec : parts) {
       hive.createPartition(table, partSpec);

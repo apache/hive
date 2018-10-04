@@ -5103,6 +5103,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       tbl.getTTable().setTemporary(crtTbl.isTemporary());
+      tbl.getTTable().unsetId();
 
       if (crtTbl.isExternal()) {
         tbl.setProperty("EXTERNAL", "TRUE");

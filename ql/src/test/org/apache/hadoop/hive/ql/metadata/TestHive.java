@@ -307,6 +307,9 @@ public class TestHive extends TestCase {
       tbl.getTTable().setPrivilegesIsSet(false);
 
       ft = hm.getTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+      Assert.assertTrue(ft.getTTable().isSetId());
+      ft.getTTable().unsetId();
+
       assertNotNull("Unable to fetch table", ft);
       ft.checkValidity(hiveConf);
       assertEquals("Table names didn't match for table: " + tableName, tbl
@@ -330,6 +333,8 @@ public class TestHive extends TestCase {
         ft.getTTable().setWriteId(0);
         tbl.getTTable().setWriteId(0);
       }
+
+      tbl.getTTable().unsetId();
       assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
           + "; " + tbl.getTTable() + ")", ft.getTTable().equals(tbl.getTTable()));
       assertEquals("SerializationLib is not set correctly", tbl

@@ -1085,28 +1085,30 @@ end
 
 class Table
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  TABLENAME = 1
-  DBNAME = 2
-  OWNER = 3
-  CREATETIME = 4
-  LASTACCESSTIME = 5
-  RETENTION = 6
-  SD = 7
-  PARTITIONKEYS = 8
-  PARAMETERS = 9
-  VIEWORIGINALTEXT = 10
-  VIEWEXPANDEDTEXT = 11
-  TABLETYPE = 12
-  PRIVILEGES = 13
-  TEMPORARY = 14
-  REWRITEENABLED = 15
-  CREATIONMETADATA = 16
-  CATNAME = 17
-  OWNERTYPE = 18
-  WRITEID = 19
-  ISSTATSCOMPLIANT = 20
+  ID = 1
+  TABLENAME = 2
+  DBNAME = 3
+  OWNER = 4
+  CREATETIME = 5
+  LASTACCESSTIME = 6
+  RETENTION = 7
+  SD = 8
+  PARTITIONKEYS = 9
+  PARAMETERS = 10
+  VIEWORIGINALTEXT = 11
+  VIEWEXPANDEDTEXT = 12
+  TABLETYPE = 13
+  PRIVILEGES = 14
+  TEMPORARY = 15
+  REWRITEENABLED = 16
+  CREATIONMETADATA = 17
+  CATNAME = 18
+  OWNERTYPE = 19
+  WRITEID = 20
+  ISSTATSCOMPLIANT = 21
 
   FIELDS = {
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     OWNER => {:type => ::Thrift::Types::STRING, :name => 'owner'},

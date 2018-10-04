@@ -131,10 +131,10 @@
       </field>
     </class>
 
-    <class name="MTable" table="TBLS" identity-type="datastore" detachable="true">
-      <datastore-identity>
-        <column name="TBL_ID"/>
-      </datastore-identity>
+    <class name="MTable" table="TBLS" identity-type="application" detachable="true">
+      <field name="id" primary-key="true" value-strategy="native">
+        <column name="TBL_ID" jdbc-type="BIGINT" />
+      </field>
       <index name="UniqueTable" unique="true">
         <column name="TBL_NAME"/>
         <column name="DB_ID"/>
