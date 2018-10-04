@@ -184,6 +184,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
 
       queryInfo.setQueryDisplay(driver.getQueryDisplay());
+      if (operationLog != null) {
+        queryInfo.setOperationLogLocation(operationLog.toString());
+      }
 
       // set the operation handle information in Driver, so that thrift API users
       // can use the operation handle they receive, to lookup query information in

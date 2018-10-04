@@ -40,13 +40,13 @@ public class MapRedStats {
   private static final String CLASS_NAME = MapRedStats.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private JobConf jobConf;
-  int numMap;
-  int numReduce;
-  long cpuMSec;
-  Counters counters = null;
-  boolean success;
+  private int numMap;
+  private int numReduce;
+  private long cpuMSec;
+  private Counters counters = null;
+  private boolean success;
 
-  String jobId;
+  private String jobId;
 
   private long numModifiedRows;
 
