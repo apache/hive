@@ -38,6 +38,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseDoubleTo
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprColumnCondExpr;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCondExprColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCondExprCondExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCharScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDoubleColumnDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprLongColumnLongColumn;
@@ -1269,7 +1272,10 @@ public class TestVectorizationContext {
    */
   @Test
   public void testIfConditionalExprs() throws HiveException {
-    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Long.class, "col1", "table", false);
+
+    // Predicate.
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Boolean.class, "col1", "table", false);
+
     ExprNodeColumnDesc col2Expr = new  ExprNodeColumnDesc(Long.class, "col2", "table", false);
     ExprNodeColumnDesc col3Expr = new  ExprNodeColumnDesc(Long.class, "col3", "table", false);
 
@@ -1291,6 +1297,7 @@ public class TestVectorizationContext {
     columns.add("col2");
     columns.add("col3");
     VectorizationContext vc = new VectorizationContext("name", columns);
+    exprDesc.setTypeInfo(TypeInfoFactory.longTypeInfo);
     VectorExpression ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprLongColumnLongColumn);
 
@@ -1316,6 +1323,7 @@ public class TestVectorizationContext {
     // double column/column IF
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
+    exprDesc.setTypeInfo(TypeInfoFactory.doubleTypeInfo);
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprDoubleColumnDoubleColumn);
 
@@ -1337,7 +1345,7 @@ public class TestVectorizationContext {
     // double scalar/long column IF
     children1.set(2, new  ExprNodeColumnDesc(Long.class, "col3", "table", false));
     ve = vc.getVectorExpression(exprDesc);
-    assertTrue(ve instanceof IfExprDoubleScalarLongColumn);
+    assertTrue(ve instanceof IfExprColumnCondExpr);
 
     // Additional combinations of (long,double)X(column,scalar) for each of the second
     // and third arguments are omitted. We have coverage of all the source templates
@@ -1350,6 +1358,7 @@ public class TestVectorizationContext {
     // timestamp column/column IF
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
+    exprDesc.setTypeInfo(TypeInfoFactory.timestampTypeInfo);
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprTimestampColumnColumn);
 
@@ -1363,23 +1372,17 @@ public class TestVectorizationContext {
     children1.set(2, f);
     ve = vc.getVectorExpression(exprDesc);
 
-    // We check for two different classes below because initially the result
-    // is IfExprLongColumnLongColumn but in the future if the system is enhanced
-    // with constant folding then the result will be IfExprLongColumnLongScalar.
-    assertTrue(IfExprTimestampColumnColumn.class == ve.getClass()
-               || IfExprTimestampColumnScalar.class == ve.getClass());
+    assertTrue(ve instanceof IfExprTimestampColumnScalar);
 
     // timestamp scalar/scalar
     children1.set(1, f);
     ve = vc.getVectorExpression(exprDesc);
-    assertTrue(IfExprTimestampColumnColumn.class == ve.getClass()
-        || IfExprTimestampScalarScalar.class == ve.getClass());
+    assertTrue(ve instanceof IfExprTimestampScalarScalar);
 
     // timestamp scalar/column
     children1.set(2, col3Expr);
     ve = vc.getVectorExpression(exprDesc);
-    assertTrue(IfExprTimestampColumnColumn.class == ve.getClass()
-        || IfExprTimestampScalarColumn.class == ve.getClass());
+    assertTrue(ve instanceof IfExprTimestampScalarColumn);
 
     // test for boolean type
     col2Expr = new  ExprNodeColumnDesc(Boolean.class, "col2", "table", false);
@@ -1388,6 +1391,7 @@ public class TestVectorizationContext {
     // column/column
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
+    exprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprLongColumnLongColumn);
 
@@ -1415,6 +1419,7 @@ public class TestVectorizationContext {
     // column/column
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
+    exprDesc.setTypeInfo(TypeInfoFactory.stringTypeInfo);
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprStringGroupColumnStringGroupColumn);
 
@@ -1444,7 +1449,8 @@ public class TestVectorizationContext {
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
     ve = vc.getVectorExpression(exprDesc);
-    assertTrue(ve instanceof IfExprStringGroupColumnStringGroupColumn);
+    exprDesc.setTypeInfo(charTypeInfo);
+    assertTrue(ve instanceof IfExprCondExprCondExpr);
 
     // column/scalar
     children1.set(2,  constDesc3);
@@ -1471,6 +1477,7 @@ public class TestVectorizationContext {
     // column/column
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
+    exprDesc.setTypeInfo(varcharTypeInfo);
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprStringGroupColumnStringGroupColumn);
 
