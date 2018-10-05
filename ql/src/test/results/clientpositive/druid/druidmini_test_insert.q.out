@@ -824,6 +824,31 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1, _col2
             ListSink
 
+PREHOOK: query: insert into druid_test_table_n9 values
+('2015-03-12 00:00:00', 'i4-1', 4),
+('2015-03-12 00:00:00', 'i4-1', 2),
+('2015-03-12 00:00:00', 'i4-1', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_n9
+POSTHOOK: query: insert into druid_test_table_n9 values
+('2015-03-12 00:00:00', 'i4-1', 4),
+('2015-03-12 00:00:00', 'i4-1', 2),
+('2015-03-12 00:00:00', 'i4-1', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_n9
+PREHOOK: query: select * from druid_test_table_n9 where `__time` = cast('2015-03-12 00:00:00' as timestamp )
+PREHOOK: type: QUERY
+PREHOOK: Input: druid_test_dst@druid_test_table_n9
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from druid_test_table_n9 where `__time` = cast('2015-03-12 00:00:00' as timestamp )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: druid_test_dst@druid_test_table_n9
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2015-03-12 00:00:00.0 US/Pacific	i4-1	4.0
+2015-03-12 00:00:00.0 US/Pacific	i4-1	2.0
+2015-03-12 00:00:00.0 US/Pacific	i4-1	1.0
 PREHOOK: query: DROP TABLE test_base_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: druid_test_dst@test_base_table
