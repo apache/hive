@@ -357,9 +357,13 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
     assert values.size() > granularityFieldIndex;
     Preconditions.checkArgument(
         fields.get(granularityFieldIndex).getFieldName().equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME));
-    value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
+
+    Timestamp timestamp =
         ((TimestampObjectInspector) fields.get(granularityFieldIndex).getFieldObjectInspector())
-            .getPrimitiveJavaObject(values.get(granularityFieldIndex)).toEpochMilli());
+            .getPrimitiveJavaObject(values.get(granularityFieldIndex));
+    Preconditions.checkNotNull(timestamp, "Timestamp column cannot have null value");
+    value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME, timestamp.toEpochMilli());
+
     if (values.size() == columns.length + 2) {
       // Then partition number if any.
       final int partitionNumPos = granularityFieldIndex + 1;
