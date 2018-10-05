@@ -2755,6 +2755,7 @@ public class HiveConf extends Configuration {
     HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersistDirectory", "",
             "Local temporary directory used to persist intermediate indexing state, will default to JVM system property java.io.tmpdir."
     ),
+    HIVE_DRUID_ROLLUP("hive.druid.rollup", true, "Whether to rollup druid rows or not."),
     DRUID_SEGMENT_DIRECTORY("hive.druid.storage.storageDirectory", "/druid/segments"
             , "druid deep storage location."),
     DRUID_METADATA_BASE("hive.druid.metadata.base", "druid", "Default prefix for metadata tables"),

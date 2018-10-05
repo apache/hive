@@ -827,12 +827,16 @@ public final class DruidStorageHandlerUtils {
         tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) != null ?
             tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) :
             HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
+    final boolean rollup = tableProperties.getProperty(Constants.DRUID_ROLLUP) != null ?
+        Boolean.parseBoolean(tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY)):
+        HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_DRUID_ROLLUP);
     return new UniformGranularitySpec(
         Granularity.fromString(segmentGranularity),
         Granularity.fromString(
             tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY) == null
                 ? "NONE"
                 : tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY)),
+        rollup,
         null
     );
   }
