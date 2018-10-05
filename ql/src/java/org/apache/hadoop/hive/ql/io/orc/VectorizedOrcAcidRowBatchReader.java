@@ -416,10 +416,7 @@ public class VectorizedOrcAcidRowBatchReader
       if(firstStripeIndex == -1 && stripe.getOffset() >= splitStart) {
         firstStripeIndex = i;
       }
-      if(lastStripeIndex == -1 && splitEnd <= stripeEnd &&
-          stripes.get(firstStripeIndex).getOffset() <= stripe.getOffset() ) {
-        //the last condition is for when both splitStart and splitEnd are in
-        // the same stripe
+      if(lastStripeIndex == -1 && splitEnd <= stripeEnd) {
         lastStripeIndex = i;
       }
     }
@@ -429,6 +426,34 @@ public class VectorizedOrcAcidRowBatchReader
           stripes.get(stripes.size() - 1).getLength() < splitEnd;
       lastStripeIndex = stripes.size() - 1;
     }
+
+    if (firstStripeIndex > lastStripeIndex || firstStripeIndex == -1) {
+      /**
+       * If the firstStripeIndex was set after the lastStripeIndex the split lies entirely within a single stripe.
+       * In case the split lies entirely within the last stripe, the firstStripeIndex will never be found, hence the
+       * second condition.
+       * In this case, the reader for this split will not read any data.
+       * See {@link org.apache.orc.impl.RecordReaderImpl#RecordReaderImpl
+       * Create a KeyInterval such that no delete delta records are loaded into memory in the deleteEventRegistry.
+       */
+
+      long minRowId = 1;
+      long maxRowId = 0;
+      int minBucketProp = 1;
+      int maxBucketProp = 0;
+
+      OrcRawRecordMerger.KeyInterval keyIntervalTmp =
+          new OrcRawRecordMerger.KeyInterval(new RecordIdentifier(1, minBucketProp, minRowId),
+          new RecordIdentifier(0, maxBucketProp, maxRowId));
+
+      setSARG(keyIntervalTmp, deleteEventReaderOptions, minBucketProp, maxBucketProp,
+          minRowId, maxRowId);
+      LOG.info("findMinMaxKeys(): " + keyIntervalTmp +
+          " stripes(" + firstStripeIndex + "," + lastStripeIndex + ")");
+
+      return keyIntervalTmp;
+    }
+
     if(firstStripeIndex == -1 || lastStripeIndex == -1) {
       //this should not happen but... if we don't know which stripe(s) are
       //involved we can't figure out min/max bounds
