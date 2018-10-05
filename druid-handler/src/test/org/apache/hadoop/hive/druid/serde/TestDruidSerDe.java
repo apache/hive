@@ -74,6 +74,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -90,6 +91,7 @@ import io.druid.query.Result;
 import io.druid.query.select.SelectResultValue;
 import io.druid.query.timeseries.TimeseriesResultValue;
 import io.druid.query.topn.TopNResultValue;
+import org.junit.rules.ExpectedException;
 
 /**
  * Basic tests for Druid SerDe. The examples are taken from Druid 0.9.1.1
@@ -858,6 +860,38 @@ public class TestDruidSerDe {
     tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     serializeObject(tbl, serDe, ROW_OBJECT, DRUID_WRITABLE);
+  }
+
+  @Rule
+  public ExpectedException expectedEx = ExpectedException.none();
+
+  @Test
+  public void testDruidObjectSerializerwithNullTimestamp()
+      throws Exception {
+    // Create, initialize, and test the SerDe
+    DruidSerDe serDe = new DruidSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl;
+    // Mixed source (all types)
+    tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    Object[] row = new Object[] {
+        null,
+        new Text("dim1_val"),
+        new HiveCharWritable(new HiveChar("dim2_v", 6)),
+        new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)),
+        new DoubleWritable(10669.3D),
+        new FloatWritable(10669.45F),
+        new LongWritable(1113939),
+        new IntWritable(1112123),
+        new ShortWritable((short) 12),
+        new ByteWritable((byte) 0),
+        null // granularity
+    };
+    expectedEx.expect(NullPointerException.class);
+    expectedEx.expectMessage("Timestamp column cannot have null value");
+    // should fail as timestamp is null
+    serializeObject(tbl, serDe, row, DRUID_WRITABLE);
   }
 
   private static Properties createPropertiesSource(String columnNames, String columnTypes) {
