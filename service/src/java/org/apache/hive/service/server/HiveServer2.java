@@ -79,7 +79,7 @@ import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.PolicyProviderContainer;
-import org.apache.hadoop.hive.ql.security.authorization.PrivilegeSynchonizer;
+import org.apache.hadoop.hive.ql.security.authorization.PrivilegeSynchronizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -726,9 +726,9 @@ public class HiveServer2 extends CompositeService {
     }
 
     try {
-      startPrivilegeSynchonizer(hiveConf);
+      startPrivilegeSynchronizer(hiveConf);
     } catch (Exception e) {
-      LOG.error("Error starting priviledge synchonizer: ", e);
+      LOG.error("Error starting priviledge synchronizer: ", e);
       throw new ServiceException(e);
     }
 
@@ -999,7 +999,7 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
-  public void startPrivilegeSynchonizer(HiveConf hiveConf) throws Exception {
+  public void startPrivilegeSynchronizer(HiveConf hiveConf) throws Exception {
 
     if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER)) {
       return;
@@ -1038,13 +1038,12 @@ public class HiveServer2 extends CompositeService {
       }
       String path = ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
           + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "privilege_synchonizer";
-      privilegeSynchonizerLatch = new LeaderLatch(zKClientForPrivSync, path);
-      privilegeSynchonizerLatch.start();
-      LOG.info("Find " + policyContainer.size() + " policy to synchronize, start PrivilegeSynchonizer");
-      Thread privilegeSynchonizerThread = new Thread(
-          new PrivilegeSynchonizer(privilegeSynchonizerLatch, policyContainer, hiveConf), "PrivilegeSynchonizer");
-      privilegeSynchonizerThread.setDaemon(true);
-      privilegeSynchonizerThread.start();
+      LeaderLatch privilegeSynchronizerLatch = new LeaderLatch(zKClientForPrivSync, path);
+      privilegeSynchronizerLatch.start();
+      LOG.info("Find " + policyContainer.size() + " policy to synchronize, start PrivilegeSynchronizer");
+      Thread privilegeSynchronizerThread = new Thread(
+          new PrivilegeSynchronizer(privilegeSynchronizerLatch, policyContainer, hiveConf), "PrivilegeSynchronizer");
+      privilegeSynchronizerThread.start();
     } else {
       LOG.warn(
           "No policy provider found, skip creating PrivilegeSynchonizer");
