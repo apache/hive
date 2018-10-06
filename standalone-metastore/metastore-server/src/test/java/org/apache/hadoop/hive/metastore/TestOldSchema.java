@@ -66,7 +66,7 @@ public class TestOldSchema {
 
   public static class MockPartitionExpressionProxy implements PartitionExpressionProxy {
     @Override
-    public String convertExprToFilter(byte[] expr) throws MetaException {
+    public String convertExprToFilter(byte[] expr, String defaultPartitionName) throws MetaException {
       return null;
     }
 

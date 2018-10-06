@@ -140,10 +140,16 @@ public class TestMetastoreExpr extends TestCase {
     checkExpr(3, dbName, tblName,
         e.val(32).val(31).intCol("p2").val(false).pred("between", 4).build());
 
+    addPartition(client, tbl, Lists.newArrayList("__HIVE_DEFAULT_PARTITION__", "36"), "part5");
+    addPartition(client, tbl, Lists.newArrayList("p16", "__HIVE_DEFAULT_PARTITION__"), "part6");
+
     // Apply isnull and instr (not supported by pushdown) via name filtering.
-    checkExpr(4, dbName, tblName, e.val("p").strCol("p1")
+    checkExpr(5, dbName, tblName, e.val("p").strCol("p1")
         .fn("instr", TypeInfoFactory.intTypeInfo, 2).val(0).pred("<=", 2).build());
-    checkExpr(0, dbName, tblName, e.intCol("p2").pred("isnull", 1).build());
+    checkExpr(1, dbName, tblName, e.intCol("p2").pred("isnull", 1).build());
+    checkExpr(1, dbName, tblName, e.val("__HIVE_DEFAULT_PARTITION__").intCol("p2").pred("=", 2).build());
+    checkExpr(5, dbName, tblName, e.intCol("p1").pred("isnotnull", 1).build());
+    checkExpr(5, dbName, tblName, e.val("__HIVE_DEFAULT_PARTITION__").strCol("p1").pred("!=", 2).build());
 
     // Cannot deserialize => throw the specific exception.
     try {
