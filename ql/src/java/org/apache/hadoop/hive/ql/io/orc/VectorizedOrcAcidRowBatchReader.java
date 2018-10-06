@@ -229,7 +229,7 @@ public class VectorizedOrcAcidRowBatchReader
     LOG.info("Read ValidWriteIdList: " + this.validWriteIdList.toString()
             + ":" + orcSplit);
 
-    syntheticProps = orcSplit.getSyntheticAcidProps();
+    this.syntheticProps = orcSplit.getSyntheticAcidProps();
 
     // Clone readerOptions for deleteEvents.
     Reader.Options deleteEventReaderOptions = readerOptions.clone();
@@ -387,6 +387,13 @@ public class VectorizedOrcAcidRowBatchReader
       LOG.debug("findMinMaxKeys() " + ConfVars.FILTER_DELETE_EVENTS + "=false");
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }
+
+    //todo: since we already have OrcSplit.orcTail, should somehow use it to
+    // get the acid.index, stats, etc rather than fetching the footer again
+    // though it seems that orcTail is mostly null....
+    Reader reader = OrcFile.createReader(orcSplit.getPath(),
+        OrcFile.readerOptions(conf));
+
     if(orcSplit.isOriginal()) {
       /**
        * Among originals we may have files with _copy_N suffix.  To properly
@@ -397,14 +404,11 @@ public class VectorizedOrcAcidRowBatchReader
        * Kind of chicken-and-egg - deal with this later.
        * See {@link OrcRawRecordMerger#discoverOriginalKeyBounds(Reader, int,
        * Reader.Options, Configuration, OrcRawRecordMerger.Options)}*/
-      LOG.debug("findMinMaxKeys(original split) - ignoring");
-      return new OrcRawRecordMerger.KeyInterval(null, null);
+      LOG.debug("findMinMaxKeys(original split)");
+
+      return findOriginalMinMaxKeys(orcSplit, reader, deleteEventReaderOptions);
     }
-    //todo: since we already have OrcSplit.orcTail, should somehow use it to
-    // get the acid.index, stats, etc rather than fetching the footer again
-    // though it seems that orcTail is mostly null....
-    Reader reader = OrcFile.createReader(orcSplit.getPath(),
-        OrcFile.readerOptions(conf));
+
     List<StripeInformation> stripes = reader.getStripes();
     final long splitStart = orcSplit.getStart();
     final long splitEnd = splitStart + orcSplit.getLength();
@@ -570,6 +574,68 @@ public class VectorizedOrcAcidRowBatchReader
     setSARG(keyInterval, deleteEventReaderOptions, minBucketProp, maxBucketProp,
         minRowId, maxRowId);
     return keyInterval;
+  }
+
+  private OrcRawRecordMerger.KeyInterval findOriginalMinMaxKeys(OrcSplit orcSplit, Reader reader,
+      Reader.Options deleteEventReaderOptions) {
+
+    // This method returns the minimum and maximum synthetic row ids that are present in this split
+    // because min and max keys are both inclusive when filtering out the delete delta records.
+
+    if (syntheticProps == null) {
+      // syntheticProps containing the synthetic rowid offset is computed if there are delete delta files.
+      // If there aren't any delete delta files, then we don't need this anyway.
+      return new OrcRawRecordMerger.KeyInterval(null, null);
+    }
+
+    long splitStart = orcSplit.getStart();
+    long splitEnd = orcSplit.getStart() + orcSplit.getLength();
+
+    long minRowId = syntheticProps.getRowIdOffset();
+    long maxRowId = syntheticProps.getRowIdOffset();
+
+    for(StripeInformation stripe: reader.getStripes()) {
+      if (splitStart > stripe.getOffset()) {
+        // This stripe starts before the current split starts. This stripe is not included in this split.
+        minRowId += stripe.getNumberOfRows();
+      }
+
+      if (splitEnd > stripe.getOffset()) {
+        // This stripe starts before the current split ends.
+        maxRowId += stripe.getNumberOfRows();
+      } else {
+        // The split ends before (or exactly where) this stripe starts.
+        // Remaining stripes are not included in this split.
+        break;
+      }
+    }
+
+    RecordIdentifier minKey = new RecordIdentifier(syntheticProps.getSyntheticWriteId(),
+        syntheticProps.getBucketProperty(), minRowId);
+
+    RecordIdentifier maxKey = new RecordIdentifier(syntheticProps.getSyntheticWriteId(),
+        syntheticProps.getBucketProperty(), maxRowId > 0? maxRowId - 1: 0);
+
+    OrcRawRecordMerger.KeyInterval keyIntervalTmp = new OrcRawRecordMerger.KeyInterval(minKey, maxKey);
+
+    if (minRowId >= maxRowId) {
+      /**
+       * The split lies entirely within a single stripe. In this case, the reader for this split will not read any data.
+       * See {@link org.apache.orc.impl.RecordReaderImpl#RecordReaderImpl
+       * We can return the min max key interval as is (it will not read any of the delete delta records into mem)
+       */
+
+      LOG.info("findOriginalMinMaxKeys(): This split starts and ends in the same stripe.");
+    }
+
+    LOG.info("findOriginalMinMaxKeys(): " + keyIntervalTmp);
+
+    // Using min/max ROW__ID from original will work for ppd to the delete deltas because the writeid is the same in
+    // the min and the max ROW__ID
+    setSARG(keyIntervalTmp, deleteEventReaderOptions, minKey.getBucketProperty(), maxKey.getBucketProperty(),
+        minKey.getRowId(), maxKey.getRowId());
+
+    return keyIntervalTmp;
   }
 
   /**
