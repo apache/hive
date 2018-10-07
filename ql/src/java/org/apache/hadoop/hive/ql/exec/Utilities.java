@@ -202,7 +202,9 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hive.common.util.ACLConfigurationParser;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -2269,19 +2271,6 @@ public final class Utilities {
         job.set(entry.getKey(), entry.getValue());
       }
     }
-
-    try {
-      Map<String, String> jobSecrets = tbl.getJobSecrets();
-      if (jobSecrets != null) {
-        for (Map.Entry<String, String> entry : jobSecrets.entrySet()) {
-          job.getCredentials().addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
-          UserGroupInformation.getCurrentUser().getCredentials()
-            .addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
-        }
-      }
-    } catch (IOException e) {
-      throw new HiveException(e);
-    }
   }
 
   /**
@@ -2307,18 +2296,24 @@ public final class Utilities {
         job.set(entry.getKey(), entry.getValue());
       }
     }
+  }
 
-    try {
-      Map<String, String> jobSecrets = tbl.getJobSecrets();
-      if (jobSecrets != null) {
-        for (Map.Entry<String, String> entry : jobSecrets.entrySet()) {
-          job.getCredentials().addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
-          UserGroupInformation.getCurrentUser().getCredentials()
-            .addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
+  /**
+   * Copy job credentials to table properties
+   * @param tbl
+   */
+  public static void copyJobSecretToTableProperties(TableDesc tbl) throws IOException {
+    Credentials credentials = UserGroupInformation.getCurrentUser().getCredentials();
+    for (Text key : credentials.getAllSecretKeys()) {
+      String keyString = key.toString();
+      if (keyString.startsWith(TableDesc.SECRET_PREFIX + TableDesc.SECRET_DELIMIT)) {
+        String[] comps = keyString.split(TableDesc.SECRET_DELIMIT);
+        String tblName = comps[1];
+        String keyName = comps[2];
+        if (tbl.getTableName().equalsIgnoreCase(tblName)) {
+          tbl.getProperties().put(keyName, new String(credentials.getSecretKey(key)));
         }
       }
-    } catch (IOException e) {
-      throw new HiveException(e);
     }
   }
 
@@ -4499,5 +4494,18 @@ public final class Utilities {
       }
     }
     return bucketingVersion;
+  }
+
+  public static String getPasswdFromKeystore(String keystore, String key) throws IOException {
+    String passwd = null;
+    if (keystore != null && key != null) {
+      Configuration conf = new Configuration();
+      conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, keystore);
+      char[] pwdCharArray = conf.getPassword(key);
+      if (pwdCharArray != null) {
+        passwd = new String(pwdCharArray);
+      }
+    }
+    return passwd;
   }
 }

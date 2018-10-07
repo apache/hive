@@ -453,6 +453,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     ValidWriteIdList validMmWriteIdList = getMmValidWriteIds(conf, table, validWriteIdList);
 
     try {
+      Utilities.copyJobSecretToTableProperties(table);
       Utilities.copyTablePropertiesToConf(table, conf);
       if (tableScan != null) {
         AcidUtils.setAcidOperationalProperties(conf, tableScan.getConf().isTranscationalTable(),

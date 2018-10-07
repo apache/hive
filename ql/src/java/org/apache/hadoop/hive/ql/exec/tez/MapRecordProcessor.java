@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -137,6 +139,11 @@ public class MapRecordProcessor extends RecordProcessor {
       });
     // TODO HIVE-14042. Cleanup may be required if exiting early.
     Utilities.setMapWork(jconf, mapWork);
+
+    for (PartitionDesc part : mapWork.getAliasToPartnInfo().values()) {
+      TableDesc tableDesc = part.getTableDesc();
+      Utilities.copyJobSecretToTableProperties(tableDesc);
+    }
 
     String prefixes = jconf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
     if (prefixes != null) {
