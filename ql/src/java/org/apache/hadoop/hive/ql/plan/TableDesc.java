@@ -54,6 +54,8 @@ public class TableDesc implements Serializable, Cloneable {
   private java.util.Properties properties;
   private Map<String, String> jobProperties;
   private Map<String, String> jobSecrets;
+  public static final String SECRET_PREFIX = "TABLE_SECRET";
+  public static final String SECRET_DELIMIT = "#";
 
   public TableDesc() {
   }
