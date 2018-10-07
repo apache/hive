@@ -413,6 +413,15 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<Partition> getPartitionSpecsByFilterAndProjection(String catalog,
+                                                                String dbName, String tblName,
+                                                                List<String> fieldList, String includeParamKeyPattern,
+      String excludeParamKeyPattern) throws MetaException, NoSuchObjectException {
+    return objectStore.getPartitionSpecsByFilterAndProjection(catalog, dbName, tblName, fieldList,
+        includeParamKeyPattern, excludeParamKeyPattern);
+  }
+
+  @Override
   public int getNumPartitionsByFilter(String catName, String dbName, String tblName,
                                       String filter) throws MetaException, NoSuchObjectException {
     return objectStore.getNumPartitionsByFilter(catName, dbName, tblName, filter);

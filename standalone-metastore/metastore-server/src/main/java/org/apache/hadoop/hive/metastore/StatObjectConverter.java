@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
@@ -501,74 +500,74 @@ public class StatObjectConverter {
     colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
-      boolStats.setNumFalses(MetaStoreDirectSql.extractSqlLong(falses));
-      boolStats.setNumTrues(MetaStoreDirectSql.extractSqlLong(trues));
-      boolStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      boolStats.setNumFalses(MetastoreDirectSqlUtils.extractSqlLong(falses));
+      boolStats.setNumTrues(MetastoreDirectSqlUtils.extractSqlLong(trues));
+      boolStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       data.setBooleanStats(boolStats);
     } else if (colType.equals("string") ||
         colType.startsWith("varchar") || colType.startsWith("char")) {
       StringColumnStatsDataInspector stringStats = new StringColumnStatsDataInspector();
-      stringStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
-      stringStats.setAvgColLen(MetaStoreDirectSql.extractSqlDouble(avglen));
-      stringStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
-      stringStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
-      stringStats.setBitVectors(MetaStoreDirectSql.extractSqlBlob(bitVector));
+      stringStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
+      stringStats.setAvgColLen(MetastoreDirectSqlUtils.extractSqlDouble(avglen));
+      stringStats.setMaxColLen(MetastoreDirectSqlUtils.extractSqlLong(maxlen));
+      stringStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
+      stringStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
       data.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
-      binaryStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
-      binaryStats.setAvgColLen(MetaStoreDirectSql.extractSqlDouble(avglen));
-      binaryStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
+      binaryStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
+      binaryStats.setAvgColLen(MetastoreDirectSqlUtils.extractSqlDouble(avglen));
+      binaryStats.setMaxColLen(MetastoreDirectSqlUtils.extractSqlLong(maxlen));
       data.setBinaryStats(binaryStats);
     } else if (colType.equals("bigint") || colType.equals("int") ||
         colType.equals("smallint") || colType.equals("tinyint") ||
         colType.equals("timestamp")) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
-      longStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      longStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (lhigh != null) {
-        longStats.setHighValue(MetaStoreDirectSql.extractSqlLong(lhigh));
+        longStats.setHighValue(MetastoreDirectSqlUtils.extractSqlLong(lhigh));
       }
       if (llow != null) {
-        longStats.setLowValue(MetaStoreDirectSql.extractSqlLong(llow));
+        longStats.setLowValue(MetastoreDirectSqlUtils.extractSqlLong(llow));
       }
-      longStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
-      longStats.setBitVectors(MetaStoreDirectSql.extractSqlBlob(bitVector));
+      longStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
+      longStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
       data.setLongStats(longStats);
     } else if (colType.equals("double") || colType.equals("float")) {
       DoubleColumnStatsDataInspector doubleStats = new DoubleColumnStatsDataInspector();
-      doubleStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      doubleStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (dhigh != null) {
-        doubleStats.setHighValue(MetaStoreDirectSql.extractSqlDouble(dhigh));
+        doubleStats.setHighValue(MetastoreDirectSqlUtils.extractSqlDouble(dhigh));
       }
       if (dlow != null) {
-        doubleStats.setLowValue(MetaStoreDirectSql.extractSqlDouble(dlow));
+        doubleStats.setLowValue(MetastoreDirectSqlUtils.extractSqlDouble(dlow));
       }
-      doubleStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
-      doubleStats.setBitVectors(MetaStoreDirectSql.extractSqlBlob(bitVector));
+      doubleStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
+      doubleStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
       data.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
-      decimalStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      decimalStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (dechigh != null) {
         decimalStats.setHighValue(DecimalUtils.createThriftDecimal((String)dechigh));
       }
       if (declow != null) {
         decimalStats.setLowValue(DecimalUtils.createThriftDecimal((String)declow));
       }
-      decimalStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
-      decimalStats.setBitVectors(MetaStoreDirectSql.extractSqlBlob(bitVector));
+      decimalStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
+      decimalStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
       data.setDecimalStats(decimalStats);
     } else if (colType.equals("date")) {
       DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
-      dateStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      dateStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (lhigh != null) {
-        dateStats.setHighValue(new Date(MetaStoreDirectSql.extractSqlLong(lhigh)));
+        dateStats.setHighValue(new Date(MetastoreDirectSqlUtils.extractSqlLong(lhigh)));
       }
       if (llow != null) {
-        dateStats.setLowValue(new Date(MetaStoreDirectSql.extractSqlLong(llow)));
+        dateStats.setLowValue(new Date(MetastoreDirectSqlUtils.extractSqlLong(llow)));
       }
-      dateStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
-      dateStats.setBitVectors(MetaStoreDirectSql.extractSqlBlob(bitVector));
+      dateStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
+      dateStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
       data.setDateStats(dateStats);
     }
   }
@@ -582,49 +581,49 @@ public class StatObjectConverter {
     colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
-      boolStats.setNumFalses(MetaStoreDirectSql.extractSqlLong(falses));
-      boolStats.setNumTrues(MetaStoreDirectSql.extractSqlLong(trues));
-      boolStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      boolStats.setNumFalses(MetastoreDirectSqlUtils.extractSqlLong(falses));
+      boolStats.setNumTrues(MetastoreDirectSqlUtils.extractSqlLong(trues));
+      boolStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       data.setBooleanStats(boolStats);
     } else if (colType.equals("string") || colType.startsWith("varchar")
         || colType.startsWith("char")) {
       StringColumnStatsDataInspector stringStats = new StringColumnStatsDataInspector();
-      stringStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
-      stringStats.setAvgColLen(MetaStoreDirectSql.extractSqlDouble(avglen));
-      stringStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
-      stringStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
+      stringStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
+      stringStats.setAvgColLen(MetastoreDirectSqlUtils.extractSqlDouble(avglen));
+      stringStats.setMaxColLen(MetastoreDirectSqlUtils.extractSqlLong(maxlen));
+      stringStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
       data.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
-      binaryStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
-      binaryStats.setAvgColLen(MetaStoreDirectSql.extractSqlDouble(avglen));
-      binaryStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
+      binaryStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
+      binaryStats.setAvgColLen(MetastoreDirectSqlUtils.extractSqlDouble(avglen));
+      binaryStats.setMaxColLen(MetastoreDirectSqlUtils.extractSqlLong(maxlen));
       data.setBinaryStats(binaryStats);
     } else if (colType.equals("bigint") || colType.equals("int") || colType.equals("smallint")
         || colType.equals("tinyint") || colType.equals("timestamp")) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
-      longStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      longStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (lhigh != null) {
-        longStats.setHighValue(MetaStoreDirectSql.extractSqlLong(lhigh));
+        longStats.setHighValue(MetastoreDirectSqlUtils.extractSqlLong(lhigh));
       }
       if (llow != null) {
-        longStats.setLowValue(MetaStoreDirectSql.extractSqlLong(llow));
+        longStats.setLowValue(MetastoreDirectSqlUtils.extractSqlLong(llow));
       }
-      long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
-      long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
+      long lowerBound = MetastoreDirectSqlUtils.extractSqlLong(dist);
+      long higherBound = MetastoreDirectSqlUtils.extractSqlLong(sumDist);
       long rangeBound = Long.MAX_VALUE;
       if (lhigh != null && llow != null) {
-        rangeBound = MetaStoreDirectSql.extractSqlLong(lhigh)
-            - MetaStoreDirectSql.extractSqlLong(llow) + 1;
+        rangeBound = MetastoreDirectSqlUtils.extractSqlLong(lhigh)
+            - MetastoreDirectSqlUtils.extractSqlLong(llow) + 1;
       }
       long estimation;
       if (useDensityFunctionForNDVEstimation && lhigh != null && llow != null && avgLong != null
-          && MetaStoreDirectSql.extractSqlDouble(avgLong) != 0.0) {
+          && MetastoreDirectSqlUtils.extractSqlDouble(avgLong) != 0.0) {
         // We have estimation, lowerbound and higherbound. We use estimation if
         // it is between lowerbound and higherbound.
-        estimation = MetaStoreDirectSql
-            .extractSqlLong((MetaStoreDirectSql.extractSqlLong(lhigh) - MetaStoreDirectSql
-                .extractSqlLong(llow)) / MetaStoreDirectSql.extractSqlDouble(avgLong));
+        estimation = MetastoreDirectSqlUtils
+            .extractSqlLong((MetastoreDirectSqlUtils.extractSqlLong(lhigh) - MetastoreDirectSqlUtils
+                .extractSqlLong(llow)) / MetastoreDirectSqlUtils.extractSqlDouble(avgLong));
         if (estimation < lowerBound) {
           estimation = lowerBound;
         } else if (estimation > higherBound) {
@@ -638,28 +637,28 @@ public class StatObjectConverter {
       data.setLongStats(longStats);
     } else if (colType.equals("date")) {
       DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
-      dateStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      dateStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (lhigh != null) {
-        dateStats.setHighValue(new Date(MetaStoreDirectSql.extractSqlLong(lhigh)));
+        dateStats.setHighValue(new Date(MetastoreDirectSqlUtils.extractSqlLong(lhigh)));
       }
       if (llow != null) {
-        dateStats.setLowValue(new Date(MetaStoreDirectSql.extractSqlLong(llow)));
+        dateStats.setLowValue(new Date(MetastoreDirectSqlUtils.extractSqlLong(llow)));
       }
-      long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
-      long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
+      long lowerBound = MetastoreDirectSqlUtils.extractSqlLong(dist);
+      long higherBound = MetastoreDirectSqlUtils.extractSqlLong(sumDist);
       long rangeBound = Long.MAX_VALUE;
       if (lhigh != null && llow != null) {
-        rangeBound = MetaStoreDirectSql.extractSqlLong(lhigh)
-            - MetaStoreDirectSql.extractSqlLong(llow) + 1;
+        rangeBound = MetastoreDirectSqlUtils.extractSqlLong(lhigh)
+            - MetastoreDirectSqlUtils.extractSqlLong(llow) + 1;
       }
       long estimation;
       if (useDensityFunctionForNDVEstimation && lhigh != null && llow != null && avgLong != null
-          && MetaStoreDirectSql.extractSqlDouble(avgLong) != 0.0) {
+          && MetastoreDirectSqlUtils.extractSqlDouble(avgLong) != 0.0) {
         // We have estimation, lowerbound and higherbound. We use estimation if
         // it is between lowerbound and higherbound.
-        estimation = MetaStoreDirectSql
-            .extractSqlLong((MetaStoreDirectSql.extractSqlLong(lhigh) - MetaStoreDirectSql
-                .extractSqlLong(llow)) / MetaStoreDirectSql.extractSqlDouble(avgLong));
+        estimation = MetastoreDirectSqlUtils
+            .extractSqlLong((MetastoreDirectSqlUtils.extractSqlLong(lhigh) - MetastoreDirectSqlUtils
+                .extractSqlLong(llow)) / MetastoreDirectSqlUtils.extractSqlDouble(avgLong));
         if (estimation < lowerBound) {
           estimation = lowerBound;
         } else if (estimation > higherBound) {
@@ -673,20 +672,20 @@ public class StatObjectConverter {
       data.setDateStats(dateStats);
     } else if (colType.equals("double") || colType.equals("float")) {
       DoubleColumnStatsDataInspector doubleStats = new DoubleColumnStatsDataInspector();
-      doubleStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      doubleStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (dhigh != null) {
-        doubleStats.setHighValue(MetaStoreDirectSql.extractSqlDouble(dhigh));
+        doubleStats.setHighValue(MetastoreDirectSqlUtils.extractSqlDouble(dhigh));
       }
       if (dlow != null) {
-        doubleStats.setLowValue(MetaStoreDirectSql.extractSqlDouble(dlow));
+        doubleStats.setLowValue(MetastoreDirectSqlUtils.extractSqlDouble(dlow));
       }
-      long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
-      long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
+      long lowerBound = MetastoreDirectSqlUtils.extractSqlLong(dist);
+      long higherBound = MetastoreDirectSqlUtils.extractSqlLong(sumDist);
       if (useDensityFunctionForNDVEstimation && dhigh != null && dlow != null && avgDouble != null
-          && MetaStoreDirectSql.extractSqlDouble(avgDouble) != 0.0) {
-        long estimation = MetaStoreDirectSql
-            .extractSqlLong((MetaStoreDirectSql.extractSqlLong(dhigh) - MetaStoreDirectSql
-                .extractSqlLong(dlow)) / MetaStoreDirectSql.extractSqlDouble(avgDouble));
+          && MetastoreDirectSqlUtils.extractSqlDouble(avgDouble) != 0.0) {
+        long estimation = MetastoreDirectSqlUtils
+            .extractSqlLong((MetastoreDirectSqlUtils.extractSqlLong(dhigh) - MetastoreDirectSqlUtils
+                .extractSqlLong(dlow)) / MetastoreDirectSqlUtils.extractSqlDouble(avgDouble));
         if (estimation < lowerBound) {
           doubleStats.setNumDVs(lowerBound);
         } else if (estimation > higherBound) {
@@ -700,7 +699,7 @@ public class StatObjectConverter {
       data.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
-      decimalStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      decimalStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       Decimal low = null;
       Decimal high = null;
       BigDecimal blow = null;
@@ -722,12 +721,12 @@ public class StatObjectConverter {
         low = DecimalUtils.createThriftDecimal((String) declow);
       }
       decimalStats.setLowValue(low);
-      long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
-      long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
+      long lowerBound = MetastoreDirectSqlUtils.extractSqlLong(dist);
+      long higherBound = MetastoreDirectSqlUtils.extractSqlLong(sumDist);
       if (useDensityFunctionForNDVEstimation && dechigh != null && declow != null && avgDecimal != null
-          && MetaStoreDirectSql.extractSqlDouble(avgDecimal) != 0.0) {
-        long estimation = MetaStoreDirectSql.extractSqlLong(MetaStoreDirectSql.extractSqlLong(bhigh
-            .subtract(blow).floatValue() / MetaStoreDirectSql.extractSqlDouble(avgDecimal)));
+          && MetastoreDirectSqlUtils.extractSqlDouble(avgDecimal) != 0.0) {
+        long estimation = MetastoreDirectSqlUtils.extractSqlLong(MetastoreDirectSqlUtils.extractSqlLong(bhigh
+            .subtract(blow).floatValue() / MetastoreDirectSqlUtils.extractSqlDouble(avgDecimal)));
         if (estimation < lowerBound) {
           decimalStats.setNumDVs(lowerBound);
         } else if (estimation > higherBound) {

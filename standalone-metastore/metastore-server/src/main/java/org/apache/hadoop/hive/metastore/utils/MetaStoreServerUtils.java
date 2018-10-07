@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -32,6 +33,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -43,10 +45,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
@@ -56,7 +62,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -68,6 +73,10 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
+import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -108,7 +117,10 @@ public class MetaStoreServerUtils {
       return org.apache.commons.lang.StringUtils.defaultString(string);
     }
   };
+
   private static final String DELEGATION_TOKEN_STORE_CLS = "hive.cluster.delegation.token.store.class";
+
+  private static final char DOT = '.';
 
   /**
    * We have a need to sanity-check the map before conversion from persisted objects to
@@ -977,6 +989,168 @@ public class MetaStoreServerUtils {
     }
   }
 
+  /**
+   * Coalesce list of partitions belonging to a table into a more compact PartitionSpec
+   * representation.
+   *
+   * @param table Table thrift object
+   * @param partitions List of partition objects
+   * @return collection PartitionSpec objects which is a compressed representation of original
+   * partition list.
+   */
+  public static List<PartitionSpec> getPartitionspecsGroupedByStorageDescriptor(Table table,
+                                                                                Collection<Partition> partitions) {
+    final String tablePath = table.getSd().getLocation();
+
+    ImmutableListMultimap<StorageDescriptorKey, Partition> partitionsWithinTableDirectory =
+        Multimaps.index(partitions, input -> {
+          // if sd is not in the list of projected fields, all the partitions
+          // can be just grouped in PartitionSpec object
+          if (input.getSd() == null) {
+            return StorageDescriptorKey.UNSET_KEY;
+          }
+          // if the partition is within table, use the tableSDKey to group it with other partitions
+          // within the table directory
+          if (input.getSd().getLocation() != null && input.getSd().getLocation()
+              .startsWith(tablePath)) {
+            return new StorageDescriptorKey(tablePath, input.getSd());
+          }
+          // if partitions are located outside table location we treat them as non-standard
+          // and do not perform any grouping
+          // if the location is not set partitions are grouped according to the rest of the SD fields
+          return new StorageDescriptorKey(input.getSd());
+        });
+
+    List<PartitionSpec> partSpecs = new ArrayList<>();
+
+    // Classify partitions based on shared SD properties.
+    Map<StorageDescriptorKey, List<PartitionWithoutSD>> sdToPartList
+        = new HashMap<>();
+    // we don't expect partitions to exist outside directory in most cases
+    List<Partition> partitionsOutsideTableDir = new ArrayList<>(0);
+    for (StorageDescriptorKey key : partitionsWithinTableDirectory.keySet()) {
+      boolean isUnsetKey = key.equals(StorageDescriptorKey.UNSET_KEY);
+      // group the partitions together when
+      // case I : sd is not set because it was not in the requested fields
+      // case II : when sd.location is not set because it was not in the requested fields
+      // case III : when sd.location is set and it is located within table directory
+      if (isUnsetKey || key.baseLocation == null || key.baseLocation.equals(tablePath)) {
+        for (Partition partition : partitionsWithinTableDirectory.get(key)) {
+
+          PartitionWithoutSD partitionWithoutSD
+              = new PartitionWithoutSD();
+          partitionWithoutSD.setValues(partition.getValues());
+          partitionWithoutSD.setCreateTime(partition.getCreateTime());
+          partitionWithoutSD.setLastAccessTime(partition.getLastAccessTime());
+          partitionWithoutSD.setRelativePath(
+              (isUnsetKey || !partition.getSd().isSetLocation()) ? null : partition.getSd()
+                  .getLocation().substring(tablePath.length()));
+          partitionWithoutSD.setParameters(partition.getParameters());
+
+          if (!sdToPartList.containsKey(key)) {
+            sdToPartList.put(key, new ArrayList<>());
+          }
+          sdToPartList.get(key).add(partitionWithoutSD);
+        }
+      } else {
+        // Lump all partitions outside the tablePath into one PartSpec.
+        // if non-standard partitions need not be deDuped create PartitionListComposingSpec
+        // this will be used mostly for keeping backwards compatibility with  some HMS APIs which use
+        // PartitionListComposingSpec for non-standard partitions located outside table
+        partitionsOutsideTableDir.addAll(partitionsWithinTableDirectory.get(key));
+      }
+    }
+    // create sharedSDPartSpec for all the groupings
+    for (Map.Entry<StorageDescriptorKey, List<PartitionWithoutSD>> entry : sdToPartList
+        .entrySet()) {
+      partSpecs.add(getSharedSDPartSpec(table, entry.getKey(), entry.getValue()));
+    }
+    if (!partitionsOutsideTableDir.isEmpty()) {
+      PartitionSpec partListSpec = new PartitionSpec();
+      partListSpec.setDbName(table.getDbName());
+      partListSpec.setTableName(table.getTableName());
+      partListSpec.setPartitionList(new PartitionListComposingSpec(partitionsOutsideTableDir));
+      partSpecs.add(partListSpec);
+    }
+    return partSpecs;
+  }
+
+  /**
+   * Convert list of partitions to a PartitionSpec object.
+   */
+  private static PartitionSpec getSharedSDPartSpec(Table table, StorageDescriptorKey sdKey, List<PartitionWithoutSD> partitions) {
+    StorageDescriptor sd;
+    if (sdKey.getSd() == null) {
+      //sd is not requested set it empty StorageDescriptor in the PartitionSpec
+      sd = new StorageDescriptor();
+    } else {
+      sd = new StorageDescriptor(sdKey.getSd());
+      sd.setLocation(sdKey.baseLocation); // Use table-dir as root-dir.
+    }
+    PartitionSpecWithSharedSD sharedSDPartSpec =
+        new PartitionSpecWithSharedSD();
+    sharedSDPartSpec.setPartitions(partitions);
+    sharedSDPartSpec.setSd(sd);
+
+    PartitionSpec ret = new PartitionSpec();
+    ret.setRootPath(sd.getLocation());
+    ret.setSharedSDPartitionSpec(sharedSDPartSpec);
+    ret.setDbName(table.getDbName());
+    ret.setTableName(table.getTableName());
+
+    return ret;
+  }
+
+  /**
+   * This is a util method to set a nested property of a given object. The nested property is a
+   * dot separated string where each nesting level is separated by a dot. This method makes use of
+   * PropertyUtils methods from apache-commons library and assumes that the field names provided in
+   * the input propertyName have valid setters. eg. the propertyName sd.serdeInfo.inputFormat represents
+   * the inputformat field of the serdeInfo field of the sd field. The argument bean should have these
+   * fields (in this case it should be a Partition object). The value argument is the value to be set
+   * for the nested field. Note that if in case of one of nested levels is null you must set
+   * instantiateMissingFields argument to true otherwise this method could throw a NPE.
+   *
+   * @param bean the object whose nested field needs to be set. This object must have setter methods
+   *             defined for each nested field name in the propertyName
+   * @param propertyName the nested propertyName to be set. Each level of nesting is dot separated
+   * @param value the value to which the nested property is set
+   * @param instantiateMissingFields in case of some nestedFields being nulls, setting this argument
+   *                                 to true will attempt to instantiate the missing fields using the
+   *                                 default constructor. If there is no default constructor available this would throw a MetaException
+   * @throws MetaException
+   */
+  public static void setNestedProperty(Object bean, String propertyName, Object value,
+      boolean instantiateMissingFields) throws MetaException {
+    try {
+      String[] nestedFields = propertyName.split("\\.");
+      //check if there are more than one nested levels
+      if (nestedFields.length > 1 && instantiateMissingFields) {
+        StringBuilder fieldNameBuilder = new StringBuilder();
+        //check if all the nested levels until the given fieldName is set
+        for (int level = 0; level < nestedFields.length - 1; level++) {
+          fieldNameBuilder.append(nestedFields[level]);
+          String currentFieldName = fieldNameBuilder.toString();
+          Object fieldVal = PropertyUtils.getProperty(bean, currentFieldName);
+          if (fieldVal == null) {
+            //one of the nested levels is null. Instantiate it
+            PropertyDescriptor fieldDescriptor =
+                PropertyUtils.getPropertyDescriptor(bean, currentFieldName);
+            //this assumes the MPartition and the nested field objects have a default constructor
+            Object defaultInstance = fieldDescriptor.getPropertyType().newInstance();
+            PropertyUtils.setNestedProperty(bean, currentFieldName, defaultInstance);
+          }
+          //add dot separator for the next level of nesting
+          fieldNameBuilder.append(DOT);
+        }
+      }
+      PropertyUtils.setNestedProperty(bean, propertyName, value);
+    } catch (Exception e) {
+      throw new MetaException(
+          org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+    }
+  }
+
   // ColumnStatisticsObj with info about its db, table, partition (if table is partitioned)
   public static class ColStatsObjWithSourceInfo {
     private final ColumnStatisticsObj colStatsObj;
@@ -1012,6 +1186,112 @@ public class MetaStoreServerUtils {
 
     public String getPartName() {
       return partName;
+    }
+  }
+
+  /**
+   * This class is used to group the partitions based on a shared storage descriptor.
+   * The following fields are considered for hashing/equality:
+   * <ul>
+   *   <li>location</li>
+   *   <li>serializationLib</li>
+   *   <li>inputFormat</li>
+   *   <li>outputFormat</li>
+   *   <li>columns</li>
+   * </ul>
+   *
+   * For objects that share these can share the same storage descriptor,
+   * significantly reducing on-the-wire cost.
+   *
+   * Check {@link #getPartitionspecsGroupedByStorageDescriptor} for more details
+   */
+  @VisibleForTesting
+  static class StorageDescriptorKey {
+    private final StorageDescriptor sd;
+    private final String baseLocation;
+    private final int hashCode;
+
+    @VisibleForTesting
+    static final StorageDescriptorKey UNSET_KEY = new StorageDescriptorKey();
+
+    StorageDescriptorKey(StorageDescriptor sd) {
+      this(sd.getLocation(), sd);
+    }
+
+    StorageDescriptorKey(String baseLocation, StorageDescriptor sd) {
+      this.sd = sd;
+      this.baseLocation = baseLocation;
+      if (sd == null) {
+        hashCode = Objects.hashCode(baseLocation);
+      } else {
+        // use the baseLocation provided instead of sd.getLocation()
+        hashCode = Objects.hash(sd.getSerdeInfo() == null ? null :
+                sd.getSerdeInfo().getSerializationLib(),
+            sd.getInputFormat(), sd.getOutputFormat(), baseLocation, sd.getCols());
+      }
+    }
+
+    // Set everything to null
+    StorageDescriptorKey() {
+      baseLocation = null;
+      sd = null;
+      hashCode = 0;
+    }
+
+    StorageDescriptor getSd() {
+      return sd;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (o == null || getClass() != o.getClass())
+        return false;
+      StorageDescriptorKey that = (StorageDescriptorKey) o;
+
+      if (!Objects.equals(baseLocation, that.baseLocation)) {
+        return false;
+      }
+
+      if (sd == null && that.sd == null) {
+        return true;
+      }
+
+      if (sd == null || that.sd == null) {
+        return false;
+      }
+
+      if (!Objects.equals(sd.getOutputFormat(), that.sd.getOutputFormat())) {
+        return false;
+      }
+      if (!Objects.equals(sd.getCols(), that.sd.getCols())) {
+        return false;
+      }
+      if (!Objects.equals(sd.getInputFormat(), that.sd.getInputFormat())) {
+        return false;
+      }
+
+      if (!Objects.equals(sd.getSerdeInfo(), that.sd.getSerdeInfo())) {
+        return false;
+      }
+      if (sd.getSerdeInfo() != null && that.sd.getSerdeInfo() == null) {
+        return false;
+      }
+      if (sd.getSerdeInfo() == null && that.sd.getSerdeInfo() != null) {
+        return false;
+      }
+      if (sd.getSerdeInfo() != null && that.sd.getSerdeInfo() != null &&
+          !Objects.equals(sd.getSerdeInfo().getSerializationLib(),
+              that.sd.getSerdeInfo().getSerializationLib())) {
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return hashCode;
     }
   }
 }

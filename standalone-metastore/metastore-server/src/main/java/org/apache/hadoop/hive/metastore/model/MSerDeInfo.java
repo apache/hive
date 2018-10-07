@@ -29,6 +29,9 @@ public class MSerDeInfo {
   private String deserializerClass;
   private int serdeType;
 
+  public MSerDeInfo() {
+    //default constructor used for deserialization
+  }
   /**
    *
    * @param name
