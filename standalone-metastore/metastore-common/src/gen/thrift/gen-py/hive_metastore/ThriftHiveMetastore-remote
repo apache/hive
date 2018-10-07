@@ -238,6 +238,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  bool heartbeat_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
   print('  void add_runtime_stats(RuntimeStat stat)')
   print('   get_runtime_stats(GetRuntimeStatsRequest rqst)')
+  print('  GetPartitionsResponse get_partitions_with_specs(GetPartitionsRequest request)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1590,6 +1591,12 @@ elif cmd == 'get_runtime_stats':
     print('get_runtime_stats requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_runtime_stats(eval(args[0]),))
+
+elif cmd == 'get_partitions_with_specs':
+  if len(args) != 1:
+    print('get_partitions_with_specs requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_partitions_with_specs(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

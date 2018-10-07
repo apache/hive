@@ -98,7 +98,7 @@ public class MStorageDescriptor {
   /**
    * @param isCompressed the isCompressed to set
    */
-  public void setCompressed(boolean isCompressed) {
+  public void setIsCompressed(boolean isCompressed) {
     this.isCompressed = isCompressed;
   }
 
@@ -274,4 +274,11 @@ public class MStorageDescriptor {
     this.isStoredAsSubDirectories = storedAsSubDirectories;
   }
 
+  public MColumnDescriptor getCd() {
+    return cd;
+  }
+
+  public void setCd(MColumnDescriptor cd) {
+    this.cd = cd;
+  }
 }

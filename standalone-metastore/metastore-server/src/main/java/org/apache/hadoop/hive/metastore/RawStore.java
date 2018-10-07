@@ -20,6 +20,12 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -543,6 +549,38 @@ public interface RawStore extends Configurable {
    */
   List<Partition> getPartitionsByFilter(
       String catName, String dbName, String tblName, String filter, short maxParts)
+      throws MetaException, NoSuchObjectException;
+
+  /**
+   * Generic Partition request API, providing different kinds of filtering and controlling output.
+   *
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @param fieldList a dot separated strings which represent the fields which must be returned.
+   *                  Any other field which is not in the fieldList may be unset in the returned
+   *                  partitions (it is up to the implementation to decide whether it chooses to
+   *                 include or exclude such fields). E.g. setting the field list to <em>sd.location</em>,
+   *                 <em>serdeInfo.name</em>, <em>sd.cols.name</em>, <em>sd.cols.type</em> will
+   *                 return partitions which will have location field set in the storage descriptor.
+   *                 Also the serdeInf in the returned storage descriptor will only have name field
+   *                 set. This applies to multi-valued fields as well like sd.cols, so in the
+   *                 example above only name and type fields will be set for <em>sd.cols</em>.
+   *                 If the <em>fieldList</em> is empty or not present, all the fields will be set.
+   * @param includeParamKeyPattern SQL-92 compliant regex pattern for param keys to be included
+   *                               _ or % wildcards are supported. '_' represent one character and
+   *                               '%' represents 0 or more characters.
+   * @param excludeParamKeyPattern SQL-92 compliant regex pattern for param keys to be excluded
+   *                               _ or % wildcards are supported. '_' represent one character and
+   *                               '%' represents 0 or more characters
+   * @return List of matching partitions which which may be partially filled according to fieldList.
+   * @throws MetaException in case of errors
+   * @throws NoSuchObjectException when catalog or database or table isn't found
+   */
+  List<Partition> getPartitionSpecsByFilterAndProjection(String catName, String dbName, String tblName,
+                                                         final List<String> fieldList,
+                                                         final String includeParamKeyPattern,
+                                                         final String excludeParamKeyPattern)
       throws MetaException, NoSuchObjectException;
 
   /**

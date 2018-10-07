@@ -3537,4 +3537,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       throws TException {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
+      throws TException {
+    throw new UnsupportedOperationException();
+  }
 }

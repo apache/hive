@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -28,9 +29,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +44,13 @@ import java.lang.reflect.*;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
+import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -125,6 +135,7 @@ public abstract class TestHiveMetaStore {
     conf.set("hive.key3", "");
     conf.set("hive.key4", "0");
     conf.set("datanucleus.autoCreateTables", "false");
+    conf.set("hive.in.test", "true");
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
@@ -471,7 +482,6 @@ public abstract class TestHiveMetaStore {
 
   private static List<String> makeVals(String ds, String id) {
     List <String> vals4 = new ArrayList<>(2);
-    vals4 = new ArrayList<>(2);
     vals4.add(ds);
     vals4.add(id);
     return vals4;
@@ -666,6 +676,126 @@ public abstract class TestHiveMetaStore {
 
   }
 
+  @Test
+  public void testGetPartitionsWithSpec() throws Throwable {
+    // create a table with multiple partitions
+    List<Partition> createdPartitions = setupProjectionTestTable();
+    Table tbl = client.getTable("compdb", "comptbl");
+    GetPartitionsRequest request = new GetPartitionsRequest();
+    GetPartitionsProjectionSpec projectSpec = new GetPartitionsProjectionSpec();
+    projectSpec.setFieldList(Arrays
+        .asList("dbName", "tableName", "catName", "parameters", "lastAccessTime", "sd.location",
+            "values", "createTime", "sd.serdeInfo.serializationLib", "sd.cols"));
+    projectSpec.setExcludeParamKeyPattern("exclude%");
+    GetPartitionsFilterSpec filter = new GetPartitionsFilterSpec();
+    request.setDbName("compdb");
+    request.setTblName("comptbl");
+    request.setFilterSpec(filter);
+    request.setProjectionSpec(projectSpec);
+    GetPartitionsResponse response;
+    try {
+      response = client.getPartitionsWithSpecs(request);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      LOG.error("Exception while retriveing partitions", ex);
+      throw ex;
+    }
+
+    Assert.assertEquals(1, response.getPartitionSpecSize());
+    PartitionSpecWithSharedSD partitionSpecWithSharedSD =
+        response.getPartitionSpec().get(0).getSharedSDPartitionSpec();
+    Assert.assertNotNull(partitionSpecWithSharedSD.getSd());
+    StorageDescriptor sharedSD = partitionSpecWithSharedSD.getSd();
+    Assert.assertEquals("Root location should be set to table location", tbl.getSd().getLocation(),
+        sharedSD.getLocation());
+    Assert.assertFalse("Fields which are not requested should not be set",
+        sharedSD.isSetParameters());
+    Assert.assertNotNull(
+        "serializationLib class was requested but was not found in the returned partition",
+        sharedSD.getSerdeInfo().getSerializationLib());
+    Assert.assertNotNull("db name was requested but was not found in the returned partition",
+        response.getPartitionSpec().get(0).getDbName());
+    Assert.assertNotNull("Table name was requested but was not found in the returned partition",
+        response.getPartitionSpec().get(0).getTableName());
+    Assert.assertTrue("sd.cols was requested but was not found in the returned response",
+        partitionSpecWithSharedSD.getSd().isSetCols());
+    List<FieldSchema> origSdCols = createdPartitions.get(0).getSd().getCols();
+    Assert.assertEquals("Size of the requested sd.cols should be same", origSdCols.size(),
+        partitionSpecWithSharedSD.getSd().getCols().size());
+    for (int i = 0; i < origSdCols.size(); i++) {
+      FieldSchema origFs = origSdCols.get(i);
+      FieldSchema returnedFs = partitionSpecWithSharedSD.getSd().getCols().get(i);
+      Assert.assertEquals("Field schemas returned different than expected", origFs, returnedFs);
+    }
+    /*Assert
+        .assertNotNull("Catalog name was requested but was not found in the returned partition",
+            response.getPartitionSpec().get(0).getCatName());*/
+
+    List<PartitionWithoutSD> partitionWithoutSDS = partitionSpecWithSharedSD.getPartitions();
+    Assert.assertEquals(createdPartitions.size(), partitionWithoutSDS.size());
+    for (int i = 0; i < createdPartitions.size(); i++) {
+      Partition origPartition = createdPartitions.get(i);
+      PartitionWithoutSD returnedPartitionWithoutSD = partitionWithoutSDS.get(i);
+      Assert.assertEquals(String.format("Location returned for Partition %d is not correct", i),
+          origPartition.getSd().getLocation(),
+          sharedSD.getLocation() + returnedPartitionWithoutSD.getRelativePath());
+      Assert.assertTrue("createTime was request but is not set",
+          returnedPartitionWithoutSD.isSetCreateTime());
+      Assert.assertTrue("Partition parameters were requested but are not set",
+          returnedPartitionWithoutSD.isSetParameters());
+      // first partition has parameters set
+      if (i == 0) {
+        Assert.assertTrue("partition parameters not set",
+            returnedPartitionWithoutSD.getParameters().containsKey("key1"));
+        Assert.assertEquals("partition parameters does not contain included keys", "val1",
+            returnedPartitionWithoutSD.getParameters().get("key1"));
+        // excluded parameter should not be returned
+        Assert.assertFalse("Excluded parameter key returned",
+            returnedPartitionWithoutSD.getParameters().containsKey("excludeKey1"));
+        Assert.assertFalse("Excluded parameter key returned",
+            returnedPartitionWithoutSD.getParameters().containsKey("excludeKey2"));
+      }
+      List<String> returnedVals = returnedPartitionWithoutSD.getValues();
+      List<String> actualVals = origPartition.getValues();
+      for (int j = 0; j < actualVals.size(); j++) {
+        Assert.assertEquals(actualVals.get(j), returnedVals.get(j));
+      }
+    }
+  }
+
+
+  protected List<Partition> setupProjectionTestTable() throws Throwable {
+    //String catName = "catName";
+    String dbName = "compdb";
+    String tblName = "comptbl";
+    String typeName = "Person";
+    //String catName = "catName";
+    Map<String, String> dummyparams = new HashMap<>();
+    dummyparams.put("key1", "val1");
+    dummyparams.put("excludeKey1", "excludeVal1");
+    dummyparams.put("excludeKey2", "excludeVal2");
+    cleanUp(dbName, tblName, typeName);
+
+    List<List<String>> values = new ArrayList<>();
+    values.add(makeVals("2008-07-01 14:13:12", "14"));
+    values.add(makeVals("2008-07-01 14:13:12", "15"));
+    values.add(makeVals("2008-07-02 14:13:12", "15"));
+    values.add(makeVals("2008-07-03 14:13:12", "151"));
+
+    List<Partition> createdPartitions =
+        createMultiPartitionTableSchema(dbName, tblName, typeName, values);
+    Table tbl = client.getTable(dbName, tblName);
+    // add some dummy parameters to one of the partitions to confirm the fetching logic is working
+    Partition newPartition = createdPartitions.remove(0);
+    //Map<String, String> sdParams = new HashMap<>();
+    //dummyparams.put("sdkey1", "sdval1");
+    newPartition.setParameters(dummyparams);
+    //newPartition.getSd().setParameters(sdParams);
+
+    client.alter_partition(dbName, tblName, newPartition);
+    createdPartitions.add(0, newPartition);
+    return createdPartitions;
+  }
 
   @Test
   public void testDropTable() throws Throwable {
@@ -2802,7 +2932,11 @@ public abstract class TestHiveMetaStore {
     return partitions;
   }
 
-  private void createMultiPartitionTableSchema(String dbName, String tblName,
+  private List<Partition> createMultiPartitionTableSchema(String dbName, String tblName,
+      String typeName, List<List<String>> values) throws Throwable {
+    return createMultiPartitionTableSchema(null, dbName, tblName, typeName, values);
+  }
+  private List<Partition> createMultiPartitionTableSchema(String catName, String dbName, String tblName,
       String typeName, List<List<String>> values) throws Throwable {
     createDb(dbName);
 
@@ -2813,6 +2947,7 @@ public abstract class TestHiveMetaStore {
     Table tbl = new TableBuilder()
         .setDbName(dbName)
         .setTableName(tblName)
+        .setCatName(catName)
         .addCol("name", ColumnType.STRING_TYPE_NAME)
         .addCol("income", ColumnType.INT_TYPE_NAME)
         .addPartCol("ds", ColumnType.STRING_TYPE_NAME)
@@ -2827,7 +2962,7 @@ public abstract class TestHiveMetaStore {
       tbl = client.getTable(dbName, tblName);
     }
 
-    createPartitions(dbName, tbl, values);
+    return createPartitions(dbName, tbl, values);
   }
 
   @Test

@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
+import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 
 import com.google.common.base.Joiner;
@@ -44,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;

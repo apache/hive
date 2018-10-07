@@ -3647,4 +3647,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setMaxCreateTime(maxCreateTime);
     return client.get_runtime_stats(req);
   }
+
+  @Override
+  public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
+      throws TException {
+    return client.get_partitions_with_specs(request);
+  }
 }

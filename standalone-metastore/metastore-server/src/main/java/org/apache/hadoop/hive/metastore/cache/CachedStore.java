@@ -1271,6 +1271,19 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  /**
+   * getPartitionSpecsByFilterAndProjection interface is currently non-cacheable.
+   */
+  public List<Partition> getPartitionSpecsByFilterAndProjection(String catName, String dbName,
+                                                                String tblName,
+                                                                List<String> fieldList,
+                                                                String includeParamKeyPattern,
+      String excludeParamKeysPattern) throws MetaException, NoSuchObjectException {
+    return rawStore.getPartitionSpecsByFilterAndProjection(catName, dbName, tblName, fieldList,
+        includeParamKeyPattern, excludeParamKeysPattern);
+  }
+
+  @Override
   public boolean getPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr,
       String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
     catName = StringUtils.normalizeIdentifier(catName);
