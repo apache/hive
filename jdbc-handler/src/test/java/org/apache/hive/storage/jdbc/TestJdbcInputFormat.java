@@ -18,11 +18,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
+import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
 import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
 
@@ -32,7 +36,8 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(DatabaseAccessorFactory.class)
 public class TestJdbcInputFormat {
 
   @Mock
@@ -41,9 +46,10 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testSplitLogic_noSpillOver() throws HiveJdbcDatabaseAccessException, IOException {
+    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getTotalNumberOfRecords(any(Configuration.class))).thenReturn(15);
-    f.setDbAccessor(mockDatabaseAccessor);
 
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
@@ -58,9 +64,10 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testSplitLogic_withSpillOver() throws HiveJdbcDatabaseAccessException, IOException {
+    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getTotalNumberOfRecords(any(Configuration.class))).thenReturn(15);
-    f.setDbAccessor(mockDatabaseAccessor);
 
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");

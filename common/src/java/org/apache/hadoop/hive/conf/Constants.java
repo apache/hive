@@ -66,6 +66,8 @@ public class Constants {
   public static final String JDBC_DRIVER = JDBC_CONFIG_PREFIX + ".jdbc.driver";
   public static final String JDBC_USERNAME = JDBC_CONFIG_PREFIX + ".dbcp.username";
   public static final String JDBC_PASSWORD = JDBC_CONFIG_PREFIX + ".dbcp.password";
+  public static final String JDBC_KEYSTORE = JDBC_CONFIG_PREFIX + ".dbcp.password.keystore";
+  public static final String JDBC_KEY = JDBC_CONFIG_PREFIX + ".dbcp.password.key";
   public static final String JDBC_QUERY = JDBC_CONFIG_PREFIX + ".query";
   public static final String JDBC_QUERY_FIELD_NAMES = JDBC_CONFIG_PREFIX + ".query.fieldNames";
   public static final String JDBC_QUERY_FIELD_TYPES = JDBC_CONFIG_PREFIX + ".query.fieldTypes";
