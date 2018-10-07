@@ -17,6 +17,7 @@ package org.apache.hive.storage.jdbc.dao;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
@@ -52,7 +53,6 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   protected static final int DEFAULT_FETCH_SIZE = 1000;
   protected static final Logger LOGGER = LoggerFactory.getLogger(GenericJdbcDatabaseAccessor.class);
   protected DataSource dbcpDataSource = null;
-  protected static final Text DBCP_PWD = new Text(DBCP_CONFIG_PREFIX + ".password");
 
 
   public GenericJdbcDatabaseAccessor() {
@@ -294,6 +294,9 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     }
   }
 
+  private String getFromProperties(Properties dbProperties, String key) {
+    return dbProperties.getProperty(key.replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""));
+  }
 
   protected Properties getConnectionPoolProperties(Configuration conf) throws Exception {
     // Create the default properties object
@@ -308,10 +311,15 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     }
 
     // handle password
-    Credentials credentials = UserGroupInformation.getCurrentUser().getCredentials();
-    if (credentials.getSecretKey(DBCP_PWD) != null) {
-      LOGGER.info("found token in credentials");
-      dbProperties.put(DBCP_PWD,new String(credentials.getSecretKey(DBCP_PWD)));
+    String passwd = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD);
+    if (passwd == null) {
+      String keystore = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEYSTORE);
+      String key = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEY);
+      passwd = Utilities.getPasswdFromKeystore(keystore, key);
+    }
+
+    if (passwd != null) {
+      dbProperties.put(JdbcStorageConfigManager.CONFIG_PWD.replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""), passwd);
     }
 
     // essential properties that shouldn't be overridden by users

@@ -133,6 +133,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -2895,7 +2896,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             final String url = tabMetaData.getProperty(Constants.JDBC_URL);
             final String driver = tabMetaData.getProperty(Constants.JDBC_DRIVER);
             final String user = tabMetaData.getProperty(Constants.JDBC_USERNAME);
-            final String pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
+            //final String query = tabMetaData.getProperty("hive.sql.query");
+            String pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
+            if (pswd == null) {
+              String keystore = tabMetaData.getProperty(Constants.JDBC_KEYSTORE);
+              String key = tabMetaData.getProperty(Constants.JDBC_KEY);
+              pswd = Utilities.getPasswdFromKeystore(keystore, key);
+            }
             final String tableName = tabMetaData.getProperty(Constants.JDBC_TABLE);
 
             DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);

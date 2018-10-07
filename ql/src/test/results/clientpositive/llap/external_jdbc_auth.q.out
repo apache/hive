@@ -1,0 +1,221 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: dboutput
+POSTHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: dboutput
+PREHOOK: query: FROM src
+
+SELECT
+
+#### A masked pattern was here ####
+'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
+
+limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src
+
+SELECT
+
+#### A masked pattern was here ####
+'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
+
+limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	0	0	0	0
+PREHOOK: query: FROM src
+
+SELECT
+
+#### A masked pattern was here ####
+'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
+
+limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src
+
+SELECT
+
+#### A masked pattern was here ####
+'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
+
+#### A masked pattern was here ####
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
+
+limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	0	0	0	0
+PREHOOK: query: CREATE EXTERNAL TABLE ext_auth1
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user1",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.password.key" = "test_derby_auth1.password",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_auth1
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_auth1
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user1",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.password.key" = "test_derby_auth1.password",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_auth1
+PREHOOK: query: CREATE EXTERNAL TABLE ext_auth2
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user2",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.password.key" = "test_derby_auth2.password",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_auth2
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_auth2
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user2",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.password.key" = "test_derby_auth2.password",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_auth2
+PREHOOK: query: CREATE TABLE hive_table
+(
+  ikey int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_table
+POSTHOOK: query: CREATE TABLE hive_table
+(
+  ikey int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_table
+PREHOOK: query: INSERT INTO hive_table VALUES(20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_table
+POSTHOOK: query: INSERT INTO hive_table VALUES(20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_table
+POSTHOOK: Lineage: hive_table.ikey SCRIPT []
+PREHOOK: query: (SELECT * FROM ext_auth1 JOIN hive_table ON ext_auth1.ikey=hive_table.ikey) UNION ALL (SELECT * FROM ext_auth2 JOIN hive_table ON ext_auth2.ikey=hive_table.ikey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_auth1
+PREHOOK: Input: default@ext_auth2
+PREHOOK: Input: default@hive_table
+#### A masked pattern was here ####
+POSTHOOK: query: (SELECT * FROM ext_auth1 JOIN hive_table ON ext_auth1.ikey=hive_table.ikey) UNION ALL (SELECT * FROM ext_auth2 JOIN hive_table ON ext_auth2.ikey=hive_table.ikey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_auth1
+POSTHOOK: Input: default@ext_auth2
+POSTHOOK: Input: default@hive_table
+#### A masked pattern was here ####
+20	20	20.0	20.0	20
+20	20	20.0	20.0	20
