@@ -17,9 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunction;
@@ -80,9 +81,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class SqlFunctionConverter {
   private static final Logger LOG = LoggerFactory.getLogger(SqlFunctionConverter.class);
@@ -209,8 +210,9 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.intervalYearMonthTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
-      } else
+      } else {
         throw new IllegalStateException("Unexpected type : " + castType.getQualifiedName());
+      }
     }
 
     return castUDF;
@@ -237,6 +239,10 @@ public class SqlFunctionConverter {
         case IN:
         case BETWEEN:
         case ROW:
+        case IS_NOT_TRUE:
+        case IS_TRUE:
+        case IS_NOT_FALSE:
+        case IS_FALSE:
         case IS_NOT_NULL:
         case IS_NULL:
         case CASE:
@@ -321,8 +327,9 @@ public class SqlFunctionConverter {
         udfName = udfDescription.name();
         if (udfName != null) {
           String[] aliases = udfName.split(",");
-          if (aliases.length > 0)
+          if (aliases.length > 0) {
             udfName = aliases[0];
+          }
         }
       }
 
@@ -372,6 +379,10 @@ public class SqlFunctionConverter {
       registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
       registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.Identifier, "isnotnull"));
       registerFunction("isnull", SqlStdOperatorTable.IS_NULL, hToken(HiveParser.Identifier, "isnull"));
+      registerFunction("isnottrue", SqlStdOperatorTable.IS_NOT_TRUE, hToken(HiveParser.Identifier, "isnottrue"));
+      registerFunction("istrue", SqlStdOperatorTable.IS_TRUE, hToken(HiveParser.Identifier, "istrue"));
+      registerFunction("isnotfalse", SqlStdOperatorTable.IS_NOT_FALSE, hToken(HiveParser.Identifier, "isnotfalse"));
+      registerFunction("isfalse", SqlStdOperatorTable.IS_FALSE, hToken(HiveParser.Identifier, "isfalse"));
       registerFunction("is not distinct from", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
