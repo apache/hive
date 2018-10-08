@@ -21,32 +21,34 @@ package org.apache.hadoop.hive.ql;
 /**
  * QTestArguments composite used as arguments holder for QTestUtil initialization.
  */
-public class QTestArguments {
+public final class QTestArguments {
 
   private String outDir;
   private String logDir;
   private String confDir;
   private QTestUtil.MiniClusterType clusterType;
-  private String hadoopVer;
   private String initScript;
   private String cleanupScript;
   private boolean withLlapIo;
   private QTestUtil.FsType fsType;
   private QTestUtil.QTestSetup qtestSetup;
 
-  public void setClusterType(QTestUtil.MiniClusterType clusterType) {
-    this.clusterType = clusterType;
+  private QTestArguments() {
   }
 
   public QTestUtil.MiniClusterType getClusterType() {
     return clusterType;
   }
 
+  private void setClusterType(QTestUtil.MiniClusterType clusterType) {
+    this.clusterType = clusterType;
+  }
+
   public String getOutDir() {
     return outDir;
   }
 
-  public void setOutDir(String outDir) {
+  private void setOutDir(String outDir) {
     this.outDir = outDir;
   }
 
@@ -54,27 +56,19 @@ public class QTestArguments {
     return logDir;
   }
 
-  public void setLogDir(String logDir) {
+  private void setLogDir(String logDir) {
     this.logDir = logDir;
-  }
-
-  public void setConfDir(String confDir) {
-    this.confDir = confDir;
   }
 
   public String getConfDir() {
     return confDir;
   }
 
-  public void setHadoopVer(String hadoopVer) {
-    this.hadoopVer = hadoopVer;
+  private void setConfDir(String confDir) {
+    this.confDir = confDir;
   }
 
-  public String getHadoopVer() {
-    return hadoopVer;
-  }
-
-  public void setInitScript(String initScript) {
+  private void setInitScript(String initScript) {
     this.initScript = initScript;
   }
 
@@ -82,7 +76,7 @@ public class QTestArguments {
     return initScript;
   }
 
-  public void setCleanupScript(String cleanupScript) {
+  private void setCleanupScript(String cleanupScript) {
     this.cleanupScript = cleanupScript;
   }
 
@@ -90,39 +84,39 @@ public class QTestArguments {
     return cleanupScript;
   }
 
-  public void setWithLlapIo(boolean withLlapIo) {
-    this.withLlapIo = withLlapIo;
-  }
-
   public boolean isWithLlapIo() {
     return withLlapIo;
   }
 
-  public void setFsType(QTestUtil.FsType fsType) {
-    this.fsType = fsType;
+  private void setWithLlapIo(boolean withLlapIo) {
+    this.withLlapIo = withLlapIo;
   }
 
   public QTestUtil.FsType getFsType() {
     return fsType;
   }
 
-  public void setQTestSetup(QTestUtil.QTestSetup qtestSetup) {
-    this.qtestSetup = qtestSetup;
+  private void setFsType(QTestUtil.FsType fsType) {
+    this.fsType = fsType;
   }
 
   public QTestUtil.QTestSetup getQTestSetup() {
     return qtestSetup;
   }
 
+  private void setQTestSetup(QTestUtil.QTestSetup qtestSetup) {
+    this.qtestSetup = qtestSetup;
+  }
+
   /**
    * QTestArgumentsBuilder used for QTestArguments construction.
    */
   public static final class QTestArgumentsBuilder {
+
     private String outDir;
     private String logDir;
     private String confDir;
     private QTestUtil.MiniClusterType clusterType;
-    private String hadoopVer;
     private String initScript;
     private String cleanupScript;
     private boolean withLlapIo;
@@ -153,12 +147,6 @@ public class QTestArguments {
 
     public QTestArgumentsBuilder withClusterType(QTestUtil.MiniClusterType clusterType) {
       this.clusterType = clusterType;
-      return this;
-    }
-
-
-    public QTestArgumentsBuilder withHadoopVer(String hadoopVer) {
-      this.hadoopVer = hadoopVer;
       return this;
     }
 
@@ -193,7 +181,6 @@ public class QTestArguments {
       testArguments.setLogDir(logDir);
       testArguments.setConfDir(confDir);
       testArguments.setClusterType(clusterType);
-      testArguments.setHadoopVer(hadoopVer);
       testArguments.setInitScript(initScript);
       testArguments.setCleanupScript(cleanupScript);
       testArguments.setWithLlapIo(withLlapIo);
