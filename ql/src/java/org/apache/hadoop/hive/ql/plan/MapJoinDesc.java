@@ -478,6 +478,16 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
                 vectorMapJoinDesc.getSupportsKeyTypes(),
                 "Optimized Table and Supports Key Types"));
       }
+      final boolean supportsValueTypes = vectorMapJoinDesc.getSupportsValueTypes();
+      if (!supportsValueTypes) {
+
+        // Only add this condition when false to avoid mega-Q file update.
+        conditionList.add(
+            new VectorizationCondition(
+                false,
+                "Supports Value Types " +
+                vectorMapJoinDesc.getNotSupportedValueTypes().toString()));
+      }
 
       VectorizationCondition[] conditions =
           conditionList.toArray(new VectorizationCondition[0]);
