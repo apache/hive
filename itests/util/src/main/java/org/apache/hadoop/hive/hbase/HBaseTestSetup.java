@@ -94,6 +94,7 @@ public class HBaseTestSetup extends QTestUtil.QTestSetup {
 
     Configuration hbaseConf = HBaseConfiguration.create(conf);
     util = new HBaseTestingUtility(hbaseConf);
+
     util.startMiniDFSCluster(1);
     hbaseCluster = util.startMiniHBaseCluster(1, NUM_REGIONSERVERS);
     hbaseConn = util.getConnection();

@@ -86,8 +86,7 @@ public class TestLocationQueries extends BaseTestQueries {
       return QTestProcessExecResult.create(failedCount, fileNames.toString());
     }
 
-    public CheckResults(String outDir, String logDir, MiniClusterType miniMr,
-        String hadoopVer, String locationSubdir)
+    public CheckResults(String outDir, String logDir, MiniClusterType miniMr, String locationSubdir)
       throws Exception
     {
       super(
@@ -96,7 +95,6 @@ public class TestLocationQueries extends BaseTestQueries {
             .withLogDir(logDir)
             .withClusterType(miniMr)
             .withConfDir(null)
-            .withHadoopVer(hadoopVer)
             .withInitScript("")
             .withCleanupScript("")
             .withLlapIo(false)
@@ -119,7 +117,7 @@ public class TestLocationQueries extends BaseTestQueries {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
 
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new CheckResults(resDir, logDir, MiniClusterType.none, "0.20", "parta");
+      qt[i] = new CheckResults(resDir, logDir, MiniClusterType.none, "parta");
       qt[i].newSession();
       qt[i].addFile(qfiles[i], false);
       qt[i].clearTestSideEffects();

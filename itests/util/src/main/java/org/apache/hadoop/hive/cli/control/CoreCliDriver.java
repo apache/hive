@@ -53,14 +53,13 @@ public class CoreCliDriver extends CliAdapter {
     String message = "Starting " + CoreCliDriver.class.getName() + " run at " + System.currentTimeMillis();
     LOG.info(message);
     System.err.println(message);
-    final MiniClusterType miniMR =cliConfig.getClusterType();
-    final String hiveConfDir = cliConfig.getHiveConfDir();
-    final String initScript = cliConfig.getInitScript();
-    final String cleanupScript = cliConfig.getCleanupScript();
+
+    MiniClusterType miniMR =cliConfig.getClusterType();
+    String hiveConfDir = cliConfig.getHiveConfDir();
+    String initScript = cliConfig.getInitScript();
+    String cleanupScript = cliConfig.getCleanupScript();
 
     try {
-      final String hadoopVer = cliConfig.getHadoopVersion();
-
       qt = new ElapsedTimeLoggingWrapper<QTestUtil>() {
         @Override
         public QTestUtil invokeInternal() throws Exception {
@@ -70,7 +69,6 @@ public class CoreCliDriver extends CliAdapter {
                 .withLogDir(cliConfig.getLogDir())
                 .withClusterType(miniMR)
                 .withConfDir(hiveConfDir)
-                .withHadoopVer(hadoopVer)
                 .withInitScript(initScript)
                 .withCleanupScript(cleanupScript)
                 .withLlapIo(true)
@@ -101,7 +99,7 @@ public class CoreCliDriver extends CliAdapter {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization",e);
+      throw new RuntimeException("Unexpected exception in static initialization", e);
     }
   }
 
@@ -116,6 +114,7 @@ public class CoreCliDriver extends CliAdapter {
           return null;
         }
       }.invoke("PerTestSetup done.", LOG, false);
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -136,6 +135,7 @@ public class CoreCliDriver extends CliAdapter {
           return null;
         }
       }.invoke("PerTestTearDown done.", LOG, false);
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -146,7 +146,7 @@ public class CoreCliDriver extends CliAdapter {
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
+  public void shutdown() {
     try {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
@@ -155,6 +155,7 @@ public class CoreCliDriver extends CliAdapter {
           return null;
         }
       }.invoke("Teardown done.", LOG, false);
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -169,7 +170,7 @@ public class CoreCliDriver extends CliAdapter {
           + "or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
 
   @Override
-  public void runTest(String testName, String fname, String fpath) throws Exception {
+  public void runTest(String testName, String fname, String fpath) {
     Stopwatch sw = Stopwatch.createStarted();
     boolean skipped = false;
     boolean failed = false;
@@ -179,11 +180,13 @@ public class CoreCliDriver extends CliAdapter {
 
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
+
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         failed = true;
         qt.failed(ecode, fname, debugHint);
       }
+
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
       if (result.getReturnCode() != 0) {
         failed = true;
