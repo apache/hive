@@ -34,6 +34,7 @@ import org.junit.Before;
 public class CoreNegativeCliDriver extends CliAdapter{
 
   private QTestUtil qt;
+
   public CoreNegativeCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
@@ -46,14 +47,12 @@ public class CoreNegativeCliDriver extends CliAdapter{
     String cleanupScript = cliConfig.getCleanupScript();
 
     try {
-      String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil(
           QTestArguments.QTestArgumentsBuilder.instance()
             .withOutDir(cliConfig.getResultsDir())
             .withLogDir(cliConfig.getLogDir())
             .withClusterType(miniMR)
             .withConfDir(hiveConfDir)
-            .withHadoopVer(hadoopVer)
             .withInitScript(initScript)
             .withCleanupScript(cleanupScript)
             .withLlapIo(false)
@@ -62,11 +61,12 @@ public class CoreNegativeCliDriver extends CliAdapter{
       qt.newSession();
       qt.cleanUp();
       qt.createSources();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in static initialization");
+      throw new RuntimeException("Unexpected exception in static initialization", e);
     }
   }
 
@@ -75,6 +75,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
   public void setUp() {
     try {
       qt.newSession();
+
     } catch (Throwable e) {
       e.printStackTrace();
       System.err.flush();
@@ -88,6 +89,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
     try {
       qt.clearTestSideEffects();
       qt.clearPostTestEffects();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -98,9 +100,10 @@ public class CoreNegativeCliDriver extends CliAdapter{
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
+  public void shutdown() {
     try {
       qt.shutdown();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -109,16 +112,8 @@ public class CoreNegativeCliDriver extends CliAdapter{
     }
   }
 
-  /**
-   * Dummy last test. This is only meant to shutdown qt
-   */
-  public void testNegativeCliDriver_shutdown() {
-    System.err.println ("Cleaning up " + "$className");
-  }
-
-  static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
+  private static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
      + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
-
 
   @Override
   public void runTest(String tname, String fname, String fpath) throws Exception {
@@ -134,6 +129,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
       }
 
       qt.cliInit(new File(fpath));
+
       int ecode = qt.executeClient(fname);
       if (ecode == 0) {
         qt.failed(fname, debugHint);

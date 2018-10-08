@@ -59,9 +59,8 @@ public class CoreHBaseCliDriver extends CliAdapter {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in static initialization: "+e.getMessage());
+      throw new RuntimeException("Unexpected exception in static initialization: ", e);
     }
-
   }
 
   @Override
@@ -92,7 +91,7 @@ public class CoreHBaseCliDriver extends CliAdapter {
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
+  public void shutdown() {
     try {
       qt.shutdown();
     } catch (Exception e) {
@@ -104,7 +103,7 @@ public class CoreHBaseCliDriver extends CliAdapter {
   }
 
   @Override
-  public void runTest(String tname, String fname, String fpath) throws Exception {
+  public void runTest(String tname, String fname, String fpath) {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);

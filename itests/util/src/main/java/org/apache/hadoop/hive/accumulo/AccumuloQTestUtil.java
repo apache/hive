@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.accumulo;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
@@ -25,7 +24,6 @@ import org.apache.hadoop.hive.ql.QTestUtil;
  * AccumuloQTestUtil initializes Accumulo-specific test fixtures.
  */
 public class AccumuloQTestUtil extends QTestUtil {
-  AccumuloTestSetup setup = null;
 
   public AccumuloQTestUtil(String outDir, String logDir, MiniClusterType miniMr,
       AccumuloTestSetup setup, String initScript, String cleanupScript) throws Exception {
@@ -36,22 +34,10 @@ public class AccumuloQTestUtil extends QTestUtil {
           .withLogDir(logDir)
           .withClusterType(miniMr)
           .withConfDir(null)
-          .withHadoopVer("0.20")
           .withInitScript(initScript)
           .withCleanupScript(cleanupScript)
           .withLlapIo(false)
+          .withQTestSetup(setup)
           .build());
-
-    setup.setupWithHiveConf(conf);
-    this.setup = setup;
-    this.savedConf = new HiveConf(conf);
-  }
-
-  @Override
-  public void initConf() throws Exception {
-    if (setup != null) {
-      setup.updateConf(conf);
-    }
-    super.initConf();
   }
 }

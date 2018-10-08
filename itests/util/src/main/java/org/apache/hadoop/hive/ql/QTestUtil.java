@@ -34,7 +34,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -86,7 +85,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -144,14 +142,14 @@ import org.slf4j.LoggerFactory;
  */
 public class QTestUtil {
 
-  public static final String UTF_8 = "UTF-8";
+  private static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
+  private static final String UTF_8 = "UTF-8";
 
   // security property names
   private static final String SECURITY_KEY_PROVIDER_URI_NAME = "dfs.encryption.key.provider.uri";
   private static final String CRLF = System.getProperty("line.separator");
 
   public static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
-  static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
   private final static String defaultInitScript = "q_test_init.sql";
   private final static String defaultCleanupScript = "q_test_cleanup.sql";
   private final String[] testOnlyCommands = new String[]{"crypto", "erasure"};
@@ -159,8 +157,7 @@ public class QTestUtil {
 
   public static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
-
-  public static final String TEST_SRC_TABLES_PROPERTY = "test.src.tables";
+  private static final String TEST_SRC_TABLES_PROPERTY = "test.src.tables";
 
   /**
    * The Erasure Coding Policy to use in TestErasureCodingHDFSCliDriver.
@@ -171,8 +168,7 @@ public class QTestUtil {
   @Deprecated
   private final String testFiles;
   private final File datasetDir;
-  protected final String outDir;
-  protected String overrideResultsDir;
+  private final String outDir;
   protected final String logDir;
   private final TreeMap<String, String> qMap;
   private final Set<String> qSkipSet;
@@ -192,20 +188,19 @@ public class QTestUtil {
   private final FsType fsType;
   private ParseDriver pd;
   protected Hive db;
-  protected QueryState queryState;
+  private QueryState queryState;
   protected HiveConf conf;
   protected HiveConf savedConf;
   private IDriver drv;
   private BaseSemanticAnalyzer sem;
-  protected final boolean overWrite;
+  private final boolean overWrite;
   private CliDriver cliDriver;
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
   private FileSystem fs;
   private HadoopShims.HdfsEncryptionShim hes = null;
   private MiniLlapCluster llapCluster = null;
-  private String hadoopVer = null;
-  private QTestSetup setup = null;
+  private final QTestSetup setup;
   private SparkSession sparkSession = null;
   private boolean isSessionStateStarted = false;
   private static final String javaVersion = getJavaVersion();
@@ -215,10 +210,6 @@ public class QTestUtil {
 
   private MiniDruidCluster druidCluster;
   private SingleNodeKafkaCluster kafkaCluster;
-
-  public interface SuiteAddTestFunctor {
-    public void addTestToSuite(TestSuite suite, Object setup, String tName);
-  }
 
   public static Set<String> getSrcTables() {
     if (srcTables == null) {
@@ -270,7 +261,6 @@ public class QTestUtil {
     return cliDriver;
   }
 
-
   /**
    * Returns the default UDF names which should not be removed when resetting the test database
    *
@@ -295,18 +285,6 @@ public class QTestUtil {
 
   public HiveConf getConf() {
     return conf;
-  }
-
-  private String getHadoopMainVersion(String input) {
-    if (input == null) {
-      return null;
-    }
-    Pattern p = Pattern.compile("^(\\d+\\.\\d+).*");
-    Matcher m = p.matcher(input);
-    if (m.matches()) {
-      return m.group(1);
-    }
-    return null;
   }
 
   public void initConf() throws Exception {
@@ -487,7 +465,6 @@ public class QTestUtil {
     }
   }
 
-
   private String getKeyProviderURI() {
     // Use the target directory if it is not specified
     String HIVE_ROOT = AbstractCliConfig.HIVE_ROOT;
@@ -499,12 +476,12 @@ public class QTestUtil {
 
   public QTestUtil(QTestArguments testArgs) throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={}," +
-        " hadoopVer={}, initScript={}, cleanupScript={}, withLlapIo={}," +
-            " fsType={}",
-        testArgs.getOutDir(), testArgs.getLogDir(), testArgs.getClusterType(), testArgs.getConfDir(), hadoopVer,
-            testArgs.getInitScript(), testArgs.getCleanupScript(), testArgs.isWithLlapIo(), testArgs.getFsType());
+        " initScript={}, cleanupScript={}, withLlapIo={}, fsType={}",
+        testArgs.getOutDir(), testArgs.getLogDir(), testArgs.getClusterType(), testArgs.getConfDir(),
+        testArgs.getInitScript(), testArgs.getCleanupScript(), testArgs.isWithLlapIo(), testArgs.getFsType());
 
     Preconditions.checkNotNull(testArgs.getClusterType(), "ClusterType cannot be null");
+
     this.fsType = testArgs.getFsType();
     this.outDir = testArgs.getOutDir();
     this.logDir = testArgs.getLogDir();
@@ -521,7 +498,6 @@ public class QTestUtil {
 
     queryState = new QueryState.Builder().withHiveConf(new HiveConf(IDriver.class)).build();
     conf = queryState.getConf();
-    this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
     qSortSet = new HashSet<String>();
@@ -536,7 +512,6 @@ public class QTestUtil {
     this.clusterType = testArgs.getClusterType();
 
     HadoopShims shims = ShimLoader.getHadoopShims();
-
     setupFileSystem(shims);
 
     setup = testArgs.getQTestSetup();
@@ -575,6 +550,7 @@ public class QTestUtil {
     init();
     savedConf = new HiveConf(conf);
   }
+
   private String getScriptsDir() {
     // Use the current directory if it is not specified
     String scriptsDir = conf.get("test.data.scripts");
@@ -683,7 +659,6 @@ public class QTestUtil {
           MiniClusterType.druid,
           MiniClusterType.kafka).contains(clusterType)) {
         llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, setup.zooKeeperCluster, confDir);
-      } else {
       }
       if (EnumSet.of(MiniClusterType.llap_local, MiniClusterType.tez_local, MiniClusterType.druidLocal)
           .contains(clusterType)) {
@@ -944,7 +919,7 @@ public class QTestUtil {
     String version = System.getProperty("java.version");
     if (version == null) {
       throw new NullPointerException("No java version could be determined " +
-          "from system properties");
+                                         "from system properties");
     }
 
     // "java version" system property is formatted
@@ -1082,13 +1057,10 @@ public class QTestUtil {
         HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
         "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
     CliSessionState ss = new CliSessionState(conf);
-    assert ss != null;
     ss.in = System.in;
 
     SessionState oldSs = SessionState.get();
-
     restartSessions(canReuseSession, ss, oldSs);
-
     closeSession(oldSs);
 
     SessionState.start(ss);
@@ -1184,7 +1156,7 @@ public class QTestUtil {
     ecode = drv.run(createTableCmd).getResponseCode();
     if (ecode != 0) {
       throw new Exception("create table command: " + createTableCmd
-          + " failed with exit code= " + ecode);
+                              + " failed with exit code= " + ecode);
     }
 
     return;
@@ -1196,7 +1168,7 @@ public class QTestUtil {
     drv.close();
     if (ecode != 0) {
       throw new Exception("command: " + cmd
-          + " failed with exit code= " + ecode);
+                              + " failed with exit code= " + ecode);
     }
     return;
   }
@@ -1338,7 +1310,7 @@ public class QTestUtil {
   }
 
   private void setSessionOutputs(String fileName, CliSessionState ss, File outf)
-      throws FileNotFoundException, Exception, UnsupportedEncodingException {
+      throws Exception {
     OutputStream fo = new BufferedOutputStream(new FileOutputStream(outf));
     if (ss.out != null) {
       ss.out.flush();
@@ -1384,8 +1356,8 @@ public class QTestUtil {
 
     String execEngine = conf.get("hive.execution.engine");
     conf.set("hive.execution.engine", "mr");
+
     CliSessionState ss = new CliSessionState(conf);
-    assert ss != null;
     ss.in = System.in;
     ss.out = System.out;
     ss.err = System.out;
@@ -1420,21 +1392,6 @@ public class QTestUtil {
     String q1 = q.split(";")[0] + ";";
 
     LOG.debug("Executing " + q1);
-    return cliDriver.processLine(q1);
-  }
-
-  public int executeOne(String tname) {
-    String q = qMap.get(tname);
-
-    if (q.indexOf(";") == -1) {
-      return -1;
-    }
-
-    String q1 = q.substring(0, q.indexOf(";") + 1);
-    String qrest = q.substring(q.indexOf(";") + 1);
-    qMap.put(tname, qrest);
-
-    System.out.println("Executing " + q1);
     return cliDriver.processLine(q1);
   }
 
@@ -1604,20 +1561,6 @@ public class QTestUtil {
     return outFileExtension;
   }
 
-  public void convertSequenceFileToTextFile() throws Exception {
-    // Create an instance of hive in order to create the tables
-    testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
-    db = Hive.get(conf);
-
-    // Move all data from dest4_sequencefile to dest4
-    drv
-      .run("FROM dest4_sequencefile INSERT OVERWRITE TABLE dest4 SELECT dest4_sequencefile.*");
-
-    // Drop dest4_sequencefile
-    db.dropTable(Warehouse.DEFAULT_DATABASE_NAME, "dest4_sequencefile",
-        true, true);
-  }
-
   public QTestProcessExecResult checkNegativeResults(String tname, Exception e) throws Exception {
 
     String outFileExtension = getOutFileExtension(tname);
@@ -1682,35 +1625,6 @@ public class QTestUtil {
     return result;
   }
 
-  public QTestProcessExecResult checkParseResults(String tname, ASTNode tree) throws Exception {
-
-    if (tree != null) {
-      String outFileExtension = getOutFileExtension(tname);
-
-      File parseDir = new File(outDir, "parse");
-      String expf = outPath(parseDir.toString(), tname.concat(outFileExtension));
-
-      File outf = null;
-      outf = new File(logDir);
-      outf = new File(outf, tname.concat(outFileExtension));
-
-      FileWriter outfd = new FileWriter(outf);
-      outfd.write(tree.toStringTree());
-      outfd.close();
-
-      QTestProcessExecResult exitVal = executeDiffCommand(outf.getPath(), expf, false, false);
-
-      if (overWrite) {
-        overwriteResults(outf.getPath(), expf);
-        return QTestProcessExecResult.createWithoutOutput(0);
-      }
-
-      return exitVal;
-    } else {
-      throw new Exception("Parse tree is null");
-    }
-  }
-
   /**
    * Given the current configurations (e.g., hadoop version and execution mode), return
    * the correct file name to compare with the current test run output.
@@ -1724,7 +1638,6 @@ public class QTestUtil {
     // List of configurations. Currently the list consists of hadoop version and execution mode only
     List<String> configs = new ArrayList<String>();
     configs.add(this.clusterType.toString());
-    configs.add(this.hadoopVer);
 
     Deque<String> stack = new LinkedList<String>();
     StringBuilder sb = new StringBuilder();
@@ -1768,7 +1681,6 @@ public class QTestUtil {
 
     return exitVal;
   }
-
 
   public QTestProcessExecResult checkCompareCliDriverResults(String tname, List<String> outputs)
       throws Exception {
@@ -1921,13 +1833,6 @@ public class QTestUtil {
     return pd.parse(qMap.get(tname));
   }
 
-  public void resetParser() throws SemanticException {
-    pd = new ParseDriver();
-    queryState = new QueryState.Builder().withHiveConf(conf).build();
-    sem = new SemanticAnalyzer(queryState);
-  }
-
-
   public List<Task<? extends Serializable>> analyzeAST(ASTNode ast) throws Exception {
 
     // Do semantic analysis and plan generation
@@ -1940,10 +1845,6 @@ public class QTestUtil {
     sem.analyze(ast, ctx);
     ctx.clear();
     return sem.getRootTasks();
-  }
-
-  public TreeMap<String, String> getQMap() {
-    return qMap;
   }
 
   /**
@@ -2056,7 +1957,6 @@ public class QTestUtil {
             .withLogDir(logDir)
             .withClusterType(MiniClusterType.none)
             .withConfDir(null)
-            .withHadoopVer("0.20")
             .withInitScript(initScript == null ? defaultInitScript : initScript)
             .withCleanupScript(cleanupScript == null ? defaultCleanupScript : cleanupScript)
             .withLlapIo(false)

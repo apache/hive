@@ -49,7 +49,6 @@ public class HBaseQTestUtil extends QTestUtil {
           .withLogDir(logDir)
           .withClusterType(miniMr)
           .withConfDir(null)
-          .withHadoopVer("0.20")
           .withInitScript(initScript)
           .withCleanupScript(cleanupScript)
           .withLlapIo(false)
@@ -80,9 +79,10 @@ public class HBaseQTestUtil extends QTestUtil {
       admin = conn.getAdmin();
       admin.snapshot(HBASE_SRC_SNAPSHOT_NAME, TableName.valueOf(HBASE_SRC_NAME));
     } finally {
-      if (admin != null) admin.close();
+      if (admin != null) {
+        admin.close();
+      }
     }
-
     conf.setBoolean("hive.test.init.phase", false);
   }
 
@@ -98,7 +98,9 @@ public class HBaseQTestUtil extends QTestUtil {
       admin = conn.getAdmin();
       admin.deleteSnapshots(HBASE_SRC_SNAPSHOT_NAME);
     } finally {
-      if (admin != null) admin.close();
+      if (admin != null) {
+        admin.close();
+      }
     }
   }
 
