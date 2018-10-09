@@ -58,6 +58,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "druid.query.files");
 
         excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
+        excludeQuery("udaf_histogram_numeric.q"); // disabled in HIVE-20715
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
