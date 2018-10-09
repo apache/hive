@@ -250,9 +250,7 @@ public class ReplChangeManager {
 
         count++;
       } else {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("A file with the same content of {} already exists, ignore", path.toString());
-        }
+        LOG.debug("A file with the same content of {} already exists, ignore", path.toString());
         // Need to extend the tenancy if we saw a newer file with the same content
         fs.setTimes(cmPath, now, -1);
       }
@@ -366,9 +364,7 @@ public class ReplChangeManager {
       encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + URI_FRAGMENT_SEPARATOR;
     }
     encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + ((encodedSubDir != null) ? encodedSubDir : "");
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Encoded URI: " + encodedUri);
-    }
+    LOG.debug("Encoded URI: " + encodedUri);
     return encodedUri;
   }
 
@@ -391,9 +387,7 @@ public class ReplChangeManager {
     if ((uriAndFragment.length > 3)  && !StringUtils.isEmpty(uriAndFragment[3])) {
       result[3] = uriAndFragment[3];
     }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Reading Encoded URI: " + result[0] + ":: " + result[1] + ":: " + result[2] + ":: " + result[3]);
-    }
+    LOG.debug("Reading Encoded URI: " + result[0] + ":: " + result[1] + ":: " + result[2] + ":: " + result[3]);
     return result;
   }
 
@@ -432,18 +426,14 @@ public class ReplChangeManager {
               if (fs.getXAttrs(file.getPath()).containsKey(REMAIN_IN_TRASH_TAG)) {
                 boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), conf);
                 if (succ) {
-                  if (LOG.isDebugEnabled()) {
-                    LOG.debug("Move " + file.toString() + " to trash");
-                  }
+                  LOG.debug("Move " + file.toString() + " to trash");
                 } else {
                   LOG.warn("Fail to move " + file.toString() + " to trash");
                 }
               } else {
                 boolean succ = fs.delete(file.getPath(), false);
                 if (succ) {
-                  if (LOG.isDebugEnabled()) {
-                    LOG.debug("Remove " + file.toString());
-                  }
+                  LOG.debug("Remove " + file.toString());
                 } else {
                   LOG.warn("Fail to remove " + file.toString());
                 }
