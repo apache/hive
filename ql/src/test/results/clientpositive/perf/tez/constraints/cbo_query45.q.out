@@ -1,0 +1,81 @@
+PREHOOK: query: explain cbo
+select  ca_zip, ca_county, sum(ws_sales_price)
+ from web_sales, customer, customer_address, date_dim, item
+ where ws_bill_customer_sk = c_customer_sk
+ 	and c_current_addr_sk = ca_address_sk 
+ 	and ws_item_sk = i_item_sk 
+ 	and ( substr(ca_zip,1,5) in ('85669', '86197','88274','83405','86475', '85392', '85460', '80348', '81792')
+ 	      or 
+ 	      i_item_id in (select i_item_id
+                             from item
+                             where i_item_sk in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+                             )
+ 	    )
+ 	and ws_sold_date_sk = d_date_sk
+ 	and d_qoy = 2 and d_year = 2000
+ group by ca_zip, ca_county
+ order by ca_zip, ca_county
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  ca_zip, ca_county, sum(ws_sales_price)
+ from web_sales, customer, customer_address, date_dim, item
+ where ws_bill_customer_sk = c_customer_sk
+ 	and c_current_addr_sk = ca_address_sk 
+ 	and ws_item_sk = i_item_sk 
+ 	and ( substr(ca_zip,1,5) in ('85669', '86197','88274','83405','86475', '85392', '85460', '80348', '81792')
+ 	      or 
+ 	      i_item_id in (select i_item_id
+                             from item
+                             where i_item_sk in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+                             )
+ 	    )
+ 	and ws_sold_date_sk = d_date_sk
+ 	and d_qoy = 2 and d_year = 2000
+ group by ca_zip, ca_county
+ order by ca_zip, ca_county
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject(ca_zip=[$1], ca_county=[$0], $f2=[$2])
+    HiveAggregate(group=[{7, 8}], agg#0=[sum($3)])
+      HiveFilter(condition=[OR(IN(substr($8, 1, 5), _UTF-16LE'85669', _UTF-16LE'86197', _UTF-16LE'88274', _UTF-16LE'83405', _UTF-16LE'86475', _UTF-16LE'85392', _UTF-16LE'85460', _UTF-16LE'80348', _UTF-16LE'81792'), IS NOT NULL($15))])
+        HiveProject(ws_sold_date_sk=[$9], ws_item_sk=[$10], ws_bill_customer_sk=[$11], ws_sales_price=[$12], c_customer_sk=[$0], c_current_addr_sk=[$1], ca_address_sk=[$2], ca_county=[$3], ca_zip=[$4], d_date_sk=[$13], d_year=[$14], d_qoy=[$15], i_item_sk=[$5], i_item_id=[$6], i_item_id0=[$7], i1160=[$8])
+          HiveJoin(condition=[=($11, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(c_customer_sk=[$0], c_current_addr_sk=[$4])
+                HiveFilter(condition=[IS NOT NULL($4)])
+                  HiveTableScan(table=[[default, customer]], table:alias=[customer])
+              HiveProject(ca_address_sk=[$0], ca_county=[$7], ca_zip=[$9])
+                HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+            HiveProject(i_item_sk=[$0], i_item_id=[$1], i_item_id0=[$2], i1160=[$3], ws_sold_date_sk=[$4], ws_item_sk=[$5], ws_bill_customer_sk=[$6], ws_sales_price=[$7], d_date_sk=[$8], d_year=[$9], d_qoy=[$10])
+              HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveJoin(condition=[=($1, $2)], joinType=[left], algorithm=[none], cost=[not available])
+                  HiveProject(i_item_sk=[$0], i_item_id=[$1])
+                    HiveTableScan(table=[[default, item]], table:alias=[item])
+                  HiveProject(i_item_id=[$0], i1160=[true])
+                    HiveAggregate(group=[{1}])
+                      HiveFilter(condition=[IN($0, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29)])
+                        HiveTableScan(table=[[default, item]], table:alias=[item])
+                HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$1], ws_bill_customer_sk=[$2], ws_sales_price=[$3], d_date_sk=[$4], d_year=[$5], d_qoy=[$6])
+                  HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_bill_customer_sk=[$4], ws_sales_price=[$21])
+                      HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                    HiveProject(d_date_sk=[$0], d_year=[CAST(2000):INTEGER], d_qoy=[CAST(2):INTEGER])
+                      HiveFilter(condition=[AND(=($10, 2), =($6, 2000))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

@@ -76,6 +76,14 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setExtended(true);
       } else if (explainOptions == HiveParser.KW_DEPENDENCY) {
         config.setDependency(true);
+      } else if (explainOptions == HiveParser.KW_CBO) {
+        config.setCbo(true);
+        if (i + 1 < childCount) {
+          if (ast.getChild(i + 1).getType() == HiveParser.KW_EXTENDED) {
+            config.setCboExtended(true);
+            i++;
+          }
+        }
       } else if (explainOptions == HiveParser.KW_LOGICAL) {
         config.setLogical(true);
       } else if (explainOptions == HiveParser.KW_AUTHORIZATION) {
@@ -188,6 +196,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     config.setUserLevelExplain(!config.isExtended()
         && !config.isFormatted()
         && !config.isDependency()
+        && !config.isCbo()
         && !config.isLogical()
         && !config.isAuthorize()
         && (
@@ -212,7 +221,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         sem,
         config,
         ctx.getCboInfo(),
-        ctx.getOptimizedSql());
+        ctx.getOptimizedSql(),
+        ctx.getCalcitePlan());
 
     work.setAppendTaskType(
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));

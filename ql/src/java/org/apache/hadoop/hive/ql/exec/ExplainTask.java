@@ -140,6 +140,16 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outJSONObject;
   }
 
+  public String outputCboPlan(String cboPlan, PrintStream out, boolean jsonOutput)
+      throws JSONException {
+    if (out != null) {
+      out.println("CBO PLAN:");
+      out.println(cboPlan);
+    }
+
+    return jsonOutput ? cboPlan : null;
+  }
+
   public JSONObject getJSONLogicalPlan(PrintStream out, ExplainWork work) throws Exception {
     isLogical = true;
 
@@ -385,7 +395,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 
-      if (work.isLogical()) {
+      if (work.isCbo()) {
+        if (work.getCboPlan() != null) {
+          outputCboPlan(work.getCboPlan(), out, work.isFormatted());
+        }
+      } else if (work.isLogical()) {
         JSONObject jsonLogicalPlan = getJSONLogicalPlan(out, work);
         if (work.isFormatted()) {
           out.print(jsonLogicalPlan);
