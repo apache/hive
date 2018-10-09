@@ -38,6 +38,8 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -288,6 +290,8 @@ public class TestVectorGroupByOperator {
     FakeCaptureVectorToRowOutputOperator out = FakeCaptureVectorToRowOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
 
+    long expected = vgo.getMaxMemory();
+    assertEquals(expected, maxMemory);
     this.outputRowCount = 0;
     out.setOutputInspector(new FakeCaptureVectorToRowOutputOperator.OutputInspector() {
       @Override
@@ -342,6 +346,98 @@ public class TestVectorGroupByOperator {
     }
 
     assertTrue(0 < outputRowCount);
+  }
+
+  @Test
+  public void testMemoryPressureFlushLlap() throws HiveException {
+
+    try {
+      List<String> mapColumnNames = new ArrayList<String>();
+      mapColumnNames.add("Key");
+      mapColumnNames.add("Value");
+      VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
+
+      Pair<GroupByDesc, VectorGroupByDesc> pair = buildKeyGroupByDesc(ctx, "max",
+        "Value", TypeInfoFactory.longTypeInfo,
+        "Key", TypeInfoFactory.longTypeInfo);
+      GroupByDesc desc = pair.fst;
+      VectorGroupByDesc vectorDesc = pair.snd;
+
+      LlapProxy.setDaemon(true);
+
+      CompilationOpContext cCtx = new CompilationOpContext();
+
+      Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+      VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx, vectorDesc);
+
+      FakeCaptureVectorToRowOutputOperator out = FakeCaptureVectorToRowOutputOperator.addCaptureOutputChild(cCtx, vgo);
+      long maxMemory=512*1024*1024L;
+      vgo.getConf().setMaxMemoryAvailable(maxMemory);
+      float threshold = 100.0f*1024.0f/maxMemory;
+      desc.setMemoryThreshold(threshold);
+      vgo.initialize(hconf, null);
+
+      long got = vgo.getMaxMemory();
+      assertEquals(maxMemory, got);
+      this.outputRowCount = 0;
+      out.setOutputInspector(new FakeCaptureVectorToRowOutputOperator.OutputInspector() {
+        @Override
+        public void inspectRow(Object row, int tag) throws HiveException {
+          ++outputRowCount;
+        }
+      });
+
+      Iterable<Object> it = new Iterable<Object>() {
+        @Override
+        public Iterator<Object> iterator() {
+          return new Iterator<Object>() {
+            long value = 0;
+
+            @Override
+            public boolean hasNext() {
+              return true;
+            }
+
+            @Override
+            public Object next() {
+              return ++value;
+            }
+
+            @Override
+            public void remove() {
+            }
+          };
+        }
+      };
+
+      FakeVectorRowBatchFromObjectIterables data = new FakeVectorRowBatchFromObjectIterables(
+        100,
+        new String[]{"long", "long"},
+        it,
+        it);
+
+      // The 'it' data source will produce data w/o ever ending
+      // We want to see that memory pressure kicks in and some
+      // entries in the VGBY are flushed.
+      long countRowsProduced = 0;
+      for (VectorizedRowBatch unit : data) {
+        countRowsProduced += 100;
+        vgo.process(unit, 0);
+        if (0 < outputRowCount) {
+          break;
+        }
+        // Set an upper bound how much we're willing to push before it should flush
+        // we've set the memory treshold at 100kb, each key is distinct
+        // It should not go beyond 100k/16 (key+data)
+        assertTrue(countRowsProduced < 100 * 1024 / 16);
+      }
+
+      assertTrue(0 < outputRowCount);
+    } finally {
+      LlapProxy.setDaemon(false);
+    }
   }
 
   @Test
