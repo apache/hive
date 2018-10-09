@@ -1,0 +1,91 @@
+PREHOOK: query: explain cbo
+select  
+   w_state
+  ,i_item_id
+  ,sum(case when (cast(d_date as date) < cast ('1998-04-08' as date)) 
+ 		then cs_sales_price - coalesce(cr_refunded_cash,0) else 0 end) as sales_before
+  ,sum(case when (cast(d_date as date) >= cast ('1998-04-08' as date)) 
+ 		then cs_sales_price - coalesce(cr_refunded_cash,0) else 0 end) as sales_after
+ from
+   catalog_sales left outer join catalog_returns on
+       (cs_order_number = cr_order_number 
+        and cs_item_sk = cr_item_sk)
+  ,warehouse 
+  ,item
+  ,date_dim
+ where
+     i_current_price between 0.99 and 1.49
+ and i_item_sk          = cs_item_sk
+ and cs_warehouse_sk    = w_warehouse_sk 
+ and cs_sold_date_sk    = d_date_sk
+ and d_date between (cast ('1998-04-08' as date) - 30 days)
+                and (cast ('1998-04-08' as date) + 30 days) 
+ group by
+    w_state,i_item_id
+ order by w_state,i_item_id
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  
+   w_state
+  ,i_item_id
+  ,sum(case when (cast(d_date as date) < cast ('1998-04-08' as date)) 
+ 		then cs_sales_price - coalesce(cr_refunded_cash,0) else 0 end) as sales_before
+  ,sum(case when (cast(d_date as date) >= cast ('1998-04-08' as date)) 
+ 		then cs_sales_price - coalesce(cr_refunded_cash,0) else 0 end) as sales_after
+ from
+   catalog_sales left outer join catalog_returns on
+       (cs_order_number = cr_order_number 
+        and cs_item_sk = cr_item_sk)
+  ,warehouse 
+  ,item
+  ,date_dim
+ where
+     i_current_price between 0.99 and 1.49
+ and i_item_sk          = cs_item_sk
+ and cs_warehouse_sk    = w_warehouse_sk 
+ and cs_sold_date_sk    = d_date_sk
+ and d_date between (cast ('1998-04-08' as date) - 30 days)
+                and (cast ('1998-04-08' as date) + 30 days) 
+ group by
+    w_state,i_item_id
+ order by w_state,i_item_id
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
+    HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)])
+      HiveProject($f0=[$1], $f1=[$13], $f2=[CASE(<(CAST($11):DATE, 1998-04-08), -($6, CASE(IS NOT NULL($9), $9, 0)), 0)], $f3=[CASE(>=(CAST($11):DATE, 1998-04-08), -($6, CASE(IS NOT NULL($9), $9, 0)), 0)])
+        HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(w_warehouse_sk=[$0], w_state=[$10])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
+          HiveJoin(condition=[=($10, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[AND(=($3, $6), =($2, $5))], joinType=[left], algorithm=[none], cost=[not available])
+                HiveProject(cs_sold_date_sk=[$0], cs_warehouse_sk=[$14], cs_item_sk=[$15], cs_order_number=[$17], cs_sales_price=[$21])
+                  HiveFilter(condition=[AND(IS NOT NULL($14), IS NOT NULL($15), IS NOT NULL($0))])
+                    HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                HiveProject(cr_item_sk=[$2], cr_order_number=[$16], cr_refunded_cash=[$23])
+                  HiveFilter(condition=[IS NOT NULL($2)])
+                    HiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+              HiveProject(d_date_sk=[$0], d_date=[$2])
+                HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-03-09 00:00:00, 1998-05-08 00:00:00), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            HiveProject(i_item_sk=[$0], i_item_id=[$1], i_current_price=[$5])
+              HiveFilter(condition=[AND(BETWEEN(false, $5, 0.99, 1.49), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, item]], table:alias=[item])
+

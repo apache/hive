@@ -1,0 +1,134 @@
+PREHOOK: query: explain cbo
+with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from store_sales,date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales1,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185 and 1185 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185+ 12 and 1185 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from store_sales,date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales1,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185 and 1185 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185+ 12 and 1185 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
+  HiveProject(s_store_name1=[$2], s_store_id1=[$1], d_week_seq1=[$3], _o__c3=[/($5, $14)], _o__c4=[/($6, $15)], _o__c5=[/($7, $7)], _o__c6=[/($8, $16)], _o__c7=[/($9, $17)], _o__c8=[/($10, $18)], _o__c9=[/($11, $19)])
+    HiveJoin(condition=[AND(=($1, $13), =($3, $20))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(s_store_sk=[$0], s_store_id=[$1], s_store_name=[$5])
+          HiveTableScan(table=[[default, store]], table:alias=[store])
+        HiveJoin(condition=[=($9, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8])
+            HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)], agg#3=[sum($5)], agg#4=[sum($6)], agg#5=[sum($7)], agg#6=[sum($8)])
+              HiveProject($f0=[$4], $f1=[$1], $f2=[CASE($5, $2, null)], $f3=[CASE($6, $2, null)], $f4=[CASE($7, $2, null)], $f5=[CASE($8, $2, null)], $f6=[CASE($9, $2, null)], $f7=[CASE($10, $2, null)], $f8=[CASE($11, $2, null)])
+                HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(ss_sold_date_sk=[$0], ss_store_sk=[$7], ss_sales_price=[$13])
+                    HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($7))])
+                      HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                  HiveProject(d_date_sk=[$0], d_week_seq=[$4], ==[=($14, _UTF-16LE'Sunday')], =3=[=($14, _UTF-16LE'Monday')], =4=[=($14, _UTF-16LE'Tuesday')], =5=[=($14, _UTF-16LE'Wednesday')], =6=[=($14, _UTF-16LE'Thursday')], =7=[=($14, _UTF-16LE'Friday')], =8=[=($14, _UTF-16LE'Saturday')])
+                    HiveFilter(condition=[IS NOT NULL($4)])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(d_week_seq=[$4])
+            HiveFilter(condition=[AND(BETWEEN(false, $3, 1185, 1196), IS NOT NULL($4))])
+              HiveTableScan(table=[[default, date_dim]], table:alias=[d])
+      HiveProject(s_store_id2=[$1], sun_sales2=[$4], mon_sales2=[$5], wed_sales2=[$6], thu_sales2=[$7], fri_sales2=[$8], sat_sales2=[$9], -=[-($2, 52)])
+        HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(s_store_sk=[$0], s_store_id=[$1])
+            HiveTableScan(table=[[default, store]], table:alias=[store])
+          HiveJoin(condition=[=($8, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7])
+              HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($5)], agg#3=[sum($6)], agg#4=[sum($7)], agg#5=[sum($8)])
+                HiveProject($f0=[$4], $f1=[$1], $f2=[CASE($5, $2, null)], $f3=[CASE($6, $2, null)], $f4=[CASE($7, $2, null)], $f5=[CASE($8, $2, null)], $f6=[CASE($9, $2, null)], $f7=[CASE($10, $2, null)], $f8=[CASE($11, $2, null)])
+                  HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ss_sold_date_sk=[$0], ss_store_sk=[$7], ss_sales_price=[$13])
+                      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($7))])
+                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                    HiveProject(d_date_sk=[$0], d_week_seq=[$4], ==[=($14, _UTF-16LE'Sunday')], =3=[=($14, _UTF-16LE'Monday')], =4=[=($14, _UTF-16LE'Tuesday')], =5=[=($14, _UTF-16LE'Wednesday')], =6=[=($14, _UTF-16LE'Thursday')], =7=[=($14, _UTF-16LE'Friday')], =8=[=($14, _UTF-16LE'Saturday')])
+                      HiveFilter(condition=[IS NOT NULL($4)])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            HiveProject(d_week_seq=[$4])
+              HiveFilter(condition=[AND(BETWEEN(false, $3, 1197, 1208), IS NOT NULL($4))])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[d])
+

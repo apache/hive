@@ -18,20 +18,28 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelReferentialConstraint;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Sort;
@@ -45,12 +53,15 @@ import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexTableInputRef;
+import org.apache.calcite.rex.RexTableInputRef.RelTableRef;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -523,5 +534,232 @@ public class HiveRelOptUtil extends RelOptUtil {
     }
     // It passed all the tests
     return false;
+  }
+
+  public static Pair<Boolean, List<RexNode>> isRewritablePKFKJoin(RelBuilder builder, Join join,
+        boolean leftInputPotentialFK, RelMetadataQuery mq) {
+    final JoinRelType joinType = join.getJoinType();
+    final RexNode cond = join.getCondition();
+    final RelNode fkInput = leftInputPotentialFK ? join.getLeft() : join.getRight();
+    final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
+    final Pair<Boolean, List<RexNode>> nonRewritable = Pair.of(false, null);
+
+    if (joinType != JoinRelType.INNER) {
+      // If it is not an inner, we transform it as the metadata
+      // providers for expressions do not pull information through
+      // outer join (as it would not be correct)
+      join = (Join) builder
+          .push(join.getLeft()).push(join.getRight())
+          .join(JoinRelType.INNER, cond)
+          .build();
+    }
+
+    // 1) Check whether there is any filtering condition on the
+    // non-FK side. Basically we check whether the operators
+    // below altered the PK cardinality in any way
+    if (HiveRelOptUtil.isRowFilteringPlan(mq, nonFkInput)) {
+      return nonRewritable;
+    }
+
+    // 2) Check whether there is an FK relationship
+    final Map<RexTableInputRef, RexNode> refToRex = new HashMap<>();
+    final EquivalenceClasses ec = new EquivalenceClasses();
+    for (RexNode conj : RelOptUtil.conjunctions(cond)) {
+      if (!conj.isA(SqlKind.EQUALS)) {
+        // Not an equality, we bail out
+        return nonRewritable;
+      }
+      RexCall equiCond = (RexCall) conj;
+      RexNode eqOp1 = equiCond.getOperands().get(0);
+      Set<RexNode> eqOp1ExprsLineage = mq.getExpressionLineage(join, eqOp1);
+      if (eqOp1ExprsLineage == null) {
+        // Cannot be mapped, bail out
+        return nonRewritable;
+      }
+      RexNode eqOp2 = equiCond.getOperands().get(1);
+      Set<RexNode> eqOp2ExprsLineage = mq.getExpressionLineage(join, eqOp2);
+      if (eqOp2ExprsLineage == null) {
+        // Cannot be mapped, bail out
+        return nonRewritable;
+      }
+      List<RexTableInputRef> eqOp2ExprsFiltered = null;
+      for (RexNode eqOpExprLineage1 : eqOp1ExprsLineage) {
+        RexTableInputRef inputRef1 = extractTableInputRef(eqOpExprLineage1);
+        if (inputRef1 == null) {
+          // Bail out as this condition could not be map into an input reference
+          return nonRewritable;
+        }
+        refToRex.put(inputRef1, eqOp1);
+        if (eqOp2ExprsFiltered == null) {
+          // First iteration
+          eqOp2ExprsFiltered = new ArrayList<>();
+          for (RexNode eqOpExprLineage2 : eqOp2ExprsLineage) {
+            RexTableInputRef inputRef2 = extractTableInputRef(eqOpExprLineage2);
+            if (inputRef2 == null) {
+              // Bail out as this condition could not be map into an input reference
+              return nonRewritable;
+            }
+            // Add to list of expressions for follow-up iterations
+            eqOp2ExprsFiltered.add(inputRef2);
+            // Add to equivalence classes and backwards mapping
+            ec.addEquivalenceClass(inputRef1, inputRef2);
+            refToRex.put(inputRef2, eqOp2);
+          }
+        } else {
+          // Rest of iterations, only adding, no checking
+          for (RexTableInputRef inputRef2 : eqOp2ExprsFiltered) {
+            ec.addEquivalenceClass(inputRef1, inputRef2);
+          }
+        }
+      }
+    }
+    if (ec.getEquivalenceClassesMap().isEmpty()) {
+      // This may be a cartesian product, we bail out
+      return nonRewritable;
+    }
+
+    // 3) Gather all tables from the FK side and the table from the
+    // non-FK side
+    final Set<RelTableRef> leftTables = mq.getTableReferences(join.getLeft());
+    final Set<RelTableRef> rightTables =
+        Sets.difference(mq.getTableReferences(join), mq.getTableReferences(join.getLeft()));
+    final Set<RelTableRef> fkTables = join.getLeft() == fkInput ? leftTables : rightTables;
+    final Set<RelTableRef> nonFkTables = join.getLeft() == fkInput ? rightTables : leftTables;
+    assert nonFkTables.size() == 1;
+    final RelTableRef nonFkTable = nonFkTables.iterator().next();
+    final List<String> nonFkTableQName = nonFkTable.getQualifiedName();
+
+    // 4) For each table, check whether there is a matching on the non-FK side.
+    // If there is and it is the only condition, we are ready to transform
+    boolean canBeRewritten = false;
+    List<RexNode> nullableNodes = null;
+    for (RelTableRef tRef : fkTables) {
+      List<RelReferentialConstraint> constraints = tRef.getTable().getReferentialConstraints();
+      for (RelReferentialConstraint constraint : constraints) {
+        if (constraint.getTargetQualifiedName().equals(nonFkTableQName)) {
+          nullableNodes = new ArrayList<>();
+          EquivalenceClasses ecT = EquivalenceClasses.copy(ec);
+          boolean allContained = true;
+          for (int pos = 0; pos < constraint.getNumColumns(); pos++) {
+            int foreignKeyPos = constraint.getColumnPairs().get(pos).source;
+            RelDataType foreignKeyColumnType =
+                tRef.getTable().getRowType().getFieldList().get(foreignKeyPos).getType();
+            RexTableInputRef foreignKeyColumnRef =
+                RexTableInputRef.of(tRef, foreignKeyPos, foreignKeyColumnType);
+            int uniqueKeyPos = constraint.getColumnPairs().get(pos).target;
+            RexTableInputRef uniqueKeyColumnRef = RexTableInputRef.of(nonFkTable, uniqueKeyPos,
+                nonFkTable.getTable().getRowType().getFieldList().get(uniqueKeyPos).getType());
+            if (ecT.getEquivalenceClassesMap().containsKey(uniqueKeyColumnRef) &&
+                ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).contains(foreignKeyColumnRef)) {
+              if (foreignKeyColumnType.isNullable()) {
+                if (joinType == JoinRelType.INNER) {
+                  // If it is nullable and it is an INNER, we just need a IS NOT NULL filter
+                  RexNode originalCondOp = refToRex.get(foreignKeyColumnRef);
+                  assert originalCondOp != null;
+                  nullableNodes.add(originalCondOp);
+                } else {
+                  // If it is nullable and this is not an INNER, we cannot execute any transformation
+                  allContained = false;
+                  break;
+                }
+              }
+              // Remove this condition from eq classes as we have checked that it is present
+              // in the join condition
+              ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).remove(foreignKeyColumnRef);
+              if (ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).size() == 1) { // self
+                ecT.getEquivalenceClassesMap().remove(uniqueKeyColumnRef);
+              }
+              ecT.getEquivalenceClassesMap().get(foreignKeyColumnRef).remove(uniqueKeyColumnRef);
+              if (ecT.getEquivalenceClassesMap().get(foreignKeyColumnRef).size() == 1) { // self
+                ecT.getEquivalenceClassesMap().remove(foreignKeyColumnRef);
+              }
+            } else {
+              // No relationship, we cannot do anything
+              allContained = false;
+              break;
+            }
+          }
+          if (allContained && ecT.getEquivalenceClassesMap().isEmpty()) {
+            // We made it
+            canBeRewritten = true;
+            break;
+          }
+        }
+      }
+    }
+
+    return Pair.of(canBeRewritten, nullableNodes);
+  }
+
+  private static RexTableInputRef extractTableInputRef(RexNode node) {
+    RexTableInputRef ref = null;
+    if (node instanceof RexTableInputRef) {
+      ref = (RexTableInputRef) node;
+    } else if (RexUtil.isLosslessCast(node) &&
+        ((RexCall) node).getOperands().get(0) instanceof RexTableInputRef) {
+      ref = (RexTableInputRef) ((RexCall) node).getOperands().get(0);
+    }
+    return ref;
+  }
+
+  /**
+   * Class representing an equivalence class, i.e., a set of equivalent columns
+   *
+   * TODO: This is a subset of a private class in materialized view rewriting
+   * in Calcite. It should be moved to its own class in Calcite so it can be
+   * accessible here.
+   */
+  private static class EquivalenceClasses {
+
+    private final Map<RexTableInputRef, Set<RexTableInputRef>> nodeToEquivalenceClass;
+
+    protected EquivalenceClasses() {
+      nodeToEquivalenceClass = new HashMap<>();
+    }
+
+    protected void addEquivalenceClass(RexTableInputRef p1, RexTableInputRef p2) {
+      Set<RexTableInputRef> c1 = nodeToEquivalenceClass.get(p1);
+      Set<RexTableInputRef> c2 = nodeToEquivalenceClass.get(p2);
+      if (c1 != null && c2 != null) {
+        // Both present, we need to merge
+        if (c1.size() < c2.size()) {
+          // We swap them to merge
+          Set<RexTableInputRef> c2Temp = c2;
+          c2 = c1;
+          c1 = c2Temp;
+        }
+        for (RexTableInputRef newRef : c2) {
+          c1.add(newRef);
+          nodeToEquivalenceClass.put(newRef, c1);
+        }
+      } else if (c1 != null) {
+        // p1 present, we need to merge into it
+        c1.add(p2);
+        nodeToEquivalenceClass.put(p2, c1);
+      } else if (c2 != null) {
+        // p2 present, we need to merge into it
+        c2.add(p1);
+        nodeToEquivalenceClass.put(p1, c2);
+      } else {
+        // None are present, add to same equivalence class
+        Set<RexTableInputRef> equivalenceClass = new LinkedHashSet<>();
+        equivalenceClass.add(p1);
+        equivalenceClass.add(p2);
+        nodeToEquivalenceClass.put(p1, equivalenceClass);
+        nodeToEquivalenceClass.put(p2, equivalenceClass);
+      }
+    }
+
+    protected Map<RexTableInputRef, Set<RexTableInputRef>> getEquivalenceClassesMap() {
+      return nodeToEquivalenceClass;
+    }
+
+    protected static EquivalenceClasses copy(EquivalenceClasses ec) {
+      final EquivalenceClasses newEc = new EquivalenceClasses();
+      for (Entry<RexTableInputRef, Set<RexTableInputRef>> e : ec.nodeToEquivalenceClass.entrySet()) {
+        newEc.nodeToEquivalenceClass.put(e.getKey(), Sets.newLinkedHashSet(e.getValue()));
+      }
+      return newEc;
+    }
   }
 }

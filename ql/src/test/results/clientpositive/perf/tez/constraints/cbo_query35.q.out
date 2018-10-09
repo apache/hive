@@ -1,0 +1,173 @@
+PREHOOK: query: explain cbo
+select   
+  ca_state,
+  cd_gender,
+  cd_marital_status,
+  count(*) cnt1,
+  avg(cd_dep_count),
+  max(cd_dep_count),
+  sum(cd_dep_count),
+  cd_dep_employed_count,
+  count(*) cnt2,
+  avg(cd_dep_employed_count),
+  max(cd_dep_employed_count),
+  sum(cd_dep_employed_count),
+  cd_dep_college_count,
+  count(*) cnt3,
+  avg(cd_dep_college_count),
+  max(cd_dep_college_count),
+  sum(cd_dep_college_count)
+ from
+  customer c,customer_address ca,customer_demographics
+ where
+  c.c_current_addr_sk = ca.ca_address_sk and
+  cd_demo_sk = c.c_current_cdemo_sk and 
+  exists (select *
+          from store_sales,date_dim
+          where c.c_customer_sk = ss_customer_sk and
+                ss_sold_date_sk = d_date_sk and
+                d_year = 1999 and
+                d_qoy < 4) and
+   (exists (select *
+            from web_sales,date_dim
+            where c.c_customer_sk = ws_bill_customer_sk and
+                  ws_sold_date_sk = d_date_sk and
+                  d_year = 1999 and
+                  d_qoy < 4) or 
+    exists (select * 
+            from catalog_sales,date_dim
+            where c.c_customer_sk = cs_ship_customer_sk and
+                  cs_sold_date_sk = d_date_sk and
+                  d_year = 1999 and
+                  d_qoy < 4))
+ group by ca_state,
+          cd_gender,
+          cd_marital_status,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+ order by ca_state,
+          cd_gender,
+          cd_marital_status,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select   
+  ca_state,
+  cd_gender,
+  cd_marital_status,
+  count(*) cnt1,
+  avg(cd_dep_count),
+  max(cd_dep_count),
+  sum(cd_dep_count),
+  cd_dep_employed_count,
+  count(*) cnt2,
+  avg(cd_dep_employed_count),
+  max(cd_dep_employed_count),
+  sum(cd_dep_employed_count),
+  cd_dep_college_count,
+  count(*) cnt3,
+  avg(cd_dep_college_count),
+  max(cd_dep_college_count),
+  sum(cd_dep_college_count)
+ from
+  customer c,customer_address ca,customer_demographics
+ where
+  c.c_current_addr_sk = ca.ca_address_sk and
+  cd_demo_sk = c.c_current_cdemo_sk and 
+  exists (select *
+          from store_sales,date_dim
+          where c.c_customer_sk = ss_customer_sk and
+                ss_sold_date_sk = d_date_sk and
+                d_year = 1999 and
+                d_qoy < 4) and
+   (exists (select *
+            from web_sales,date_dim
+            where c.c_customer_sk = ws_bill_customer_sk and
+                  ws_sold_date_sk = d_date_sk and
+                  d_year = 1999 and
+                  d_qoy < 4) or 
+    exists (select * 
+            from catalog_sales,date_dim
+            where c.c_customer_sk = cs_ship_customer_sk and
+                  cs_sold_date_sk = d_date_sk and
+                  d_year = 1999 and
+                  d_qoy < 4))
+ group by ca_state,
+          cd_gender,
+          cd_marital_status,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+ order by ca_state,
+          cd_gender,
+          cd_marital_status,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(ca_state=[$0], cd_gender=[$1], cd_marital_status=[$2], cnt1=[$3], _o__c4=[$4], _o__c5=[$5], _o__c6=[$6], cd_dep_employed_count=[$7], cnt2=[$8], _o__c9=[$9], _o__c10=[$10], _o__c11=[$11], cd_dep_college_count=[$12], cnt3=[$13], _o__c14=[$14], _o__c15=[$15], _o__c16=[$16])
+  HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$17], sort4=[$7], sort5=[$12], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], fetch=[100])
+    HiveProject(ca_state=[$0], cd_gender=[$1], cd_marital_status=[$2], cnt1=[$6], _o__c4=[/(CAST($7):DOUBLE, $8)], _o__c5=[$9], _o__c6=[$7], cd_dep_employed_count=[$4], cnt2=[$6], _o__c9=[/(CAST($10):DOUBLE, $11)], _o__c10=[$12], _o__c11=[$10], cd_dep_college_count=[$5], cnt3=[$6], _o__c14=[/(CAST($13):DOUBLE, $14)], _o__c15=[$15], _o__c16=[$13], (tok_table_or_col cd_dep_count)=[$3])
+      HiveAggregate(group=[{4, 6, 7, 8, 9, 10}], agg#0=[count()], agg#1=[sum($8)], agg#2=[count($8)], agg#3=[max($8)], agg#4=[sum($9)], agg#5=[count($9)], agg#6=[max($9)], agg#7=[sum($10)], agg#8=[count($10)], agg#9=[max($10)])
+        HiveFilter(condition=[OR(IS NOT NULL($12), IS NOT NULL($14))])
+          HiveJoin(condition=[=($0, $13)], joinType=[left], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[=($0, $11)], joinType=[left], algorithm=[none], cost=[not available])
+              HiveSemiJoin(condition=[=($0, $11)], joinType=[inner])
+                HiveJoin(condition=[=($5, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($2, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_addr_sk=[$4])
+                      HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($2))])
+                        HiveTableScan(table=[[default, customer]], table:alias=[c])
+                    HiveProject(ca_address_sk=[$0], ca_state=[$8])
+                      HiveTableScan(table=[[default, customer_address]], table:alias=[ca])
+                  HiveProject(cd_demo_sk=[$0], cd_gender=[$1], cd_marital_status=[$2], cd_dep_count=[$6], cd_dep_employed_count=[$7], cd_dep_college_count=[$8])
+                    HiveTableScan(table=[[default, customer_demographics]], table:alias=[customer_demographics])
+                HiveProject(ss_customer_sk0=[$1])
+                  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3])
+                      HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                    HiveProject(d_date_sk=[$0])
+                      HiveFilter(condition=[AND(=($6, 1999), <($10, 4))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              HiveProject(ws_bill_customer_sk0=[$0], $f1=[true])
+                HiveAggregate(group=[{1}])
+                  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ws_sold_date_sk=[$0], ws_bill_customer_sk=[$4])
+                      HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                    HiveProject(d_date_sk=[$0])
+                      HiveFilter(condition=[AND(=($6, 1999), <($10, 4))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            HiveProject(cs_ship_customer_sk0=[$0], $f1=[true])
+              HiveAggregate(group=[{1}])
+                HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(cs_sold_date_sk=[$0], cs_ship_customer_sk=[$7])
+                    HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($0))])
+                      HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                  HiveProject(d_date_sk=[$0])
+                    HiveFilter(condition=[AND(=($6, 1999), <($10, 4))])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

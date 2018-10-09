@@ -1,0 +1,168 @@
+Warning: Shuffle Join MERGEJOIN[287][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
+PREHOOK: query: explain cbo
+with ssales as
+(select c_last_name
+      ,c_first_name
+      ,s_store_name
+      ,ca_state
+      ,s_state
+      ,i_color
+      ,i_current_price
+      ,i_manager_id
+      ,i_units
+      ,i_size
+      ,sum(ss_sales_price) netpaid
+from store_sales
+    ,store_returns
+    ,store
+    ,item
+    ,customer
+    ,customer_address
+where ss_ticket_number = sr_ticket_number
+  and ss_item_sk = sr_item_sk
+  and ss_customer_sk = c_customer_sk
+  and ss_item_sk = i_item_sk
+  and ss_store_sk = s_store_sk
+  and c_birth_country = upper(ca_country)
+  and s_zip = ca_zip
+and s_market_id=7
+group by c_last_name
+        ,c_first_name
+        ,s_store_name
+        ,ca_state
+        ,s_state
+        ,i_color
+        ,i_current_price
+        ,i_manager_id
+        ,i_units
+        ,i_size)
+select c_last_name
+      ,c_first_name
+      ,s_store_name
+      ,sum(netpaid) paid
+from ssales
+where i_color = 'orchid'
+group by c_last_name
+        ,c_first_name
+        ,s_store_name
+having sum(netpaid) > (select 0.05*avg(netpaid)
+                                 from ssales)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with ssales as
+(select c_last_name
+      ,c_first_name
+      ,s_store_name
+      ,ca_state
+      ,s_state
+      ,i_color
+      ,i_current_price
+      ,i_manager_id
+      ,i_units
+      ,i_size
+      ,sum(ss_sales_price) netpaid
+from store_sales
+    ,store_returns
+    ,store
+    ,item
+    ,customer
+    ,customer_address
+where ss_ticket_number = sr_ticket_number
+  and ss_item_sk = sr_item_sk
+  and ss_customer_sk = c_customer_sk
+  and ss_item_sk = i_item_sk
+  and ss_store_sk = s_store_sk
+  and c_birth_country = upper(ca_country)
+  and s_zip = ca_zip
+and s_market_id=7
+group by c_last_name
+        ,c_first_name
+        ,s_store_name
+        ,ca_state
+        ,s_state
+        ,i_color
+        ,i_current_price
+        ,i_manager_id
+        ,i_units
+        ,i_size)
+select c_last_name
+      ,c_first_name
+      ,s_store_name
+      ,sum(netpaid) paid
+from ssales
+where i_color = 'orchid'
+group by c_last_name
+        ,c_first_name
+        ,s_store_name
+having sum(netpaid) > (select 0.05*avg(netpaid)
+                                 from ssales)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
+  HiveJoin(condition=[>($3, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(c_last_name=[$1], c_first_name=[$0], s_store_name=[$2], $f3=[$3])
+      HiveAggregate(group=[{1, 2, 7}], agg#0=[sum($9)])
+        HiveProject(ca_state=[$0], c_first_name=[$1], c_last_name=[$2], i_current_price=[$3], i_size=[$4], i_units=[$5], i_manager_id=[$6], s_store_name=[$7], s_state=[$8], $f9=[$9])
+          HiveAggregate(group=[{0, 6, 7, 15, 16, 17, 18, 20, 21}], agg#0=[sum($13)])
+            HiveJoin(condition=[AND(=($8, $2), =($22, $1))], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(ca_state=[$8], ca_zip=[$9], UPPER=[UPPER($10)])
+                HiveFilter(condition=[AND(IS NOT NULL(UPPER($10)), IS NOT NULL($9))])
+                  HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+              HiveJoin(condition=[AND(=($9, $1), =($6, $0))], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(sr_item_sk=[$2], sr_ticket_number=[$9])
+                  HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(c_customer_sk=[$0], c_first_name=[$8], c_last_name=[$9], c_birth_country=[$14])
+                    HiveFilter(condition=[IS NOT NULL($14)])
+                      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+                  HiveJoin(condition=[=($2, $10)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(ss_item_sk=[$2], ss_customer_sk=[$3], ss_store_sk=[$7], ss_ticket_number=[$9], ss_sales_price=[$13])
+                        HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($3))])
+                          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                      HiveProject(i_item_sk=[$0], i_current_price=[$5], i_size=[$15], i_units=[$18], i_manager_id=[$20])
+                        HiveFilter(condition=[=($17, _UTF-16LE'orchid')])
+                          HiveTableScan(table=[[default, item]], table:alias=[item])
+                    HiveProject(s_store_sk=[$0], s_store_name=[$5], s_state=[$24], s_zip=[$25])
+                      HiveFilter(condition=[AND(=($10, 7), IS NOT NULL($25))])
+                        HiveTableScan(table=[[default, store]], table:alias=[store])
+    HiveProject(_o__c0=[*(0.05, /($0, $1))])
+      HiveAggregate(group=[{}], agg#0=[sum($10)], agg#1=[count($10)])
+        HiveProject(c_first_name=[$0], c_last_name=[$1], s_store_name=[$2], s_state=[$3], i_current_price=[$4], i_size=[$5], i_color=[$6], i_units=[$7], i_manager_id=[$8], ca_state=[$9], $f10=[$10])
+          HiveAggregate(group=[{3, 4, 12, 13, 16, 17, 18, 19, 20, 21}], agg#0=[sum($10)])
+            HiveJoin(condition=[AND(=($5, $23), =($14, $22))], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[AND(=($9, $1), =($6, $0))], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(sr_item_sk=[$2], sr_ticket_number=[$9])
+                  HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                HiveJoin(condition=[=($4, $13)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(c_customer_sk=[$0], c_first_name=[$8], c_last_name=[$9], c_birth_country=[$14])
+                      HiveFilter(condition=[IS NOT NULL($14)])
+                        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+                    HiveJoin(condition=[=($2, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(ss_item_sk=[$2], ss_customer_sk=[$3], ss_store_sk=[$7], ss_ticket_number=[$9], ss_sales_price=[$13])
+                        HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($3))])
+                          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                      HiveProject(s_store_sk=[$0], s_store_name=[$5], s_state=[$24], s_zip=[$25])
+                        HiveFilter(condition=[AND(=($10, 7), IS NOT NULL($25))])
+                          HiveTableScan(table=[[default, store]], table:alias=[store])
+                  HiveProject(i_item_sk=[$0], i_current_price=[$5], i_size=[$15], i_color=[$17], i_units=[$18], i_manager_id=[$20])
+                    HiveTableScan(table=[[default, item]], table:alias=[item])
+              HiveProject(ca_state=[$8], ca_zip=[$9], UPPER=[UPPER($10)])
+                HiveFilter(condition=[AND(IS NOT NULL(UPPER($10)), IS NOT NULL($9))])
+                  HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+

@@ -1,0 +1,102 @@
+PREHOOK: query: explain cbo
+select  
+   count(distinct cs_order_number) as `order count`
+  ,sum(cs_ext_ship_cost) as `total shipping cost`
+  ,sum(cs_net_profit) as `total net profit`
+from
+   catalog_sales cs1
+  ,date_dim
+  ,customer_address
+  ,call_center
+where
+    d_date between '2001-4-01' and 
+           (cast('2001-4-01' as date) + 60 days)
+and cs1.cs_ship_date_sk = d_date_sk
+and cs1.cs_ship_addr_sk = ca_address_sk
+and ca_state = 'NY'
+and cs1.cs_call_center_sk = cc_call_center_sk
+and cc_county in ('Ziebach County','Levy County','Huron County','Franklin Parish',
+                  'Daviess County'
+)
+and exists (select *
+            from catalog_sales cs2
+            where cs1.cs_order_number = cs2.cs_order_number
+              and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+and not exists(select *
+               from catalog_returns cr1
+               where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@call_center
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  
+   count(distinct cs_order_number) as `order count`
+  ,sum(cs_ext_ship_cost) as `total shipping cost`
+  ,sum(cs_net_profit) as `total net profit`
+from
+   catalog_sales cs1
+  ,date_dim
+  ,customer_address
+  ,call_center
+where
+    d_date between '2001-4-01' and 
+           (cast('2001-4-01' as date) + 60 days)
+and cs1.cs_ship_date_sk = d_date_sk
+and cs1.cs_ship_addr_sk = ca_address_sk
+and ca_state = 'NY'
+and cs1.cs_call_center_sk = cc_call_center_sk
+and cc_county in ('Ziebach County','Levy County','Huron County','Franklin Parish',
+                  'Daviess County'
+)
+and exists (select *
+            from catalog_sales cs2
+            where cs1.cs_order_number = cs2.cs_order_number
+              and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+and not exists(select *
+               from catalog_returns cr1
+               where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@call_center
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(order count=[$0], total shipping cost=[$1], total net profit=[$2])
+  HiveSortLimit(sort0=[$3], dir0=[ASC], fetch=[100])
+    HiveProject(order count=[$0], total shipping cost=[$1], total net profit=[$2], (tok_functiondi count (tok_table_or_col cs_order_number))=[$0])
+      HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[sum($6)])
+        HiveFilter(condition=[IS NULL($14)])
+          HiveJoin(condition=[=($4, $13)], joinType=[left], algorithm=[none], cost=[not available])
+            HiveSemiJoin(condition=[AND(<>($3, $13), =($4, $14))], joinType=[inner])
+              HiveProject(cs_ship_date_sk=[$2], cs_ship_addr_sk=[$3], cs_call_center_sk=[$4], cs_warehouse_sk=[$5], cs_order_number=[$6], cs_ext_ship_cost=[$7], cs_net_profit=[$8], d_date_sk=[$9], d_date=[$10], ca_address_sk=[$0], ca_state=[$1], cc_call_center_sk=[$11], cc_county=[$12])
+                HiveJoin(condition=[=($4, $11)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ca_address_sk=[$0], ca_state=[CAST(_UTF-16LE'NY'):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" COLLATE "ISO-8859-1$en_US$primary"])
+                      HiveFilter(condition=[=($8, _UTF-16LE'NY')])
+                        HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+                    HiveJoin(condition=[=($0, $7)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(cs_ship_date_sk=[$2], cs_ship_addr_sk=[$10], cs_call_center_sk=[$11], cs_warehouse_sk=[$14], cs_order_number=[$17], cs_ext_ship_cost=[$28], cs_net_profit=[$33])
+                        HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($10), IS NOT NULL($11))])
+                          HiveTableScan(table=[[default, catalog_sales]], table:alias=[cs1])
+                      HiveProject(d_date_sk=[$0], d_date=[$2])
+                        HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 2001-04-01 00:00:00, 2001-05-31 00:00:00)])
+                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(cc_call_center_sk=[$0], cc_county=[$25])
+                    HiveFilter(condition=[IN($25, _UTF-16LE'Ziebach County', _UTF-16LE'Levy County', _UTF-16LE'Huron County', _UTF-16LE'Franklin Parish', _UTF-16LE'Daviess County')])
+                      HiveTableScan(table=[[default, call_center]], table:alias=[call_center])
+              HiveProject(cs_warehouse_sk=[$14], cs_order_number=[$17])
+                HiveFilter(condition=[IS NOT NULL($14)])
+                  HiveTableScan(table=[[default, catalog_sales]], table:alias=[cs2])
+            HiveProject(cr_order_number0=[$16], $f1=[true])
+              HiveTableScan(table=[[default, catalog_returns]], table:alias=[cr1])
+
