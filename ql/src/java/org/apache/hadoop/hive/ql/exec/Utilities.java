@@ -265,6 +265,9 @@ public final class Utilities {
     T get() throws X;
   }
 
+  private static final Object INPUT_SUMMARY_LOCK = new Object();
+  private static final Object ROOT_HDFS_DIR_LOCK  = new Object();
+
   /**
    * ReduceField:
    * KEY: record key
@@ -2384,8 +2387,6 @@ public final class Utilities {
       }
     }
   }
-
-  private static final Object INPUT_SUMMARY_LOCK = new Object();
 
   /**
    * Returns the maximum number of executors required to get file information from several input locations.
@@ -4556,11 +4557,16 @@ public final class Utilities {
   public static void ensurePathIsWritable(Path rootHDFSDirPath, HiveConf conf) throws IOException {
     FsPermission writableHDFSDirPermission = new FsPermission((short)00733);
     FileSystem fs = rootHDFSDirPath.getFileSystem(conf);
+
     if (!fs.exists(rootHDFSDirPath)) {
-      Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
+      synchronized (ROOT_HDFS_DIR_LOCK) {
+        if (!fs.exists(rootHDFSDirPath)) {
+          Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
+        }
+      }
     }
     FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
-    if (rootHDFSDirPath != null && rootHDFSDirPath.toUri() != null) {
+    if (rootHDFSDirPath.toUri() != null) {
       String schema = rootHDFSDirPath.toUri().getScheme();
       LOG.debug("HDFS dir: " + rootHDFSDirPath + " with schema " + schema + ", permission: " +
           currentHDFSDirPermission);
