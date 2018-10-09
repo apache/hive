@@ -68,32 +68,7 @@ public class TestSparkSessionTimeout {
         HiveConf conf = new HiveConf();
         conf.setBoolVar(HiveConf.ConfVars.SPARK_OPTIMIZE_SHUFFLE_SERDE, false);
         conf.set("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
-                "TestSparkSessionTimeout-testMultiSparkSessionTimeout-local-dir").toString());
-
-        SessionState.start(conf);
-
-        runTestSparkSessionTimeout(conf);
-        return null;
-      }));
-    }
-    for (Future<Void> future : futures) {
-      future.get();
-    }
-  }
-
-  @Test
-  public void testMultiSparkSessionTimeout() throws ExecutionException, InterruptedException {
-    List<Future<Void>> futures = new ArrayList<>();
-    ExecutorService es = Executors.newFixedThreadPool(10);
-    for (int i = 0; i < 10; i++) {
-      futures.add(es.submit(() -> {
-        String confDir = "../../data/conf/spark/local/hive-site.xml";
-        HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
-
-        HiveConf conf = new HiveConf();
-        conf.setBoolVar(HiveConf.ConfVars.SPARK_OPTIMIZE_SHUFFLE_SERDE, false);
-        conf.set("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
-                "TestSparkSessionTimeout-testMultiSparkSessionTimeout-local-dir").toString());
+                "TestSparkSessionTimeout-testMultiSessionSparkSessionTimeout-local-dir").toString());
 
         SessionState.start(conf);
 
