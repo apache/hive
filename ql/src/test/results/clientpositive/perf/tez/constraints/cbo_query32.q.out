@@ -1,0 +1,89 @@
+PREHOOK: query: explain cbo
+select  sum(cs_ext_discount_amt)  as `excess discount amount` 
+from 
+   catalog_sales 
+   ,item 
+   ,date_dim
+where
+i_manufact_id = 269
+and i_item_sk = cs_item_sk 
+and d_date between '1998-03-18' and 
+        (cast('1998-03-18' as date) + 90 days)
+and d_date_sk = cs_sold_date_sk 
+and cs_ext_discount_amt  
+     > ( 
+         select 
+            1.3 * avg(cs_ext_discount_amt) 
+         from 
+            catalog_sales 
+           ,date_dim
+         where 
+              cs_item_sk = i_item_sk 
+          and d_date between '1998-03-18' and
+                             (cast('1998-03-18' as date) + 90 days)
+          and d_date_sk = cs_sold_date_sk 
+      ) 
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  sum(cs_ext_discount_amt)  as `excess discount amount` 
+from 
+   catalog_sales 
+   ,item 
+   ,date_dim
+where
+i_manufact_id = 269
+and i_item_sk = cs_item_sk 
+and d_date between '1998-03-18' and 
+        (cast('1998-03-18' as date) + 90 days)
+and d_date_sk = cs_sold_date_sk 
+and cs_ext_discount_amt  
+     > ( 
+         select 
+            1.3 * avg(cs_ext_discount_amt) 
+         from 
+            catalog_sales 
+           ,date_dim
+         where 
+              cs_item_sk = i_item_sk 
+          and d_date between '1998-03-18' and
+                             (cast('1998-03-18' as date) + 90 days)
+          and d_date_sk = cs_sold_date_sk 
+      ) 
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(fetch=[100])
+  HiveProject($f0=[$0])
+    HiveAggregate(group=[{}], agg#0=[sum($2)])
+      HiveJoin(condition=[AND(>($2, $5), =($6, $1))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_discount_amt=[$22])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+          HiveProject(d_date_sk=[$0])
+            HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-03-18 00:00:00, 1998-06-16 00:00:00)])
+              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+        HiveProject(cs_item_sk=[$0], CAST3=[$1], i_item_sk=[$2])
+          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(cs_item_sk=[$0], CAST3=[CAST(*(1.3, /($1, $2))):DECIMAL(14, 7)])
+              HiveAggregate(group=[{1}], agg#0=[sum($2)], agg#1=[count($2)])
+                HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_discount_amt=[$22])
+                    HiveFilter(condition=[IS NOT NULL($0)])
+                      HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                  HiveProject(d_date_sk=[$0])
+                    HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-03-18 00:00:00, 1998-06-16 00:00:00)])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            HiveProject(i_item_sk=[$0])
+              HiveFilter(condition=[=($13, 269)])
+                HiveTableScan(table=[[default, item]], table:alias=[item])
+
