@@ -17,10 +17,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
-        <!--disconnected from hive root pom since this module needs 2.x jars
-         todo: Food for thought: make this hive-upgrade-acid connected to parent but disconnect
-         pre-upgrade sub-module from this one.  This would make post-upgrade inherit all
-         properties, version numbers, etc and pre-upgrade will be fixed.  Easier to maintain-->
+        <!--disconnected from hive root pom since this module needs 1.x jars-->
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
         <version>18</version>

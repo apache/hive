@@ -74,7 +74,8 @@ import java.util.Set;
 import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.escapeSQLString;
 
 /**
- * This utility is designed to help with upgrading Hive 2.x to Hive 3.0.  On-disk layout for
+ * Look at the upgrade-acid/README.md for more info.
+ * This utility is designed to help with upgrading HDP 2.6.x to HDP 3.x.  On-disk layout for
  * transactional tables has changed in 3.0 and require pre-processing before upgrade to ensure
  * they are readable by Hive 3.0.  Some transactional tables (identified by this utility) require
  * Major compaction to be run on them before upgrading to 3.0.  Once this compaction starts, no
@@ -144,8 +145,8 @@ public class PreUpgradeTool {
       String hiveVer = HiveVersionInfo.getShortVersion();
       LOG.info("Using Hive Version: " + HiveVersionInfo.getVersion() + " build: " +
           HiveVersionInfo.getBuildVersion());
-      if(!hiveVer.startsWith("2.")) {
-        throw new IllegalStateException("preUpgrade requires Hive 2.x.  Actual: " + hiveVer);
+      if(!hiveVer.startsWith("1.")) {
+        throw new IllegalStateException("preUpgrade requires Hive 1.x.  Actual: " + hiveVer);
       }
       tool.prepareAcidUpgradeInternal(outputDir, execute);
     }
@@ -199,13 +200,7 @@ public class PreUpgradeTool {
     }
     try {
       LOG.info("Creating metastore client for {}", "PreUpgradeTool");
-      /* I'd rather call return RetryingMetaStoreClient.getProxy(conf, true)
-      which calls HiveMetaStoreClient(HiveConf, Boolean) which exists in
-       (at least) 2.1.0.2.6.5.0-292 and later but not in 2.1.0.2.6.0.3-8 (the HDP 2.6 release)
-       i.e. RetryingMetaStoreClient.getProxy(conf, true) is broken in 2.6.0*/
-      return RetryingMetaStoreClient.getProxy(conf,
-          new Class[]{HiveConf.class, HiveMetaHookLoader.class, Boolean.class},
-          new Object[]{conf, getHookLoader(), Boolean.TRUE}, null, HiveMetaStoreClient.class.getName());
+      return RetryingMetaStoreClient.getProxy(conf);
     } catch (MetaException e) {
       throw new RuntimeException("Error connecting to Hive Metastore URI: "
           + conf.getVar(HiveConf.ConfVars.METASTOREURIS) + ". " + e.getMessage(), e);
@@ -515,8 +510,7 @@ public class PreUpgradeTool {
 
           //if there are un-compacted original files, they will be included in compaction, so
           //count at the size for 'cost' estimation later
-          for(HadoopShims.HdfsFileStatusWithId origFile : dir.getOriginalFiles()) {
-            FileStatus fileStatus = origFile.getFileStatus();
+          for(FileStatus fileStatus : dir.getOriginalFiles()) {
             if(fileStatus != null) {
               compactionMetaInfo.numberOfBytes += fileStatus.getLen();
             }
