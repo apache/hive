@@ -1,0 +1,219 @@
+PREHOOK: query: explain cbo
+with sr_items as
+ (select i_item_id item_id,
+        sum(sr_return_quantity) sr_item_qty
+ from store_returns,
+      item,
+      date_dim
+ where sr_item_sk = i_item_sk
+ and   d_date    in 
+	(select d_date
+	from date_dim
+	where d_week_seq in 
+		(select d_week_seq
+		from date_dim
+	  where d_date in ('1998-01-02','1998-10-15','1998-11-10')))
+ and   sr_returned_date_sk   = d_date_sk
+ group by i_item_id),
+ cr_items as
+ (select i_item_id item_id,
+        sum(cr_return_quantity) cr_item_qty
+ from catalog_returns,
+      item,
+      date_dim
+ where cr_item_sk = i_item_sk
+ and   d_date    in 
+	(select d_date
+	from date_dim
+	where d_week_seq in 
+		(select d_week_seq
+		from date_dim
+	  where d_date in ('1998-01-02','1998-10-15','1998-11-10')))
+ and   cr_returned_date_sk   = d_date_sk
+ group by i_item_id),
+ wr_items as
+ (select i_item_id item_id,
+        sum(wr_return_quantity) wr_item_qty
+ from web_returns,
+      item,
+      date_dim
+ where wr_item_sk = i_item_sk
+ and   d_date    in 
+	(select d_date
+	from date_dim
+	where d_week_seq in 
+		(select d_week_seq
+		from date_dim
+		where d_date in ('1998-01-02','1998-10-15','1998-11-10')))
+ and   wr_returned_date_sk   = d_date_sk
+ group by i_item_id)
+  select  sr_items.item_id
+       ,sr_item_qty
+       ,sr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 sr_dev
+       ,cr_item_qty
+       ,cr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 cr_dev
+       ,wr_item_qty
+       ,wr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 wr_dev
+       ,(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 average
+ from sr_items
+     ,cr_items
+     ,wr_items
+ where sr_items.item_id=cr_items.item_id
+   and sr_items.item_id=wr_items.item_id 
+ order by sr_items.item_id
+         ,sr_item_qty
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@web_returns
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with sr_items as
+ (select i_item_id item_id,
+        sum(sr_return_quantity) sr_item_qty
+ from store_returns,
+      item,
+      date_dim
+ where sr_item_sk = i_item_sk
+ and   d_date    in 
+	(select d_date
+	from date_dim
+	where d_week_seq in 
+		(select d_week_seq
+		from date_dim
+	  where d_date in ('1998-01-02','1998-10-15','1998-11-10')))
+ and   sr_returned_date_sk   = d_date_sk
+ group by i_item_id),
+ cr_items as
+ (select i_item_id item_id,
+        sum(cr_return_quantity) cr_item_qty
+ from catalog_returns,
+      item,
+      date_dim
+ where cr_item_sk = i_item_sk
+ and   d_date    in 
+	(select d_date
+	from date_dim
+	where d_week_seq in 
+		(select d_week_seq
+		from date_dim
+	  where d_date in ('1998-01-02','1998-10-15','1998-11-10')))
+ and   cr_returned_date_sk   = d_date_sk
+ group by i_item_id),
+ wr_items as
+ (select i_item_id item_id,
+        sum(wr_return_quantity) wr_item_qty
+ from web_returns,
+      item,
+      date_dim
+ where wr_item_sk = i_item_sk
+ and   d_date    in 
+	(select d_date
+	from date_dim
+	where d_week_seq in 
+		(select d_week_seq
+		from date_dim
+		where d_date in ('1998-01-02','1998-10-15','1998-11-10')))
+ and   wr_returned_date_sk   = d_date_sk
+ group by i_item_id)
+  select  sr_items.item_id
+       ,sr_item_qty
+       ,sr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 sr_dev
+       ,cr_item_qty
+       ,cr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 cr_dev
+       ,wr_item_qty
+       ,wr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 wr_dev
+       ,(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 average
+ from sr_items
+     ,cr_items
+     ,wr_items
+ where sr_items.item_id=cr_items.item_id
+   and sr_items.item_id=wr_items.item_id 
+ order by sr_items.item_id
+         ,sr_item_qty
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject(item_id=[$0], sr_item_qty=[$4], sr_dev=[*(/(/($5, CAST(+(+($4, $1), $7)):DOUBLE), CAST(3):DOUBLE), CAST(100):DOUBLE)], cr_item_qty=[$1], cr_dev=[*(/(/($2, CAST(+(+($4, $1), $7)):DOUBLE), CAST(3):DOUBLE), CAST(100):DOUBLE)], wr_item_qty=[$7], wr_dev=[*(/(/($8, CAST(+(+($4, $1), $7)):DOUBLE), CAST(3):DOUBLE), CAST(100):DOUBLE)], average=[/(CAST(+(+($4, $1), $7)):DECIMAL(19, 0), 3)])
+    HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(item_id=[$0], cr_item_qty=[$1], CAST=[CAST($1):DOUBLE])
+          HiveAggregate(group=[{4}], agg#0=[sum($2)])
+            HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(cr_returned_date_sk=[$0], cr_item_sk=[$2], cr_return_quantity=[$17])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+                HiveProject(i_item_sk=[$0], i_item_id=[$1])
+                  HiveTableScan(table=[[default, item]], table:alias=[item])
+              HiveProject(d_date_sk=[$0], d_date=[$1], d_date0=[$2])
+                HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(d_date_sk=[$0], d_date=[$2])
+                    HiveFilter(condition=[IS NOT NULL($2)])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(d_date=[$0])
+                    HiveAggregate(group=[{0}])
+                      HiveSemiJoin(condition=[=($1, $6)], joinType=[inner])
+                        HiveProject(d_date=[$2], d_week_seq=[$4])
+                          HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($2))])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(d_date_sk=[$0], d_date_id=[$1], d_date=[$2], d_month_seq=[$3], d_week_seq=[$4], d_quarter_seq=[$5], d_year=[$6], d_dow=[$7], d_moy=[$8], d_dom=[$9], d_qoy=[$10], d_fy_year=[$11], d_fy_quarter_seq=[$12], d_fy_week_seq=[$13], d_day_name=[$14], d_quarter_name=[$15], d_holiday=[$16], d_weekend=[$17], d_following_holiday=[$18], d_first_dom=[$19], d_last_dom=[$20], d_same_day_ly=[$21], d_same_day_lq=[$22], d_current_day=[$23], d_current_week=[$24], d_current_month=[$25], d_current_quarter=[$26], d_current_year=[$27], BLOCK__OFFSET__INSIDE__FILE=[$28], INPUT__FILE__NAME=[$29], ROW__ID=[$30])
+                          HiveFilter(condition=[AND(IN($2, _UTF-16LE'1998-01-02', _UTF-16LE'1998-10-15', _UTF-16LE'1998-11-10'), IS NOT NULL($4))])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+        HiveProject(item_id=[$0], sr_item_qty=[$1], CAST=[CAST($1):DOUBLE])
+          HiveAggregate(group=[{4}], agg#0=[sum($2)])
+            HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(sr_returned_date_sk=[$0], sr_item_sk=[$2], sr_return_quantity=[$10])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                HiveProject(i_item_sk=[$0], i_item_id=[$1])
+                  HiveTableScan(table=[[default, item]], table:alias=[item])
+              HiveProject(d_date_sk=[$0], d_date=[$1], d_date0=[$2])
+                HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(d_date_sk=[$0], d_date=[$2])
+                    HiveFilter(condition=[IS NOT NULL($2)])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(d_date=[$0])
+                    HiveAggregate(group=[{0}])
+                      HiveSemiJoin(condition=[=($1, $6)], joinType=[inner])
+                        HiveProject(d_date=[$2], d_week_seq=[$4])
+                          HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($2))])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(d_date_sk=[$0], d_date_id=[$1], d_date=[$2], d_month_seq=[$3], d_week_seq=[$4], d_quarter_seq=[$5], d_year=[$6], d_dow=[$7], d_moy=[$8], d_dom=[$9], d_qoy=[$10], d_fy_year=[$11], d_fy_quarter_seq=[$12], d_fy_week_seq=[$13], d_day_name=[$14], d_quarter_name=[$15], d_holiday=[$16], d_weekend=[$17], d_following_holiday=[$18], d_first_dom=[$19], d_last_dom=[$20], d_same_day_ly=[$21], d_same_day_lq=[$22], d_current_day=[$23], d_current_week=[$24], d_current_month=[$25], d_current_quarter=[$26], d_current_year=[$27], BLOCK__OFFSET__INSIDE__FILE=[$28], INPUT__FILE__NAME=[$29], ROW__ID=[$30])
+                          HiveFilter(condition=[AND(IN($2, _UTF-16LE'1998-01-02', _UTF-16LE'1998-10-15', _UTF-16LE'1998-11-10'), IS NOT NULL($4))])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+      HiveProject(item_id=[$0], wr_item_qty=[$1], CAST=[CAST($1):DOUBLE])
+        HiveAggregate(group=[{4}], agg#0=[sum($2)])
+          HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(wr_returned_date_sk=[$0], wr_item_sk=[$2], wr_return_quantity=[$14])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, web_returns]], table:alias=[web_returns])
+              HiveProject(i_item_sk=[$0], i_item_id=[$1])
+                HiveTableScan(table=[[default, item]], table:alias=[item])
+            HiveProject(d_date_sk=[$0], d_date=[$1], d_date0=[$2])
+              HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(d_date_sk=[$0], d_date=[$2])
+                  HiveFilter(condition=[IS NOT NULL($2)])
+                    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                HiveProject(d_date=[$0])
+                  HiveAggregate(group=[{0}])
+                    HiveSemiJoin(condition=[=($1, $6)], joinType=[inner])
+                      HiveProject(d_date=[$2], d_week_seq=[$4])
+                        HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($2))])
+                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                      HiveProject(d_date_sk=[$0], d_date_id=[$1], d_date=[$2], d_month_seq=[$3], d_week_seq=[$4], d_quarter_seq=[$5], d_year=[$6], d_dow=[$7], d_moy=[$8], d_dom=[$9], d_qoy=[$10], d_fy_year=[$11], d_fy_quarter_seq=[$12], d_fy_week_seq=[$13], d_day_name=[$14], d_quarter_name=[$15], d_holiday=[$16], d_weekend=[$17], d_following_holiday=[$18], d_first_dom=[$19], d_last_dom=[$20], d_same_day_ly=[$21], d_same_day_lq=[$22], d_current_day=[$23], d_current_week=[$24], d_current_month=[$25], d_current_quarter=[$26], d_current_year=[$27], BLOCK__OFFSET__INSIDE__FILE=[$28], INPUT__FILE__NAME=[$29], ROW__ID=[$30])
+                        HiveFilter(condition=[AND(IN($2, _UTF-16LE'1998-01-02', _UTF-16LE'1998-10-15', _UTF-16LE'1998-11-10'), IS NOT NULL($4))])
+                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

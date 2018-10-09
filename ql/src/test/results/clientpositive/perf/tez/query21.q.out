@@ -81,52 +81,52 @@ Stage-0
     Stage-1
       Reducer 6 vectorized
       File Output Operator [FS_95]
-        Limit [LIM_94] (rows=100 width=15)
+        Limit [LIM_94] (rows=100 width=216)
           Number of rows:100
-          Select Operator [SEL_93] (rows=12506076 width=15)
+          Select Operator [SEL_93] (rows=231983 width=216)
             Output:["_col0","_col1","_col2","_col3"]
           <-Reducer 5 [SIMPLE_EDGE] vectorized
             SHUFFLE [RS_92]
-              Filter Operator [FIL_91] (rows=12506076 width=15)
+              Filter Operator [FIL_91] (rows=231983 width=216)
                 predicate:CASE WHEN ((_col2 > 0L)) THEN ((UDFToDouble(_col3) / UDFToDouble(_col2)) BETWEEN 0.666667D AND 1.5D) ELSE (null) END
-                Group By Operator [GBY_90] (rows=25012152 width=15)
+                Group By Operator [GBY_90] (rows=463966 width=216)
                   Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0, KEY._col1
                 <-Reducer 4 [SIMPLE_EDGE]
                   SHUFFLE [RS_24]
                     PartitionCols:_col0, _col1
-                    Group By Operator [GBY_23] (rows=50024305 width=15)
+                    Group By Operator [GBY_23] (rows=463966 width=216)
                       Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(_col2)","sum(_col3)"],keys:_col0, _col1
-                      Select Operator [SEL_21] (rows=50024305 width=15)
+                      Select Operator [SEL_21] (rows=463966 width=294)
                         Output:["_col0","_col1","_col2","_col3"]
-                        Merge Join Operator [MERGEJOIN_77] (rows=50024305 width=15)
+                        Merge Join Operator [MERGEJOIN_77] (rows=463966 width=294)
                           Conds:RS_18._col2=RS_89._col0(Inner),Output:["_col3","_col5","_col7","_col10"]
                         <-Map 9 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_89]
                             PartitionCols:_col0
-                            Select Operator [SEL_88] (rows=27 width=1029)
+                            Select Operator [SEL_88] (rows=27 width=104)
                               Output:["_col0","_col1"]
-                              Filter Operator [FIL_87] (rows=27 width=1029)
+                              Filter Operator [FIL_87] (rows=27 width=104)
                                 predicate:w_warehouse_sk is not null
-                                TableScan [TS_9] (rows=27 width=1029)
-                                  default@warehouse,warehouse,Tbl:COMPLETE,Col:NONE,Output:["w_warehouse_sk","w_warehouse_name"]
+                                TableScan [TS_9] (rows=27 width=104)
+                                  default@warehouse,warehouse,Tbl:COMPLETE,Col:COMPLETE,Output:["w_warehouse_sk","w_warehouse_name"]
                         <-Reducer 3 [SIMPLE_EDGE]
                           SHUFFLE [RS_18]
                             PartitionCols:_col2
-                            Merge Join Operator [MERGEJOIN_76] (rows=45476640 width=15)
+                            Merge Join Operator [MERGEJOIN_76] (rows=463966 width=198)
                               Conds:RS_15._col1=RS_86._col0(Inner),Output:["_col2","_col3","_col5","_col7"]
                             <-Map 8 [SIMPLE_EDGE] vectorized
                               SHUFFLE [RS_86]
                                 PartitionCols:_col0
-                                Select Operator [SEL_85] (rows=51333 width=1436)
+                                Select Operator [SEL_85] (rows=51333 width=215)
                                   Output:["_col0","_col1"]
-                                  Filter Operator [FIL_84] (rows=51333 width=1436)
+                                  Filter Operator [FIL_84] (rows=51333 width=215)
                                     predicate:(i_current_price BETWEEN 0.99 AND 1.49 and i_item_sk is not null)
-                                    TableScan [TS_6] (rows=462000 width=1436)
-                                      default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_item_id","i_current_price"]
+                                    TableScan [TS_6] (rows=462000 width=215)
+                                      default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_item_id","i_current_price"]
                             <-Reducer 2 [SIMPLE_EDGE]
                               SHUFFLE [RS_15]
                                 PartitionCols:_col1
-                                Merge Join Operator [MERGEJOIN_75] (rows=41342400 width=15)
+                                Merge Join Operator [MERGEJOIN_75] (rows=4175715 width=104)
                                   Conds:RS_80._col0=RS_83._col0(Inner),Output:["_col1","_col2","_col3","_col5"]
                                 <-Map 1 [SIMPLE_EDGE] vectorized
                                   SHUFFLE [RS_80]
@@ -136,14 +136,14 @@ Stage-0
                                       Filter Operator [FIL_78] (rows=37584000 width=15)
                                         predicate:(inv_date_sk is not null and inv_item_sk is not null and inv_warehouse_sk is not null)
                                         TableScan [TS_0] (rows=37584000 width=15)
-                                          default@inventory,inventory,Tbl:COMPLETE,Col:NONE,Output:["inv_date_sk","inv_item_sk","inv_warehouse_sk","inv_quantity_on_hand"]
+                                          default@inventory,inventory,Tbl:COMPLETE,Col:COMPLETE,Output:["inv_date_sk","inv_item_sk","inv_warehouse_sk","inv_quantity_on_hand"]
                                 <-Map 7 [SIMPLE_EDGE] vectorized
                                   SHUFFLE [RS_83]
                                     PartitionCols:_col0
-                                    Select Operator [SEL_82] (rows=8116 width=1119)
+                                    Select Operator [SEL_82] (rows=8116 width=98)
                                       Output:["_col0","_col1"]
-                                      Filter Operator [FIL_81] (rows=8116 width=1119)
+                                      Filter Operator [FIL_81] (rows=8116 width=98)
                                         predicate:(CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-09 00:00:00' AND TIMESTAMP'1998-05-08 00:00:00' and d_date_sk is not null)
-                                        TableScan [TS_3] (rows=73049 width=1119)
-                                          default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
+                                        TableScan [TS_3] (rows=73049 width=98)
+                                          default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date"]
 

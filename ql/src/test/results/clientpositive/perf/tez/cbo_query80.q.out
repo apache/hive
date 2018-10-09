@@ -1,0 +1,301 @@
+PREHOOK: query: explain cbo
+with ssr as
+ (select  s_store_id as store_id,
+          sum(ss_ext_sales_price) as sales,
+          sum(coalesce(sr_return_amt, 0)) as returns,
+          sum(ss_net_profit - coalesce(sr_net_loss, 0)) as profit
+  from store_sales left outer join store_returns on
+         (ss_item_sk = sr_item_sk and ss_ticket_number = sr_ticket_number),
+     date_dim,
+     store,
+     item,
+     promotion
+ where ss_sold_date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date) 
+                  and (cast('1998-08-04' as date) +  30 days)
+       and ss_store_sk = s_store_sk
+       and ss_item_sk = i_item_sk
+       and i_current_price > 50
+       and ss_promo_sk = p_promo_sk
+       and p_channel_tv = 'N'
+ group by s_store_id)
+ ,
+ csr as
+ (select  cp_catalog_page_id as catalog_page_id,
+          sum(cs_ext_sales_price) as sales,
+          sum(coalesce(cr_return_amount, 0)) as returns,
+          sum(cs_net_profit - coalesce(cr_net_loss, 0)) as profit
+  from catalog_sales left outer join catalog_returns on
+         (cs_item_sk = cr_item_sk and cs_order_number = cr_order_number),
+     date_dim,
+     catalog_page,
+     item,
+     promotion
+ where cs_sold_date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  30 days)
+        and cs_catalog_page_sk = cp_catalog_page_sk
+       and cs_item_sk = i_item_sk
+       and i_current_price > 50
+       and cs_promo_sk = p_promo_sk
+       and p_channel_tv = 'N'
+group by cp_catalog_page_id)
+ ,
+ wsr as
+ (select  web_site_id,
+          sum(ws_ext_sales_price) as sales,
+          sum(coalesce(wr_return_amt, 0)) as returns,
+          sum(ws_net_profit - coalesce(wr_net_loss, 0)) as profit
+  from web_sales left outer join web_returns on
+         (ws_item_sk = wr_item_sk and ws_order_number = wr_order_number),
+     date_dim,
+     web_site,
+     item,
+     promotion
+ where ws_sold_date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  30 days)
+        and ws_web_site_sk = web_site_sk
+       and ws_item_sk = i_item_sk
+       and i_current_price > 50
+       and ws_promo_sk = p_promo_sk
+       and p_channel_tv = 'N'
+group by web_site_id)
+  select  channel
+        , id
+        , sum(sales) as sales
+        , sum(returns) as returns
+        , sum(profit) as profit
+ from 
+ (select 'store channel' as channel
+        , 'store' || store_id as id
+        , sales
+        , returns
+        , profit
+ from   ssr
+ union all
+ select 'catalog channel' as channel
+        , 'catalog_page' || catalog_page_id as id
+        , sales
+        , returns
+        , profit
+ from  csr
+ union all
+ select 'web channel' as channel
+        , 'web_site' || web_site_id as id
+        , sales
+        , returns
+        , profit
+ from   wsr
+ ) x
+ group by rollup (channel, id)
+ order by channel
+         ,id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_page
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@promotion
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_returns
+PREHOOK: Input: default@web_sales
+PREHOOK: Input: default@web_site
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with ssr as
+ (select  s_store_id as store_id,
+          sum(ss_ext_sales_price) as sales,
+          sum(coalesce(sr_return_amt, 0)) as returns,
+          sum(ss_net_profit - coalesce(sr_net_loss, 0)) as profit
+  from store_sales left outer join store_returns on
+         (ss_item_sk = sr_item_sk and ss_ticket_number = sr_ticket_number),
+     date_dim,
+     store,
+     item,
+     promotion
+ where ss_sold_date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date) 
+                  and (cast('1998-08-04' as date) +  30 days)
+       and ss_store_sk = s_store_sk
+       and ss_item_sk = i_item_sk
+       and i_current_price > 50
+       and ss_promo_sk = p_promo_sk
+       and p_channel_tv = 'N'
+ group by s_store_id)
+ ,
+ csr as
+ (select  cp_catalog_page_id as catalog_page_id,
+          sum(cs_ext_sales_price) as sales,
+          sum(coalesce(cr_return_amount, 0)) as returns,
+          sum(cs_net_profit - coalesce(cr_net_loss, 0)) as profit
+  from catalog_sales left outer join catalog_returns on
+         (cs_item_sk = cr_item_sk and cs_order_number = cr_order_number),
+     date_dim,
+     catalog_page,
+     item,
+     promotion
+ where cs_sold_date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  30 days)
+        and cs_catalog_page_sk = cp_catalog_page_sk
+       and cs_item_sk = i_item_sk
+       and i_current_price > 50
+       and cs_promo_sk = p_promo_sk
+       and p_channel_tv = 'N'
+group by cp_catalog_page_id)
+ ,
+ wsr as
+ (select  web_site_id,
+          sum(ws_ext_sales_price) as sales,
+          sum(coalesce(wr_return_amt, 0)) as returns,
+          sum(ws_net_profit - coalesce(wr_net_loss, 0)) as profit
+  from web_sales left outer join web_returns on
+         (ws_item_sk = wr_item_sk and ws_order_number = wr_order_number),
+     date_dim,
+     web_site,
+     item,
+     promotion
+ where ws_sold_date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  30 days)
+        and ws_web_site_sk = web_site_sk
+       and ws_item_sk = i_item_sk
+       and i_current_price > 50
+       and ws_promo_sk = p_promo_sk
+       and p_channel_tv = 'N'
+group by web_site_id)
+  select  channel
+        , id
+        , sum(sales) as sales
+        , sum(returns) as returns
+        , sum(profit) as profit
+ from 
+ (select 'store channel' as channel
+        , 'store' || store_id as id
+        , sales
+        , returns
+        , profit
+ from   ssr
+ union all
+ select 'catalog channel' as channel
+        , 'catalog_page' || catalog_page_id as id
+        , sales
+        , returns
+        , profit
+ from  csr
+ union all
+ select 'web channel' as channel
+        , 'web_site' || web_site_id as id
+        , sales
+        , returns
+        , profit
+ from   wsr
+ ) x
+ group by rollup (channel, id)
+ order by channel
+         ,id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_page
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@promotion
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Input: default@web_site
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject(channel=[$0], id=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+    HiveAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)])
+      HiveProject(channel=[$0], id=[$1], sales=[$2], returns=[$3], profit=[$4])
+        HiveUnion(all=[true])
+          HiveProject(channel=[_UTF-16LE'store channel'], id=[||(_UTF-16LE'store', $0)], sales=[$1], returns=[$2], profit=[$3])
+            HiveAggregate(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)], agg#2=[sum($3)])
+              HiveProject($f0=[$1], $f1=[$9], $f2=[CASE(IS NOT NULL($13), $13, 0)], $f3=[-($10, CASE(IS NOT NULL($14), $14, 0))])
+                HiveJoin(condition=[=($6, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(s_store_sk=[$0], s_store_id=[$1])
+                    HiveFilter(condition=[IS NOT NULL($0)])
+                      HiveTableScan(table=[[default, store]], table:alias=[store])
+                  HiveJoin(condition=[=($5, $15)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(i_item_sk=[$0], i_current_price=[$5])
+                        HiveFilter(condition=[AND(>($5, 50), IS NOT NULL($0))])
+                          HiveTableScan(table=[[default, item]], table:alias=[item])
+                      HiveJoin(condition=[=($0, $11)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[AND(=($1, $7), =($4, $8))], joinType=[left], algorithm=[none], cost=[not available])
+                          HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_store_sk=[$7], ss_promo_sk=[$8], ss_ticket_number=[$9], ss_ext_sales_price=[$15], ss_net_profit=[$22])
+                            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($7), IS NOT NULL($2), IS NOT NULL($8))])
+                              HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                          HiveProject(sr_item_sk=[$2], sr_ticket_number=[$9], sr_return_amt=[$11], sr_net_loss=[$19])
+                            HiveFilter(condition=[IS NOT NULL($2)])
+                              HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                        HiveProject(d_date_sk=[$0], d_date=[$2])
+                          HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-08-04 00:00:00, 1998-09-03 00:00:00), IS NOT NULL($0))])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                    HiveProject(p_promo_sk=[$0], p_channel_tv=[CAST(_UTF-16LE'N'):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" COLLATE "ISO-8859-1$en_US$primary"])
+                      HiveFilter(condition=[AND(=($11, _UTF-16LE'N'), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
+          HiveProject(channel=[_UTF-16LE'catalog channel'], id=[||(_UTF-16LE'catalog_page', $0)], sales=[$1], returns=[$2], profit=[$3])
+            HiveAggregate(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)], agg#2=[sum($3)])
+              HiveProject($f0=[$1], $f1=[$9], $f2=[CASE(IS NOT NULL($13), $13, 0)], $f3=[-($10, CASE(IS NOT NULL($14), $14, 0))])
+                HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(cp_catalog_page_sk=[$0], cp_catalog_page_id=[$1])
+                    HiveFilter(condition=[IS NOT NULL($0)])
+                      HiveTableScan(table=[[default, catalog_page]], table:alias=[catalog_page])
+                  HiveJoin(condition=[=($5, $15)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(i_item_sk=[$0], i_current_price=[$5])
+                        HiveFilter(condition=[AND(>($5, 50), IS NOT NULL($0))])
+                          HiveTableScan(table=[[default, item]], table:alias=[item])
+                      HiveJoin(condition=[=($0, $11)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[AND(=($2, $7), =($4, $8))], joinType=[left], algorithm=[none], cost=[not available])
+                          HiveProject(cs_sold_date_sk=[$0], cs_catalog_page_sk=[$12], cs_item_sk=[$15], cs_promo_sk=[$16], cs_order_number=[$17], cs_ext_sales_price=[$23], cs_net_profit=[$33])
+                            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($12), IS NOT NULL($15), IS NOT NULL($16))])
+                              HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                          HiveProject(cr_item_sk=[$2], cr_order_number=[$16], cr_return_amount=[$18], cr_net_loss=[$26])
+                            HiveFilter(condition=[IS NOT NULL($2)])
+                              HiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+                        HiveProject(d_date_sk=[$0], d_date=[$2])
+                          HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-08-04 00:00:00, 1998-09-03 00:00:00), IS NOT NULL($0))])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                    HiveProject(p_promo_sk=[$0], p_channel_tv=[CAST(_UTF-16LE'N'):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" COLLATE "ISO-8859-1$en_US$primary"])
+                      HiveFilter(condition=[AND(=($11, _UTF-16LE'N'), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
+          HiveProject(channel=[_UTF-16LE'web channel'], id=[||(_UTF-16LE'web_site', $0)], sales=[$1], returns=[$2], profit=[$3])
+            HiveAggregate(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)], agg#2=[sum($3)])
+              HiveProject($f0=[$18], $f1=[$9], $f2=[CASE(IS NOT NULL($13), $13, 0)], $f3=[-($10, CASE(IS NOT NULL($14), $14, 0))])
+                HiveJoin(condition=[=($6, $17)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($7, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(p_promo_sk=[$0], p_channel_tv=[CAST(_UTF-16LE'N'):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" COLLATE "ISO-8859-1$en_US$primary"])
+                      HiveFilter(condition=[AND(=($11, _UTF-16LE'N'), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
+                    HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(i_item_sk=[$0], i_current_price=[$5])
+                        HiveFilter(condition=[AND(>($5, 50), IS NOT NULL($0))])
+                          HiveTableScan(table=[[default, item]], table:alias=[item])
+                      HiveJoin(condition=[=($0, $11)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[AND(=($1, $7), =($4, $8))], joinType=[left], algorithm=[none], cost=[not available])
+                          HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_web_site_sk=[$13], ws_promo_sk=[$16], ws_order_number=[$17], ws_ext_sales_price=[$23], ws_net_profit=[$33])
+                            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($13), IS NOT NULL($3), IS NOT NULL($16))])
+                              HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                          HiveProject(wr_item_sk=[$2], wr_order_number=[$13], wr_return_amt=[$15], wr_net_loss=[$23])
+                            HiveFilter(condition=[IS NOT NULL($2)])
+                              HiveTableScan(table=[[default, web_returns]], table:alias=[web_returns])
+                        HiveProject(d_date_sk=[$0], d_date=[$2])
+                          HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-08-04 00:00:00, 1998-09-03 00:00:00), IS NOT NULL($0))])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(web_site_sk=[$0], web_site_id=[$1])
+                    HiveFilter(condition=[IS NOT NULL($0)])
+                      HiveTableScan(table=[[default, web_site]], table:alias=[web_site])
+

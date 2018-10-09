@@ -805,6 +805,7 @@ explainOption
     : KW_EXTENDED
     | KW_FORMATTED
     | KW_DEPENDENCY
+    | KW_CBO KW_EXTENDED?
     | KW_LOGICAL
     | KW_AUTHORIZATION
     | KW_ANALYZE

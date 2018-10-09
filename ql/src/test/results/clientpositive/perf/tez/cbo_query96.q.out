@@ -1,0 +1,61 @@
+PREHOOK: query: explain cbo
+select  count(*) 
+from store_sales
+    ,household_demographics 
+    ,time_dim, store
+where ss_sold_time_sk = time_dim.t_time_sk   
+    and ss_hdemo_sk = household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and time_dim.t_hour = 8
+    and time_dim.t_minute >= 30
+    and household_demographics.hd_dep_count = 5
+    and store.s_store_name = 'ese'
+order by count(*)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@time_dim
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  count(*) 
+from store_sales
+    ,household_demographics 
+    ,time_dim, store
+where ss_sold_time_sk = time_dim.t_time_sk   
+    and ss_hdemo_sk = household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and time_dim.t_hour = 8
+    and time_dim.t_minute >= 30
+    and household_demographics.hd_dep_count = 5
+    and store.s_store_name = 'ese'
+order by count(*)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(_o__c0=[$0])
+  HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[100])
+    HiveProject(_o__c0=[$0], (tok_functionstar count)=[$0])
+      HiveAggregate(group=[{}], agg#0=[count()])
+        HiveJoin(condition=[=($2, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($1, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                HiveFilter(condition=[AND(IS NOT NULL($5), IS NOT NULL($1), IS NOT NULL($7))])
+                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+              HiveProject(t_time_sk=[$0], t_hour=[CAST(8):INTEGER], t_minute=[$4])
+                HiveFilter(condition=[AND(=($3, 8), >=($4, 30), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+            HiveProject(hd_demo_sk=[$0], hd_dep_count=[CAST(5):INTEGER])
+              HiveFilter(condition=[AND(=($3, 5), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+          HiveProject(s_store_sk=[$0], s_store_name=[CAST(_UTF-16LE'ese'):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" COLLATE "ISO-8859-1$en_US$primary"])
+            HiveFilter(condition=[AND(=($5, _UTF-16LE'ese'), IS NOT NULL($0))])
+              HiveTableScan(table=[[default, store]], table:alias=[store])
+

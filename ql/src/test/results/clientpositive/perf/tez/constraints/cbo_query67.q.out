@@ -1,0 +1,118 @@
+PREHOOK: query: explain cbo
+select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11
+       group by  rollup(i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id))dw1) dw2
+where rk <= 100
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  *
+from (select i_category
+            ,i_class
+            ,i_brand
+            ,i_product_name
+            ,d_year
+            ,d_qoy
+            ,d_moy
+            ,s_store_id
+            ,sumsales
+            ,rank() over (partition by i_category order by sumsales desc) rk
+      from (select i_category
+                  ,i_class
+                  ,i_brand
+                  ,i_product_name
+                  ,d_year
+                  ,d_qoy
+                  ,d_moy
+                  ,s_store_id
+                  ,sum(coalesce(ss_sales_price*ss_quantity,0)) sumsales
+            from store_sales
+                ,date_dim
+                ,store
+                ,item
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11
+       group by  rollup(i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id))dw1) dw2
+where rk <= 100
+order by i_category
+        ,i_class
+        ,i_brand
+        ,i_product_name
+        ,d_year
+        ,d_qoy
+        ,d_moy
+        ,s_store_id
+        ,sumsales
+        ,rk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
+  HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], i_product_name=[$3], d_year=[$4], d_qoy=[$5], d_moy=[$6], s_store_id=[$7], sumsales=[$8], rank_window_0=[$9])
+    HiveFilter(condition=[<=($9, 100)])
+      HiveProject(i_category=[$2], i_class=[$1], i_brand=[$0], i_product_name=[$3], d_year=[$4], d_qoy=[$6], d_moy=[$5], s_store_id=[$7], sumsales=[$8], rank_window_0=[rank() OVER (PARTITION BY $2 ORDER BY $8 DESC NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+        HiveProject(i_brand=[$0], i_class=[$1], i_category=[$2], i_product_name=[$3], d_year=[$4], d_moy=[$5], d_qoy=[$6], s_store_id=[$7], $f8=[$8])
+          HiveAggregate(group=[{1, 2, 3, 4, 6, 7, 8, 9}], groups=[[{1, 2, 3, 4, 6, 7, 8, 9}, {1, 2, 3, 4, 6, 7, 8}, {1, 2, 3, 4, 6, 8}, {1, 2, 3, 4, 6}, {1, 2, 3, 4}, {1, 2, 3}, {2, 3}, {3}, {}]], agg#0=[sum($10)])
+            HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(i_item_sk=[$0], i_brand=[$8], i_class=[$10], i_category=[$12], i_product_name=[$21])
+                HiveTableScan(table=[[default, item]], table:alias=[item])
+              HiveProject(ss_item_sk=[$1], d_year=[$5], d_moy=[$6], d_qoy=[$7], s_store_id=[$9], CASE=[$3])
+                HiveJoin(condition=[=($2, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_store_sk=[$7], CASE=[CASE(AND(IS NOT NULL($13), IS NOT NULL($10)), *($13, CAST($10):DECIMAL(10, 0)), 0)])
+                      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($7))])
+                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                    HiveProject(d_date_sk=[$0], d_year=[$6], d_moy=[$8], d_qoy=[$10])
+                      HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(s_store_sk=[$0], s_store_id=[$1])
+                    HiveTableScan(table=[[default, store]], table:alias=[store])
+

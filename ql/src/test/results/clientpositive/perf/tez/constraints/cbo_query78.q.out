@@ -1,0 +1,183 @@
+PREHOOK: query: explain cbo
+with ws as
+  (select d_year AS ws_sold_year, ws_item_sk,
+    ws_bill_customer_sk ws_customer_sk,
+    sum(ws_quantity) ws_qty,
+    sum(ws_wholesale_cost) ws_wc,
+    sum(ws_sales_price) ws_sp
+   from web_sales
+   left join web_returns on wr_order_number=ws_order_number and ws_item_sk=wr_item_sk
+   join date_dim on ws_sold_date_sk = d_date_sk
+   where wr_order_number is null
+   group by d_year, ws_item_sk, ws_bill_customer_sk
+   ),
+cs as
+  (select d_year AS cs_sold_year, cs_item_sk,
+    cs_bill_customer_sk cs_customer_sk,
+    sum(cs_quantity) cs_qty,
+    sum(cs_wholesale_cost) cs_wc,
+    sum(cs_sales_price) cs_sp
+   from catalog_sales
+   left join catalog_returns on cr_order_number=cs_order_number and cs_item_sk=cr_item_sk
+   join date_dim on cs_sold_date_sk = d_date_sk
+   where cr_order_number is null
+   group by d_year, cs_item_sk, cs_bill_customer_sk
+   ),
+ss as
+  (select d_year AS ss_sold_year, ss_item_sk,
+    ss_customer_sk,
+    sum(ss_quantity) ss_qty,
+    sum(ss_wholesale_cost) ss_wc,
+    sum(ss_sales_price) ss_sp
+   from store_sales
+   left join store_returns on sr_ticket_number=ss_ticket_number and ss_item_sk=sr_item_sk
+   join date_dim on ss_sold_date_sk = d_date_sk
+   where sr_ticket_number is null
+   group by d_year, ss_item_sk, ss_customer_sk
+   )
+ select 
+ss_sold_year, ss_item_sk, ss_customer_sk,
+round(ss_qty/(coalesce(ws_qty+cs_qty,1)),2) ratio,
+ss_qty store_qty, ss_wc store_wholesale_cost, ss_sp store_sales_price,
+coalesce(ws_qty,0)+coalesce(cs_qty,0) other_chan_qty,
+coalesce(ws_wc,0)+coalesce(cs_wc,0) other_chan_wholesale_cost,
+coalesce(ws_sp,0)+coalesce(cs_sp,0) other_chan_sales_price
+from ss
+left join ws on (ws_sold_year=ss_sold_year and ws_item_sk=ss_item_sk and ws_customer_sk=ss_customer_sk)
+left join cs on (cs_sold_year=ss_sold_year and cs_item_sk=cs_item_sk and cs_customer_sk=ss_customer_sk)
+where coalesce(ws_qty,0)>0 and coalesce(cs_qty, 0)>0 and ss_sold_year=2000
+order by 
+  ss_sold_year, ss_item_sk, ss_customer_sk,
+  ss_qty desc, ss_wc desc, ss_sp desc,
+  other_chan_qty,
+  other_chan_wholesale_cost,
+  other_chan_sales_price,
+  round(ss_qty/(coalesce(ws_qty+cs_qty,1)),2)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_returns
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with ws as
+  (select d_year AS ws_sold_year, ws_item_sk,
+    ws_bill_customer_sk ws_customer_sk,
+    sum(ws_quantity) ws_qty,
+    sum(ws_wholesale_cost) ws_wc,
+    sum(ws_sales_price) ws_sp
+   from web_sales
+   left join web_returns on wr_order_number=ws_order_number and ws_item_sk=wr_item_sk
+   join date_dim on ws_sold_date_sk = d_date_sk
+   where wr_order_number is null
+   group by d_year, ws_item_sk, ws_bill_customer_sk
+   ),
+cs as
+  (select d_year AS cs_sold_year, cs_item_sk,
+    cs_bill_customer_sk cs_customer_sk,
+    sum(cs_quantity) cs_qty,
+    sum(cs_wholesale_cost) cs_wc,
+    sum(cs_sales_price) cs_sp
+   from catalog_sales
+   left join catalog_returns on cr_order_number=cs_order_number and cs_item_sk=cr_item_sk
+   join date_dim on cs_sold_date_sk = d_date_sk
+   where cr_order_number is null
+   group by d_year, cs_item_sk, cs_bill_customer_sk
+   ),
+ss as
+  (select d_year AS ss_sold_year, ss_item_sk,
+    ss_customer_sk,
+    sum(ss_quantity) ss_qty,
+    sum(ss_wholesale_cost) ss_wc,
+    sum(ss_sales_price) ss_sp
+   from store_sales
+   left join store_returns on sr_ticket_number=ss_ticket_number and ss_item_sk=sr_item_sk
+   join date_dim on ss_sold_date_sk = d_date_sk
+   where sr_ticket_number is null
+   group by d_year, ss_item_sk, ss_customer_sk
+   )
+ select 
+ss_sold_year, ss_item_sk, ss_customer_sk,
+round(ss_qty/(coalesce(ws_qty+cs_qty,1)),2) ratio,
+ss_qty store_qty, ss_wc store_wholesale_cost, ss_sp store_sales_price,
+coalesce(ws_qty,0)+coalesce(cs_qty,0) other_chan_qty,
+coalesce(ws_wc,0)+coalesce(cs_wc,0) other_chan_wholesale_cost,
+coalesce(ws_sp,0)+coalesce(cs_sp,0) other_chan_sales_price
+from ss
+left join ws on (ws_sold_year=ss_sold_year and ws_item_sk=ss_item_sk and ws_customer_sk=ss_customer_sk)
+left join cs on (cs_sold_year=ss_sold_year and cs_item_sk=cs_item_sk and cs_customer_sk=ss_customer_sk)
+where coalesce(ws_qty,0)>0 and coalesce(cs_qty, 0)>0 and ss_sold_year=2000
+order by 
+  ss_sold_year, ss_item_sk, ss_customer_sk,
+  ss_qty desc, ss_wc desc, ss_sp desc,
+  other_chan_qty,
+  other_chan_wholesale_cost,
+  other_chan_sales_price,
+  round(ss_qty/(coalesce(ws_qty+cs_qty,1)),2)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(fetch=[100])
+  HiveProject(ss_sold_year=[CAST(2000):INTEGER], ss_item_sk=[$0], ss_customer_sk=[$1], ratio=[$2], store_qty=[$3], store_wholesale_cost=[$4], store_sales_price=[$5], other_chan_qty=[$6], other_chan_wholesale_cost=[$7], other_chan_sales_price=[$8])
+    HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$9], sort3=[$10], sort4=[$11], sort5=[$6], sort6=[$7], sort7=[$8], sort8=[$12], dir0=[ASC], dir1=[ASC], dir2=[DESC-nulls-last], dir3=[DESC-nulls-last], dir4=[DESC-nulls-last], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC])
+      HiveProject(ss_item_sk=[$0], ss_customer_sk=[$1], ratio=[round(/(CAST($2):DOUBLE, CAST(CASE(AND(IS NOT NULL($7), IS NOT NULL($11)), +($7, $11), 1)):DOUBLE), 2)], store_qty=[$2], store_wholesale_cost=[$3], store_sales_price=[$4], other_chan_qty=[+(CASE(IS NOT NULL($7), $7, 0), CASE(IS NOT NULL($11), $11, 0))], other_chan_wholesale_cost=[+(CASE(IS NOT NULL($8), $8, 0), CASE(IS NOT NULL($12), $12, 0))], other_chan_sales_price=[+(CASE(IS NOT NULL($9), $9, 0), CASE(IS NOT NULL($13), $13, 0))], ss_qty=[$2], ss_wc=[$3], ss_sp=[$4], (tok_function round (/ (tok_table_or_col ss_qty) (tok_function coalesce (+ (tok_table_or_col ws_qty) (tok_table_or_col cs_qty)) 1)) 2)=[round(/(CAST($2):DOUBLE, CAST(CASE(AND(IS NOT NULL($7), IS NOT NULL($11)), +($7, $11), 1)):DOUBLE), 2)])
+        HiveFilter(condition=[CASE(IS NOT NULL($11), >($11, 0), false)])
+          HiveJoin(condition=[=($10, $1)], joinType=[left], algorithm=[none], cost=[not available])
+            HiveProject(ss_item_sk=[$0], ss_customer_sk=[$1], $f2=[$2], $f3=[$3], $f4=[$4], ws_item_sk=[$5], ws_bill_customer_sk=[$6], $f20=[$7], $f30=[$8], $f40=[$9])
+              HiveFilter(condition=[CASE(IS NOT NULL($7), >($7, 0), false)])
+                HiveJoin(condition=[AND(=($5, $0), =($6, $1))], joinType=[left], algorithm=[none], cost=[not available])
+                  HiveProject(ss_item_sk=[$0], ss_customer_sk=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+                    HiveAggregate(group=[{2, 3}], agg#0=[sum($4)], agg#1=[sum($5)], agg#2=[sum($6)])
+                      HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveProject(d_date_sk=[$0])
+                          HiveFilter(condition=[=($6, 2000)])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_customer_sk=[$2], ss_quantity=[$4], ss_wholesale_cost=[$5], ss_sales_price=[$6])
+                          HiveFilter(condition=[IS NULL($8)])
+                            HiveJoin(condition=[AND(=($8, $3), =($1, $7))], joinType=[left], algorithm=[none], cost=[not available])
+                              HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_ticket_number=[$9], ss_quantity=[$10], ss_wholesale_cost=[$11], ss_sales_price=[$13])
+                                HiveFilter(condition=[IS NOT NULL($0)])
+                                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                              HiveProject(sr_item_sk=[$2], sr_ticket_number=[$9])
+                                HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                  HiveProject(ws_item_sk=[$0], ws_bill_customer_sk=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+                    HiveAggregate(group=[{2, 3}], agg#0=[sum($4)], agg#1=[sum($5)], agg#2=[sum($6)])
+                      HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveProject(d_date_sk=[$0])
+                          HiveFilter(condition=[=($6, 2000)])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$1], ws_bill_customer_sk=[$2], ws_quantity=[$4], ws_wholesale_cost=[$5], ws_sales_price=[$6])
+                          HiveFilter(condition=[IS NULL($8)])
+                            HiveJoin(condition=[AND(=($8, $3), =($1, $7))], joinType=[left], algorithm=[none], cost=[not available])
+                              HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_bill_customer_sk=[$4], ws_order_number=[$17], ws_quantity=[$18], ws_wholesale_cost=[$19], ws_sales_price=[$21])
+                                HiveFilter(condition=[IS NOT NULL($0)])
+                                  HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                              HiveProject(wr_item_sk=[$2], wr_order_number=[$13])
+                                HiveTableScan(table=[[default, web_returns]], table:alias=[web_returns])
+            HiveProject($f2=[$0], $f3=[$2], $f4=[$3], $f5=[$4])
+              HiveAggregate(group=[{2, 3}], agg#0=[sum($4)], agg#1=[sum($5)], agg#2=[sum($6)])
+                HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(d_date_sk=[$0])
+                    HiveFilter(condition=[=($6, 2000)])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], cs_item_sk=[$2], cs_quantity=[$4], cs_wholesale_cost=[$5], cs_sales_price=[$6])
+                    HiveFilter(condition=[IS NULL($8)])
+                      HiveJoin(condition=[AND(=($8, $3), =($2, $7))], joinType=[left], algorithm=[none], cost=[not available])
+                        HiveProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_item_sk=[$15], cs_order_number=[$17], cs_quantity=[$18], cs_wholesale_cost=[$19], cs_sales_price=[$21])
+                          HiveFilter(condition=[IS NOT NULL($0)])
+                            HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                        HiveProject(cr_item_sk=[$2], cr_order_number=[$16])
+                          HiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+

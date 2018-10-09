@@ -1,0 +1,75 @@
+PREHOOK: query: explain cbo
+select  i_item_id, 
+        avg(cs_quantity) agg1,
+        avg(cs_list_price) agg2,
+        avg(cs_coupon_amt) agg3,
+        avg(cs_sales_price) agg4 
+ from catalog_sales, customer_demographics, date_dim, item, promotion
+ where cs_sold_date_sk = d_date_sk and
+       cs_item_sk = i_item_sk and
+       cs_bill_cdemo_sk = cd_demo_sk and
+       cs_promo_sk = p_promo_sk and
+       cd_gender = 'F' and 
+       cd_marital_status = 'W' and
+       cd_education_status = 'Primary' and
+       (p_channel_email = 'N' or p_channel_event = 'N') and
+       d_year = 1998 
+ group by i_item_id
+ order by i_item_id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@promotion
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  i_item_id, 
+        avg(cs_quantity) agg1,
+        avg(cs_list_price) agg2,
+        avg(cs_coupon_amt) agg3,
+        avg(cs_sales_price) agg4 
+ from catalog_sales, customer_demographics, date_dim, item, promotion
+ where cs_sold_date_sk = d_date_sk and
+       cs_item_sk = i_item_sk and
+       cs_bill_cdemo_sk = cd_demo_sk and
+       cs_promo_sk = p_promo_sk and
+       cd_gender = 'F' and 
+       cd_marital_status = 'W' and
+       cd_education_status = 'Primary' and
+       (p_channel_email = 'N' or p_channel_event = 'N') and
+       d_year = 1998 
+ group by i_item_id
+ order by i_item_id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@promotion
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+  HiveProject($f0=[$0], $f1=[/(CAST($1):DOUBLE, $2)], $f2=[/($3, $4)], $f3=[/($5, $6)], $f4=[/($7, $8)])
+    HiveAggregate(group=[{1}], agg#0=[sum($6)], agg#1=[count($6)], agg#2=[sum($7)], agg#3=[count($7)], agg#4=[sum($9)], agg#5=[count($9)], agg#6=[sum($8)], agg#7=[count($8)])
+      HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(i_item_sk=[$0], i_item_id=[$1])
+          HiveTableScan(table=[[default, item]], table:alias=[item])
+        HiveJoin(condition=[=($3, $10)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($0, $9)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[=($1, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(cs_sold_date_sk=[$0], cs_bill_cdemo_sk=[$4], cs_item_sk=[$15], cs_promo_sk=[$16], cs_quantity=[$18], cs_list_price=[$20], cs_sales_price=[$21], cs_coupon_amt=[$27])
+                HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($0), IS NOT NULL($16))])
+                  HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+              HiveProject(cd_demo_sk=[$0])
+                HiveFilter(condition=[AND(=($1, _UTF-16LE'F'), =($2, _UTF-16LE'W'), =($3, _UTF-16LE'Primary'))])
+                  HiveTableScan(table=[[default, customer_demographics]], table:alias=[customer_demographics])
+            HiveProject(d_date_sk=[$0])
+              HiveFilter(condition=[=($6, 1998)])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(p_promo_sk=[$0])
+            HiveFilter(condition=[OR(=($9, _UTF-16LE'N'), =($14, _UTF-16LE'N'))])
+              HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
+

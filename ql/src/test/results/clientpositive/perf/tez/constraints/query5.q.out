@@ -1,0 +1,531 @@
+PREHOOK: query: explain
+with ssr as
+ (select s_store_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  ss_store_sk as store_sk,
+            ss_sold_date_sk  as date_sk,
+            ss_ext_sales_price as sales_price,
+            ss_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from store_sales
+    union all
+    select sr_store_sk as store_sk,
+           sr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           sr_return_amt as return_amt,
+           sr_net_loss as net_loss
+    from store_returns
+   ) salesreturns,
+     date_dim,
+     store
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date) 
+                  and (cast('1998-08-04' as date) +  14 days)
+       and store_sk = s_store_sk
+ group by s_store_id)
+ ,
+ csr as
+ (select cp_catalog_page_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  cs_catalog_page_sk as page_sk,
+            cs_sold_date_sk  as date_sk,
+            cs_ext_sales_price as sales_price,
+            cs_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from catalog_sales
+    union all
+    select cr_catalog_page_sk as page_sk,
+           cr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           cr_return_amount as return_amt,
+           cr_net_loss as net_loss
+    from catalog_returns
+   ) salesreturns,
+     date_dim,
+     catalog_page
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  14 days)
+       and page_sk = cp_catalog_page_sk
+ group by cp_catalog_page_id)
+ ,
+ wsr as
+ (select web_site_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  ws_web_site_sk as wsr_web_site_sk,
+            ws_sold_date_sk  as date_sk,
+            ws_ext_sales_price as sales_price,
+            ws_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from web_sales
+    union all
+    select ws_web_site_sk as wsr_web_site_sk,
+           wr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           wr_return_amt as return_amt,
+           wr_net_loss as net_loss
+    from web_returns left outer join web_sales on
+         ( wr_item_sk = ws_item_sk
+           and wr_order_number = ws_order_number)
+   ) salesreturns,
+     date_dim,
+     web_site
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  14 days)
+       and wsr_web_site_sk = web_site_sk
+ group by web_site_id)
+  select  channel
+        , id
+        , sum(sales) as sales
+        , sum(returns) as returns
+        , sum(profit) as profit
+ from 
+ (select 'store channel' as channel
+        , 'store' || s_store_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from   ssr
+ union all
+ select 'catalog channel' as channel
+        , 'catalog_page' || cp_catalog_page_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from  csr
+ union all
+ select 'web channel' as channel
+        , 'web_site' || web_site_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from   wsr
+ ) x
+ group by rollup (channel, id)
+ order by channel
+         ,id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_page
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_returns
+PREHOOK: Input: default@web_sales
+PREHOOK: Input: default@web_site
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+with ssr as
+ (select s_store_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  ss_store_sk as store_sk,
+            ss_sold_date_sk  as date_sk,
+            ss_ext_sales_price as sales_price,
+            ss_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from store_sales
+    union all
+    select sr_store_sk as store_sk,
+           sr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           sr_return_amt as return_amt,
+           sr_net_loss as net_loss
+    from store_returns
+   ) salesreturns,
+     date_dim,
+     store
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date) 
+                  and (cast('1998-08-04' as date) +  14 days)
+       and store_sk = s_store_sk
+ group by s_store_id)
+ ,
+ csr as
+ (select cp_catalog_page_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  cs_catalog_page_sk as page_sk,
+            cs_sold_date_sk  as date_sk,
+            cs_ext_sales_price as sales_price,
+            cs_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from catalog_sales
+    union all
+    select cr_catalog_page_sk as page_sk,
+           cr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           cr_return_amount as return_amt,
+           cr_net_loss as net_loss
+    from catalog_returns
+   ) salesreturns,
+     date_dim,
+     catalog_page
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  14 days)
+       and page_sk = cp_catalog_page_sk
+ group by cp_catalog_page_id)
+ ,
+ wsr as
+ (select web_site_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  ws_web_site_sk as wsr_web_site_sk,
+            ws_sold_date_sk  as date_sk,
+            ws_ext_sales_price as sales_price,
+            ws_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from web_sales
+    union all
+    select ws_web_site_sk as wsr_web_site_sk,
+           wr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           wr_return_amt as return_amt,
+           wr_net_loss as net_loss
+    from web_returns left outer join web_sales on
+         ( wr_item_sk = ws_item_sk
+           and wr_order_number = ws_order_number)
+   ) salesreturns,
+     date_dim,
+     web_site
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  14 days)
+       and wsr_web_site_sk = web_site_sk
+ group by web_site_id)
+  select  channel
+        , id
+        , sum(sales) as sales
+        , sum(returns) as returns
+        , sum(profit) as profit
+ from 
+ (select 'store channel' as channel
+        , 'store' || s_store_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from   ssr
+ union all
+ select 'catalog channel' as channel
+        , 'catalog_page' || cp_catalog_page_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from  csr
+ union all
+ select 'web channel' as channel
+        , 'web_site' || web_site_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from   wsr
+ ) x
+ group by rollup (channel, id)
+ order by channel
+         ,id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_page
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Input: default@web_site
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Reducer 11 (BROADCAST_EDGE), Union 2 (CONTAINS)
+Map 21 <- Reducer 15 (BROADCAST_EDGE), Union 22 (CONTAINS)
+Map 23 <- Union 22 (CONTAINS)
+Map 25 <- Reducer 19 (BROADCAST_EDGE), Union 26 (CONTAINS)
+Map 9 <- Union 2 (CONTAINS)
+Reducer 11 <- Map 10 (CUSTOM_SIMPLE_EDGE)
+Reducer 12 <- Map 10 (SIMPLE_EDGE), Union 22 (SIMPLE_EDGE)
+Reducer 13 <- Map 24 (SIMPLE_EDGE), Reducer 12 (SIMPLE_EDGE)
+Reducer 14 <- Reducer 13 (SIMPLE_EDGE), Union 6 (CONTAINS)
+Reducer 15 <- Map 10 (CUSTOM_SIMPLE_EDGE)
+Reducer 16 <- Map 10 (SIMPLE_EDGE), Union 26 (SIMPLE_EDGE)
+Reducer 17 <- Map 30 (SIMPLE_EDGE), Reducer 16 (SIMPLE_EDGE)
+Reducer 18 <- Reducer 17 (SIMPLE_EDGE), Union 6 (CONTAINS)
+Reducer 19 <- Map 10 (CUSTOM_SIMPLE_EDGE)
+Reducer 28 <- Map 27 (SIMPLE_EDGE), Map 29 (SIMPLE_EDGE), Union 26 (CONTAINS)
+Reducer 3 <- Map 10 (SIMPLE_EDGE), Union 2 (SIMPLE_EDGE)
+Reducer 4 <- Map 20 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (SIMPLE_EDGE), Union 6 (CONTAINS)
+Reducer 7 <- Union 6 (SIMPLE_EDGE)
+Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:100
+    Stage-1
+      Reducer 8 vectorized
+      File Output Operator [FS_300]
+        Limit [LIM_299] (rows=100 width=619)
+          Number of rows:100
+          Select Operator [SEL_298] (rows=38846 width=619)
+            Output:["_col0","_col1","_col2","_col3","_col4"]
+          <-Reducer 7 [SIMPLE_EDGE] vectorized
+            SHUFFLE [RS_297]
+              Select Operator [SEL_296] (rows=38846 width=619)
+                Output:["_col0","_col1","_col2","_col3","_col4"]
+                Group By Operator [GBY_295] (rows=38846 width=627)
+                  Output:["_col0","_col1","_col3","_col4","_col5"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"],keys:KEY._col0, KEY._col1, KEY._col2
+                <-Union 6 [SIMPLE_EDGE]
+                  <-Reducer 14 [CONTAINS] vectorized
+                    Reduce Output Operator [RS_310]
+                      PartitionCols:_col0, _col1, _col2
+                      Group By Operator [GBY_309] (rows=59581 width=627)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)"],keys:_col0, _col1, 0L
+                        Top N Key Operator [TNK_308] (rows=39721 width=618)
+                          keys:_col0, _col1, 0L,sort order:+++,top n:100
+                          Select Operator [SEL_307] (rows=38846 width=619)
+                            Output:["_col0","_col1","_col2","_col3","_col4"]
+                            Group By Operator [GBY_306] (rows=38846 width=548)
+                              Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)"],keys:KEY._col0
+                            <-Reducer 13 [SIMPLE_EDGE]
+                              SHUFFLE [RS_45]
+                                PartitionCols:_col0
+                                Group By Operator [GBY_44] (rows=46000 width=548)
+                                  Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(_col2)","sum(_col4)","sum(_col3)","sum(_col5)"],keys:_col8
+                                  Merge Join Operator [MERGEJOIN_219] (rows=34813117 width=535)
+                                    Conds:RS_40._col0=RS_305._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col8"]
+                                  <-Map 24 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_305]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_304] (rows=46000 width=104)
+                                        Output:["_col0","_col1"]
+                                        TableScan [TS_35] (rows=46000 width=104)
+                                          default@catalog_page,catalog_page,Tbl:COMPLETE,Col:COMPLETE,Output:["cp_catalog_page_sk","cp_catalog_page_id"]
+                                  <-Reducer 12 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_40]
+                                      PartitionCols:_col0
+                                      Merge Join Operator [MERGEJOIN_218] (rows=34813117 width=438)
+                                        Conds:Union 22._col1=RS_273._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5"]
+                                      <-Map 10 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_273]
+                                          PartitionCols:_col0
+                                          Select Operator [SEL_270] (rows=8116 width=4)
+                                            Output:["_col0"]
+                                            Filter Operator [FIL_269] (rows=8116 width=98)
+                                              predicate:CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00'
+                                              TableScan [TS_8] (rows=73049 width=98)
+                                                default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date"]
+                                      <-Union 22 [SIMPLE_EDGE]
+                                        <-Map 21 [CONTAINS] vectorized
+                                          Reduce Output Operator [RS_322]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_321] (rows=285117694 width=455)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_320] (rows=285117694 width=231)
+                                                predicate:((cs_sold_date_sk BETWEEN DynamicValue(RS_38_date_dim_d_date_sk_min) AND DynamicValue(RS_38_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_38_date_dim_d_date_sk_bloom_filter))) and cs_catalog_page_sk is not null and cs_sold_date_sk is not null)
+                                                TableScan [TS_250] (rows=287989836 width=231)
+                                                  Output:["cs_sold_date_sk","cs_catalog_page_sk","cs_ext_sales_price","cs_net_profit"]
+                                                <-Reducer 15 [BROADCAST_EDGE] vectorized
+                                                  BROADCAST [RS_319]
+                                                    Group By Operator [GBY_318] (rows=1 width=12)
+                                                      Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                    <-Map 10 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                      SHUFFLE [RS_281]
+                                                        Group By Operator [GBY_278] (rows=1 width=12)
+                                                          Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                          Select Operator [SEL_274] (rows=8116 width=4)
+                                                            Output:["_col0"]
+                                                             Please refer to the previous Select Operator [SEL_270]
+                                        <-Map 23 [CONTAINS] vectorized
+                                          Reduce Output Operator [RS_325]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_324] (rows=28221805 width=451)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_323] (rows=28221805 width=227)
+                                                predicate:(cr_catalog_page_sk is not null and cr_returned_date_sk is not null)
+                                                TableScan [TS_255] (rows=28798881 width=227)
+                                                  Output:["cr_returned_date_sk","cr_catalog_page_sk","cr_return_amount","cr_net_loss"]
+                  <-Reducer 18 [CONTAINS] vectorized
+                    Reduce Output Operator [RS_317]
+                      PartitionCols:_col0, _col1, _col2
+                      Group By Operator [GBY_316] (rows=59581 width=627)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)"],keys:_col0, _col1, 0L
+                        Top N Key Operator [TNK_315] (rows=39721 width=618)
+                          keys:_col0, _col1, 0L,sort order:+++,top n:100
+                          Select Operator [SEL_314] (rows=53 width=615)
+                            Output:["_col0","_col1","_col2","_col3","_col4"]
+                            Group By Operator [GBY_313] (rows=53 width=548)
+                              Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)"],keys:KEY._col0
+                            <-Reducer 17 [SIMPLE_EDGE]
+                              SHUFFLE [RS_77]
+                                PartitionCols:_col0
+                                Group By Operator [GBY_76] (rows=84 width=548)
+                                  Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(_col2)","sum(_col4)","sum(_col3)","sum(_col5)"],keys:_col8
+                                  Merge Join Operator [MERGEJOIN_221] (rows=30966059 width=543)
+                                    Conds:RS_72._col0=RS_312._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col8"]
+                                  <-Map 30 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_312]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_311] (rows=84 width=104)
+                                        Output:["_col0","_col1"]
+                                        TableScan [TS_67] (rows=84 width=104)
+                                          default@web_site,web_site,Tbl:COMPLETE,Col:COMPLETE,Output:["web_site_sk","web_site_id"]
+                                  <-Reducer 16 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_72]
+                                      PartitionCols:_col0
+                                      Merge Join Operator [MERGEJOIN_220] (rows=30966059 width=447)
+                                        Conds:Union 26._col1=RS_275._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5"]
+                                      <-Map 10 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_275]
+                                          PartitionCols:_col0
+                                           Please refer to the previous Select Operator [SEL_270]
+                                      <-Union 26 [SIMPLE_EDGE]
+                                        <-Map 25 [CONTAINS] vectorized
+                                          Reduce Output Operator [RS_330]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_329] (rows=143930874 width=455)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_328] (rows=143930874 width=231)
+                                                predicate:((ws_sold_date_sk BETWEEN DynamicValue(RS_70_date_dim_d_date_sk_min) AND DynamicValue(RS_70_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_70_date_dim_d_date_sk_bloom_filter))) and ws_sold_date_sk is not null and ws_web_site_sk is not null)
+                                                TableScan [TS_260] (rows=144002668 width=231)
+                                                  Output:["ws_sold_date_sk","ws_web_site_sk","ws_ext_sales_price","ws_net_profit"]
+                                                <-Reducer 19 [BROADCAST_EDGE] vectorized
+                                                  BROADCAST [RS_327]
+                                                    Group By Operator [GBY_326] (rows=1 width=12)
+                                                      Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                    <-Map 10 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                      SHUFFLE [RS_282]
+                                                        Group By Operator [GBY_279] (rows=1 width=12)
+                                                          Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                          Select Operator [SEL_276] (rows=8116 width=4)
+                                                            Output:["_col0"]
+                                                             Please refer to the previous Select Operator [SEL_270]
+                                        <-Reducer 28 [CONTAINS]
+                                          Reduce Output Operator [RS_268]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_266] (rows=134782734 width=454)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Merge Join Operator [MERGEJOIN_265] (rows=134782734 width=230)
+                                                Conds:RS_333._col0, _col2=RS_336._col1, _col2(Inner),Output:["_col1","_col3","_col6","_col7"]
+                                              <-Map 27 [SIMPLE_EDGE] vectorized
+                                                SHUFFLE [RS_333]
+                                                  PartitionCols:_col0, _col2
+                                                  Select Operator [SEL_332] (rows=143966669 width=11)
+                                                    Output:["_col0","_col1","_col2"]
+                                                    Filter Operator [FIL_331] (rows=143966669 width=11)
+                                                      predicate:ws_web_site_sk is not null
+                                                      TableScan [TS_52] (rows=144002668 width=11)
+                                                        default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_item_sk","ws_web_site_sk","ws_order_number"]
+                                              <-Map 29 [SIMPLE_EDGE] vectorized
+                                                SHUFFLE [RS_336]
+                                                  PartitionCols:_col1, _col2
+                                                  Select Operator [SEL_335] (rows=13749816 width=225)
+                                                    Output:["_col0","_col1","_col2","_col3","_col4"]
+                                                    Filter Operator [FIL_334] (rows=13749816 width=225)
+                                                      predicate:wr_returned_date_sk is not null
+                                                      TableScan [TS_55] (rows=14398467 width=225)
+                                                        default@web_returns,web_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["wr_returned_date_sk","wr_item_sk","wr_order_number","wr_return_amt","wr_net_loss"]
+                  <-Reducer 5 [CONTAINS] vectorized
+                    Reduce Output Operator [RS_294]
+                      PartitionCols:_col0, _col1, _col2
+                      Group By Operator [GBY_293] (rows=59581 width=627)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)"],keys:_col0, _col1, 0L
+                        Top N Key Operator [TNK_292] (rows=39721 width=618)
+                          keys:_col0, _col1, 0L,sort order:+++,top n:100
+                          Select Operator [SEL_291] (rows=822 width=617)
+                            Output:["_col0","_col1","_col2","_col3","_col4"]
+                            Group By Operator [GBY_290] (rows=822 width=548)
+                              Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)"],keys:KEY._col0
+                            <-Reducer 4 [SIMPLE_EDGE]
+                              SHUFFLE [RS_21]
+                                PartitionCols:_col0
+                                Group By Operator [GBY_20] (rows=1704 width=548)
+                                  Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(_col2)","sum(_col4)","sum(_col3)","sum(_col5)"],keys:_col8
+                                  Merge Join Operator [MERGEJOIN_217] (rows=64325014 width=376)
+                                    Conds:RS_16._col0=RS_289._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col8"]
+                                  <-Map 20 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_289]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_288] (rows=1704 width=104)
+                                        Output:["_col0","_col1"]
+                                        TableScan [TS_11] (rows=1704 width=104)
+                                          default@store,store,Tbl:COMPLETE,Col:COMPLETE,Output:["s_store_sk","s_store_id"]
+                                  <-Reducer 3 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_16]
+                                      PartitionCols:_col0
+                                      Merge Join Operator [MERGEJOIN_216] (rows=64325014 width=277)
+                                        Conds:Union 2._col1=RS_271._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5"]
+                                      <-Map 10 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_271]
+                                          PartitionCols:_col0
+                                           Please refer to the previous Select Operator [SEL_270]
+                                      <-Union 2 [SIMPLE_EDGE]
+                                        <-Map 1 [CONTAINS] vectorized
+                                          Reduce Output Operator [RS_287]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_286] (rows=525329897 width=445)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_285] (rows=525329897 width=221)
+                                                predicate:((ss_sold_date_sk BETWEEN DynamicValue(RS_14_date_dim_d_date_sk_min) AND DynamicValue(RS_14_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_14_date_dim_d_date_sk_bloom_filter))) and ss_sold_date_sk is not null and ss_store_sk is not null)
+                                                TableScan [TS_222] (rows=575995635 width=221)
+                                                  Output:["ss_sold_date_sk","ss_store_sk","ss_ext_sales_price","ss_net_profit"]
+                                                <-Reducer 11 [BROADCAST_EDGE] vectorized
+                                                  BROADCAST [RS_284]
+                                                    Group By Operator [GBY_283] (rows=1 width=12)
+                                                      Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                    <-Map 10 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                      SHUFFLE [RS_280]
+                                                        Group By Operator [GBY_277] (rows=1 width=12)
+                                                          Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                          Select Operator [SEL_272] (rows=8116 width=4)
+                                                            Output:["_col0"]
+                                                             Please refer to the previous Select Operator [SEL_270]
+                                        <-Map 9 [CONTAINS] vectorized
+                                          Reduce Output Operator [RS_303]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_302] (rows=53634860 width=447)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_301] (rows=53634860 width=223)
+                                                predicate:(sr_returned_date_sk is not null and sr_store_sk is not null)
+                                                TableScan [TS_233] (rows=57591150 width=223)
+                                                  Output:["sr_returned_date_sk","sr_store_sk","sr_return_amt","sr_net_loss"]
+

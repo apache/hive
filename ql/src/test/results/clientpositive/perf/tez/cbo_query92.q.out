@@ -1,0 +1,94 @@
+PREHOOK: query: explain cbo
+select  
+   sum(ws_ext_discount_amt)  as `Excess Discount Amount` 
+from 
+    web_sales 
+   ,item 
+   ,date_dim
+where
+i_manufact_id = 269
+and i_item_sk = ws_item_sk 
+and d_date between '1998-03-18' and 
+        (cast('1998-03-18' as date) + 90 days)
+and d_date_sk = ws_sold_date_sk 
+and ws_ext_discount_amt  
+     > ( 
+         SELECT 
+            1.3 * avg(ws_ext_discount_amt) 
+         FROM 
+            web_sales 
+           ,date_dim
+         WHERE 
+              ws_item_sk = i_item_sk 
+          and d_date between '1998-03-18' and
+                             (cast('1998-03-18' as date) + 90 days)
+          and d_date_sk = ws_sold_date_sk 
+      ) 
+order by sum(ws_ext_discount_amt)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  
+   sum(ws_ext_discount_amt)  as `Excess Discount Amount` 
+from 
+    web_sales 
+   ,item 
+   ,date_dim
+where
+i_manufact_id = 269
+and i_item_sk = ws_item_sk 
+and d_date between '1998-03-18' and 
+        (cast('1998-03-18' as date) + 90 days)
+and d_date_sk = ws_sold_date_sk 
+and ws_ext_discount_amt  
+     > ( 
+         SELECT 
+            1.3 * avg(ws_ext_discount_amt) 
+         FROM 
+            web_sales 
+           ,date_dim
+         WHERE 
+              ws_item_sk = i_item_sk 
+          and d_date between '1998-03-18' and
+                             (cast('1998-03-18' as date) + 90 days)
+          and d_date_sk = ws_sold_date_sk 
+      ) 
+order by sum(ws_ext_discount_amt)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(excess discount amount=[$0])
+  HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[100])
+    HiveProject(excess discount amount=[$0], (tok_function sum (tok_table_or_col ws_ext_discount_amt))=[$0])
+      HiveAggregate(group=[{}], agg#0=[sum($2)])
+        HiveJoin(condition=[AND(>($2, CAST(*(1.3, $6)):DECIMAL(14, 7)), =($7, $1))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_ext_discount_amt=[$22])
+              HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+            HiveProject(d_date_sk=[$0], d_date=[$2])
+              HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-03-18 00:00:00, 1998-06-16 00:00:00), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(ws_item_sk=[$0], $f1=[$1], i_item_sk=[$2], i_manufact_id=[$3])
+            HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(ws_item_sk=[$0], $f1=[/($1, $2)])
+                HiveAggregate(group=[{1}], agg#0=[sum($2)], agg#1=[count($2)])
+                  HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_ext_discount_amt=[$22])
+                      HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                    HiveProject(d_date_sk=[$0], d_date=[$2])
+                      HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-03-18 00:00:00, 1998-06-16 00:00:00), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              HiveProject(i_item_sk=[$0], i_manufact_id=[CAST(269):INTEGER])
+                HiveFilter(condition=[AND(=($13, 269), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, item]], table:alias=[item])
+
