@@ -1,0 +1,98 @@
+PREHOOK: query: explain
+select  i_brand_id brand_id, i_brand brand,
+ 	sum(ss_ext_sales_price) ext_price
+ from date_dim, store_sales, item
+ where d_date_sk = ss_sold_date_sk
+ 	and ss_item_sk = i_item_sk
+ 	and i_manager_id=36
+ 	and d_moy=12
+ 	and d_year=2001
+ group by i_brand, i_brand_id
+ order by ext_price desc, i_brand_id
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select  i_brand_id brand_id, i_brand brand,
+ 	sum(ss_ext_sales_price) ext_price
+ from date_dim, store_sales, item
+ where d_date_sk = ss_sold_date_sk
+ 	and ss_item_sk = i_item_sk
+ 	and i_manager_id=36
+ 	and d_moy=12
+ 	and d_year=2001
+ group by i_brand, i_brand_id
+ order by ext_price desc, i_brand_id
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 5 vectorized
+      File Output Operator [FS_49]
+        Limit [LIM_48] (rows=100 width=220)
+          Number of rows:100
+          Select Operator [SEL_47] (rows=7333 width=220)
+            Output:["_col0","_col1","_col2"]
+          <-Reducer 4 [SIMPLE_EDGE] vectorized
+            SHUFFLE [RS_46]
+              Select Operator [SEL_45] (rows=7333 width=220)
+                Output:["_col1","_col2","_col3"]
+                Group By Operator [GBY_44] (rows=7333 width=216)
+                  Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1
+                <-Reducer 3 [SIMPLE_EDGE]
+                  SHUFFLE [RS_17]
+                    PartitionCols:_col0, _col1
+                    Group By Operator [GBY_16] (rows=7333 width=216)
+                      Output:["_col0","_col1","_col2"],aggregations:["sum(_col2)"],keys:_col5, _col6
+                      Merge Join Operator [MERGEJOIN_34] (rows=2301098 width=104)
+                        Conds:RS_12._col1=RS_43._col0(Inner),Output:["_col2","_col5","_col6"]
+                      <-Map 7 [SIMPLE_EDGE] vectorized
+                        SHUFFLE [RS_43]
+                          PartitionCols:_col0
+                          Select Operator [SEL_42] (rows=7333 width=107)
+                            Output:["_col0","_col1","_col2"]
+                            Filter Operator [FIL_41] (rows=7333 width=111)
+                              predicate:(i_manager_id = 36)
+                              TableScan [TS_6] (rows=462000 width=111)
+                                default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_brand_id","i_brand","i_manager_id"]
+                      <-Reducer 2 [SIMPLE_EDGE]
+                        SHUFFLE [RS_12]
+                          PartitionCols:_col1
+                          Merge Join Operator [MERGEJOIN_33] (rows=15062131 width=4)
+                            Conds:RS_37._col0=RS_40._col0(Inner),Output:["_col1","_col2"]
+                          <-Map 1 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_37]
+                              PartitionCols:_col0
+                              Select Operator [SEL_36] (rows=550076554 width=114)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_35] (rows=550076554 width=114)
+                                  predicate:ss_sold_date_sk is not null
+                                  TableScan [TS_0] (rows=575995635 width=114)
+                                    default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_item_sk","ss_ext_sales_price"]
+                          <-Map 6 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_40]
+                              PartitionCols:_col0
+                              Select Operator [SEL_39] (rows=50 width=4)
+                                Output:["_col0"]
+                                Filter Operator [FIL_38] (rows=50 width=12)
+                                  predicate:((d_moy = 12) and (d_year = 2001))
+                                  TableScan [TS_3] (rows=73049 width=12)
+                                    default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year","d_moy"]
+

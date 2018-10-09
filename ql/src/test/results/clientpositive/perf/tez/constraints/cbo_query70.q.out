@@ -1,0 +1,119 @@
+PREHOOK: query: explain cbo
+select  
+    sum(ss_net_profit) as total_sum
+   ,s_state
+   ,s_county
+   ,grouping(s_state)+grouping(s_county) as lochierarchy
+   ,rank() over (
+ 	partition by grouping(s_state)+grouping(s_county),
+ 	case when grouping(s_county) = 0 then s_state end 
+ 	order by sum(ss_net_profit) desc) as rank_within_parent
+ from
+    store_sales
+   ,date_dim       d1
+   ,store
+ where
+    d1.d_month_seq between 1212 and 1212+11
+ and d1.d_date_sk = ss_sold_date_sk
+ and s_store_sk  = ss_store_sk
+ and s_state in
+             ( select s_state
+               from  (select s_state as s_state,
+ 			    rank() over ( partition by s_state order by sum(ss_net_profit) desc) as ranking
+                      from   store_sales, store, date_dim
+                      where  d_month_seq between 1212 and 1212+11
+ 			    and d_date_sk = ss_sold_date_sk
+ 			    and s_store_sk  = ss_store_sk
+                      group by s_state
+                     ) tmp1 
+               where ranking <= 5
+             )
+ group by rollup(s_state,s_county)
+ order by
+   lochierarchy desc
+  ,case when lochierarchy = 0 then s_state end
+  ,rank_within_parent
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  
+    sum(ss_net_profit) as total_sum
+   ,s_state
+   ,s_county
+   ,grouping(s_state)+grouping(s_county) as lochierarchy
+   ,rank() over (
+ 	partition by grouping(s_state)+grouping(s_county),
+ 	case when grouping(s_county) = 0 then s_state end 
+ 	order by sum(ss_net_profit) desc) as rank_within_parent
+ from
+    store_sales
+   ,date_dim       d1
+   ,store
+ where
+    d1.d_month_seq between 1212 and 1212+11
+ and d1.d_date_sk = ss_sold_date_sk
+ and s_store_sk  = ss_store_sk
+ and s_state in
+             ( select s_state
+               from  (select s_state as s_state,
+ 			    rank() over ( partition by s_state order by sum(ss_net_profit) desc) as ranking
+                      from   store_sales, store, date_dim
+                      where  d_month_seq between 1212 and 1212+11
+ 			    and d_date_sk = ss_sold_date_sk
+ 			    and s_store_sk  = ss_store_sk
+                      group by s_state
+                     ) tmp1 
+               where ranking <= 5
+             )
+ group by rollup(s_state,s_county)
+ order by
+   lochierarchy desc
+  ,case when lochierarchy = 0 then s_state end
+  ,rank_within_parent
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(total_sum=[$0], s_state=[$1], s_county=[$2], lochierarchy=[$3], rank_within_parent=[$4])
+  HiveSortLimit(sort0=[$3], sort1=[$5], sort2=[$4], dir0=[DESC-nulls-last], dir1=[ASC], dir2=[ASC], fetch=[100])
+    HiveProject(total_sum=[$2], s_state=[$0], s_county=[$1], lochierarchy=[+(grouping($3, 1), grouping($3, 0))], rank_within_parent=[rank() OVER (PARTITION BY +(grouping($3, 1), grouping($3, 0)), CASE(=(grouping($3, 0), 0), $0, null) ORDER BY $2 DESC NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col s_state))=[CASE(=(+(grouping($3, 1), grouping($3, 0)), 0), $0, null)])
+      HiveProject($f0=[$0], $f1=[$1], $f2=[$2], GROUPING__ID=[$3])
+        HiveAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], GROUPING__ID=[GROUPING__ID()])
+          HiveProject($f0=[$7], $f1=[$6], $f2=[$2])
+            HiveJoin(condition=[=($7, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[=($5, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(ss_sold_date_sk=[$0], ss_store_sk=[$7], ss_net_profit=[$22])
+                    HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($7))])
+                      HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                  HiveProject(d_date_sk=[$0], d_month_seq=[$3])
+                    HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+                HiveProject(s_store_sk=[$0], s_county=[$23], s_state=[$24])
+                  HiveFilter(condition=[IS NOT NULL($24)])
+                    HiveTableScan(table=[[default, store]], table:alias=[store])
+              HiveProject(s_state=[$0])
+                HiveFilter(condition=[<=($1, 5)])
+                  HiveProject((tok_table_or_col s_state)=[$0], rank_window_0=[$1])
+                    HiveProject((tok_table_or_col s_state)=[$0], rank_window_0=[rank() OVER (PARTITION BY $0 ORDER BY $1 DESC NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)], window_col_0=[$1])
+                      HiveProject(s_state=[$0], $f1=[$1])
+                        HiveAggregate(group=[{5}], agg#0=[sum($2)])
+                          HiveJoin(condition=[=($4, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                              HiveProject(ss_sold_date_sk=[$0], ss_store_sk=[$7], ss_net_profit=[$22])
+                                HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($0))])
+                                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                              HiveProject(d_date_sk=[$0])
+                                HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                                  HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                            HiveProject(s_store_sk=[$0], s_state=[$24])
+                              HiveFilter(condition=[IS NOT NULL($24)])
+                                HiveTableScan(table=[[default, store]], table:alias=[store])
+

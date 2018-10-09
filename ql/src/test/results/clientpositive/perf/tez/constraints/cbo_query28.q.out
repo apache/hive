@@ -1,0 +1,146 @@
+Warning: Shuffle Join MERGEJOIN[102][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[103][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[104][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[105][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 7' is a cross product
+Warning: Shuffle Join MERGEJOIN[106][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 8' is a cross product
+PREHOOK: query: explain cbo
+select  *
+from (select avg(ss_list_price) B1_LP
+            ,count(ss_list_price) B1_CNT
+            ,count(distinct ss_list_price) B1_CNTD
+      from store_sales
+      where ss_quantity between 0 and 5
+        and (ss_list_price between 11 and 11+10 
+             or ss_coupon_amt between 460 and 460+1000
+             or ss_wholesale_cost between 14 and 14+20)) B1,
+     (select avg(ss_list_price) B2_LP
+            ,count(ss_list_price) B2_CNT
+            ,count(distinct ss_list_price) B2_CNTD
+      from store_sales
+      where ss_quantity between 6 and 10
+        and (ss_list_price between 91 and 91+10
+          or ss_coupon_amt between 1430 and 1430+1000
+          or ss_wholesale_cost between 32 and 32+20)) B2,
+     (select avg(ss_list_price) B3_LP
+            ,count(ss_list_price) B3_CNT
+            ,count(distinct ss_list_price) B3_CNTD
+      from store_sales
+      where ss_quantity between 11 and 15
+        and (ss_list_price between 66 and 66+10
+          or ss_coupon_amt between 920 and 920+1000
+          or ss_wholesale_cost between 4 and 4+20)) B3,
+     (select avg(ss_list_price) B4_LP
+            ,count(ss_list_price) B4_CNT
+            ,count(distinct ss_list_price) B4_CNTD
+      from store_sales
+      where ss_quantity between 16 and 20
+        and (ss_list_price between 142 and 142+10
+          or ss_coupon_amt between 3054 and 3054+1000
+          or ss_wholesale_cost between 80 and 80+20)) B4,
+     (select avg(ss_list_price) B5_LP
+            ,count(ss_list_price) B5_CNT
+            ,count(distinct ss_list_price) B5_CNTD
+      from store_sales
+      where ss_quantity between 21 and 25
+        and (ss_list_price between 135 and 135+10
+          or ss_coupon_amt between 14180 and 14180+1000
+          or ss_wholesale_cost between 38 and 38+20)) B5,
+     (select avg(ss_list_price) B6_LP
+            ,count(ss_list_price) B6_CNT
+            ,count(distinct ss_list_price) B6_CNTD
+      from store_sales
+      where ss_quantity between 26 and 30
+        and (ss_list_price between 28 and 28+10
+          or ss_coupon_amt between 2513 and 2513+1000
+          or ss_wholesale_cost between 42 and 42+20)) B6
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  *
+from (select avg(ss_list_price) B1_LP
+            ,count(ss_list_price) B1_CNT
+            ,count(distinct ss_list_price) B1_CNTD
+      from store_sales
+      where ss_quantity between 0 and 5
+        and (ss_list_price between 11 and 11+10 
+             or ss_coupon_amt between 460 and 460+1000
+             or ss_wholesale_cost between 14 and 14+20)) B1,
+     (select avg(ss_list_price) B2_LP
+            ,count(ss_list_price) B2_CNT
+            ,count(distinct ss_list_price) B2_CNTD
+      from store_sales
+      where ss_quantity between 6 and 10
+        and (ss_list_price between 91 and 91+10
+          or ss_coupon_amt between 1430 and 1430+1000
+          or ss_wholesale_cost between 32 and 32+20)) B2,
+     (select avg(ss_list_price) B3_LP
+            ,count(ss_list_price) B3_CNT
+            ,count(distinct ss_list_price) B3_CNTD
+      from store_sales
+      where ss_quantity between 11 and 15
+        and (ss_list_price between 66 and 66+10
+          or ss_coupon_amt between 920 and 920+1000
+          or ss_wholesale_cost between 4 and 4+20)) B3,
+     (select avg(ss_list_price) B4_LP
+            ,count(ss_list_price) B4_CNT
+            ,count(distinct ss_list_price) B4_CNTD
+      from store_sales
+      where ss_quantity between 16 and 20
+        and (ss_list_price between 142 and 142+10
+          or ss_coupon_amt between 3054 and 3054+1000
+          or ss_wholesale_cost between 80 and 80+20)) B4,
+     (select avg(ss_list_price) B5_LP
+            ,count(ss_list_price) B5_CNT
+            ,count(distinct ss_list_price) B5_CNTD
+      from store_sales
+      where ss_quantity between 21 and 25
+        and (ss_list_price between 135 and 135+10
+          or ss_coupon_amt between 14180 and 14180+1000
+          or ss_wholesale_cost between 38 and 38+20)) B5,
+     (select avg(ss_list_price) B6_LP
+            ,count(ss_list_price) B6_CNT
+            ,count(distinct ss_list_price) B6_CNTD
+      from store_sales
+      where ss_quantity between 26 and 30
+        and (ss_list_price between 28 and 28+10
+          or ss_coupon_amt between 2513 and 2513+1000
+          or ss_wholesale_cost between 42 and 42+20)) B6
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(fetch=[100])
+  HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f00=[$15], $f10=[$16], $f20=[$17], $f01=[$12], $f11=[$13], $f21=[$14], $f02=[$9], $f12=[$10], $f22=[$11], $f03=[$6], $f13=[$7], $f23=[$8], $f04=[$3], $f14=[$4], $f24=[$5])
+    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject($f0=[/($0, $1)], $f1=[$1], $f2=[$2])
+                HiveAggregate(group=[{}], agg#0=[sum($12)], agg#1=[count($12)], agg#2=[count(DISTINCT $12)])
+                  HiveFilter(condition=[AND(BETWEEN(false, $10, 0, 5), OR(BETWEEN(false, $12, 11, 21), BETWEEN(false, $19, 460, 1460), BETWEEN(false, $11, 14, 34)))])
+                    HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+              HiveProject($f0=[/($0, $1)], $f1=[$1], $f2=[$2])
+                HiveAggregate(group=[{}], agg#0=[sum($12)], agg#1=[count($12)], agg#2=[count(DISTINCT $12)])
+                  HiveFilter(condition=[AND(BETWEEN(false, $10, 26, 30), OR(BETWEEN(false, $12, 28, 38), BETWEEN(false, $19, 2513, 3513), BETWEEN(false, $11, 42, 62)))])
+                    HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+            HiveProject($f0=[/($0, $1)], $f1=[$1], $f2=[$2])
+              HiveAggregate(group=[{}], agg#0=[sum($12)], agg#1=[count($12)], agg#2=[count(DISTINCT $12)])
+                HiveFilter(condition=[AND(BETWEEN(false, $10, 21, 25), OR(BETWEEN(false, $12, 135, 145), BETWEEN(false, $19, 14180, 15180), BETWEEN(false, $11, 38, 58)))])
+                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+          HiveProject($f0=[/($0, $1)], $f1=[$1], $f2=[$2])
+            HiveAggregate(group=[{}], agg#0=[sum($12)], agg#1=[count($12)], agg#2=[count(DISTINCT $12)])
+              HiveFilter(condition=[AND(BETWEEN(false, $10, 16, 20), OR(BETWEEN(false, $12, 142, 152), BETWEEN(false, $19, 3054, 4054), BETWEEN(false, $11, 80, 100)))])
+                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+        HiveProject($f0=[/($0, $1)], $f1=[$1], $f2=[$2])
+          HiveAggregate(group=[{}], agg#0=[sum($12)], agg#1=[count($12)], agg#2=[count(DISTINCT $12)])
+            HiveFilter(condition=[AND(BETWEEN(false, $10, 11, 15), OR(BETWEEN(false, $12, 66, 76), BETWEEN(false, $19, 920, 1920), BETWEEN(false, $11, 4, 24)))])
+              HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+      HiveProject($f0=[/($0, $1)], $f1=[$1], $f2=[$2])
+        HiveAggregate(group=[{}], agg#0=[sum($12)], agg#1=[count($12)], agg#2=[count(DISTINCT $12)])
+          HiveFilter(condition=[AND(BETWEEN(false, $10, 6, 10), OR(BETWEEN(false, $12, 91, 101), BETWEEN(false, $19, 1430, 2430), BETWEEN(false, $11, 32, 52)))])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+
