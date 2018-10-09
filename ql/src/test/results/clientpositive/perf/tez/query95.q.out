@@ -126,7 +126,7 @@ Stage-0
                                   SHUFFLE [RS_46]
                                     PartitionCols:_col0
                                     Group By Operator [GBY_45] (rows=174243235 width=135)
-                                      Output:["_col0"],keys:_col1
+                                      Output:["_col0"],keys:_col14
                                       Merge Join Operator [MERGEJOIN_126] (rows=174243235 width=135)
                                         Conds:RS_41._col0=RS_150._col0(Inner),Output:["_col1"]
                                       <-Map 19 [SIMPLE_EDGE] vectorized
