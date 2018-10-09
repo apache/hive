@@ -144,8 +144,13 @@
 
 <property>
   <name>hive.support.concurrency</name>
-  <value>false</value>
+  <value>true</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>
+</property>
+
+<property>
+  <name>hive.txn.manager</name>
+  <value>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</value>
 </property>
 
 <property>

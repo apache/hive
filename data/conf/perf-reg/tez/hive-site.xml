@@ -168,8 +168,13 @@
 
 <property>
   <name>hive.support.concurrency</name>
-  <value>false</value>
+  <value>true</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>
+</property>
+
+<property>
+  <name>hive.txn.manager</name>
+  <value>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</value>
 </property>
 
 <property>
@@ -290,6 +295,16 @@
 <property>
   <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
   <value>99</value>
+</property>
+
+<property>
+  <name>hive.merge.nway.joins</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.stats.fetch.column.stats</name>
+  <value>true</value>
 </property>
 
 </configuration>

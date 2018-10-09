@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.cli;
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;
-
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
 import org.junit.ClassRule;
@@ -32,9 +31,9 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class TestTezPerfCliDriver {
+public class TestTezPerfConstraintsCliDriver {
 
-  static CliAdapter adapter = new CliConfigs.TezPerfCliConfig(false).getCliAdapter();
+  static CliAdapter adapter = new CliConfigs.TezPerfCliConfig(true).getCliAdapter();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
@@ -61,7 +60,7 @@ public class TestTezPerfCliDriver {
   private String name;
   private File qfile;
 
-  public TestTezPerfCliDriver(String name, File qfile) {
+  public TestTezPerfConstraintsCliDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }

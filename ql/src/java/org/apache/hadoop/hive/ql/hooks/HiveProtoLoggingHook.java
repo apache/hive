@@ -492,6 +492,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
           null, // analyzer
           config, // explainConfig
           null, // cboInfo,
+          plan.getOptimizedQueryString(),
           plan.getOptimizedQueryString()
       );
       ExplainTask explain = (ExplainTask) TaskFactory.get(work, conf);
