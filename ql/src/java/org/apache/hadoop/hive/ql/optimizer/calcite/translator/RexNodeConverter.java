@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.RelOptCluster;
@@ -110,7 +111,6 @@ import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 
 public class RexNodeConverter {
 
@@ -664,10 +664,10 @@ public class RexNodeConverter {
   }
 
   protected RexNode convert(ExprNodeConstantDesc literal) throws CalciteSemanticException {
-    RexBuilder rexBuilder = cluster.getRexBuilder();
-    RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
-    PrimitiveTypeInfo hiveType = (PrimitiveTypeInfo) literal.getTypeInfo();
-    RelDataType calciteDataType = TypeConverter.convert(hiveType, dtFactory);
+    final RexBuilder rexBuilder = cluster.getRexBuilder();
+    final RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
+    final PrimitiveTypeInfo hiveType = (PrimitiveTypeInfo) literal.getTypeInfo();
+    final RelDataType calciteDataType = TypeConverter.convert(hiveType, dtFactory);
 
     PrimitiveCategory hiveTypeCategory = hiveType.getPrimitiveCategory();
 
@@ -821,8 +821,7 @@ public class RexNodeConverter {
        SqlParserPos(1, 1)));
        break;
     case VOID:
-      calciteLiteral = cluster.getRexBuilder().makeLiteral(null,
-          cluster.getTypeFactory().createSqlType(SqlTypeName.NULL), true);
+      calciteLiteral = rexBuilder.makeLiteral(null, calciteDataType, true);
       break;
     case BINARY:
     case UNKNOWN:
