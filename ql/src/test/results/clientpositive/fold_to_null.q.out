@@ -1,0 +1,209 @@
+PREHOOK: query: create table t (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: create table t2 (b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2 (b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: create table t3 (c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: create table t3 (c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: insert into t values(3),(10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values(3),(10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: explain select a from t,t2,t3 where
+ (a>3 and null between 0 and 10) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select a from t,t2,t3 where
+ (a>3 and null between 0 and 10) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t
+            filterExpr: ((a > 3) and null) is null (type: boolean)
+            Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((a > 3) and null) is null (type: boolean)
+              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: a (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int)
+          TableScan
+            alias: t3
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+          TableScan
+            alias: t2
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 0 to 2
+          keys:
+            0 
+            1 
+            2 
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 2 Basic stats: PARTIAL Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 2 Basic stats: PARTIAL Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select a from t,t2,t3 where
+ (a>5 or null between 0 and 10) and (a*a < 101)
+ and t.a=t2.b and t.a=t3.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select a from t,t2,t3 where
+ (a>5 or null between 0 and 10) and (a*a < 101)
+ and t.a=t2.b and t.a=t3.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t
+            filterExpr: (((a > 5) or null) and ((a * a) < 101) and a is not null) (type: boolean)
+            Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((a * a) < 101) and ((a > 5) or null) and a is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: a (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: t2
+            filterExpr: (((b > 5) or null) and ((b * b) < 101) and b is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: (((b * b) < 101) and ((b > 5) or null) and b is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Select Operator
+                expressions: b (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          TableScan
+            alias: t3
+            filterExpr: (((c > 5) or null) and ((c * c) < 101) and c is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: (((c * c) < 101) and ((c > 5) or null) and c is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Select Operator
+                expressions: c (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 0 to 2
+          keys:
+            0 _col0 (type: int)
+            1 _col0 (type: int)
+            2 _col0 (type: int)
+          outputColumnNames: _col0
+          Statistics: Num rows: 2 Data size: 2 Basic stats: PARTIAL Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 2 Basic stats: PARTIAL Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
