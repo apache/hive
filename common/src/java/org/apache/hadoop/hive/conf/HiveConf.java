@@ -641,6 +641,9 @@ public class HiveConf extends Configuration {
     HIVE_PROTO_EVENTS_TTL("hive.hook.proto.events.ttl", "7d",
             new TimeValidator(TimeUnit.DAYS),
             "Time-To-Live (TTL) of proto event files before cleanup."),
+    HIVE_PROTO_FILE_PER_EVENT("hive.hook.proto.file.per.event", false,
+      "Whether each proto event has to be written to separate file. " +
+        "(Use this for FS that does not hflush immediately like S3A)"),
 
     // Hadoop Configuration Properties
     // Properties with null values are ignored and exist only for the purpose of giving us
