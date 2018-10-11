@@ -46,9 +46,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -66,6 +68,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractRecordWriter.class.getName());
 
   private static final String DEFAULT_LINE_DELIMITER_PATTERN = "[\r\n]";
+  private Integer statementId;
   protected HiveConf conf;
   protected StreamingConnection conn;
   protected Table table;
@@ -128,13 +131,21 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   }
 
   @Override
-  public void init(StreamingConnection conn, long minWriteId, long maxWriteId) throws StreamingException {
+  public void init(StreamingConnection conn, long minWriteId, long maxWriteId)
+      throws StreamingException {
+    init(conn, minWriteId, maxWriteId, -1);
+  }
+
+  @Override
+  public void init(StreamingConnection conn, long minWriteId, long maxWriteId,
+      int statementId) throws StreamingException {
     if (conn == null) {
       throw new StreamingException("Streaming connection cannot be null during record writer initialization");
     }
     this.conn = conn;
     this.curBatchMinWriteId = minWriteId;
     this.curBatchMaxWriteId = maxWriteId;
+    this.statementId = statementId;
     this.conf = conn.getHiveConf();
     this.defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     this.table = conn.getTable();
@@ -431,6 +442,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       int bucket = getBucket(encodedRow);
       List<String> partitionValues = getPartitionValues(encodedRow);
       getRecordUpdater(partitionValues, bucket).insert(writeId, encodedRow);
+
       // ingest size bytes gets resetted on flush() whereas connection stats is not
       conn.getConnectionStats().incrementRecordsWritten();
       conn.getConnectionStats().incrementRecordsSize(record.length);
@@ -492,8 +504,51 @@ public abstract class AbstractRecordWriter implements RecordWriter {
         .tableProperties(tblProperties)
         .minimumWriteId(minWriteId)
         .maximumWriteId(maxWriteID)
-        .statementId(-1)
+        .statementId(statementId)
         .finalDestination(partitionPath));
+  }
+
+  /**
+   * Returns the file that would be used to store rows under this.
+   * parameters
+   * @param partitionValues partition values
+   * @param bucketId bucket id
+   * @param minWriteId min write Id
+   * @param maxWriteId max write Id
+   * @param statementId statement Id
+   * @param table table
+   * @return the location of the file.
+   * @throws StreamingException when the path is not found
+   */
+  @Override
+  public Path getDeltaFileLocation(List<String> partitionValues,
+      Integer bucketId, Long minWriteId, Long maxWriteId, Integer statementId,
+      Table table) throws StreamingException {
+    Path destLocation;
+    if (partitionValues == null) {
+      destLocation = new Path(table.getSd().getLocation());
+    } else {
+      Map<String, String> partSpec = Warehouse.makeSpecFromValues(
+          table.getPartitionKeys(), partitionValues);
+      try {
+        destLocation = new Path(table.getDataLocation(), Warehouse.makePartPath(partSpec));
+      } catch (MetaException e) {
+        throw new StreamingException("Unable to retrieve the delta file location"
+            + " for values: " + partitionValues
+            + ", minWriteId: " + minWriteId
+            + ", maxWriteId: " + maxWriteId
+            + ", statementId: " + statementId, e);
+      }
+    }
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
+        .filesystem(fs)
+        .inspector(outputRowObjectInspector)
+        .bucket(bucketId)
+        .minimumWriteId(minWriteId)
+        .maximumWriteId(maxWriteId)
+        .statementId(statementId)
+        .finalDestination(destLocation);
+    return AcidUtils.createFilename(destLocation, options);
   }
 
   protected RecordUpdater getRecordUpdater(List<String> partitionValues, int bucketId) throws StreamingIOFailure {
@@ -516,12 +571,10 @@ public abstract class AbstractRecordWriter implements RecordWriter {
           // partitions to TxnHandler
           if (!partitionInfo.isExists()) {
             addedPartitions.add(partitionInfo.getName());
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Created partition {} for table {}", partitionInfo.getName(), fullyQualifiedTableName);
-            }
           } else {
             if (LOG.isDebugEnabled()) {
-              LOG.debug("Partition {} already exists for table {}", partitionInfo.getName(), fullyQualifiedTableName);
+              LOG.debug("Partition {} already exists for table {}",
+                  partitionInfo.getName(), fullyQualifiedTableName);
             }
           }
           destLocation = new Path(partitionInfo.getPartitionLocation());

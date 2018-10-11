@@ -19,8 +19,13 @@
 package org.apache.hive.streaming;
 
 import java.io.InputStream;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+
+import javax.annotation.Nullable;
 
 public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
   /**
@@ -61,6 +66,18 @@ public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
   void commitTransaction() throws StreamingException;
 
   /**
+   * Commit a transaction to make the writes visible for readers. Include
+   * other partitions that may have been added independently.
+   *
+   * @param partitions - extra partitions to commit.
+   * @throws StreamingException - if there are errors when committing the open transaction.
+   */
+  default void commitTransactionWithPartition(@Nullable Set<String> partitions)
+      throws StreamingException {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * Manually abort the opened transaction.
    *
    * @throws StreamingException - if there are errors when aborting the transaction
@@ -78,4 +95,30 @@ public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
    * @return - connection stats
    */
   ConnectionStats getConnectionStats();
+
+  /**
+   * Get the partitions used during the streaming. This partitions haven't
+   * been committed to the metastore.
+   * @return partitions.
+   */
+  default Set<String> getPartitions() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the file that would be used by the writer to write the rows.
+   * given the parameters
+   * @param partitionValues partition values
+   * @param bucketId bucket id
+   * @param minWriteId min write Id
+   * @param maxWriteId max write Id
+   * @param statementId statement Id
+   * @return the location of the file.
+   * @throws StreamingException when the path is not found
+   */
+  default Path getDeltaFileLocation(List<String> partitionValues,
+      Integer bucketId, Long minWriteId, Long maxWriteId, Integer statementId)
+      throws StreamingException {
+    throw new UnsupportedOperationException();
+  }
 }
