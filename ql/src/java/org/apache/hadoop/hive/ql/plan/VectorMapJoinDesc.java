@@ -204,6 +204,8 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   private boolean isHybridHashJoin;
   private boolean supportsKeyTypes;
   private List<String> notSupportedKeyTypes;
+  private boolean supportsValueTypes;
+  private List<String> notSupportedValueTypes;
   private boolean smallTableExprVectorizes;
   private boolean outerJoinHasNoKeys;
   boolean isFullOuter;
@@ -249,6 +251,18 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   }
   public List<String> getNotSupportedKeyTypes() {
     return notSupportedKeyTypes;
+  }
+  public void setSupportsValueTypes(boolean supportsValueTypes) {
+    this.supportsValueTypes = supportsValueTypes;
+  }
+  public boolean getSupportsValueTypes() {
+    return supportsValueTypes;
+  }
+  public void setNotSupportedValueTypes(List<String> notSupportedValueTypes) {
+    this.notSupportedValueTypes = notSupportedValueTypes;
+  }
+  public List<String> getNotSupportedValueTypes() {
+    return notSupportedValueTypes;
   }
   public void setSmallTableExprVectorizes(boolean smallTableExprVectorizes) {
     this.smallTableExprVectorizes = smallTableExprVectorizes;
