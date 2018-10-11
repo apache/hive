@@ -18,8 +18,11 @@
 
 package org.apache.hive.streaming;
 
+/**
+ * Invalid transaction.
+ */
 public class InvalidTransactionState extends TransactionError {
-  InvalidTransactionState(String msg) {
+  public InvalidTransactionState(String msg) {
     super(msg);
   }
 }
