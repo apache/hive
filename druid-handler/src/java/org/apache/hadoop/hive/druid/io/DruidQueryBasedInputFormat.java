@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.druid.serde.DruidSelectQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTimeseriesQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTopNQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -114,6 +115,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       throw new IOException("Druid broker address not specified in configuration");
     }
     String druidQuery = StringEscapeUtils.unescapeJava(conf.get(Constants.DRUID_QUERY_JSON));
+
     String druidQueryType;
     if (StringUtils.isEmpty(druidQuery)) {
       // Empty, maybe because CBO did not run; we fall back to
@@ -125,9 +127,9 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       if (dataSource == null || dataSource.isEmpty()) {
         throw new IOException("Druid data source cannot be empty or null");
       }
-
-      druidQuery = DruidStorageHandlerUtils.createScanAllQuery(dataSource);
+      druidQuery = DruidStorageHandlerUtils.createScanAllQuery(dataSource, Utilities.getColumnNames(conf));
       druidQueryType = Query.SCAN;
+      conf.set(Constants.DRUID_QUERY_TYPE, druidQueryType);
     } else {
       druidQueryType = conf.get(Constants.DRUID_QUERY_TYPE);
       if (druidQueryType == null) {
@@ -283,7 +285,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     final DruidQueryRecordReader<?, ?> reader;
     final String druidQueryType = job.get(Constants.DRUID_QUERY_TYPE);
     if (druidQueryType == null) {
-      reader = new DruidSelectQueryRecordReader(); // By default
+      reader = new DruidScanQueryRecordReader(); // By default we use scan query as fallback.
       reader.initialize((HiveDruidSplit) split, job);
       return reader;
     }
@@ -304,7 +306,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     // The reason is that Druid results format is different for each type.
     final String druidQueryType = context.getConfiguration().get(Constants.DRUID_QUERY_TYPE);
     if (druidQueryType == null) {
-      return new DruidSelectQueryRecordReader(); // By default
+      return new DruidScanQueryRecordReader(); // By default, we use druid scan query as fallback.
     }
     final DruidQueryRecordReader<?, ?> reader =
             getDruidQueryReader(druidQueryType);

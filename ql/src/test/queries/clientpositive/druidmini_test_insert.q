@@ -34,6 +34,8 @@ SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
   cboolean2
   FROM alltypesorc where ctimestamp1 IS NOT NULL;
 
+-- ANALYZE COLUMN STATS FOR DRUID TABLE
+analyze table druid_alltypesorc compute statistics for columns;
 
 SELECT COUNT(*) FROM druid_alltypesorc;
 

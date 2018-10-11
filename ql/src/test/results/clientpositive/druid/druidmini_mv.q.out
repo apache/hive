@@ -267,10 +267,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col6
+                outputColumnNames: _col0, _col1, _col3
                 Statistics: Num rows: 18 Data size: 522 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: double), _col0 (type: int), _col6 (type: double)
+                  expressions: _col0 (type: int), _col1 (type: double), _col0 (type: int), _col3 (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 18 Data size: 522 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -616,10 +616,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col6
+                outputColumnNames: _col0, _col1, _col3
                 Statistics: Num rows: 21 Data size: 609 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: double), _col0 (type: int), _col6 (type: double)
+                  expressions: _col0 (type: int), _col1 (type: double), _col0 (type: int), _col3 (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 21 Data size: 609 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

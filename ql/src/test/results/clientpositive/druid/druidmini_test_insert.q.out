@@ -90,6 +90,16 @@ SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@druid_alltypesorc
+PREHOOK: query: analyze table druid_alltypesorc compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@druid_alltypesorc
+PREHOOK: Output: default@druid_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table druid_alltypesorc compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Output: default@druid_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_alltypesorc
