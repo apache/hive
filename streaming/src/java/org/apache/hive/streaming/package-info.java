@@ -16,17 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.streaming;
-
 /**
- * Transaction error.
+ * Package grouping streaming classes.
  */
-public class TransactionError extends StreamingException {
-  public TransactionError(String msg, Exception e) {
-    super(msg + (e == null ? "" : ": " + e.getMessage()), e);
-  }
-
-  public TransactionError(String msg) {
-    super(msg);
-  }
-}
+package org.apache.hive.streaming;

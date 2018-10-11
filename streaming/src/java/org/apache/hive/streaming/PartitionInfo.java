@@ -26,6 +26,7 @@ public class PartitionInfo {
   private String partitionLocation;
   private boolean exists;
 
+
   public PartitionInfo(final String name, final String partitionLocation, final boolean exists) {
     this.name = name;
     this.partitionLocation = partitionLocation;

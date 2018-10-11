@@ -19,8 +19,12 @@
 package org.apache.hive.streaming;
 
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.metadata.Table;
+
 import java.io.InputStream;
 
+import java.util.List;
 import java.util.Set;
 
 public interface RecordWriter {
@@ -34,6 +38,20 @@ public interface RecordWriter {
    * @throws StreamingException - thrown when initialization failed
    */
   void init(StreamingConnection connection, long minWriteId, long maxWriteID) throws StreamingException;
+
+  /**
+   * Initialize record writer.
+   *
+   * @param connection - streaming connection
+   * @param minWriteId - min write id
+   * @param maxWriteID - max write id
+   * @param statementId - statemenId. Note this number can't be bigger than 2^12
+   * @throws StreamingException - thrown when initialization failed
+   */
+  default void init(StreamingConnection connection, long minWriteId,
+      long maxWriteID, int statementId) throws StreamingException {
+    init(connection, minWriteId, maxWriteID);
+  }
 
   /**
    * Writes using a hive RecordUpdater.
@@ -69,9 +87,27 @@ public interface RecordWriter {
   void close() throws StreamingException;
 
   /**
-   * Get the set of partitions that were added by the record writer.
+   * Get the set of partitions that were added were used but may have been
+   * added or not to the metastore.
    *
    * @return - set of partitions
    */
   Set<String> getPartitions();
+
+  /**
+   * Returns the location of the delta directory.
+   * @param partitionValues partition values
+   * @param bucketId bucket id
+   * @param minWriteId min write Id
+   * @param maxWriteId max write Id
+   * @param statementId statement Id
+   * @param table table
+   * @return the location of the file
+   * @throws StreamingException when the path is not found
+   */
+  default Path getDeltaFileLocation(List<String> partitionValues,
+      Integer bucketId, Long minWriteId, Long maxWriteId, Integer statementId,
+      Table table) throws StreamingException {
+    throw new UnsupportedOperationException();
+  }
 }
