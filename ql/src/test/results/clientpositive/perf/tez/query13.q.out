@@ -157,7 +157,7 @@ Stage-0
                   SHUFFLE [RS_32]
                     PartitionCols:_col4
                     Filter Operator [FIL_31] (rows=7333332 width=1014)
-                      predicate:((((_col18 = 'KY') or (_col18 = 'GA') or (_col18 = 'NM')) and _col9 BETWEEN 100 AND 200) or (((_col18 = 'MT') or (_col18 = 'OR') or (_col18 = 'IN')) and _col9 BETWEEN 150 AND 300) or (((_col18 = 'WI') or (_col18 = 'MO') or (_col18 = 'WV')) and _col9 BETWEEN 50 AND 250))
+                      predicate:(((_col18) IN ('KY', 'GA', 'NM') and _col9 BETWEEN 100 AND 200) or ((_col18) IN ('MT', 'OR', 'IN') and _col9 BETWEEN 150 AND 300) or ((_col18) IN ('WI', 'MO', 'WV') and _col9 BETWEEN 50 AND 250))
                       Merge Join Operator [MERGEJOIN_120] (rows=22000000 width=1014)
                         Conds:RS_28._col3=RS_148._col0(Inner),Output:["_col4","_col5","_col7","_col8","_col9","_col18"]
                       <-Map 14 [SIMPLE_EDGE] vectorized

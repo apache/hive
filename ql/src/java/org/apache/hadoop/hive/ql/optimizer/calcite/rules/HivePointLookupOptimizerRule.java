@@ -171,48 +171,26 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       this.minNumORClauses = minNumORClauses;
     }
 
-    @Override public RexNode visitCall(RexCall call) {
-      RexNode node;
-      switch (call.getKind()) {
-      // FIXME: I don't think there is a need for this right now...calcite have already done the flattening/etc
-      // removing this case clause will not miss the OR below AND
-      case AND:
-        ImmutableList<RexNode> operands = RexUtil.flattenAnd(call.getOperands());
-        List<RexNode> newOperands = new ArrayList<RexNode>();
-        for (RexNode operand : operands) {
-          RexNode newOperand;
-          if (operand.getKind() == SqlKind.OR) {
-            try {
-              newOperand = transformIntoInClauseCondition(rexBuilder,
-                  nodeOp.getRowType(), operand, minNumORClauses);
-              if (newOperand == null) {
-                newOperand = operand;
-              }
-            } catch (SemanticException e) {
-              LOG.error("Exception in HivePointLookupOptimizerRule", e);
-              return call;
-            }
-          } else {
-            newOperand = operand;
-          }
-          newOperands.add(newOperand);
-        }
-        node = RexUtil.composeConjunction(rexBuilder, newOperands, false);
-        break;
+    @Override
+    public RexNode visitCall(RexCall inputCall) {
+      RexNode node = super.visitCall(inputCall);
+      if (node instanceof RexCall) {
+        RexCall call = (RexCall) node;
+        switch (call.getKind()) {
         case OR:
           try {
-            node = transformIntoInClauseCondition(rexBuilder,
-                    nodeOp.getRowType(), call, minNumORClauses);
-            if (node == null) {
-              return super.visitCall(call);
+            RexNode newNode = transformIntoInClauseCondition(rexBuilder,
+                nodeOp.getRowType(), call, minNumORClauses);
+            if (newNode != null) {
+              return newNode;
             }
           } catch (SemanticException e) {
             LOG.error("Exception in HivePointLookupOptimizerRule", e);
             return call;
           }
-          break;
         default:
-          return super.visitCall(call);
+          break;
+        }
       }
       return node;
     }

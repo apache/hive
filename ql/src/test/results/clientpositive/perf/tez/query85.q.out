@@ -220,7 +220,7 @@ Stage-0
                       Select Operator [SEL_47] (rows=7333332 width=1014)
                         Output:["_col6","_col7","_col12","_col19"]
                         Filter Operator [FIL_46] (rows=7333332 width=1014)
-                          predicate:((((_col27 = 'KY') or (_col27 = 'GA') or (_col27 = 'NM')) and _col14 BETWEEN 100 AND 200) or (((_col27 = 'MT') or (_col27 = 'OR') or (_col27 = 'IN')) and _col14 BETWEEN 150 AND 300) or (((_col27 = 'WI') or (_col27 = 'MO') or (_col27 = 'WV')) and _col14 BETWEEN 50 AND 250))
+                          predicate:(((_col27) IN ('KY', 'GA', 'NM') and _col14 BETWEEN 100 AND 200) or ((_col27) IN ('MT', 'OR', 'IN') and _col14 BETWEEN 150 AND 300) or ((_col27) IN ('WI', 'MO', 'WV') and _col14 BETWEEN 50 AND 250))
                           Merge Join Operator [MERGEJOIN_206] (rows=22000000 width=1014)
                             Conds:RS_43._col2=RS_238._col0(Inner),Output:["_col6","_col7","_col12","_col14","_col19","_col27"]
                           <-Map 18 [SIMPLE_EDGE] vectorized

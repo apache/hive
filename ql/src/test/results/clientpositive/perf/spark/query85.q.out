@@ -461,7 +461,7 @@ STAGE PLANS:
                 outputColumnNames: _col6, _col7, _col12, _col14, _col19, _col27
                 Statistics: Num rows: 22000000 Data size: 22327357890 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((((_col27 = 'KY') or (_col27 = 'GA') or (_col27 = 'NM')) and _col14 BETWEEN 100 AND 200) or (((_col27 = 'MT') or (_col27 = 'OR') or (_col27 = 'IN')) and _col14 BETWEEN 150 AND 300) or (((_col27 = 'WI') or (_col27 = 'MO') or (_col27 = 'WV')) and _col14 BETWEEN 50 AND 250)) (type: boolean)
+                  predicate: (((_col27) IN ('KY', 'GA', 'NM') and _col14 BETWEEN 100 AND 200) or ((_col27) IN ('MT', 'OR', 'IN') and _col14 BETWEEN 150 AND 300) or ((_col27) IN ('WI', 'MO', 'WV') and _col14 BETWEEN 50 AND 250)) (type: boolean)
                   Statistics: Num rows: 7333332 Data size: 7442451276 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col6 (type: decimal(7,2)), _col7 (type: decimal(7,2)), _col12 (type: int), _col19 (type: string)

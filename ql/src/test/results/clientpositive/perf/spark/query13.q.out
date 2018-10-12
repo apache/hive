@@ -317,7 +317,7 @@ STAGE PLANS:
                 outputColumnNames: _col4, _col5, _col7, _col8, _col9, _col18
                 Statistics: Num rows: 22000000 Data size: 22327357890 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((((_col18 = 'KY') or (_col18 = 'GA') or (_col18 = 'NM')) and _col9 BETWEEN 100 AND 200) or (((_col18 = 'MT') or (_col18 = 'OR') or (_col18 = 'IN')) and _col9 BETWEEN 150 AND 300) or (((_col18 = 'WI') or (_col18 = 'MO') or (_col18 = 'WV')) and _col9 BETWEEN 50 AND 250)) (type: boolean)
+                  predicate: (((_col18) IN ('KY', 'GA', 'NM') and _col9 BETWEEN 100 AND 200) or ((_col18) IN ('MT', 'OR', 'IN') and _col9 BETWEEN 150 AND 300) or ((_col18) IN ('WI', 'MO', 'WV') and _col9 BETWEEN 50 AND 250)) (type: boolean)
                   Statistics: Num rows: 7333332 Data size: 7442451276 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
