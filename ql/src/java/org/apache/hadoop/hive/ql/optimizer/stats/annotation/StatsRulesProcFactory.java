@@ -1380,7 +1380,9 @@ public class StatsRulesProcFactory {
               }
             } else {
               // Case 3: column stats, hash aggregation, NO grouping sets
-              cardinality = Math.min(parentNumRows / 2, StatsUtils.safeMult(ndvProduct, parallelism));
+              cardinality = Math.min(parentNumRows/2, StatsUtils.safeMult(ndvProduct, parallelism));
+              long orgParentNumRows = getParentNumRows(gop, gop.getConf().getKeys(), conf);
+              cardinality = Math.min(cardinality, orgParentNumRows);
 
               if (LOG.isDebugEnabled()) {
                 LOG.debug("[Case 3] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -1396,7 +1398,7 @@ public class StatsRulesProcFactory {
               }
             } else {
               // Case 5: column stats, NO hash aggregation, NO grouping sets
-              cardinality = parentNumRows;
+              cardinality = Math.min(parentNumRows, getParentNumRows(gop, gop.getConf().getKeys(), conf));
 
               if (LOG.isDebugEnabled()) {
                 LOG.debug("[Case 5] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -1518,6 +1520,17 @@ public class StatsRulesProcFactory {
         LOG.debug("[0] STATS-" + gop.toString() + ": " + stats.extendedToString());
       }
       return null;
+    }
+
+    private long getParentNumRows(GroupByOperator op, List<ExprNodeDesc> gbyKeys, HiveConf conf) {
+      if(gbyKeys == null || gbyKeys.isEmpty()) {
+        return op.getParentOperators().get(0).getStatistics().getNumRows();
+      }
+      Operator<? extends OperatorDesc> parent = OperatorUtils.findSourceRS(op, gbyKeys);
+      if(parent != null) {
+        return parent.getStatistics().getNumRows();
+      }
+      return op.getParentOperators().get(0).getStatistics().getNumRows();
     }
 
     /**

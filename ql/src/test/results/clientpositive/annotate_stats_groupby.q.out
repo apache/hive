@@ -1346,3 +1346,193 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: create table t1_uq12(i int, j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_uq12
+POSTHOOK: query: create table t1_uq12(i int, j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_uq12
+PREHOOK: query: alter table t1_uq12 update statistics set('numRows'='10000', 'rawDataSize'='18000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1_uq12
+PREHOOK: Output: default@t1_uq12
+POSTHOOK: query: alter table t1_uq12 update statistics set('numRows'='10000', 'rawDataSize'='18000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1_uq12
+POSTHOOK: Output: default@t1_uq12
+PREHOOK: query: alter table t1_uq12 update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1_uq12
+PREHOOK: Output: default@t1_uq12
+POSTHOOK: query: alter table t1_uq12 update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1_uq12
+POSTHOOK: Output: default@t1_uq12
+PREHOOK: query: alter table t1_uq12 update statistics for column j set('numDVs'='500','numNulls'='30','highValue'='100','lowValue'='50')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1_uq12
+PREHOOK: Output: default@t1_uq12
+POSTHOOK: query: alter table t1_uq12 update statistics for column j set('numDVs'='500','numNulls'='30','highValue'='100','lowValue'='50')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1_uq12
+POSTHOOK: Output: default@t1_uq12
+PREHOOK: query: create table t2_uq12(i2 int, j2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_uq12
+POSTHOOK: query: create table t2_uq12(i2 int, j2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_uq12
+PREHOOK: query: alter table t2_uq12 update statistics set('numRows'='100000000', 'rawDataSize'='10000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t2_uq12
+PREHOOK: Output: default@t2_uq12
+POSTHOOK: query: alter table t2_uq12 update statistics set('numRows'='100000000', 'rawDataSize'='10000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t2_uq12
+POSTHOOK: Output: default@t2_uq12
+PREHOOK: query: alter table t2_uq12 update statistics for column i2 set('numDVs'='10000000','numNulls'='0','highValue'='8000','lowValue'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t2_uq12
+PREHOOK: Output: default@t2_uq12
+POSTHOOK: query: alter table t2_uq12 update statistics for column i2 set('numDVs'='10000000','numNulls'='0','highValue'='8000','lowValue'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t2_uq12
+POSTHOOK: Output: default@t2_uq12
+PREHOOK: query: alter table t2_uq12 update statistics for column j2 set('numDVs'='10','numNulls'='0','highValue'='800','lowValue'='-1')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t2_uq12
+PREHOOK: Output: default@t2_uq12
+POSTHOOK: query: alter table t2_uq12 update statistics for column j2 set('numDVs'='10','numNulls'='0','highValue'='800','lowValue'='-1')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t2_uq12
+POSTHOOK: Output: default@t2_uq12
+PREHOOK: query: explain select count (1) from t1_uq12,t2_uq12 where t1_uq12.j=t2_uq12.i2 group by t1_uq12.i, t1_uq12.j
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_uq12
+PREHOOK: Input: default@t2_uq12
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count (1) from t1_uq12,t2_uq12 where t1_uq12.j=t2_uq12.i2 group by t1_uq12.i, t1_uq12.j
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_uq12
+POSTHOOK: Input: default@t2_uq12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t1_uq12
+            filterExpr: j is not null (type: boolean)
+            Statistics: Num rows: 10000 Data size: 79688 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: j is not null (type: boolean)
+              Statistics: Num rows: 9970 Data size: 79448 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: i (type: int), j (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 9970 Data size: 79448 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 9970 Data size: 79448 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+          TableScan
+            alias: t2_uq12
+            filterExpr: i2 is not null (type: boolean)
+            Statistics: Num rows: 100000000 Data size: 400000000 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: i2 is not null (type: boolean)
+              Statistics: Num rows: 100000000 Data size: 400000000 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: i2 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 100000000 Data size: 400000000 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 100000000 Data size: 400000000 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col1 (type: int)
+            1 _col0 (type: int)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 99700 Data size: 797288 Basic stats: COMPLETE Column stats: COMPLETE
+          Group By Operator
+            aggregations: count()
+            keys: _col0 (type: int), _col1 (type: int)
+            mode: hash
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 9970 Data size: 159496 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int), _col1 (type: int)
+              sort order: ++
+              Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+              Statistics: Num rows: 9970 Data size: 159496 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col2 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 9970 Data size: 159496 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col2 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 9970 Data size: 79760 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 9970 Data size: 79760 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table t1_uq12
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_uq12
+PREHOOK: Output: default@t1_uq12
+POSTHOOK: query: drop table t1_uq12
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_uq12
+POSTHOOK: Output: default@t1_uq12
+PREHOOK: query: drop table t2_uq12
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2_uq12
+PREHOOK: Output: default@t2_uq12
+POSTHOOK: query: drop table t2_uq12
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2_uq12
+POSTHOOK: Output: default@t2_uq12

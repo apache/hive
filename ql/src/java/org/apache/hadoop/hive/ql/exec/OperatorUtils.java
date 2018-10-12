@@ -29,9 +29,13 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -500,5 +504,92 @@ public class OperatorUtils {
       }
     }
     return;
+  }
+
+  private static List<ExprNodeDesc> backtrackAll(List<ExprNodeDesc> exprs, Operator<? extends  OperatorDesc> start,
+                                                 Operator<? extends OperatorDesc> terminal) {
+    List<ExprNodeDesc> backtrackedExprs = new ArrayList<>();
+    try {
+      for (ExprNodeDesc expr : exprs) {
+        ExprNodeDesc backtrackedExpr = ExprNodeDescUtils.backtrack(expr, start, terminal);
+        if(backtrackedExpr == null) {
+          return null;
+        }
+        backtrackedExprs.add(backtrackedExpr);
+
+      }
+    } catch (SemanticException e) {
+      return null;
+    }
+    return backtrackedExprs;
+  }
+
+  // set of expressions are considered compatible if following are true:
+  //  * they are both same size
+  //  * if the are column expressions their table alias is same as well (this is checked because otherwise
+  //      expressions coming out of multiple RS (e.g. children of JOIN) are ended up same
+  private static boolean areBacktrackedExprsCompatible(final List<ExprNodeDesc> orgexprs,
+                                                       final List<ExprNodeDesc> backtrackedExprs) {
+    if(backtrackedExprs == null || backtrackedExprs.size() != orgexprs.size()) {
+      return false;
+    }
+    for(int i=0; i<orgexprs.size(); i++) {
+      if(orgexprs.get(i) instanceof ExprNodeColumnDesc && backtrackedExprs.get(i) instanceof ExprNodeColumnDesc) {
+        ExprNodeColumnDesc orgColExpr = (ExprNodeColumnDesc)orgexprs.get(i);
+        ExprNodeColumnDesc backExpr = (ExprNodeColumnDesc)backtrackedExprs.get(i);
+        String orgTabAlias = orgColExpr.getTabAlias();
+        String backTabAlias = backExpr.getTabAlias();
+
+        if(orgTabAlias != null && backTabAlias != null && !orgTabAlias.equals(backTabAlias)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /***
+   * This method backtracks the given expressions to the source RS. Note that expressions could
+   * further be backtracked to e.g. table source, but we are interested in RS only because this
+   * is used to estimate number of rows for group by and estimation will be better at RS since all
+   * the filters etc will have already been applied
+   * @param start
+   * @param exprs
+   * @return null if RS is not found
+   */
+  public static Operator<? extends OperatorDesc> findSourceRS(Operator<?> start, List<ExprNodeDesc> exprs) {
+    Operator currRS = null; //keep track of the RS
+    if (start instanceof ReduceSinkOperator) {
+      currRS = start;
+    }
+
+    if (start instanceof UnionOperator) {
+      //Union keeps the schema same but can change the cardinality, therefore we don't want to backtrack further
+      // into Union
+      return currRS;
+    }
+
+    List<Operator<? extends OperatorDesc>> parents = start.getParentOperators();
+    if (parents == null | parents.isEmpty()) {
+      // reached end e.g. TS operator
+      return null;
+    }
+
+    Operator<? extends OperatorDesc> nextOp = null;
+    List<ExprNodeDesc> backtrackedExprs = null;
+    for (int i = 0; i < parents.size(); i++) {
+      backtrackedExprs = backtrackAll(exprs, start, parents.get(i));
+      if (areBacktrackedExprsCompatible(exprs, backtrackedExprs)) {
+        nextOp = parents.get(i);
+        break;
+      }
+    }
+    if (nextOp != null) {
+      Operator<? extends OperatorDesc> nextRS = findSourceRS(nextOp, backtrackedExprs);
+      if (nextRS != null) {
+        currRS = nextRS;
+      }
+    }
+    return currRS;
   }
 }
