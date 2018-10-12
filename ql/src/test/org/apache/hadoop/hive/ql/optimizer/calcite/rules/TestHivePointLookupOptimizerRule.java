@@ -60,6 +60,7 @@ public class TestHivePointLookupOptimizerRule {
   private static class MyRecord {
     public int f1;
     public int f2;
+    public int f3;
   }
 
   @Before
@@ -171,4 +172,46 @@ public class TestHivePointLookupOptimizerRule {
     System.out.println(condition);
     assertEquals("OR(IN($0, 1, 2), =($1, 99))", condition.toString());
   }
+
+  /** Despite that extraction happen at a higher level; nested parts should also be handled */
+  @Test
+  public void testRecursionIsNotObstructed() {
+
+    // @formatter:off
+    final RelNode basePlan = builder
+          .scan("t")
+          .filter(
+              and(
+                or(
+                    eq("f1",1),
+                    eq("f1",2)
+                    )
+                ,
+                or(
+                    and(
+                        or(eq("f2",1),eq("f2",2)),
+                        or(eq("f3",1),eq("f3",2))
+                        ),
+                    and(
+                        or(eq("f2",3),eq("f2",4)),
+                        or(eq("f3",3),eq("f3",4))
+                        )
+
+
+                )
+              ))
+
+          .build();
+    // @formatter:on
+
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("AND(IN($0, 1, 2), OR(AND(IN($1, 1, 2), IN($2, 1, 2)), AND(IN($1, 3, 4), IN($2, 3, 4))))",
+        condition.toString());
+  }
+
 }

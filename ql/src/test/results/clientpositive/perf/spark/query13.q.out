@@ -302,7 +302,7 @@ STAGE PLANS:
                 outputColumnNames: _col2, _col6, _col7, _col8, _col9, _col10, _col14, _col16
                 Statistics: Num rows: 93701693 Data size: 8266390734 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((((_col16 = 'KY') or (_col16 = 'GA') or (_col16 = 'NM')) and _col10 BETWEEN 100 AND 200) or (((_col16 = 'MT') or (_col16 = 'OR') or (_col16 = 'IN')) and _col10 BETWEEN 150 AND 300) or (((_col16 = 'WI') or (_col16 = 'MO') or (_col16 = 'WV')) and _col10 BETWEEN 50 AND 250)) (type: boolean)
+                  predicate: (((_col16) IN ('KY', 'GA', 'NM') and _col10 BETWEEN 100 AND 200) or ((_col16) IN ('MT', 'OR', 'IN') and _col10 BETWEEN 150 AND 300) or ((_col16) IN ('WI', 'MO', 'WV') and _col10 BETWEEN 50 AND 250)) (type: boolean)
                   Statistics: Num rows: 31233897 Data size: 2755463519 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: int)

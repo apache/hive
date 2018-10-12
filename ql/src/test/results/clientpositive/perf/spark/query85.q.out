@@ -426,7 +426,7 @@ STAGE PLANS:
                 outputColumnNames: _col5, _col6, _col7, _col11, _col13, _col16, _col17, _col19, _col21
                 Statistics: Num rows: 25768635 Data size: 3503789725 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((((_col21 = 'KY') or (_col21 = 'GA') or (_col21 = 'NM')) and _col7 BETWEEN 100 AND 200) or (((_col21 = 'MT') or (_col21 = 'OR') or (_col21 = 'IN')) and _col7 BETWEEN 150 AND 300) or (((_col21 = 'WI') or (_col21 = 'MO') or (_col21 = 'WV')) and _col7 BETWEEN 50 AND 250)) (type: boolean)
+                  predicate: (((_col21) IN ('KY', 'GA', 'NM') and _col7 BETWEEN 100 AND 200) or ((_col21) IN ('MT', 'OR', 'IN') and _col7 BETWEEN 150 AND 300) or ((_col21) IN ('WI', 'MO', 'WV') and _col7 BETWEEN 50 AND 250)) (type: boolean)
                   Statistics: Num rows: 8589543 Data size: 1167929636 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col11 (type: int)
