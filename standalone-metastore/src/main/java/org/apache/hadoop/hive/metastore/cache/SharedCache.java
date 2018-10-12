@@ -210,7 +210,7 @@ public class SharedCache {
       }
     }
 
-    boolean cachePartitions(List<Partition> parts, SharedCache sharedCache) {
+    boolean cachePartitions(List<Partition> parts, SharedCache sharedCache, boolean fromPrewarm) {
       try {
         tableLock.writeLock().lock();
         for (Partition part : parts) {
@@ -231,7 +231,9 @@ public class SharedCache {
             LOG.trace("Current cache size: {} bytes", currentCacheSizeInBytes);
           }
           partitionCache.put(CacheUtils.buildPartitionCacheKey(part.getValues()), ptnWrapper);
-          isPartitionCacheDirty.set(true);
+          if (!fromPrewarm) {
+            isPartitionCacheDirty.set(true);
+          }
         }
         // Invalidate cached aggregate stats
         if (!aggrColStatsCache.isEmpty()) {
@@ -1003,17 +1005,18 @@ public class SharedCache {
     }
   }
 
-  public void refreshDatabasesInCache(List<Database> databases) {
+  public boolean refreshDatabasesInCache(List<Database> databases) {
+    if (isDatabaseCacheDirty.compareAndSet(true, false)) {
+      LOG.debug("Skipping database cache update; the database list we have is dirty.");
+      return false;
+    }
     try {
       cacheLock.writeLock().lock();
-      if (isDatabaseCacheDirty.compareAndSet(true, false)) {
-        LOG.debug("Skipping database cache update; the database list we have is dirty.");
-        return;
-      }
       databaseCache.clear();
       for (Database db : databases) {
         addDatabaseToCache(db);
       }
+      return true;
     } finally {
       cacheLock.writeLock().unlock();
     }
@@ -1064,7 +1067,7 @@ public class SharedCache {
     } else {
       if (partitions != null) {
         // If the partitions were not added due to memory limit, return false
-        if (!tblWrapper.cachePartitions(partitions, this)) {
+        if (!tblWrapper.cachePartitions(partitions, this, true)) {
           return false;
         }
       }
@@ -1169,8 +1172,7 @@ public class SharedCache {
       if (!isTableCachePrewarmed) {
         tablesDeletedDuringPrewarm.add(CacheUtils.buildTableKey(catName, dbName, tblName));
       }
-      TableWrapper tblWrapper =
-          tableCache.remove(CacheUtils.buildTableKey(catName, dbName, tblName));
+      TableWrapper tblWrapper = tableCache.remove(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
         byte[] sdHash = tblWrapper.getSdHash();
         if (sdHash != null) {
@@ -1268,11 +1270,11 @@ public class SharedCache {
     return tableNames;
   }
 
-  public void refreshTablesInCache(String catName, String dbName, List<Table> tables) {
+  public boolean refreshTablesInCache(String catName, String dbName, List<Table> tables) {
     try {
       if (isTableCacheDirty.compareAndSet(true, false)) {
         LOG.debug("Skipping table cache update; the table list we have is dirty.");
-        return;
+        return false;
       }
       Map<String, TableWrapper> newCacheForDB = new TreeMap<>();
       for (Table tbl : tables) {
@@ -1294,6 +1296,7 @@ public class SharedCache {
         }
       }
       tableCache.putAll(newCacheForDB);
+      return true;
     } finally {
       cacheLock.writeLock().unlock();
     }
@@ -1414,13 +1417,12 @@ public class SharedCache {
     }
   }
 
-  public void addPartitionsToCache(String catName, String dbName, String tblName,
-      List<Partition> parts) {
+  public void addPartitionsToCache(String catName, String dbName, String tblName, List<Partition> parts) {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
-        tblWrapper.cachePartitions(parts, this);
+        tblWrapper.cachePartitions(parts, this, false);
       }
     } finally {
       cacheLock.readLock().unlock();

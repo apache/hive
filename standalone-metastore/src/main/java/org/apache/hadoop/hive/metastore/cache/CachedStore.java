@@ -150,12 +150,13 @@ public class CachedStore implements RawStore, Configurable {
   // Time after which metastore cache is updated from metastore DB by the background update thread
   private static long cacheRefreshPeriodMS = DEFAULT_CACHE_REFRESH_PERIOD;
   private static AtomicBoolean isCachePrewarmed = new AtomicBoolean(false);
+  private static AtomicBoolean isCachedAllMetadata = new AtomicBoolean(false);
   private static TablesPendingPrewarm tblsPendingPrewarm = new TablesPendingPrewarm();
   private RawStore rawStore = null;
   private Configuration conf;
   private boolean areTxnStatsSupported;
   private PartitionExpressionProxy expressionProxy = null;
-  private static final SharedCache sharedCache = new SharedCache();
+  private static SharedCache sharedCache = new SharedCache();
 
   static final private Logger LOG = LoggerFactory.getLogger(CachedStore.class.getName());
 
@@ -204,8 +205,8 @@ public class CachedStore implements RawStore, Configurable {
         MetastoreConf.getSizeVar(conf, ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY);
     sharedCache.initialize(maxSharedCacheSizeInBytes);
     if (maxSharedCacheSizeInBytes > 0) {
-      LOG.info("Maximum memory that the cache will use: {} GB",
-          maxSharedCacheSizeInBytes / (1024 * 1024 * 1024));
+      LOG.info("Maximum memory that the cache will use: {} KB",
+          maxSharedCacheSizeInBytes / (1024));
     }
   }
 
@@ -269,7 +270,7 @@ public class CachedStore implements RawStore, Configurable {
           tblNames = rawStore.getAllTables(catName, dbName);
         } catch (MetaException e) {
           LOG.warn("Failed to cache tables for database "
-              + Warehouse.getCatalogQualifiedDbName(catName, dbName) + ", moving on");
+              + Warehouse.getCatalogQualifiedDbName(catName, dbName) + ", moving on", e);
           // Continue with next database
           continue;
         }
@@ -287,6 +288,7 @@ public class CachedStore implements RawStore, Configurable {
             try {
               table = rawStore.getTable(catName, dbName, tblName);
             } catch (MetaException e) {
+              LOG.debug(e.toString());
               // It is possible the table is deleted during fetching tables of the database,
               // in that case, continue with the next table
               continue;
@@ -352,10 +354,11 @@ public class CachedStore implements RawStore, Configurable {
                     "Unable to cache Database: {}'s Table: {}, since the cache memory is full. "
                         + "Will stop attempting to cache any more tables.",
                     dbName, tblName);
-                completePrewarm(startTime);
+                completePrewarm(startTime, false);
                 return;
               }
             } catch (MetaException | NoSuchObjectException e) {
+              LOG.debug(e.toString());
               // Continue with next table
               continue;
             }
@@ -369,12 +372,13 @@ public class CachedStore implements RawStore, Configurable {
         LOG.debug("Processed database: {}. Cached {} / {} databases so far.", dbName,
             ++numberOfDatabasesCachedSoFar, databases.size());
       }
-      completePrewarm(startTime);
+      completePrewarm(startTime, true);
     }
   }
 
-  private static void completePrewarm(long startTime) {
+  private static void completePrewarm(long startTime, boolean cachedAllMetadata) {
     isCachePrewarmed.set(true);
+    isCachedAllMetadata.set(cachedAllMetadata);
     LOG.info("CachedStore initialized");
     long endTime = System.nanoTime();
     LOG.info("Time taken in prewarming = " + (endTime - startTime) / 1000000 + "ms");
@@ -449,7 +453,7 @@ public class CachedStore implements RawStore, Configurable {
         cacheRefreshPeriodMS = MetastoreConf.getTimeVar(conf,
             ConfVars.CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY, TimeUnit.MILLISECONDS);
       }
-      LOG.info("CachedStore: starting cache update service (run every {} ms", cacheRefreshPeriodMS);
+      LOG.info("CachedStore: starting cache update service (run every {} ms)", cacheRefreshPeriodMS);
       cacheUpdateMaster = Executors.newScheduledThreadPool(1, new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
@@ -1148,7 +1152,7 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public List<String> getTables(String catName, String dbName, String pattern) throws MetaException {
-    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get()) {
+    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() || !isCachedAllMetadata.get()) {
       return rawStore.getTables(catName, dbName, pattern);
     }
     return sharedCache.listCachedTableNames(StringUtils.normalizeIdentifier(catName),
@@ -1158,7 +1162,7 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public List<String> getTables(String catName, String dbName, String pattern, TableType tableType)
       throws MetaException {
-    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get()) {
+    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() || !isCachedAllMetadata.get()) {
       return rawStore.getTables(catName, dbName, pattern, tableType);
     }
     return sharedCache.listCachedTableNames(StringUtils.normalizeIdentifier(catName),
@@ -1175,7 +1179,7 @@ public class CachedStore implements RawStore, Configurable {
   public List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames,
                                       List<String> tableTypes) throws MetaException {
     // TODO Check if all required tables are allowed, if so, get it from cache
-    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get()) {
+    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() || !isCachedAllMetadata.get()) {
       return rawStore.getTableMeta(catName, dbNames, tableNames, tableTypes);
     }
     return sharedCache.getTableMeta(StringUtils.normalizeIdentifier(catName),
@@ -1219,7 +1223,7 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public List<String> getAllTables(String catName, String dbName) throws MetaException {
-    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get()) {
+    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() || !isCachedAllMetadata.get()) {
       return rawStore.getAllTables(catName, dbName);
     }
     return sharedCache.listCachedTableNames(StringUtils.normalizeIdentifier(catName),
