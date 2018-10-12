@@ -1115,8 +1115,11 @@ public final class FunctionRegistry {
       String detailedMsg = e instanceof java.lang.reflect.InvocationTargetException ?
         e.getCause().getMessage() : e.getMessage();
 
-      throw new HiveException("Unable to execute method " + m + " with arguments "
-          + argumentString + ":" + detailedMsg, e);
+      // Log the arguments into a debug message for the ease of debugging. But when exposed through
+      // an error message they can leak sensitive information, even to the client application.
+      LOG.trace("Unable to execute method " + m + " with arguments "
+              + argumentString);
+      throw new HiveException("Unable to execute method " + m + ":" + detailedMsg, e);
     }
     return o;
   }

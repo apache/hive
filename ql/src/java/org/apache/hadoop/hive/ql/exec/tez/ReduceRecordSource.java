@@ -369,8 +369,13 @@ public class ReduceRecordSource implements RecordSource {
           rowString = "[Error getting row data with exception "
               + StringUtils.stringifyException(e2) + " ]";
         }
-        throw new HiveException("Hive Runtime Error while processing row (tag="
-            + tag + ") " + rowString, e);
+
+        // Log the contents of the row that caused exception so that it's available for debugging. But
+        // when exposed through an error message it can leak sensitive information, even to the
+        // client application.
+        l4j.trace("Hive Runtime Error while processing row (tag="
+                + tag + ") " + rowString);
+        throw new HiveException("Hive Runtime Error while processing row", e);
       }
     }
   }
