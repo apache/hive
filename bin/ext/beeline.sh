@@ -32,7 +32,11 @@ beeline () {
   export HADOOP_CLASSPATH="${hadoopClasspath}${HIVE_CONF_DIR}:${beelineJarPath}:${superCsvJarPath}:${jlineJarPath}"
   export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=beeline-log4j2.properties "
 
-  exec $HADOOP jar ${beelineJarPath} $CLASS $HIVE_OPTS "$@"
+  if [ $CLIUSER!="" ] ; then
+    exec $HADOOP jar ${beelineJarPath} $CLASS $HIVE_OPTS -n "${CLIUSER}" -p "${CLIUSER}" "$@"
+  else
+    exec $HADOOP jar ${beelineJarPath} $CLASS $HIVE_OPTS  "$@"
+  fi
 }
 
 beeline_help () {
