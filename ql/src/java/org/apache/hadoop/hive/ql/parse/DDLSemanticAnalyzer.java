@@ -1773,6 +1773,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         alterTblDesc.setDropIfExists(true);
       }
     } else {
+      addPropertyReadEntry(mapProp, inputs);
       alterTblDesc = new AlterTableDesc(AlterTableTypes.ADDPROPS, partSpec, expectView);
     }
     alterTblDesc.setProps(mapProp);

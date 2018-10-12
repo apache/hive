@@ -92,3 +92,5 @@ CREATE TABLE hive_table
 INSERT INTO hive_table VALUES(20);
 
 (SELECT * FROM ext_auth1 JOIN hive_table ON ext_auth1.ikey=hive_table.ikey) UNION ALL (SELECT * FROM ext_auth2 JOIN hive_table ON ext_auth2.ikey=hive_table.ikey);
+
+ALTER TABLE ext_auth1 SET TBLPROPERTIES ("hive.sql.dbcp.password.keystore" = "jceks://file/${system:test.tmp.dir}/../../../data/files/test.jceks");
