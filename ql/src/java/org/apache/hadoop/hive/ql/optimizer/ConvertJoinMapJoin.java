@@ -68,6 +68,8 @@ import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -348,17 +350,52 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
 
   public long computeOnlineDataSizeGeneric(Statistics statistics, long overHeadPerRow, long overHeadPerSlot) {
-
     long onlineDataSize = 0;
     long numRows = statistics.getNumRows();
     if (numRows <= 0) {
       numRows = 1;
     }
     long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
-    onlineDataSize += statistics.getDataSize();
+    onlineDataSize += statistics.getDataSize() - hashTableDataSizeAdjustment(numRows, statistics.getColumnStats());
     onlineDataSize += overHeadPerRow * statistics.getNumRows();
     onlineDataSize += overHeadPerSlot * worstCaseNeededSlots;
     return onlineDataSize;
+  }
+
+  /**
+   * In data calculation logic, we include some overhead due to java object refs, etc.
+   * However, this overhead may be different when storing values in hashtable for mapjoin.
+   * Hence, we calculate a size adjustment to the original data size for a given input.
+   */
+  private static long hashTableDataSizeAdjustment(long numRows, List<ColStatistics> colStats) {
+    long result = 0;
+
+    if (numRows <= 0 || colStats == null || colStats.isEmpty()) {
+      return result;
+    }
+
+    for (ColStatistics cs : colStats) {
+      if (cs != null) {
+        String colTypeLowerCase = cs.getColumnType().toLowerCase();
+        long nonNullCount = cs.getNumNulls() > 0 ? numRows - cs.getNumNulls() + 1 : numRows;
+        double overhead = 0;
+        if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
+            || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
+            || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+          overhead = JavaDataModel.get().lengthForStringOfLength(0);
+        } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
+          overhead = JavaDataModel.get().lengthForByteArrayOfSize(0);
+        } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
+            colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME) ||
+            colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME) ||
+            colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
+          overhead = JavaDataModel.get().object();
+        }
+        result = StatsUtils.safeAdd(StatsUtils.safeMult(nonNullCount, overhead), result);
+      }
+    }
+
+    return result;
   }
 
   @VisibleForTesting
