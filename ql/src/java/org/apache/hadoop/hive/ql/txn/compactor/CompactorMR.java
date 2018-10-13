@@ -150,11 +150,6 @@ public class CompactorMR {
     job.setOutputFormat(NullOutputFormat.class);
     job.setOutputCommitter(CompactorOutputCommitter.class);
 
-    String queueName = conf.getVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
-    if(queueName != null && queueName.length() > 0) {
-      job.setQueueName(queueName);
-    }
-
     job.set(FINAL_LOCATION, sd.getLocation());
     job.set(TMP_LOCATION, generateTmpPath(sd));
     job.set(INPUT_FORMAT_CLASS_NAME, sd.getInputFormat());
@@ -167,6 +162,12 @@ public class CompactorMR {
     if (ci.properties != null) {
       overrideTblProps(job, t.getParameters(), ci.properties);
     }
+
+    String queueName = HiveConf.getVar(job, ConfVars.COMPACTOR_JOB_QUEUE);
+    if (queueName != null && queueName.length() > 0) {
+      job.setQueueName(queueName);
+    }
+
     setColumnTypes(job, sd.getCols());
     //with feature on, multiple tasks may get into conflict creating/using TMP_LOCATION and if we were
     //to generate the target dir in the Map task, there is no easy way to pass it to OutputCommitter
