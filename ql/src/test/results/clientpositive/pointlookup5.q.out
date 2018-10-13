@@ -74,10 +74,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t
-            filterExpr: (a) IN (1, 2, 3, 4) (type: boolean)
+            filterExpr: (a) IN (1, 2, 3) (type: boolean)
             Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (a) IN (1, 2, 3, 4) (type: boolean)
+              predicate: (a) IN (1, 2, 3) (type: boolean)
               Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)
@@ -91,10 +91,10 @@ STAGE PLANS:
                   value expressions: _col0 (type: int)
           TableScan
             alias: t2
-            filterExpr: (b) IN (1, 2, 3, 4) (type: boolean)
+            filterExpr: (b) IN (1, 2, 3) (type: boolean)
             Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (b) IN (1, 2, 3, 4) (type: boolean)
+              predicate: (b) IN (1, 2, 3) (type: boolean)
               Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: b (type: int)
