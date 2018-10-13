@@ -78,6 +78,7 @@ public class SparkUtilities {
 
   /**
    * Uploads a local file to HDFS
+   * This method is not thread safe
    *
    * @param source
    * @param conf

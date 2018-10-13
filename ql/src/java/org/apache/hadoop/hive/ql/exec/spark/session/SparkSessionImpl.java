@@ -98,7 +98,6 @@ public class SparkSessionImpl implements SparkSession {
   private final String sessionId;
   private volatile HiveSparkClient hiveSparkClient;
   private volatile Path scratchDir;
-  private final Object dirLock = new Object();
 
   /**
    * The timestamp of the last completed Spark job.
@@ -317,6 +316,7 @@ public class SparkSessionImpl implements SparkSession {
     return result;
   }
 
+  //This method is not thread safe
   private void cleanScratchDir() throws IOException {
     if (scratchDir != null) {
       FileSystem fs = scratchDir.getFileSystem(conf);
@@ -324,15 +324,16 @@ public class SparkSessionImpl implements SparkSession {
       scratchDir = null;
     }
   }
-
+  /**
+   * Create scratch directory for spark session if it does not exist.
+   * This method is not thread safe.
+   * @return Path to Spark session scratch directory.
+   * @throws IOException
+   */
   @Override
   public Path getHDFSSessionDir() throws IOException {
     if (scratchDir == null) {
-      synchronized (dirLock) {
-        if (scratchDir == null) {
-          scratchDir = createScratchDir();
-        }
-      }
+      scratchDir = createScratchDir();
     }
     return scratchDir;
   }
