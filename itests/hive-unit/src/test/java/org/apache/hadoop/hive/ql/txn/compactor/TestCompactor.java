@@ -1584,6 +1584,7 @@ public class TestCompactor {
    */
   @Test
   public void testTableProperties() throws Exception {
+    conf.setVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE, "root.user1");
     String tblName1 = "ttp1"; // plain acid table
     String tblName2 = "ttp2"; // acid table with customized tblproperties
     executeStatementOnDriver("drop table if exists " + tblName1, driver);
@@ -1596,7 +1597,8 @@ public class TestCompactor {
       "'transactional'='true'," +
       "'compactor.mapreduce.map.memory.mb'='2048'," + // 2048 MB memory for compaction map job
       "'compactorthreshold.hive.compactor.delta.num.threshold'='4'," +  // minor compaction if more than 4 delta dirs
-      "'compactorthreshold.hive.compactor.delta.pct.threshold'='0.47'" + // major compaction if more than 47%
+      "'compactorthreshold.hive.compactor.delta.pct.threshold'='0.47'," + // major compaction if more than 47%
+      "'compactor.hive.compactor.job.queue'='root.user2'" + // Override the system wide compactor queue for this table
       ")", driver);
 
     // Insert 5 rows to both tables
@@ -1641,6 +1643,7 @@ public class TestCompactor {
     t.run();
     JobConf job = t.getMrJob();
     Assert.assertEquals(2048, job.getMemoryForMapTask());  // 2048 comes from tblproperties
+    Assert.assertEquals("root.user2", job.getQueueName()); // Queue name comes from table properties
     // Compact ttp1
     stop = new AtomicBoolean(true);
     t = new Worker();
@@ -1651,6 +1654,7 @@ public class TestCompactor {
     t.run();
     job = t.getMrJob();
     Assert.assertEquals(1024, job.getMemoryForMapTask());  // 1024 is the default value
+    Assert.assertEquals("root.user1", job.getQueueName()); // The system wide compaction queue name
     // Clean up
     runCleaner(conf);
     rsp = txnHandler.showCompact(new ShowCompactRequest());
@@ -1702,7 +1706,8 @@ public class TestCompactor {
     executeStatementOnDriver("alter table " + tblName2 + " compact 'major'" +
       " with overwrite tblproperties (" +
       "'compactor.mapreduce.map.memory.mb'='3072'," +
-      "'tblprops.orc.compress.size'='3141')", driver);
+      "'tblprops.orc.compress.size'='3141'," +
+      "'compactor.hive.compactor.job.queue'='root.user2')", driver);
 
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(4, rsp.getCompacts().size());
@@ -1722,6 +1727,7 @@ public class TestCompactor {
     job = t.getMrJob();
     Assert.assertEquals(3072, job.getMemoryForMapTask());
     Assert.assertTrue(job.get("hive.compactor.table.props").contains("orc.compress.size4:3141"));
+    Assert.assertEquals("root.user2", job.getQueueName());
     /*createReader(FileSystem fs, Path path) throws IOException {
      */
     //we just ran Major compaction so we should have a base_x in tblName2 that has the new files
