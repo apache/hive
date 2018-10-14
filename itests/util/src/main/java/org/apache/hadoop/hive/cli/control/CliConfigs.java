@@ -59,6 +59,8 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
 
         excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
+        excludeQuery("udaf_context_ngrams.q"); // disabled in HIVE-20741
+        excludeQuery("udaf_corr.q"); // disabled in HIVE-20741
         excludeQuery("udaf_histogram_numeric.q"); // disabled in HIVE-20715
         excludeQuery("stat_estimate_related_col.q"); // disabled in HIVE-20727
 
