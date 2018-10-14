@@ -2317,7 +2317,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String dropMsgFormat =
         "Repair: Dropped partition from metastore " + table.getFullyQualifiedName() + ":%s";
     // Copy of partitions that will be split into batches
-    Set<CheckResult.PartitionResult> batchWork = new HashSet<>(partsNotInFs);
+    Set<CheckResult.PartitionResult> batchWork = new TreeSet<>(partsNotInFs);
 
     new RetryUtilities.ExponentiallyDecayingBatchWork<Void>(batchSize, decayingFactor, maxRetries) {
       @Override
