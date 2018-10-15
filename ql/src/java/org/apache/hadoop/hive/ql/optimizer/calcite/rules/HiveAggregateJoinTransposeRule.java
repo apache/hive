@@ -171,7 +171,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         unique = true;
       } else {
         final Boolean unique0 =
-            mq.areColumnsUnique(joinInput, belowAggregateKey);
+            mq.areColumnsUnique(joinInput, belowAggregateKey, true);
         unique = unique0 != null && unique0;
       }
       if (unique) {
