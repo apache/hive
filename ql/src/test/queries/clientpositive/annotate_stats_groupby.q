@@ -140,3 +140,20 @@ explain select year from loc_orc_n2 group by year;
 -- Case 7: NO column stats - cardinality = 16
 explain select state,locid from loc_orc_n2 group by state,locid with cube;
 
+set hive.stats.fetch.column.stats=true;
+
+create table t1_uq12(i int, j int);
+alter table t1_uq12 update statistics set('numRows'='10000', 'rawDataSize'='18000');
+alter table t1_uq12 update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0');
+alter table t1_uq12 update statistics for column j set('numDVs'='500','numNulls'='30','highValue'='100','lowValue'='50');
+
+create table t2_uq12(i2 int, j2 int);
+alter table t2_uq12 update statistics set('numRows'='100000000', 'rawDataSize'='10000');
+alter table t2_uq12 update statistics for column i2 set('numDVs'='10000000','numNulls'='0','highValue'='8000','lowValue'='0');
+alter table t2_uq12 update statistics for column j2 set('numDVs'='10','numNulls'='0','highValue'='800','lowValue'='-1');
+
+explain select count (1) from t1_uq12,t2_uq12 where t1_uq12.j=t2_uq12.i2 group by t1_uq12.i, t1_uq12.j;
+
+drop table t1_uq12;
+drop table t2_uq12;
+
