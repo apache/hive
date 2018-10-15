@@ -423,6 +423,8 @@ public class SessionState {
     resourceDownloader = new ResourceDownloader(conf,
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
     killQuery = new NullKillQuery();
+
+    ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
   }
 
   public Map<String, String> getHiveVariables() {

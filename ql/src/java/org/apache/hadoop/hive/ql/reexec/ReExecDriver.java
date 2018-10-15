@@ -132,6 +132,11 @@ public class ReExecDriver implements IDriver {
   }
 
   @Override
+  public QueryState getQueryState() {
+    return queryState;
+  }
+
+  @Override
   public QueryDisplay getQueryDisplay() {
     return coreDriver.getQueryDisplay();
   }

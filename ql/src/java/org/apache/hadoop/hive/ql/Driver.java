@@ -2975,6 +2975,7 @@ public class Driver implements IDriver {
     this.operationId = opId;
   }
 
+  @Override
   public QueryState getQueryState() {
     return queryState;
   }
