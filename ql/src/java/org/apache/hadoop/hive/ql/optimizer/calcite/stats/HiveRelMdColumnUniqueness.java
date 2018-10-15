@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.calcite.rel.metadata.BuiltInMetadata;
 import org.apache.calcite.rel.metadata.MetadataDef;
@@ -32,26 +29,35 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
-public class HiveRelMdUniqueKeys implements MetadataHandler<BuiltInMetadata.UniqueKeys> {
-
+/**
+ * HiveRelMdColumnUniqueness implements the ability to get unique keys for table scan op.
+ */
+public final class HiveRelMdColumnUniqueness
+    implements MetadataHandler<BuiltInMetadata.ColumnUniqueness> {
   public static final RelMetadataProvider SOURCE =
       ReflectiveRelMetadataProvider.reflectiveSource(
-          BuiltInMethod.UNIQUE_KEYS.method, new HiveRelMdUniqueKeys());
+          BuiltInMethod.COLUMN_UNIQUENESS.method, new HiveRelMdColumnUniqueness());
 
-  @Override
-  public MetadataDef<BuiltInMetadata.UniqueKeys> getDef() {
-    return BuiltInMetadata.UniqueKeys.DEF;
+  //~ Constructors -----------------------------------------------------------
+
+  private HiveRelMdColumnUniqueness() {}
+
+  //~ Methods ----------------------------------------------------------------
+
+  public MetadataDef<BuiltInMetadata.ColumnUniqueness> getDef() {
+    return BuiltInMetadata.ColumnUniqueness.DEF;
   }
 
-
-  public Set<ImmutableBitSet> getUniqueKeys(HiveTableScan rel, RelMetadataQuery mq,
-                                            boolean ignoreNulls) {
-    RelOptHiveTable tbl = (RelOptHiveTable) rel.getTable();
-    List<ImmutableBitSet> keyList = tbl.getNonNullableKeys();
-    if (keyList != null) {
-      Set<ImmutableBitSet> keySet = new HashSet<>(keyList);
-      return keySet;
+  public Boolean areColumnsUnique(HiveTableScan rel, RelMetadataQuery mq,
+                                  ImmutableBitSet columns, boolean ignoreNulls) {
+    if(ignoreNulls) {
+      return rel.getTable().isKey(columns);
+    } else {
+      RelOptHiveTable tbl = (RelOptHiveTable)rel.getTable();
+      return tbl.isNonNullableKey(columns);
     }
-    return null;
   }
 }
+
+// End HiveRelMdColumnUniqueness.java
+

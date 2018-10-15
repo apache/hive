@@ -24,15 +24,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -300,18 +304,58 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   private boolean isRexLiteral(final RexNode rexNode) {
     if(rexNode instanceof RexLiteral) {
       return true;
-    }
-    else if(rexNode instanceof RexCall
+    } else if(rexNode instanceof RexCall
         && ((RexCall)rexNode).getOperator().getKind() == SqlKind.CAST){
       return isRexLiteral(((RexCall)(rexNode)).getOperands().get(0));
-    }
-    else {
+    } else {
       return false;
     }
   }
+
+  // if gby keys consist of pk/uk non-pk/non-uk columns are removed if they are not being used
+  private ImmutableBitSet generateNewGroupset(Aggregate aggregate, ImmutableBitSet fieldsUsed) {
+
+    ImmutableBitSet originalGroupSet = aggregate.getGroupSet();
+
+    if (aggregate.getGroupSets().size() > 1 || aggregate.getIndicatorCount() > 0
+        || fieldsUsed.contains(originalGroupSet)) {
+      // if there is grouping sets, indicator or all the group keys are being used we do no need to proceed further
+      return originalGroupSet;
+    }
+
+    final RelNode input = aggregate.getInput();
+    RelMetadataQuery mq = aggregate.getCluster().getMetadataQuery();
+
+    final Set<ImmutableBitSet> uniqueKeys = mq.getUniqueKeys(input, false);
+    if (uniqueKeys == null || uniqueKeys.isEmpty()) {
+      return originalGroupSet;
+    }
+
+    // we have set of unique key, get to the key which is same as group by key
+    ImmutableBitSet groupByUniqueKey = null;
+
+    for (ImmutableBitSet key : uniqueKeys) {
+      if (aggregate.getGroupSet().contains(key)) {
+        groupByUniqueKey = key;
+        break;
+      }
+    }
+
+    if (groupByUniqueKey == null) {
+      // group by keys do not represent unique keys
+      return originalGroupSet;
+    }
+
+    // we know group by key contains primary key and there is at least one column in group by which is not being used
+    // if that column is not part of key it should be removed
+    ImmutableBitSet nonKeyColumns = aggregate.getGroupSet().except(groupByUniqueKey);
+    ImmutableBitSet columnsToRemove = nonKeyColumns.except(fieldsUsed);
+    ImmutableBitSet newGroupSet = aggregate.getGroupSet().except(columnsToRemove);
+
+    return  newGroupSet;
+  }
+
   /**
-   * Variant of {@link #trimFields(Aggregate, ImmutableBitSet, Set)} for
-   * {@link org.apache.calcite.rel.logical.LogicalAggregate}.
    * This method replaces group by 'constant key' with group by true (boolean)
    * if and only if
    *  group by doesn't have grouping sets
@@ -322,50 +366,193 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
    *  underneath aggregate
    *
    *  This is mainly done so that hive is able to push down queries with
-   *  group by 'constant key with type not supported by druid' into druid
+   *  group by 'constant key with type not supported by druid' into druid.
+   *
    */
-  public TrimResult trimFields(Aggregate aggregate, ImmutableBitSet fieldsUsed,
-                               Set<RelDataTypeField> extraFields) {
+  private Aggregate rewriteGBConstantKeys(Aggregate aggregate, ImmutableBitSet fieldsUsed,
+                                          Set<RelDataTypeField> extraFields) {
+    if ((aggregate.getIndicatorCount() > 0)
+        || (aggregate.getGroupSet().isEmpty())
+        || fieldsUsed.contains(aggregate.getGroupSet())) {
+      return aggregate;
+    }
 
-    Aggregate newAggregate = aggregate;
-    if (!(aggregate.getIndicatorCount() > 0)
-        && !(aggregate.getGroupSet().isEmpty())
-        && !fieldsUsed.contains(aggregate.getGroupSet())) {
-      final RelNode input = aggregate.getInput();
-      final RelDataType rowType = input.getRowType();
-      RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
-      final List<RexNode> newProjects = new ArrayList<>();
+    final RelNode input = aggregate.getInput();
 
-      final List<RexNode> inputExprs = input.getChildExps();
-      if(inputExprs == null || inputExprs.isEmpty()) {
-        return super.trimFields(newAggregate, fieldsUsed, extraFields);
-      }
 
-      boolean allConstants = true;
-      for(int key : aggregate.getGroupSet()) {
-        // getChildExprs on Join could return less number of expressions than there are coming out of join
-        if(inputExprs.size() <= key || !isRexLiteral(inputExprs.get(key))){
-          allConstants = false;
-          break;
-        }
-      }
+    final RelDataType rowType = input.getRowType();
+    RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
+    final List<RexNode> newProjects = new ArrayList<>();
 
-      if (allConstants) {
-        for (int i = 0; i < rowType.getFieldCount(); i++) {
-          if (aggregate.getGroupSet().get(i)) {
-            newProjects.add(rexBuilder.makeLiteral(true));
-          } else {
-            newProjects.add(rexBuilder.makeInputRef(input, i));
-          }
-        }
-        relBuilder.push(input);
-        relBuilder.project(newProjects);
-        newAggregate = new HiveAggregate(aggregate.getCluster(), aggregate.getTraitSet(), relBuilder.build(),
-                                         aggregate.getGroupSet(), null, aggregate.getAggCallList());
+    final List<RexNode> inputExprs = input.getChildExps();
+    if (inputExprs == null || inputExprs.isEmpty()) {
+      return aggregate;
+    }
+
+    boolean allConstants = true;
+    for (int key : aggregate.getGroupSet()) {
+      // getChildExprs on Join could return less number of expressions than there are coming out of join
+      if (inputExprs.size() <= key || !isRexLiteral(inputExprs.get(key))) {
+        allConstants = false;
+        break;
       }
     }
-    return super.trimFields(newAggregate, fieldsUsed, extraFields);
+
+    if (allConstants) {
+      for (int i = 0; i < rowType.getFieldCount(); i++) {
+        if (aggregate.getGroupSet().get(i)) {
+          newProjects.add(rexBuilder.makeLiteral(true));
+        } else {
+          newProjects.add(rexBuilder.makeInputRef(input, i));
+        }
+      }
+      relBuilder.push(input);
+      relBuilder.project(newProjects);
+      Aggregate newAggregate = new HiveAggregate(aggregate.getCluster(), aggregate.getTraitSet(), relBuilder.build(),
+                                                 aggregate.getGroupSet(), null, aggregate.getAggCallList());
+      return newAggregate;
+    }
+    return aggregate;
   }
+
+  @Override
+  public TrimResult trimFields(Aggregate aggregate, ImmutableBitSet fieldsUsed, Set<RelDataTypeField> extraFields) {
+    // Fields:
+    //
+    // | sys fields | group fields | indicator fields | agg functions |
+    //
+    // Two kinds of trimming:
+    //
+    // 1. If agg rel has system fields but none of these are used, create an
+    // agg rel with no system fields.
+    //
+    // 2. If aggregate functions are not used, remove them.
+    //
+    // But group and indicator fields stay, even if they are not used.
+
+    aggregate = rewriteGBConstantKeys(aggregate, fieldsUsed, extraFields);
+
+    final RelDataType rowType = aggregate.getRowType();
+
+    // Compute which input fields are used.
+    // 1. group fields are always used
+    final ImmutableBitSet.Builder inputFieldsUsed =
+        aggregate.getGroupSet().rebuild();
+    // 2. agg functions
+    for (AggregateCall aggCall : aggregate.getAggCallList()) {
+      for (int i : aggCall.getArgList()) {
+        inputFieldsUsed.set(i);
+      }
+      if (aggCall.filterArg >= 0) {
+        inputFieldsUsed.set(aggCall.filterArg);
+      }
+    }
+
+    // Create input with trimmed columns.
+    final RelNode input = aggregate.getInput();
+    final Set<RelDataTypeField> inputExtraFields = Collections.emptySet();
+    final TrimResult trimResult =
+        trimChild(aggregate, input, inputFieldsUsed.build(), inputExtraFields);
+    final RelNode newInput = trimResult.left;
+    final Mapping inputMapping = trimResult.right;
+
+    ImmutableBitSet originalGroupSet = aggregate.getGroupSet();
+    ImmutableBitSet updatedGroupSet = generateNewGroupset(aggregate, fieldsUsed);
+    ImmutableBitSet gbKeysDeleted = originalGroupSet.except(updatedGroupSet);
+    ImmutableBitSet updatedGroupFields = ImmutableBitSet.range(originalGroupSet.cardinality());
+    final int updatedGroupCount = updatedGroupSet.cardinality();
+
+    // we need to clear the bits corresponding to deleted gb keys
+    int setIdx = 0;
+    while(setIdx != -1) {
+      setIdx = gbKeysDeleted.nextSetBit(setIdx);
+      if(setIdx != -1) {
+        updatedGroupFields = updatedGroupFields.clear(setIdx);
+        setIdx++;
+      }
+    }
+    fieldsUsed =
+        fieldsUsed.union(updatedGroupFields);
+
+    // If the input is unchanged, and we need to project all columns,
+    // there's nothing to do.
+    if (input == newInput
+        && fieldsUsed.equals(ImmutableBitSet.range(rowType.getFieldCount()))) {
+      return result(aggregate,
+                    Mappings.createIdentity(rowType.getFieldCount()));
+    }
+
+    // update the group by keys based on inputMapping
+    ImmutableBitSet newGroupSet =
+        Mappings.apply(inputMapping, updatedGroupSet);
+
+    // Which agg calls are used by our consumer?
+    int originalGroupCount = aggregate.getGroupSet().cardinality();
+    int j = originalGroupCount;
+    int usedAggCallCount = 0;
+    for (int i = 0; i < aggregate.getAggCallList().size(); i++) {
+      if (fieldsUsed.get(j++)) {
+        ++usedAggCallCount;
+      }
+    }
+
+    // Offset due to the number of system fields having changed.
+    Mapping mapping =
+        Mappings.create(
+            MappingType.INVERSE_SURJECTION,
+            rowType.getFieldCount(),
+            updatedGroupCount + usedAggCallCount);
+
+
+    // if group keys were reduced, it means we didn't have grouping therefore
+    // we don't need to transform group sets
+    ImmutableList<ImmutableBitSet> newGroupSets = null;
+    if(!updatedGroupSet.equals(aggregate.getGroupSet())) {
+      newGroupSets = ImmutableList.of(newGroupSet);
+    } else {
+      newGroupSets = ImmutableList.copyOf(
+          Iterables.transform(aggregate.getGroupSets(),
+            input1 -> Mappings.apply(inputMapping, input1)));
+    }
+
+    // Populate mapping of where to find the fields. System, group key and
+    // indicator fields first.
+    int gbKeyIdx = 0;
+    for (j = 0; j < originalGroupCount; j++) {
+      if(fieldsUsed.get(j)) {
+        mapping.set(j, gbKeyIdx);
+        gbKeyIdx++;
+      }
+    }
+
+    // Now create new agg calls, and populate mapping for them.
+    relBuilder.push(newInput);
+    final List<RelBuilder.AggCall> newAggCallList = new ArrayList<>();
+    j = originalGroupCount; // because lookup in fieldsUsed is done using original group count
+    for (AggregateCall aggCall : aggregate.getAggCallList()) {
+      if (fieldsUsed.get(j)) {
+        final ImmutableList<RexNode> args =
+            relBuilder.fields(
+                Mappings.apply2(inputMapping, aggCall.getArgList()));
+        final RexNode filterArg = aggCall.filterArg < 0 ? null
+            : relBuilder.field(Mappings.apply(inputMapping, aggCall.filterArg));
+        RelBuilder.AggCall newAggCall =
+            relBuilder.aggregateCall(aggCall.getAggregation(),
+                                     aggCall.isDistinct(), aggCall.isApproximate(),
+                                     filterArg, aggCall.name, args);
+        mapping.set(j, updatedGroupCount +  newAggCallList.size());
+        newAggCallList.add(newAggCall);
+      }
+      ++j;
+    }
+
+    final RelBuilder.GroupKey groupKey =
+        relBuilder.groupKey(newGroupSet, newGroupSets);
+    relBuilder.aggregate(groupKey, newAggCallList);
+
+    return result(relBuilder.build(), mapping);
+  }
+
   /**
    * Variant of {@link #trimFields(RelNode, ImmutableBitSet, Set)} for
    * {@link org.apache.calcite.rel.logical.LogicalProject}.

@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +34,6 @@ import org.apache.calcite.prepare.RelOptTableImpl;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelDistribution;
-import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelFieldCollation.Direction;
 import org.apache.calcite.rel.RelFieldCollation.NullDirection;
@@ -49,6 +47,7 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.ColumnStrategy;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.IntPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -100,6 +99,7 @@ public class RelOptHiveTable implements RelOptTable {
   private final ImmutableList<VirtualColumn>      hiveVirtualCols;
   private final int                               noOfNonVirtualCols;
   private final List<ImmutableBitSet>             keys;
+  private final List<ImmutableBitSet>             nonNullablekeys;
   private final List<RelReferentialConstraint>    referentialConstraints;
   final HiveConf                                  hiveConf;
 
@@ -133,7 +133,9 @@ public class RelOptHiveTable implements RelOptTable {
     this.partitionCache = partitionCache;
     this.colStatsCache = colStatsCache;
     this.noColsMissingStats = noColsMissingStats;
-    this.keys = generateKeys();
+    Pair<List<ImmutableBitSet>, List<ImmutableBitSet>> constraintKeys = generateKeys();
+    this.keys = constraintKeys.left;
+    this.nonNullablekeys = constraintKeys.right;
     this.referentialConstraints = generateReferentialConstraints();
   }
 
@@ -165,6 +167,10 @@ public class RelOptHiveTable implements RelOptTable {
   @Override
   public Expression getExpression(Class clazz) {
     throw new UnsupportedOperationException();
+  }
+
+  public List<ImmutableBitSet> getNonNullableKeys() {
+    return nonNullablekeys;
   }
 
   @Override
@@ -213,6 +219,16 @@ public class RelOptHiveTable implements RelOptTable {
         this.hiveConf, this.partitionCache, this.colStatsCache, this.noColsMissingStats);
   }
 
+  // Given a key this method returns true if all of the columns in the key are not nullable
+  public boolean isNonNullableKey(ImmutableBitSet columns) {
+    for (ImmutableBitSet key : nonNullablekeys) {
+      if (key.contains(columns)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public boolean isKey(ImmutableBitSet columns) {
     for (ImmutableBitSet key : keys) {
@@ -228,8 +244,9 @@ public class RelOptHiveTable implements RelOptTable {
     return referentialConstraints;
   }
 
-  private List<ImmutableBitSet> generateKeys() {
+  private Pair<List<ImmutableBitSet>, List<ImmutableBitSet>> generateKeys() {
     ImmutableList.Builder<ImmutableBitSet> builder = ImmutableList.builder();
+    ImmutableList.Builder<ImmutableBitSet> nonNullbuilder = ImmutableList.builder();
     // First PK
     final PrimaryKeyInfo pki;
     try {
@@ -250,11 +267,12 @@ public class RelOptHiveTable implements RelOptTable {
         }
         if (pkPos == rowType.getFieldNames().size()) {
           LOG.error("Column for primary key definition " + pkColName + " not found");
-          return ImmutableList.of();
         }
         keys.set(pkPos);
       }
-      builder.add(keys.build());
+      ImmutableBitSet key = keys.build();
+      builder.add(key);
+      nonNullbuilder.add(key);
     }
     // Then UKs
     final UniqueConstraint uki;
@@ -266,23 +284,31 @@ public class RelOptHiveTable implements RelOptTable {
     }
     for (List<UniqueConstraintCol> ukCols : uki.getUniqueConstraints().values()) {
       ImmutableBitSet.Builder keys = ImmutableBitSet.builder();
+      boolean isNonNullable = true;
       for (UniqueConstraintCol ukCol : ukCols) {
         int ukPos;
         for (ukPos = 0; ukPos < rowType.getFieldNames().size(); ukPos++) {
           String colName = rowType.getFieldNames().get(ukPos);
           if (ukCol.colName.equals(colName)) {
+            if(rowType.getFieldList().get(ukPos).getType().isNullable()) {
+              // they should all be nullable
+              isNonNullable = false;
+            }
             break;
           }
         }
         if (ukPos == rowType.getFieldNames().size()) {
           LOG.error("Column for unique constraint definition " + ukCol.colName + " not found");
-          return ImmutableList.of();
         }
         keys.set(ukPos);
       }
-      builder.add(keys.build());
+      ImmutableBitSet key = keys.build();
+      builder.add(key);
+      if(isNonNullable) {
+        nonNullbuilder.add(key);
+      }
     }
-    return builder.build();
+    return new Pair<>(builder.build(), nonNullbuilder.build());
   }
 
   private List<RelReferentialConstraint> generateReferentialConstraints() {
@@ -368,12 +394,11 @@ public class RelOptHiveTable implements RelOptTable {
           if (sortColumn.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC) {
             direction = Direction.ASCENDING;
             nullDirection = NullDirection.FIRST;
-          }
-          else {
+          } else {
             direction = Direction.DESCENDING;
             nullDirection = NullDirection.LAST;
           }
-          collationList.add(new RelFieldCollation(i,direction,nullDirection));
+          collationList.add(new RelFieldCollation(i, direction, nullDirection));
           break;
         }
       }
