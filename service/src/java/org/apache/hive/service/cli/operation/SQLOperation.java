@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -314,6 +315,8 @@ public class SQLOperation extends ExecuteStatementOperation {
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(SessionState.getPerfLogger());
           LogUtils.registerLoggingContext(queryState.getConf());
+          ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
+
           try {
             if (asyncPrepare) {
               prepare(queryState);

@@ -71,6 +71,7 @@ import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.ipc.CallerContext;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -479,6 +480,21 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
     String nameNode, int numDir) throws IOException {
     return new MiniSparkShim(conf, numberOfTaskTrackers, nameNode, numDir);
+  }
+
+  @Override
+  public void setHadoopCallerContext(String callerContext) {
+    CallerContext.setCurrent(new CallerContext.Builder(callerContext).build());
+  }
+
+  @Override
+  public void setHadoopQueryContext(String queryId) {
+    setHadoopCallerContext("hive_queryId_" + queryId);
+  }
+
+  @Override
+  public void setHadoopSessionContext(String sessionId) {
+    setHadoopCallerContext("hive_sessionId_" + sessionId);
   }
 
   /**
@@ -1047,7 +1063,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       return kerberosName.getShortName();
     }
   }
-
 
   public static class StoragePolicyShim implements HadoopShims.StoragePolicyShim {
 

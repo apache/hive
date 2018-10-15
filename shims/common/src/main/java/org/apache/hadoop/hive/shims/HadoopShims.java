@@ -96,6 +96,22 @@ public interface HadoopShims {
   public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException;
 
+
+  /**
+   * Set up the caller context for HDFS and Yarn.
+   */
+  void setHadoopCallerContext(String callerContext);
+
+  /**
+   * Set up context specific caller context with query prefix.
+   */
+  void setHadoopQueryContext(String queryId);
+
+  /**
+   * Set up context specific caller context with session prefix.
+   */
+  void setHadoopSessionContext(String sessionId);
+
   /**
    * Shim for MiniMrCluster
    */
