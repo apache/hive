@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public final class CompileLockFactory {
 
-  private static final ReentrantLock SERIALIZABLE_COMPILE_LOCK = new ReentrantLock();
+  private static final ReentrantLock SERIALIZABLE_COMPILE_LOCK = new ReentrantLock(true);
 
   private CompileLockFactory() {
   }
@@ -67,12 +67,12 @@ public final class CompileLockFactory {
     private final Semaphore globalCompileQuotas;
 
     SessionWithQuotaCompileLock(int compilePoolSize) {
-      globalCompileQuotas = new Semaphore(compilePoolSize);
+      globalCompileQuotas = new Semaphore(compilePoolSize, true);
     }
 
     @Override
     public void lock() {
-      getSessionLock().lock();
+      SessionState.get().getCompileLock().lock();
       globalCompileQuotas.acquireUninterruptibly();
     }
 
@@ -81,13 +81,14 @@ public final class CompileLockFactory {
       boolean result = false;
       long startTime = System.nanoTime();
 
+      ReentrantLock compileLock = SessionState.get().getCompileLock();
       try {
-        result = getSessionLock().tryLock(time, unit)
+        result = compileLock.tryLock(time, unit)
             && globalCompileQuotas.tryAcquire(
                 getRemainingTime(startTime, unit.toNanos(time)), TimeUnit.NANOSECONDS);
       } finally {
-        if (!result && getSessionLock().isHeldByCurrentThread()) {
-          getSessionLock().unlock();
+        if (!result && compileLock.isHeldByCurrentThread()) {
+          compileLock.unlock();
         }
       }
       return result;
@@ -95,12 +96,8 @@ public final class CompileLockFactory {
 
     @Override
     public void unlock() {
-      getSessionLock().unlock();
+      SessionState.get().getCompileLock().unlock();
       globalCompileQuotas.release();
-    }
-
-    private ReentrantLock getSessionLock() {
-      return SessionState.get().getCompileLock();
     }
 
     private long getRemainingTime(long startTime, long time) {
