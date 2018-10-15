@@ -898,11 +898,20 @@ struct AbortTxnsRequest {
     1: required list<i64> txn_ids,
 }
 
+struct CommitTxnKeyValue {
+    1: required i64 tableId,
+    2: required string key,
+    3: required string value,
+}
+
 struct CommitTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
     // Information related to write operations done in this transaction.
     3: optional list<WriteEventInfo> writeEventInfos,
+
+    // An optional key/value to store atomically with the transaction
+    4: optional CommitTxnKeyValue keyValue,
 }
 
 struct WriteEventInfo {

@@ -2678,16 +2678,41 @@ class AbortTxnsRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class CommitTxnKeyValue
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TABLEID = 1
+  KEY = 2
+  VALUE = 3
+
+  FIELDS = {
+    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId'},
+    KEY => {:type => ::Thrift::Types::STRING, :name => 'key'},
+    VALUE => {:type => ::Thrift::Types::STRING, :name => 'value'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableId is unset!') unless @tableId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field key is unset!') unless @key
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field value is unset!') unless @value
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class CommitTxnRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
   REPLPOLICY = 2
   WRITEEVENTINFOS = 3
+  KEYVALUE = 4
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
-    WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}, :optional => true}
+    WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}, :optional => true},
+    KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true}
   }
 
   def struct_fields; FIELDS; end
