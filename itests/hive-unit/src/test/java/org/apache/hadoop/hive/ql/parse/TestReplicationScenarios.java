@@ -52,9 +52,17 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.exec.MoveTask;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
+import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -80,6 +88,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -313,6 +322,101 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
     verifyRun("SELECT a from " + replicatedDbName + ".ptned_empty", empty, driverMirror);
     verifyRun("SELECT * from " + replicatedDbName + ".unptned_empty", empty, driverMirror);
+  }
+
+  private abstract class checkTaskPresent {
+    public boolean hasTask(Task rootTask) {
+      if (rootTask == null) {
+        return false;
+      }
+      if (validate(rootTask)) {
+        return true;
+      }
+      List<Task<? extends Serializable>> childTasks = rootTask.getChildTasks();
+      if (childTasks == null) {
+        return false;
+      }
+      for (Task<? extends Serializable> childTask : childTasks) {
+        if (hasTask(childTask)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    public abstract boolean validate(Task task);
+  }
+
+  private boolean hasMoveTask(Task rootTask) {
+    checkTaskPresent validator =  new checkTaskPresent() {
+      public boolean validate(Task task) {
+        return  (task instanceof MoveTask);
+      }
+    };
+    return validator.hasTask(rootTask);
+  }
+
+  private boolean hasPartitionTask(Task rootTask) {
+    checkTaskPresent validator =  new checkTaskPresent() {
+      public boolean validate(Task task) {
+        if (task instanceof DDLTask) {
+          DDLTask ddlTask = (DDLTask)task;
+          if (ddlTask.getWork().getAddPartitionDesc() != null) {
+            return true;
+          }
+        }
+        return false;
+      }
+    };
+    return validator.hasTask(rootTask);
+  }
+
+  private Task getReplLoadRootTask(String replicadb, boolean isIncrementalDump, Tuple tuple) throws Throwable {
+    HiveConf confTemp = new HiveConf();
+    confTemp.set("hive.repl.enable.move.optimization", "true");
+    ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, tuple.dumpLocation, replicadb,
+            null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId));
+    Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
+    replLoadTask.initialize(null, null, new DriverContext(driver.getContext()), null);
+    replLoadTask.executeTask(null);
+    Hive.getThreadLocal().closeCurrent();
+    return replLoadWork.getRootTask();
+  }
+
+  @Test
+  public void testTaskCreationOptimization() throws Throwable {
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+    String dbNameReplica = dbName + "_replica";
+    run("create table " + dbName + ".t2 (place string) partitioned by (country string)", driver);
+    run("insert into table " + dbName + ".t2 partition(country='india') values ('bangalore')", driver);
+
+    Tuple dump = replDumpDb(dbName, null, null, null);
+
+    //bootstrap load should not have move task
+    Task task = getReplLoadRootTask(dbNameReplica, false, dump);
+    assertEquals(false, hasMoveTask(task));
+    assertEquals(true, hasPartitionTask(task));
+
+    loadAndVerify(dbNameReplica, dump.dumpLocation, dump.lastReplId);
+
+    run("insert into table " + dbName + ".t2 partition(country='india') values ('delhi')", driver);
+    dump = replDumpDb(dbName, dump.lastReplId, null, null);
+
+    //no partition task should be added as the operation is inserting into an existing partition
+    task = getReplLoadRootTask(dbNameReplica, true, dump);
+    assertEquals(true, hasMoveTask(task));
+    assertEquals(false, hasPartitionTask(task));
+
+    loadAndVerify(dbNameReplica, dump.dumpLocation, dump.lastReplId);
+
+    run("insert into table " + dbName + ".t2 partition(country='us') values ('sf')", driver);
+    dump = replDumpDb(dbName, dump.lastReplId, null, null);
+
+    //no move task should be added as the operation is adding a dynamic partition
+    task = getReplLoadRootTask(dbNameReplica, true, dump);
+    assertEquals(false, hasMoveTask(task));
+    assertEquals(true, hasPartitionTask(task));
   }
 
   @Test

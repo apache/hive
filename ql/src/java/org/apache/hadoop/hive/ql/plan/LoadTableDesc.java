@@ -67,7 +67,9 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
      */
     OVERWRITE_EXISTING,
     /**
-     * No need to move the file, used in case of replication to s3
+     * No need to move the file, used in case of replication to s3. If load type is set to ignore, then only the file
+     * operations(move/rename) is ignored at load table/partition method. Other operations like statistics update,
+     * event notification happens as usual.
      */
     IGNORE
   }
