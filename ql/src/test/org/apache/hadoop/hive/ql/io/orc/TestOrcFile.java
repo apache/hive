@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -43,6 +45,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -91,6 +96,7 @@ import org.apache.orc.StringColumnStatistics;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.MemoryManagerImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -2201,5 +2207,40 @@ public class TestOrcFile {
     assertEquals(4, ((List<IntWritable>) orcrow.getFieldValue(0)).size());
     assertEquals(false, reader.hasNext());
     reader.close();
+  }
+
+  @Test
+  public void testLlapAwareMemoryManager() throws IOException {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
+        ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    try {
+      OrcFile.WriterOptions opts = OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.ZLIB);
+      Writer writer = OrcFile.createWriter(new Path(testFilePath, "-0"), opts);
+      writer.close();
+      assertEquals(opts.getMemoryManager().getClass(), MemoryManagerImpl.class);
+
+      conf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "llap");
+      LlapDaemonInfo.initialize("test", new Configuration());
+      LlapProxy.setDaemon(true);
+      opts = OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.ZLIB);
+      writer = OrcFile.createWriter(new Path(testFilePath, "-1"), opts);
+      writer.close();
+      assertEquals(opts.getMemoryManager().getClass(), OrcFile.LlapAwareMemoryManager.class);
+      assertEquals(LlapDaemonInfo.INSTANCE.getMemoryPerExecutor() * 0.5,
+        ((OrcFile.LlapAwareMemoryManager) opts.getMemoryManager()).getTotalMemoryPool(), 100);
+
+      conf.setBoolean(HiveConf.ConfVars.HIVE_ORC_WRITER_LLAP_MEMORY_MANAGER_ENABLED.varname, false);
+      opts = OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.ZLIB);
+      writer = OrcFile.createWriter(new Path(testFilePath, "-2"), opts);
+      writer.close();
+      assertEquals(opts.getMemoryManager().getClass(), MemoryManagerImpl.class);
+    } finally {
+      LlapProxy.setDaemon(false);
+      conf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "container");
+    }
   }
 }
