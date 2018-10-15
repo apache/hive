@@ -1937,6 +1937,10 @@ public class HiveConf extends Configuration {
         " ETL strategy is used when spending little more time in split generation is acceptable" +
         " (split generation reads and caches file footers). HYBRID chooses between the above strategies" +
         " based on heuristics."),
+    HIVE_ORC_WRITER_LLAP_MEMORY_MANAGER_ENABLED("hive.exec.orc.writer.llap.memory.manager.enabled", true,
+      "Whether orc writers should use llap-aware memory manager. LLAP aware memory manager will use memory\n" +
+        "per executor instead of entire heap memory when concurrent orc writers are involved. This will let\n" +
+        "task fragments to use memory within its limit (memory per executor) when performing ETL in LLAP."),
 
     // hive streaming ingest settings
     HIVE_STREAMING_AUTO_FLUSH_ENABLED("hive.streaming.auto.flush.enabled", true, "Whether to enable memory \n" +
