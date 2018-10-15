@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField REPL_POLICY_FIELD_DESC = new org.apache.thrift.protocol.TField("replPolicy", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField WRITE_EVENT_INFOS_FIELD_DESC = new org.apache.thrift.protocol.TField("writeEventInfos", org.apache.thrift.protocol.TType.LIST, (short)3);
   private static final org.apache.thrift.protocol.TField REPL_LAST_ID_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("replLastIdInfo", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+  private static final org.apache.thrift.protocol.TField KEY_VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("keyValue", org.apache.thrift.protocol.TType.STRUCT, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,15 @@ import org.slf4j.LoggerFactory;
   private String replPolicy; // optional
   private List<WriteEventInfo> writeEventInfos; // optional
   private ReplLastIdInfo replLastIdInfo; // optional
+  private CommitTxnKeyValue keyValue; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TXNID((short)1, "txnid"),
     REPL_POLICY((short)2, "replPolicy"),
     WRITE_EVENT_INFOS((short)3, "writeEventInfos"),
-    REPL_LAST_ID_INFO((short)4, "replLastIdInfo");
+    REPL_LAST_ID_INFO((short)4, "replLastIdInfo"),
+    KEY_VALUE((short)5, "keyValue");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ import org.slf4j.LoggerFactory;
           return WRITE_EVENT_INFOS;
         case 4: // REPL_LAST_ID_INFO
           return REPL_LAST_ID_INFO;
+        case 5: // KEY_VALUE
+          return KEY_VALUE;
         default:
           return null;
       }
@@ -124,7 +129,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.WRITE_EVENT_INFOS,_Fields.REPL_LAST_ID_INFO};
+  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.WRITE_EVENT_INFOS,_Fields.REPL_LAST_ID_INFO,_Fields.KEY_VALUE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -137,6 +142,8 @@ import org.slf4j.LoggerFactory;
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WriteEventInfo.class))));
     tmpMap.put(_Fields.REPL_LAST_ID_INFO, new org.apache.thrift.meta_data.FieldMetaData("replLastIdInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ReplLastIdInfo.class)));
+    tmpMap.put(_Fields.KEY_VALUE, new org.apache.thrift.meta_data.FieldMetaData("keyValue", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CommitTxnKeyValue.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CommitTxnRequest.class, metaDataMap);
   }
@@ -171,6 +178,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetReplLastIdInfo()) {
       this.replLastIdInfo = new ReplLastIdInfo(other.replLastIdInfo);
     }
+    if (other.isSetKeyValue()) {
+      this.keyValue = new CommitTxnKeyValue(other.keyValue);
+    }
   }
 
   public CommitTxnRequest deepCopy() {
@@ -184,6 +194,7 @@ import org.slf4j.LoggerFactory;
     this.replPolicy = null;
     this.writeEventInfos = null;
     this.replLastIdInfo = null;
+    this.keyValue = null;
   }
 
   public long getTxnid() {
@@ -292,6 +303,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public CommitTxnKeyValue getKeyValue() {
+    return this.keyValue;
+  }
+
+  public void setKeyValue(CommitTxnKeyValue keyValue) {
+    this.keyValue = keyValue;
+  }
+
+  public void unsetKeyValue() {
+    this.keyValue = null;
+  }
+
+  /** Returns true if field keyValue is set (has been assigned a value) and false otherwise */
+  public boolean isSetKeyValue() {
+    return this.keyValue != null;
+  }
+
+  public void setKeyValueIsSet(boolean value) {
+    if (!value) {
+      this.keyValue = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TXNID:
@@ -326,6 +360,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case KEY_VALUE:
+      if (value == null) {
+        unsetKeyValue();
+      } else {
+        setKeyValue((CommitTxnKeyValue)value);
+      }
+      break;
+
     }
   }
 
@@ -342,6 +384,9 @@ import org.slf4j.LoggerFactory;
 
     case REPL_LAST_ID_INFO:
       return getReplLastIdInfo();
+
+    case KEY_VALUE:
+      return getKeyValue();
 
     }
     throw new IllegalStateException();
@@ -362,6 +407,8 @@ import org.slf4j.LoggerFactory;
       return isSetWriteEventInfos();
     case REPL_LAST_ID_INFO:
       return isSetReplLastIdInfo();
+    case KEY_VALUE:
+      return isSetKeyValue();
     }
     throw new IllegalStateException();
   }
@@ -415,6 +462,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_keyValue = true && this.isSetKeyValue();
+    boolean that_present_keyValue = true && that.isSetKeyValue();
+    if (this_present_keyValue || that_present_keyValue) {
+      if (!(this_present_keyValue && that_present_keyValue))
+        return false;
+      if (!this.keyValue.equals(that.keyValue))
+        return false;
+    }
+
     return true;
   }
 
@@ -441,6 +497,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_replLastIdInfo);
     if (present_replLastIdInfo)
       list.add(replLastIdInfo);
+
+    boolean present_keyValue = true && (isSetKeyValue());
+    list.add(present_keyValue);
+    if (present_keyValue)
+      list.add(keyValue);
 
     return list.hashCode();
   }
@@ -489,6 +550,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetReplLastIdInfo()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.replLastIdInfo, other.replLastIdInfo);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetKeyValue()).compareTo(other.isSetKeyValue());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetKeyValue()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.keyValue, other.keyValue);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -546,6 +617,16 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
+    if (isSetKeyValue()) {
+      if (!first) sb.append(", ");
+      sb.append("keyValue:");
+      if (this.keyValue == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.keyValue);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -559,6 +640,9 @@ import org.slf4j.LoggerFactory;
     // check for sub-struct validity
     if (replLastIdInfo != null) {
       replLastIdInfo.validate();
+    }
+    if (keyValue != null) {
+      keyValue.validate();
     }
   }
 
@@ -642,6 +726,15 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // KEY_VALUE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.keyValue = new CommitTxnKeyValue();
+              struct.keyValue.read(iprot);
+              struct.setKeyValueIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -686,6 +779,13 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.keyValue != null) {
+        if (struct.isSetKeyValue()) {
+          oprot.writeFieldBegin(KEY_VALUE_FIELD_DESC);
+          struct.keyValue.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -714,7 +814,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetReplLastIdInfo()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetKeyValue()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetReplPolicy()) {
         oprot.writeString(struct.replPolicy);
       }
@@ -730,6 +833,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetReplLastIdInfo()) {
         struct.replLastIdInfo.write(oprot);
       }
+      if (struct.isSetKeyValue()) {
+        struct.keyValue.write(oprot);
+      }
     }
 
     @Override
@@ -737,7 +843,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.txnid = iprot.readI64();
       struct.setTxnidIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.replPolicy = iprot.readString();
         struct.setReplPolicyIsSet(true);
@@ -760,6 +866,11 @@ import org.slf4j.LoggerFactory;
         struct.replLastIdInfo = new ReplLastIdInfo();
         struct.replLastIdInfo.read(iprot);
         struct.setReplLastIdInfoIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.keyValue = new CommitTxnKeyValue();
+        struct.keyValue.read(iprot);
+        struct.setKeyValueIsSet(true);
       }
     }
   }

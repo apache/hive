@@ -972,13 +972,21 @@ struct ReplLastIdInfo {
     5: optional list<string> partitionList,
 }
 
+struct CommitTxnKeyValue {
+    1: required i64 tableId,
+    2: required string key,
+    3: required string value,
+}
+
 struct CommitTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
     // Information related to write operations done in this transaction.
     3: optional list<WriteEventInfo> writeEventInfos,
     // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
-    4: optional ReplLastIdInfo replLastIdInfo
+    4: optional ReplLastIdInfo replLastIdInfo,
+    // An optional key/value to store atomically with the transaction
+    5: optional CommitTxnKeyValue keyValue
 }
 
 struct ReplTblWriteIdStateRequest {
