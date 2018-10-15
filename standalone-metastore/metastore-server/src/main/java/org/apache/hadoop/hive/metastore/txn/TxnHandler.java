@@ -1111,6 +1111,38 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to execute update <" + s + ">");
         stmt.executeUpdate(s);
 
+        // update the key/value associated with the transaction if it has been
+        // set
+        if (rqst.isSetKeyValue()) {
+          if (!rqst.getKeyValue().getKey().startsWith(TxnStore.TXN_KEY_START)) {
+            String errorMsg = "Error updating key/value in the sql backend with"
+                + " txnId=" + rqst.getTxnid() + ","
+                + " tableId=" + rqst.getKeyValue().getTableId() + ","
+                + " key=" + rqst.getKeyValue().getKey() + ","
+                + " value=" + rqst.getKeyValue().getValue() + "."
+                + " key should start with " + TXN_KEY_START + ".";
+            LOG.warn(errorMsg);
+            throw new IllegalArgumentException(errorMsg);
+          }
+          s = "UPDATE TABLE_PARAMS SET"
+              + " PARAM_VALUE = " + quoteString(rqst.getKeyValue().getValue())
+              + " WHERE TBL_ID = " + rqst.getKeyValue().getTableId()
+              + " AND PARAM_KEY = " + quoteString(rqst.getKeyValue().getKey());
+          LOG.debug("Going to execute update <" + s + ">");
+          int affectedRows = stmt.executeUpdate(s);
+          if (affectedRows != 1) {
+            String errorMsg = "Error updating key/value in the sql backend with"
+                + " txnId=" + rqst.getTxnid() + ","
+                + " tableId=" + rqst.getKeyValue().getTableId() + ","
+                + " key=" + rqst.getKeyValue().getKey() + ","
+                + " value=" + rqst.getKeyValue().getValue() + "."
+                + " Only one row should have been affected but "
+                + affectedRows + " rows where affected.";
+            LOG.warn(errorMsg);
+            throw new IllegalStateException(errorMsg);
+          }
+        }
+
         if (transactionalListeners != null) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, null), dbConn, sqlGenerator);

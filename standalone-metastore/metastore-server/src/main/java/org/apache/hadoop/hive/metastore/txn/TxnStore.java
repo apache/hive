@@ -41,6 +41,10 @@ import java.util.Set;
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 public interface TxnStore extends Configurable {
+  /**
+   * Prefix for key when committing with a key/value.
+   */
+  public static final String TXN_KEY_START = "_meta";
 
   enum MUTEX_KEY {
     Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
