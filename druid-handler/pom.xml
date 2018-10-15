@@ -192,6 +192,11 @@
       <version>${druid.version}</version>
     </dependency>
     <dependency>
+      <groupId>io.druid.extensions</groupId>
+      <artifactId>druid-bloom-filter</artifactId>
+      <version>${druid.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <scope>provided</scope>

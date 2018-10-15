@@ -59,8 +59,8 @@ public class DruidTopNQueryRecordReader
     if (values.hasNext()) {
       return true;
     }
-    if (queryResultsIterator.hasNext()) {
-      current = queryResultsIterator.next();
+    if (getQueryResultsIterator().hasNext()) {
+      current = getQueryResultsIterator().next();
       values = current.getValue().getValue().iterator();
       return nextKeyValue();
     }
@@ -104,7 +104,7 @@ public class DruidTopNQueryRecordReader
 
   @Override
   public float getProgress() {
-    return queryResultsIterator.hasNext() || values.hasNext() ? 0 : 1;
+    return getQueryResultsIterator().hasNext() || values.hasNext() ? 0 : 1;
   }
 
 }

@@ -261,9 +261,11 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           List<ExprNodeDesc> andArgs = new ArrayList<ExprNodeDesc>();
           andArgs.add(betweenNode);
           andArgs.add(bloomFilterNode);
-          ExprNodeDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
+          ExprNodeGenericFuncDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
               FunctionRegistry.getFunctionInfo("and").getGenericUDF(), andArgs);
           replaceExprNode(ctx, desc, andExpr);
+          // Also pass in filter as tableScan filterExpr
+          ts.getConf().setFilterExpr(andExpr);
         } else {
           ExprNodeDesc replaceNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
           replaceExprNode(ctx, desc, replaceNode);

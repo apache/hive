@@ -25,6 +25,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
@@ -43,6 +44,7 @@ import com.metamx.http.client.response.FullResponseHolder;
 import com.metamx.http.client.response.InputStreamResponseHandler;
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.StringDimensionSchema;
+import io.druid.guice.BloomFilterSerializersModule;
 import io.druid.jackson.DefaultObjectMapper;
 import io.druid.java.util.common.Pair;
 import io.druid.java.util.common.granularity.Granularity;
@@ -50,6 +52,8 @@ import io.druid.math.expr.ExprMacroTable;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
+import io.druid.query.Druids;
+import io.druid.query.Query;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.DoubleSumAggregatorFactory;
 import io.druid.query.aggregation.FloatSumAggregatorFactory;
@@ -63,18 +67,34 @@ import io.druid.query.expression.TimestampFormatExprMacro;
 import io.druid.query.expression.TimestampParseExprMacro;
 import io.druid.query.expression.TimestampShiftExprMacro;
 import io.druid.query.expression.TrimExprMacro;
+import io.druid.query.filter.AndDimFilter;
+import io.druid.query.filter.BloomDimFilter;
+import io.druid.query.filter.BoundDimFilter;
+import io.druid.query.filter.DimFilter;
+import io.druid.query.filter.OrDimFilter;
+import io.druid.query.groupby.GroupByQuery;
+import io.druid.query.ordering.StringComparator;
+import io.druid.query.ordering.StringComparators;
 import io.druid.query.scan.ScanQuery;
+import io.druid.query.select.SelectQuery;
 import io.druid.query.select.SelectQueryConfig;
 import io.druid.query.spec.MultipleIntervalSegmentSpec;
+import io.druid.query.timeseries.TimeseriesQuery;
+import io.druid.query.topn.TopNQuery;
+import io.druid.query.topn.TopNQueryBuilder;
 import io.druid.segment.IndexIO;
 import io.druid.segment.IndexMergerV9;
 import io.druid.segment.IndexSpec;
+import io.druid.segment.VirtualColumn;
+import io.druid.segment.VirtualColumns;
+import io.druid.segment.column.ValueType;
 import io.druid.segment.data.ConciseBitmapSerdeFactory;
 import io.druid.segment.data.RoaringBitmapSerdeFactory;
 import io.druid.segment.indexing.granularity.GranularitySpec;
 import io.druid.segment.indexing.granularity.UniformGranularitySpec;
 import io.druid.segment.loading.DataSegmentPusher;
 import io.druid.segment.realtime.appenderator.SegmentIdentifier;
+import io.druid.segment.virtual.ExpressionVirtualColumn;
 import io.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
 import io.druid.storage.hdfs.HdfsDataSegmentPusher;
 import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
@@ -86,20 +106,42 @@ import io.druid.timeline.partition.NoneShardSpec;
 import io.druid.timeline.partition.NumberedShardSpec;
 import io.druid.timeline.partition.PartitionChunk;
 import io.druid.timeline.partition.ShardSpec;
+import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ExprNodeDynamicValueEvaluator;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.UDFToDouble;
+import org.apache.hadoop.hive.ql.udf.UDFToFloat;
+import org.apache.hadoop.hive.ql.udf.UDFToLong;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToString;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.BloomKFilter;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
@@ -109,7 +151,6 @@ import org.joda.time.chrono.ISOChronology;
 import org.skife.jdbi.v2.Folder3;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.PreparedBatch;
-import org.skife.jdbi.v2.Query;
 import org.skife.jdbi.v2.ResultIterator;
 import org.skife.jdbi.v2.exceptions.CallbackFailedException;
 import org.skife.jdbi.v2.tweak.HandleCallback;
@@ -132,14 +173,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-
+import java.util.stream.Collectors;
 
 /**
  * Utils class for Druid storage handler.
@@ -164,6 +207,14 @@ public final class DruidStorageHandlerUtils {
           new DateTime("3000-01-01", ISOChronology.getInstanceUTC())
   ).withChronology(ISOChronology.getInstanceUTC());
 
+  public static ExprMacroTable EXPR_MACRO_TABLE = new ExprMacroTable(ImmutableList
+      .of(new LikeExprMacro(), new RegexpExtractExprMacro(), new TimestampCeilExprMacro(),
+          new TimestampExtractExprMacro(), new TimestampFormatExprMacro(),
+          new TimestampParseExprMacro(), new TimestampShiftExprMacro(),
+          new TimestampFloorExprMacro(), new TrimExprMacro.BothTrimExprMacro(),
+          new TrimExprMacro.LeftTrimExprMacro(), new TrimExprMacro.RightTrimExprMacro()
+      ));
+
   /**
    * Mapper to use to serialize/deserialize Druid objects (JSON)
    */
@@ -180,19 +231,7 @@ public final class DruidStorageHandlerUtils {
     InjectableValues.Std injectableValues = new InjectableValues.Std()
         .addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
         // Expressions macro table used when we deserialize the query from calcite plan
-        .addValue(ExprMacroTable.class, new ExprMacroTable(ImmutableList
-            .of(new LikeExprMacro(),
-                new RegexpExtractExprMacro(),
-                new TimestampCeilExprMacro(),
-                new TimestampExtractExprMacro(),
-                new TimestampFormatExprMacro(),
-                new TimestampParseExprMacro(),
-                new TimestampShiftExprMacro(),
-                new TimestampFloorExprMacro(),
-                new TrimExprMacro.BothTrimExprMacro(),
-                new TrimExprMacro.LeftTrimExprMacro(),
-                new TrimExprMacro.RightTrimExprMacro()
-            )))
+        .addValue(ExprMacroTable.class, EXPR_MACRO_TABLE)
         .addValue(ObjectMapper.class, JSON_MAPPER)
         .addValue(DataSegment.PruneLoadSpecHolder.class, DataSegment.PruneLoadSpecHolder.DEFAULT);
 
@@ -201,6 +240,12 @@ public final class DruidStorageHandlerUtils {
     // Register the shard sub type to be used by the mapper
     JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
     JSON_MAPPER.registerSubtypes(new NamedType(NumberedShardSpec.class, "numbered"));
+
+    // Register Bloom Filter Serializers
+    BloomFilterSerializersModule bloomFilterSerializersModule = new BloomFilterSerializersModule();
+    JSON_MAPPER.registerModule(bloomFilterSerializersModule);
+    SMILE_MAPPER.registerModule(bloomFilterSerializersModule);
+
     // set the timezone of the object mapper
     // THIS IS NOT WORKING workaround is to set it as part of java opts -Duser.timezone="UTC"
     JSON_MAPPER.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -721,7 +766,7 @@ public final class DruidStorageHandlerUtils {
           final Interval interval,
           final MetadataStorageTablesConfig dbTables
   ) throws IOException {
-    Query<Map<String, Object>> sql = handle.createQuery(
+    org.skife.jdbi.v2.Query<Map<String, Object>> sql = handle.createQuery(
             String.format(
                     "SELECT payload FROM %s WHERE used = true AND dataSource = ? AND start <= ? AND \"end\" >= ?",
                     dbTables.getSegmentsTable()
@@ -916,4 +961,258 @@ public final class DruidStorageHandlerUtils {
     return Pair.of(dimensions,
         aggregatorFactories.toArray(new AggregatorFactory[aggregatorFactories.size()]));
   }
+
+  // Druid only supports String,Long,Float,Double selectors
+  private static Set<TypeInfo> DRUID_SUPPORTED_TYPE_INFOS = ImmutableSet.<TypeInfo>of(
+          TypeInfoFactory.stringTypeInfo, TypeInfoFactory.charTypeInfo,
+          TypeInfoFactory.varcharTypeInfo, TypeInfoFactory.byteTypeInfo,
+          TypeInfoFactory.intTypeInfo, TypeInfoFactory.longTypeInfo,
+          TypeInfoFactory.shortTypeInfo, TypeInfoFactory.doubleTypeInfo
+  );
+
+  private static Set<TypeInfo> STRING_TYPE_INFOS = ImmutableSet.<TypeInfo>of(
+          TypeInfoFactory.stringTypeInfo,
+          TypeInfoFactory.charTypeInfo, TypeInfoFactory.varcharTypeInfo
+  );
+
+
+  public static Query addDynamicFilters(Query query,
+          ExprNodeGenericFuncDesc filterExpr, Configuration conf, boolean resolveDynamicValues
+  ) {
+    List<VirtualColumn> virtualColumns = Lists.newArrayList(getVirtualColumns(query).getVirtualColumns());
+    Query rv = query;
+    DimFilter joinReductionFilter = toDruidFilter(filterExpr, conf, virtualColumns,
+            resolveDynamicValues
+    );
+    if(joinReductionFilter != null) {
+      String type = query.getType();
+      DimFilter filter = new AndDimFilter(joinReductionFilter, query.getFilter());
+      switch (type) {
+        case io.druid.query.Query.TIMESERIES:
+          rv = Druids.TimeseriesQueryBuilder.copy((TimeseriesQuery) query)
+                  .filters(filter)
+                  .virtualColumns(VirtualColumns.create(virtualColumns))
+                  .build();
+          break;
+        case Query.TOPN:
+          rv = new TopNQueryBuilder((TopNQuery) query)
+                  .filters(filter)
+                  .virtualColumns(VirtualColumns.create(virtualColumns))
+                  .build();
+          break;
+        case Query.GROUP_BY:
+          rv = new GroupByQuery.Builder((GroupByQuery) query)
+                  .setDimFilter(filter)
+                  .setVirtualColumns(VirtualColumns.create(virtualColumns))
+                  .build();
+          break;
+        case Query.SCAN:
+          rv = ScanQuery.ScanQueryBuilder.copy((ScanQuery) query)
+                  .filters(filter)
+                  .virtualColumns(VirtualColumns.create(virtualColumns))
+                  .build();
+          break;
+        case Query.SELECT:
+          rv = Druids.SelectQueryBuilder.copy((SelectQuery) query)
+                  .filters(filter)
+                  .virtualColumns(VirtualColumns.create(virtualColumns))
+                  .build();
+      }
+    }
+    return rv;
+  }
+
+  private static DimFilter toDruidFilter(ExprNodeDesc filterExpr, Configuration configuration,
+          List<VirtualColumn> virtualColumns, boolean resolveDynamicValues
+  ) {
+    if(filterExpr == null) {
+      return null;
+    }
+    Class<? extends GenericUDF> genericUDFClass = getGenericUDFClassFromExprDesc(filterExpr);
+    if(FunctionRegistry.isOpAnd(filterExpr)) {
+      Iterator<ExprNodeDesc> iterator = filterExpr.getChildren().iterator();
+      List<DimFilter> delegates = Lists.newArrayList();
+      while (iterator.hasNext()) {
+        DimFilter filter = toDruidFilter(iterator.next(), configuration, virtualColumns,
+                resolveDynamicValues
+        );
+        if(filter != null) {
+          delegates.add(filter);
+        }
+      }
+      if(delegates != null && !delegates.isEmpty()) {
+        return new AndDimFilter(delegates);
+      }
+    }
+    if(FunctionRegistry.isOpOr(filterExpr)) {
+      Iterator<ExprNodeDesc> iterator = filterExpr.getChildren().iterator();
+      List<DimFilter> delegates = Lists.newArrayList();
+      while (iterator.hasNext()) {
+        DimFilter filter = toDruidFilter(iterator.next(), configuration, virtualColumns,
+                resolveDynamicValues
+        );
+        if(filter != null) {
+          delegates.add(filter);
+        }
+      }
+      if(delegates != null) {
+        return new OrDimFilter(delegates);
+      }
+    } else if(GenericUDFBetween.class == genericUDFClass) {
+      List<ExprNodeDesc> child = filterExpr.getChildren();
+      String col = extractColName(child.get(1), virtualColumns);
+      if(col != null) {
+        try {
+          StringComparator comparator = STRING_TYPE_INFOS.contains(child.get(1).getTypeInfo())
+                  ? StringComparators.LEXICOGRAPHIC
+                  : StringComparators.NUMERIC;
+          String lower = evaluate(child.get(2), configuration, resolveDynamicValues);
+          String upper = evaluate(child.get(3), configuration, resolveDynamicValues);
+          if(lower == null && upper == null){
+            // Both lower and upper are null, no bounded values
+            return null;
+          }
+          return new BoundDimFilter(col, lower, upper, false, false, null, null,
+                  comparator
+          );
+
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    } else if(GenericUDFInBloomFilter.class == genericUDFClass) {
+      List<ExprNodeDesc> child = filterExpr.getChildren();
+      String col = extractColName(child.get(0), virtualColumns);
+      if(col != null) {
+        try {
+          BloomKFilter bloomFilter = evaluateBloomFilter(child.get(1), configuration,
+                  resolveDynamicValues
+          );
+          return new BloomDimFilter(col, bloomFilter, null);
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    return null;
+  }
+
+  private static String evaluate(ExprNodeDesc desc, Configuration configuration,
+          boolean resolveDynamicValue
+  ) throws HiveException {
+    ExprNodeEvaluator exprNodeEvaluator = ExprNodeEvaluatorFactory.get(desc, configuration);
+    if(exprNodeEvaluator instanceof ExprNodeDynamicValueEvaluator && !resolveDynamicValue) {
+      return desc.getExprStringForExplain();
+    } else {
+      Object result = exprNodeEvaluator.evaluate(null);
+      return result == null ? null : result.toString();
+    }
+  }
+
+  private static BloomKFilter evaluateBloomFilter(ExprNodeDesc desc, Configuration configuration,
+          boolean resolveDynamicValue
+  )
+          throws HiveException, IOException {
+    if(!resolveDynamicValue) {
+      // return a dummy bloom filter for explain
+      return new BloomKFilter(1);
+    } else {
+      BytesWritable bw = (BytesWritable) ExprNodeEvaluatorFactory.get(desc, configuration)
+              .evaluate(null);
+      byte[] bytes = new byte[bw.getLength()];
+      System.arraycopy(bw.getBytes(), 0, bytes, 0, bw.getLength());
+      InputStream in = new NonSyncByteArrayInputStream(bytes);
+      return BloomKFilter.deserialize(in);
+    }
+  }
+
+  public static String extractColName(ExprNodeDesc expr, List<VirtualColumn> virtualColumns) {
+    if(!DRUID_SUPPORTED_TYPE_INFOS.contains(expr.getTypeInfo())) {
+      // This column type is currently not supported in druid.(e.g boolean)
+      // We cannot pass the bloom filter to druid since bloom filter tests for exact object bytes.
+      return null;
+    }
+    if(expr instanceof ExprNodeColumnDesc) {
+      return ((ExprNodeColumnDesc) expr).getColumn();
+    }
+
+    ExprNodeGenericFuncDesc funcDesc = null;
+    if(expr instanceof ExprNodeGenericFuncDesc) {
+      funcDesc = (ExprNodeGenericFuncDesc) expr;
+    }
+    if(null == funcDesc) {
+      return null;
+    }
+    GenericUDF udf = funcDesc.getGenericUDF();
+    // bail out if its not a simple cast expression.
+    if(funcDesc.getChildren().size() != 1 || !(funcDesc.getChildren()
+            .get(0) instanceof ExprNodeColumnDesc)) {
+      return null;
+    }
+    String columnName = ((ExprNodeColumnDesc) (funcDesc.getChildren()
+            .get(0))).getColumn();
+    ValueType targetType = null;
+    if(udf instanceof GenericUDFBridge) {
+      Class<? extends UDF> udfClass = ((GenericUDFBridge) udf).getUdfClass();
+      if(udfClass.equals(UDFToDouble.class)) {
+        targetType = ValueType.DOUBLE;
+      } else if(udfClass.equals(UDFToFloat.class)) {
+        targetType = ValueType.FLOAT;
+      } else if(udfClass.equals(UDFToLong.class)) {
+        targetType = ValueType.LONG;
+      } else if(udfClass.equals(GenericUDFToString.class)) {
+        targetType = ValueType.STRING;
+      }
+    }
+
+    if(targetType == null) {
+      return null;
+    }
+    String virtualColumnExpr = String
+            .format(Locale.ENGLISH, "CAST(%s, '%s')", columnName, targetType.toString());
+    for(VirtualColumn column : virtualColumns) {
+      if(column instanceof ExpressionVirtualColumn && ((ExpressionVirtualColumn) column)
+              .getExpression().equals(virtualColumnExpr)) {
+        // Found an existing virtual column with same expression, no need to add another virtual column
+        return column.getOutputName();
+      }
+    }
+    Set<String> usedColumnNames = virtualColumns.stream().map(col -> col.getOutputName())
+            .collect(Collectors.toSet());
+    final String name = SqlValidatorUtil
+            .uniquify("vc", usedColumnNames, SqlValidatorUtil.EXPR_SUGGESTER);
+    ExpressionVirtualColumn expressionVirtualColumn = new ExpressionVirtualColumn(name,
+            virtualColumnExpr, targetType, EXPR_MACRO_TABLE
+    );
+    virtualColumns.add(expressionVirtualColumn);
+    return name;
+  }
+
+  public static VirtualColumns getVirtualColumns(Query query) {
+    String type = query.getType();
+    switch (type) {
+      case Query.TIMESERIES:
+        return ((TimeseriesQuery) query).getVirtualColumns();
+      case Query.TOPN:
+        return ((TopNQuery) query).getVirtualColumns();
+      case Query.GROUP_BY:
+        return ((GroupByQuery) query).getVirtualColumns();
+      case Query.SCAN:
+        return ((ScanQuery) query).getVirtualColumns();
+      case Query.SELECT:
+        return ((SelectQuery) query).getVirtualColumns();
+    }
+    throw new UnsupportedOperationException("Unsupported Query type" + query);
+  }
+
+  private static Class<? extends GenericUDF> getGenericUDFClassFromExprDesc(ExprNodeDesc desc) {
+    if(!(desc instanceof ExprNodeGenericFuncDesc)) {
+      return null;
+    }
+    ExprNodeGenericFuncDesc genericFuncDesc = (ExprNodeGenericFuncDesc) desc;
+    return genericFuncDesc.getGenericUDF().getClass();
+  }
+
 }
