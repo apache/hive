@@ -1060,7 +1060,12 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (tblDesc.getLocation() == null) {
-      if (!waitOnPrecursor){
+      if (tblDesc.tableType().equals(TableType.EXTERNAL_TABLE)) {
+        // For an external table, we need to use the path specified in the source table but the
+        // scheme, authority and root path of the target file system.
+        tblDesc.setLocation(wh.getDnsPath(tblDesc.getTableLocationPath()).toString());
+      }
+      else if (!waitOnPrecursor){
         tblDesc.setLocation(wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString());
       } else {
         tblDesc.setLocation(

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
@@ -79,6 +80,7 @@ public class WarehouseInstance implements Closeable {
   MiniDFSCluster miniDFSCluster;
   private HiveMetaStoreClient client;
   public final Path warehouseRoot;
+  private String extLocRoot;
 
   private static int uniqueIdentifier = 0;
 
@@ -98,6 +100,14 @@ public class WarehouseInstance implements Closeable {
     }
     Path cmRootPath = mkDir(fs, "/cmroot" + uniqueIdentifier);
     this.functionsRoot = mkDir(fs, "/functions" + uniqueIdentifier).toString();
+
+    // Create location for external table data, if required. We create the location on primary
+    // and it may get replicated to the replica. In case primary and replica are on the same file
+    // system the location will be shared between them, which is what is expected in case of
+    // external tables.
+    extLocRoot = "/external" + uniqueIdentifier;
+    mkDir(fs, extLocRoot);
+
     initialize(cmRootPath.toString(), warehouseRoot.toString(), overridesForHiveConf);
   }
 
@@ -169,6 +179,34 @@ public class WarehouseInstance implements Closeable {
     Path path = new Path(pathString);
     fs.mkdir(path, new FsPermission("777"));
     return PathBuilder.fullyQualifiedHDFSUri(path, fs);
+  }
+
+  /**
+   * Create location pointed by the given path with respect to the external table location root on
+   * DFS.
+   * @param location
+   * @return the path string to the location created with respect to the DFS
+   * @throws IOException
+   * @throws SemanticException
+   */
+  public String createExternalLoc(String location) throws IOException, SemanticException {
+    String extLoc = extLocRoot + "/" + location;
+    DistributedFileSystem fs = miniDFSCluster.getFileSystem();
+    mkDir(fs, extLoc);
+    return extLoc;
+  }
+
+  /**
+   * Delete location pointed by the given path with respect to the external table location root on
+   * DFS.
+   * @param location
+   * @throws IOException
+   * @throws SemanticException
+   */
+  public void deleteExternalLoc(String location) throws IOException, SemanticException {
+    String extLoc = extLocRoot + "/" + location;
+    DistributedFileSystem fs = miniDFSCluster.getFileSystem();
+    fs.delete(new Path(extLoc), true);
   }
 
   public HiveConf getConf() {
@@ -348,6 +386,19 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
+  /**
+   * Verify that the given table is an external table with the given location
+   * @return this
+   * @throws IOException, Exception
+   */
+  WarehouseInstance verifyExternalTable(String dbName, String tabName, String expectedLoc) throws IOException,
+          Exception {
+    Table table = getTable(dbName, tabName);
+    assertEquals(TableType.EXTERNAL_TABLE.toString(), table.getTableType());
+    assertEquals(expectedLoc, getTableLocation(dbName, tabName));
+    return this;
+  }
+
   public List<String> getOutput() throws IOException {
     List<String> results = new ArrayList<>();
     driver.getResults(results);
@@ -378,6 +429,20 @@ public class WarehouseInstance implements Closeable {
     } catch (NoSuchObjectException e) {
       return null;
     }
+  }
+
+  /**
+   *
+   * @param dbName
+   * @param tableName
+   * @return the path of given table relative to the file system of ware house.
+   * @throws Exception
+   */
+  public String getTableLocation(String dbName, String tableName) throws Exception {
+    Table table = client.getTable(dbName, tableName);
+    String location = table.getSd().getLocation();
+    URI tabLocURI = (new Path(location)).toUri();
+    return tabLocURI.getPath().toString();
   }
 
   public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {

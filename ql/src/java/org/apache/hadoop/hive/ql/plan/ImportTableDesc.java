@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -346,7 +347,7 @@ public class ImportTableDesc {
     } else if (isMaterializedView()) {
       return TableType.MATERIALIZED_VIEW;
     }
-    return TableType.MANAGED_TABLE;
+    return table.getTableType();
   }
 
   public Table toTable(HiveConf conf) throws Exception {
@@ -364,5 +365,9 @@ public class ImportTableDesc {
     if (this.createTblDesc != null) {
       this.createTblDesc.setReplWriteId(replWriteId);
     }
+  }
+
+  public Path getTableLocationPath() {
+    return table.getPath();
   }
 }

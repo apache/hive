@@ -1523,6 +1523,9 @@ public class TestReplicationScenariosAcrossInstances {
 
   @Test
   public void testDumpExternalTableSetTrue() throws Throwable {
+    String extTabName1 = "et1";
+    String extTabLoc1 = primary.createExternalLoc(primaryDbName + "_" + extTabName1);
+
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create external table t1 (id int)")
@@ -1532,6 +1535,9 @@ public class TestReplicationScenariosAcrossInstances {
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .run("insert into table t2 partition(country='us') values ('austin')")
             .run("insert into table t2 partition(country='france') values ('paris')")
+            .run("create external table " + extTabName1 + " (id int) location '" + extTabLoc1 + "'")
+            .run("insert into " + extTabName1 + " values (3)")
+            .verifyExternalTable(primaryDbName, extTabName1, extTabLoc1)
             .dump("repl dump " + primaryDbName + " with ('hive.repl.include.external.tables'='true')");
 
     replica.load(replicatedDbName, tuple.dumpLocation)
@@ -1540,17 +1546,33 @@ public class TestReplicationScenariosAcrossInstances {
             .verifyResult("t1")
             .run("show tables like 't2'")
             .verifyResult("t2")
+            .run("show tables like '" + extTabName1 + "'")
+            .verifyResult(extTabName1)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
             .run("select country from t2 where country = 'us'")
             .verifyResult("us")
             .run("select country from t2 where country = 'france'")
-            .verifyResult("france");
+            .verifyResult("france")
+            .run("select id from " + extTabName1)
+            .verifyResult("3")
+            .verifyExternalTable(replicatedDbName, "t1",
+                    primary.getTableLocation(primaryDbName, "t1"))
+            .verifyExternalTable(replicatedDbName, "t2",
+                    primary.getTableLocation(primaryDbName, "t2"))
+            .verifyExternalTable(replicatedDbName, extTabName1,
+                    primary.getTableLocation(primaryDbName, extTabName1));
+
+    String extTabName2 = "et2";
+    String extTabLoc2 = primary.createExternalLoc(primaryDbName + "_" + extTabName2);
 
     tuple = primary.run("use " + primaryDbName)
             .run("create external table t3 (id int)")
             .run("insert into table t3 values (10)")
             .run("create external table t4 as select id from t3")
+            .run("create external table " + extTabName2 + " (id int) location '" + extTabLoc2 + "'")
+            .verifyExternalTable(primaryDbName, extTabName2, extTabLoc2)
+            .run("insert into " + extTabName2 + " values (5)")
             .dump("repl dump " + primaryDbName + " from " + tuple.lastReplicationId
                     + " with ('hive.repl.include.external.tables'='true')");
 
@@ -1561,7 +1583,32 @@ public class TestReplicationScenariosAcrossInstances {
             .run("select id from t3")
             .verifyResult("10")
             .run("select id from t4")
-            .verifyResult(null); // Returns null as create table event doesn't list files
+            .verifyResult("10")
+            .run("select id from " + extTabName2)
+            .verifyResult("5")
+            .verifyExternalTable(replicatedDbName, "t3",
+                    primary.getTableLocation(primaryDbName,"t3"))
+            .verifyExternalTable(replicatedDbName, "t4",
+                    primary.getTableLocation(primaryDbName,"t4"))
+            .verifyExternalTable(replicatedDbName, extTabName2,
+                    primary.getTableLocation(primaryDbName,extTabName2));
+
+    // Insert a row in the external table on primary and it should show up on replica as well
+    // since both of them share the same file system and the external tables on both point to the
+    // same location.
+    primary.run("use " + primaryDbName)
+            .run("insert into " + extTabName1 + " values (4)");
+    replica.run("use " + replicatedDbName)
+            .run("select id from " + extTabName1 + " where id = 4")
+            .verifyResult("4");
+    primary.run("use " + primaryDbName)
+            .run("insert into " + extTabName2 + " values (6)");
+    replica.run("use " + replicatedDbName)
+            .run("select id from " + extTabName2 + " where id = 6")
+            .verifyResult("6");
+
+    primary.deleteExternalLoc(extTabLoc1);
+    primary.deleteExternalLoc(extTabLoc2);
   }
 
   @Test

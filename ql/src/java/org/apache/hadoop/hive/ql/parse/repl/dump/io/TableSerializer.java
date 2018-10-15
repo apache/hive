@@ -83,14 +83,6 @@ public class TableSerializer implements JsonWriter.Serializer {
                 ReplicationSpec.KEY.CURR_STATE_ID.toString(),
                 additionalPropertiesProvider.getCurrentReplicationState());
       }
-      if (isExternalTable(table)) {
-          // Replication destination will not be external - override if set
-        table.putToParameters("EXTERNAL", "FALSE");
-      }
-      if (isExternalTableType(table)) {
-          // Replication dest will not be external - override if set
-        table.setTableType(TableType.MANAGED_TABLE.toString());
-      }
     } else {
       // ReplicationSpec.KEY scopeKey = ReplicationSpec.KEY.REPL_SCOPE;
       // write(out, ",\""+ scopeKey.toString() +"\":\"" + replicationSpec.get(scopeKey) + "\"");
@@ -99,17 +91,6 @@ public class TableSerializer implements JsonWriter.Serializer {
       // regen if we do so.
     }
     return table;
-  }
-
-  private boolean isExternalTableType(org.apache.hadoop.hive.metastore.api.Table table) {
-    return table.isSetTableType()
-        && table.getTableType().equalsIgnoreCase(TableType.EXTERNAL_TABLE.toString());
-  }
-
-  private boolean isExternalTable(org.apache.hadoop.hive.metastore.api.Table table) {
-    Map<String, String> params = table.getParameters();
-    return params.containsKey("EXTERNAL")
-        && params.get("EXTERNAL").equalsIgnoreCase("TRUE");
   }
 
   private void writePartitions(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
