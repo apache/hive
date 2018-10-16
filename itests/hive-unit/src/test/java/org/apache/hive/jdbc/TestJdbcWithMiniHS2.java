@@ -65,6 +65,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -1147,7 +1148,7 @@ public class TestJdbcWithMiniHS2 {
     NucleusContext nc = null;
     Map<String, ClassLoaderResolver> cMap;
     try {
-      pmf = ObjectStore.class.getDeclaredField("pmf");
+      pmf = PersistenceManagerProvider.class.getDeclaredField("pmf");
       if (pmf != null) {
         pmf.setAccessible(true);
         jdoPmf = (JDOPersistenceManagerFactory) pmf.get(null);
