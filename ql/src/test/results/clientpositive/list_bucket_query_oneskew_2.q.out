@@ -42,7 +42,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@fact_tz_n2@ds=1/hr=2
 POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=2).x EXPRESSION []
 POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-#### A masked pattern was here ####
 PREHOOK: query: alter table fact_daily_n5 skewed by (x) on (484)
 PREHOOK: type: ALTERTABLE_SKEWED
 PREHOOK: Input: default@fact_daily_n5
@@ -132,8 +131,14 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 495	val_484	1
 PREHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n5`
 WHERE `ds` = '1' AND `x` = 484

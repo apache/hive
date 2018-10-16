@@ -35,11 +35,11 @@ SELECT key, value, value FROM src WHERE key=278 or key=86;
 INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='3')	
 SELECT key, value, value FROM src WHERE key=238;
 
-dfs -lsr ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1;
+--dfs -lsr ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1;
 dfs -mv ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1/hr=1 ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1/x=484;
 dfs -mv ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1/hr=2 ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME;
 dfs -mv ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1/hr=3 ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1/x=238;
-dfs -lsr ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1;	
+--dfs -lsr ${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1;
 
 -- switch fact_daily_n0 to skewed table and point its location to /fact_tz/ds=1
 alter table fact_daily_n0 skewed by (x) on (484,238);

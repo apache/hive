@@ -57,7 +57,6 @@ POSTHOOK: Output: default@fact_tz@ds=1/hr=3
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-#### A masked pattern was here ####
 PREHOOK: query: alter table fact_daily_n0 skewed by (x) on (484,238)
 PREHOOK: type: ALTERTABLE_SKEWED
 PREHOOK: Input: default@fact_daily_n0
