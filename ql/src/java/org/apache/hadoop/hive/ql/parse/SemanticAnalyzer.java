@@ -13297,6 +13297,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_TABLEPROPERTIES:
         tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
+        addPropertyReadEntry(tblProps, inputs);
         break;
       case HiveParser.TOK_TABLESERIALIZER:
         child = (ASTNode) child.getChild(0);
