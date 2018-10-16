@@ -297,7 +297,7 @@ select src1.key as k1, src1.value as v1,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has sort by
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE)
@@ -3644,7 +3644,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_CTAS1_n1
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has sort by
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -3703,7 +3703,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas3_n1
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has sort by
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -3801,7 +3801,7 @@ select src1.key as k1, src1.value as v1,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has sort by
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 4 (CUSTOM_SIMPLE_EDGE)
@@ -4652,7 +4652,7 @@ from noop(on part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -4701,7 +4701,7 @@ sort by j.p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Map 1 <- Map 4 (BROADCAST_EDGE)
@@ -4768,7 +4768,7 @@ from noop(on part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -4823,7 +4823,7 @@ from noop(on part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -4880,7 +4880,7 @@ group by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -4937,7 +4937,7 @@ order by p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (BROADCAST_EDGE)
@@ -4987,7 +4987,7 @@ order by p_name, p_size desc)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -5042,7 +5042,7 @@ from noopwithmap(on part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -5097,7 +5097,7 @@ order by p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -5152,7 +5152,7 @@ order by p_mfgr DESC, p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -5223,7 +5223,7 @@ window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -5282,7 +5282,7 @@ order by p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (BROADCAST_EDGE)
@@ -5433,7 +5433,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Output: default@part_4_n1
 POSTHOOK: Output: default@part_5_n1
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -5567,7 +5567,7 @@ from noop(on
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -5646,7 +5646,7 @@ from noop(on
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -5727,7 +5727,7 @@ from noop(on
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has PTF
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)

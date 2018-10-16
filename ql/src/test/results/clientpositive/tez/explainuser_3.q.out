@@ -72,7 +72,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement has lateral views
 
 Stage-0
   Fetch Operator
