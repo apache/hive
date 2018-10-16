@@ -43,6 +43,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -98,6 +99,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.security.alias.AbstractJavaKeyStoreProvider;
+import org.apache.hadoop.security.alias.CredentialProvider;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -2274,5 +2278,28 @@ public abstract class BaseSemanticAnalyzer {
 
   public WriteEntity getAcidAnalyzeTable() {
     return null;
+  }
+
+  public void addPropertyReadEntry(Map<String, String> tblProps, Set<ReadEntity> inputs) throws SemanticException {
+    if (tblProps.containsKey(Constants.JDBC_KEYSTORE)) {
+      try {
+        String keystore = tblProps.get(Constants.JDBC_KEYSTORE);
+        Configuration conf = new Configuration();
+        conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, keystore);
+        boolean found = false;
+        for (CredentialProvider provider : CredentialProviderFactory.getProviders(conf))
+          if (provider instanceof AbstractJavaKeyStoreProvider) {
+            Path path = ((AbstractJavaKeyStoreProvider) provider).getPath();
+            inputs.add(toReadEntity(path));
+            found = true;
+          }
+        if (!found) {
+          throw new SemanticException("Cannot recognize keystore " + keystore + ", only JavaKeyStoreProvider is " +
+                  "supported");
+        }
+      } catch (IOException e) {
+        throw new SemanticException(e);
+      }
+    }
   }
 }
