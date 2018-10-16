@@ -54,6 +54,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
+import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -166,8 +167,10 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -1258,6 +1261,31 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (mv.isRewriteEnabled() == alterMVDesc.isRewriteEnable()) {
         // This is a noop, return successfully
         return 0;
+      }
+      if (alterMVDesc.isRewriteEnable()) {
+        try {
+          final QueryState qs =
+              new QueryState.Builder().withHiveConf(conf).build();
+          final CalcitePlanner planner = new CalcitePlanner(qs);
+          final Context ctx = new Context(conf);
+          ctx.setIsLoadingMaterializedView(true);
+          planner.initCtx(ctx);
+          planner.init(false);
+          final RelNode plan = planner.genLogicalPlan(ParseUtils.parse(mv.getViewExpandedText()));
+          if (plan == null) {
+            String msg = "Cannot enable automatic rewriting for materialized view.";
+            if (ctx.getCboInfo() != null) {
+              msg += " " + ctx.getCboInfo();
+            }
+            throw new HiveException(msg);
+          }
+          if (!planner.isValidAutomaticRewritingMaterialization()) {
+            throw new HiveException("Cannot enable rewriting for materialized view. " +
+                planner.getInvalidAutomaticRewritingMaterializationReason());
+          }
+        } catch (Exception e) {
+          throw new HiveException(e);
+        }
       }
       mv.setRewriteEnabled(alterMVDesc.isRewriteEnable());
       break;

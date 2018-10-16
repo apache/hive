@@ -149,7 +149,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOpMaterializationValidator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationValidator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -384,8 +384,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     if (cboCtx.type == PreCboCtx.Type.CTAS || cboCtx.type == PreCboCtx.Type.VIEW) {
       queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
     }
-    runCBO = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
+    Pair<Boolean, String> pairCanCBOHandleReason = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
+    runCBO = pairCanCBOHandleReason.left;
     if (!runCBO) {
+      ctx.setCboInfo("Plan not optimized by CBO because the statement " + pairCanCBOHandleReason.right);
       return null;
     }
     profilesCBO = obtainCBOProfiles(queryProperties);
@@ -448,7 +450,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (cboCtx.type == PreCboCtx.Type.CTAS || cboCtx.type == PreCboCtx.Type.VIEW) {
         queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
       }
-      runCBO = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
+      Pair<Boolean, String> canCBOHandleReason = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
+      runCBO = canCBOHandleReason.left;
       if (queryProperties.hasMultiDestQuery()) {
         handleMultiDestQuery(ast, cboCtx);
       }
@@ -609,7 +612,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
       } else {
-        this.ctx.setCboInfo("Plan not optimized by CBO.");
+        String msg;
+        if (canCBOHandleReason.right != null) {
+          msg = "Plan not optimized by CBO because the statement " + canCBOHandleReason.right;
+        } else {
+          msg = "Plan not optimized by CBO.";
+        }
+        this.ctx.setCboInfo(msg);
         skipCalcitePlan = true;
       }
     }
@@ -812,7 +821,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    *         If top level QB is query then everything below it must also be
    *         Query.
    */
-  boolean canCBOHandleAst(ASTNode ast, QB qb, PreCboCtx cboCtx) {
+  Pair<Boolean, String> canCBOHandleAst(ASTNode ast, QB qb, PreCboCtx cboCtx) {
     int root = ast.getToken().getType();
     boolean needToLogMessage = STATIC_LOG.isInfoEnabled();
     boolean isSupportedRoot = root == HiveParser.TOK_QUERY || root == HiveParser.TOK_EXPLAIN
@@ -824,39 +833,39 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean noBadTokens = HiveCalciteUtil.validateASTForUnsupportedTokens(ast);
     boolean result = isSupportedRoot && isSupportedType && noBadTokens;
 
+    String msg = "";
     if (!result) {
-      if (needToLogMessage) {
-        String msg = "";
-        if (!isSupportedRoot) {
-          msg += "doesn't have QUERY or EXPLAIN as root and not a CTAS; ";
-        }
-        if (!isSupportedType) {
-          msg += "is not a query with at least one source table "
-                  + " or there is a subquery without a source table, or CTAS, or insert; ";
-        }
-        if (!noBadTokens) {
-          msg += "has unsupported tokens; ";
-        }
-
-        if (msg.isEmpty()) {
-          msg += "has some unspecified limitations; ";
-        }
-        STATIC_LOG.info("Not invoking CBO because the statement "
-            + msg.substring(0, msg.length() - 2));
+      if (!isSupportedRoot) {
+        msg += "doesn't have QUERY or EXPLAIN as root and not a CTAS; ";
       }
-      return false;
+      if (!isSupportedType) {
+        msg += "is not a query with at least one source table "
+            + " or there is a subquery without a source table, or CTAS, or insert; ";
+      }
+      if (!noBadTokens) {
+        msg += "has unsupported tokens; ";
+      }
+      if (msg.isEmpty()) {
+        msg += "has some unspecified limitations; ";
+      }
+      msg = msg.substring(0, msg.length() - 2);
+      if (needToLogMessage) {
+        STATIC_LOG.info("Not invoking CBO because the statement " + msg);
+      }
+      return Pair.of(false, msg);
     }
+
     // Now check QB in more detail. canHandleQbForCbo returns null if query can
     // be handled.
-    String msg = CalcitePlanner.canHandleQbForCbo(queryProperties, conf, true, needToLogMessage, qb);
+    msg = CalcitePlanner.canHandleQbForCbo(queryProperties, conf, true, needToLogMessage, qb);
     if (msg == null) {
-      return true;
+      return Pair.of(true, msg);
     }
+    msg = msg.substring(0, msg.length() - 2);
     if (needToLogMessage) {
-      STATIC_LOG.info("Not invoking CBO because the statement "
-          + msg.substring(0, msg.length() - 2));
+      STATIC_LOG.info("Not invoking CBO because the statement " + msg);
     }
-    return false;
+    return Pair.of(false, msg);
   }
 
   /**
@@ -1741,16 +1750,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
-      // Validate query materialization (materialized views, query results caching.
-      // This check needs to occur before constant folding, which may remove some
-      // function calls from the query plan.
-      HiveRelOpMaterializationValidator matValidator = new HiveRelOpMaterializationValidator();
-      matValidator.validateQueryMaterialization(calciteGenPlan);
-      if (!matValidator.isValidMaterialization()) {
-        String reason = matValidator.getInvalidMaterializationReason();
-        setInvalidQueryMaterializationReason(reason);
-      }
-
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl(optCluster);
       calciteGenPlan.getCluster().getPlanner().setExecutor(executorProvider);
@@ -1775,6 +1774,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
       LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
+
+      // Validate query materialization for query results caching. This check needs
+      // to occur before constant folding, which may remove some function calls
+      // from the query plan.
+      // In addition, if it is a materialized view creation and we are enabling it
+      // for rewriting, it should pass all checks done for query results caching
+      // and on top of that we should check that it only contains operators that
+      // are supported by the rewriting algorithm.
+      HiveRelOptMaterializationValidator materializationValidator = new HiveRelOptMaterializationValidator();
+      materializationValidator.validate(calciteGenPlan);
+      setInvalidResultCacheReason(
+          materializationValidator.getResultCacheInvalidReason());
+      setInvalidAutomaticRewritingMaterializationReason(
+          materializationValidator.getAutomaticRewritingInvalidReason());
 
       // 2. Apply pre-join order optimizations
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,

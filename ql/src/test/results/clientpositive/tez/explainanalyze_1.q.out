@@ -558,7 +558,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Plan not optimized by CBO.
+Plan not optimized by CBO because the statement uses scripts
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
