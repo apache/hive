@@ -398,6 +398,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
      *
      * A new FSP is created for each partition, so this only requires the bucket numbering and that
      * is mapped in directly as an index.
+     *
+     * This relies on ReduceSinkOperator to shuffle update/delete rows by
+     * UDFToInteger(RecordIdentifier), i.e. by writerId in ROW__ID.
+     * {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer#getPartitionColsFromBucketColsForUpdateDelete(Operator, boolean)}
      */
     public int createDynamicBucket(int bucketNum) {
       // this assumes all paths are bucket names (which means no lookup is needed)
