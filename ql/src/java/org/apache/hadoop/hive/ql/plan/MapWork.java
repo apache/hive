@@ -201,7 +201,7 @@ public class MapWork extends BaseWork {
   public void addPathToAlias(Path path, String newAlias){
     ArrayList<String> aliases = pathToAliases.get(path);
     if (aliases == null) {
-      aliases = new ArrayList<>();
+      aliases = new ArrayList<>(1);
       StringInternUtils.internUriStringsInPath(path);
       pathToAliases.put(path, aliases);
     }
