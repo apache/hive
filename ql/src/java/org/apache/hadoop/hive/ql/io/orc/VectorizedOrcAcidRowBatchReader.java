@@ -1420,19 +1420,8 @@ public class VectorizedOrcAcidRowBatchReader
       /**
        * Whenever we are reading a batch, we must ensure that all the records in the batch
        * have the same bucket id as the bucket id of the split. If not, throw exception.
-       * NOTE: this assertion might not hold, once virtual bucketing is in place. However,
-       * it should be simple to fix that case. Just replace check for bucket equality with
-       * a check for valid bucket mapping. Until virtual bucketing is added, it means
-       * either the split computation got messed up or we found some corrupted records.
        */
       private void checkBucketId(int bucketPropertyFromRecord) throws IOException {
-        if(!isBucketedTable) {
-          /**
-           * in this case a file inside a delete_delta_x_y/bucketN may contain any value for
-           * bucketId in {@link RecordIdentifier#getBucketProperty()}
-           */
-          return;
-        }
         int bucketIdFromRecord = BucketCodec.determineVersion(bucketPropertyFromRecord)
           .decodeWriterId(bucketPropertyFromRecord);
         if(bucketIdFromRecord != bucketForSplit) {
@@ -1534,7 +1523,7 @@ public class VectorizedOrcAcidRowBatchReader
           for (Path deleteDeltaDir : deleteDeltaDirs) {
             FileSystem fs = deleteDeltaDir.getFileSystem(conf);
             Path[] deleteDeltaFiles = OrcRawRecordMerger.getDeltaFiles(deleteDeltaDir, bucket,
-                conf, new OrcRawRecordMerger.Options().isCompacting(false), isBucketedTable);
+                new OrcRawRecordMerger.Options().isCompacting(false));
             for (Path deleteDeltaFile : deleteDeltaFiles) {
               // NOTE: Calling last flush length below is more for future-proofing when we have
               // streaming deletes. But currently we don't support streaming deletes, and this can
