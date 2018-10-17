@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
@@ -43,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -105,7 +107,7 @@ public class KillQueryImpl implements KillQuery {
     if (SessionState.get().getAuthorizerV2() != null) {
       try {
         SessionState.get().getAuthorizerV2().checkPrivileges(HiveOperationType.KILL_QUERY,
-                null, null, new HiveAuthzContext.Builder().build());
+                new ArrayList<>(), new ArrayList<>(), new HiveAuthzContext.Builder().build());
         isAdmin = true;
       } catch (Exception e) {
       }
